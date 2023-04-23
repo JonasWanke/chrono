@@ -114,11 +114,17 @@ final class Parser {
   }
 
   Result<PlainYear, FormatException> _parseYear() {
-    final value = switch (_peek()) {
-      '+' => _parseInt('year', minDigits: 4),
-      '-' => _parseInt('year', minDigits: 4).map((it) => -it),
-      _ => _parseInt('year', minDigits: 4, maxDigits: 4),
-    };
+    final Result<int, FormatException> value;
+    switch (_peek()) {
+      case '+':
+        _offset++;
+        value = _parseInt('year', minDigits: 4);
+      case '-':
+        _offset++;
+        value = _parseInt('year', minDigits: 4).map((it) => -it);
+      default:
+        value = _parseInt('year', minDigits: 4, maxDigits: 4);
+    }
     return value.map(PlainYear.new);
   }
 
@@ -174,7 +180,7 @@ final class Parser {
 
     String digitConstraintsString() {
       String minDigitsString() =>
-          _plural(minDigits, () => 'digit', (it) => 'digits');
+          _plural(minDigits, () => '1 digit', (it) => '$it digits');
       return switch (maxDigits) {
         null => 'at least ${minDigitsString()}',
         _ when minDigits == maxDigits => 'exactly ${minDigitsString()}',
@@ -202,13 +208,14 @@ final class Parser {
     int digitCount() => _offset - initialOffset;
     while (maxDigits == null ||
         (digitCount() < maxDigits && _offset < _source.length)) {
-      final digit = _peek()!.codeUnitAt(0) - '0'.codeUnitAt(0);
+      final character = _peek()!;
+      final digit = character.codeUnitAt(0) - '0'.codeUnitAt(0);
       if (digit < 0 || digit > 9) {
         if (digitCount() < minDigits) {
           return _error(
             'Tried parsing the $label as an integer with '
             '${digitConstraintsString()}, but found the following character: '
-            '“$_source”.',
+            '“$character”.',
             _offset + 1,
           );
         }
