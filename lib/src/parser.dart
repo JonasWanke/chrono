@@ -307,6 +307,11 @@ final class Parser {
       value == 1 ? singular() : plural(value);
 }
 
+T unwrapParserResult<T extends Object>(Result<T, FormatException> result) {
+  if (result.isErr()) throw result.unwrapErr();
+  return result.unwrap();
+}
+
 extension<T extends Object, E extends Object> on Result<T, E> {
   Result<T, E> andAlso<U extends Object>(Result<U, E> Function() op) =>
       andThen((it) => op().map((_) => it));

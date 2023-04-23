@@ -13,8 +13,7 @@ final class Instant
   Instant.fromDateTime(DateTime dateTime)
       : microsecondsSinceUnixEpoch = dateTime.microsecondsSinceEpoch;
 
-  factory Instant.fromJson(String json) =>
-      parse(json).unwrap(); // TODO: error message
+  factory Instant.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<Instant, FormatException> parse(String value) =>
       Parser.parseInstant(value);
 

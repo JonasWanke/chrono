@@ -15,12 +15,8 @@ final class PlainYearMonth
       : year = PlainYear.fromDateTime(dateTime),
         month = PlainMonth.fromDateTime(dateTime);
 
-  // TODO
-  // factory PlainYearMonth.fromJson(String json) {
-  //   final result = parse(json);
-  //   if (result.isErr()) throw FormatException(result.unwrapErr());
-  //   return result.unwrap();
-  // }
+  factory PlainYearMonth.fromJson(String json) =>
+      unwrapParserResult(parse(json));
   static Result<PlainYearMonth, FormatException> parse(String value) =>
       Parser.parseYearMonth(value);
 

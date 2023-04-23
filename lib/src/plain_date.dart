@@ -24,8 +24,7 @@ final class PlainDate
           dateTime.day,
         );
 
-  factory PlainDate.fromJson(String json) =>
-      parse(json).unwrap(); // TODO: error message
+  factory PlainDate.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<PlainDate, FormatException> parse(String value) =>
       Parser.parseDate(value);
 

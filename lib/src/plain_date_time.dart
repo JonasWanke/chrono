@@ -17,7 +17,7 @@ final class PlainDateTime
         time = PlainTime.fromDateTime(dateTime);
 
   factory PlainDateTime.fromJson(String json) =>
-      parse(json).unwrap(); // TODO: error message
+      unwrapParserResult(parse(json));
   static Result<PlainDateTime, FormatException> parse(String value) =>
       Parser.parseDateTime(value);
 

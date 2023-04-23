@@ -22,8 +22,7 @@ final class PlainTime
           scale: 6,
         );
 
-  factory PlainTime.fromJson(String json) =>
-      parse(json).unwrap(); // TODO: error message
+  factory PlainTime.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<PlainTime, FormatException> parse(String value) =>
       Parser.parseTime(value);
 
