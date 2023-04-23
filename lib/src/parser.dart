@@ -206,8 +206,8 @@ final class Parser {
     var value = 0;
     final initialOffset = _offset;
     int digitCount() => _offset - initialOffset;
-    while (maxDigits == null ||
-        (digitCount() < maxDigits && _offset < _source.length)) {
+    while (_offset < _source.length &&
+        (maxDigits == null || digitCount() < maxDigits)) {
       final character = _peek()!;
       final digit = character.codeUnitAt(0) - '0'.codeUnitAt(0);
       if (digit < 0 || digit > 9) {
