@@ -16,7 +16,7 @@ final class PlainDate
     PlainMonth month = PlainMonth.january,
     int day = 1,
   ]) : this.fromYearMonthAndDay(PlainYearMonth(year, month), day);
-  const PlainDate.fromYearMonthAndDay(this.yearMonth, [this.day = 1]);
+  const PlainDate.fromYearMonthAndDay(this.yearMonth, this.day);
   // TODO: validation
   PlainDate.fromDateTime(DateTime dateTime)
       : this.fromYearMonthAndDay(
