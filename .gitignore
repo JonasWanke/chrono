@@ -1,0 +1,27 @@
+# Flutter Version Management
+.fvm/
+
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+
+# IntelliJ
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Dart/Pub
+**/doc/api/
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
