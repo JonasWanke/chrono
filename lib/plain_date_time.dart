@@ -1,3 +1,4 @@
+export 'src/glados.dart';
 export 'src/instant.dart';
 export 'src/plain_date.dart';
 export 'src/plain_date_time.dart';

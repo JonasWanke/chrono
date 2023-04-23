@@ -266,7 +266,7 @@ packages:
     source: hosted
     version: "3.2.0"
   glados:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: glados
       sha256: "838eac1d9d75a8415ee99a1de82ae156d1cbdf2210be30c52f26a03feeff7ffc"
