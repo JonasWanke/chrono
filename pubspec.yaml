@@ -15,8 +15,11 @@ dependencies:
   time: ^2.1.1
 
 dev_dependencies:
+  dartx: ^1.1.0
+  glados: ^1.1.6
   supernova:
     git:
       url: https://github.com/JonasWanke/supernova.git
       path: supernova
       ref: 3276339a5e21ee456160616167b4697209a02cad
+  test: ^1.24.2
