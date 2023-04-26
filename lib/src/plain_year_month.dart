@@ -44,8 +44,6 @@ final class PlainYearMonth
         : 29;
   }
 
-  // TODO: isCurrentMonthInLocalZone, isCurrentMonthInUtc?
-
   PlainYearMonth copyWith({PlainYear? year, PlainMonth? month}) =>
       PlainYearMonth.from(year ?? this.year, month ?? this.month);
 
