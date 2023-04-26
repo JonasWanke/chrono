@@ -7,20 +7,22 @@ void main() {
   Glados<PlainYear>().test('PlainYear', (year) {
     expect(year, PlainYear.fromJson(year.toJson()));
   });
-  // TODO: PlainMonth
-  Glados<PlainYearMonth>().test('PlainYearMonth', (year) {
-    expect(year, PlainYearMonth.fromJson(year.toJson()));
+  Glados<PlainMonth>().test('PlainMonth', (month) {
+    expect(month, PlainMonth.fromJson(month.toJson()));
   });
-  Glados<PlainDate>().test('PlainDate', (year) {
-    expect(year, PlainDate.fromJson(year.toJson()));
+  Glados<PlainYearMonth>().test('PlainYearMonth', (yearMonth) {
+    expect(yearMonth, PlainYearMonth.fromJson(yearMonth.toJson()));
   });
-  Glados<PlainTime>().test('PlainTime', (year) {
-    expect(year, PlainTime.fromJson(year.toJson()));
+  Glados<PlainDate>().test('PlainDate', (date) {
+    expect(date, PlainDate.fromJson(date.toJson()));
   });
-  Glados<PlainDateTime>().test('PlainDateTime', (year) {
-    expect(year, PlainDateTime.fromJson(year.toJson()));
+  Glados<PlainTime>().test('PlainTime', (timet) {
+    expect(timet, PlainTime.fromJson(timet.toJson()));
   });
-  Glados<Instant>().test('Instant', (year) {
-    expect(year, Instant.fromJson(year.toJson()));
+  Glados<PlainDateTime>().test('PlainDateTime', (dateTime) {
+    expect(dateTime, PlainDateTime.fromJson(dateTime.toJson()));
+  });
+  Glados<Instant>().test('Instant', (instant) {
+    expect(instant, Instant.fromJson(instant.toJson()));
   });
 }

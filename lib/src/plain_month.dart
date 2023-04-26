@@ -22,6 +22,12 @@ enum PlainMonth
     return values[number - PlainMonth.january.number];
   }
 
+  static PlainMonth fromJson(int json) {
+    final result = fromNumber(json);
+    if (result == null) throw FormatException('Invalid month number: $json');
+    return result;
+  }
+
   static PlainMonth fromDateTime(DateTime dateTime) =>
       fromNumber(dateTime.month)!;
 
@@ -53,4 +59,6 @@ enum PlainMonth
 
   @override
   int compareTo(PlainMonth other) => index.compareTo(other.index);
+
+  int toJson() => number;
 }
