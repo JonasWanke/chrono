@@ -39,7 +39,7 @@ final class PlainYearMonth
   /// The result is always in the range [28, 31].
   int get numberOfDays {
     // https://howardhinnant.github.io/date_algorithms.html#last_day_of_month
-    return month != PlainMonth.february || !year.isLeapYear
+    return month != PlainMonth.february || year.isCommonYear
         ? month.numberOfDaysInCommonYear
         : 29;
   }
