@@ -9,6 +9,7 @@ import 'plain_time.dart';
 import 'plain_year.dart';
 import 'plain_year_month.dart';
 import 'utils.dart';
+import 'weekday.dart';
 
 @immutable
 final class PlainDate
@@ -106,7 +107,10 @@ final class PlainDate
   PlainMonth get month => yearMonth.month;
   final int day;
 
-  // TODO: week and day of week
+  Weekday get weekday =>
+      Weekday.fromNumberUnchecked((daysSinceUnixEpoch + 3) % 7 + 1);
+
+  // TODO: week
 
   int get daysSinceUnixEpoch {
     // https://howardhinnant.github.io/date_algorithms.html#days_from_civil
