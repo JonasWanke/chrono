@@ -113,7 +113,7 @@ final class PlainTime
     final fraction = this.fraction == Fixed.zero
         ? ''
         : this.fraction.toString().substring(1);
-    return '$hour:$minute:$second$fraction';
+    return 'T$hour:$minute:$second$fraction';
   }
 
   String toJson() => toString();
