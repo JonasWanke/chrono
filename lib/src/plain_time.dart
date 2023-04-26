@@ -10,7 +10,7 @@ import 'utils.dart';
 final class PlainTime
     with ComparisonOperatorsFromComparable<PlainTime>
     implements Comparable<PlainTime> {
-  PlainTime._fromUnchecked(this.hour, this.minute, this.second, this.fraction);
+  PlainTime.fromUnchecked(this.hour, this.minute, this.second, this.fraction);
   factory PlainTime.fromThrowing(
     int hour, [
     int minute = 0,
@@ -20,7 +20,7 @@ final class PlainTime
       from(hour, minute, second, fraction).unwrap();
 
   PlainTime.fromDateTime(DateTime dateTime)
-      : this._fromUnchecked(
+      : this.fromUnchecked(
           dateTime.hour,
           dateTime.minute,
           dateTime.second,
@@ -59,7 +59,7 @@ final class PlainTime
     }
     fraction ??= Fixed.zero;
 
-    return Ok(PlainTime._fromUnchecked(hour, minute, second, fraction));
+    return Ok(PlainTime.fromUnchecked(hour, minute, second, fraction));
   }
 
   static final PlainTime midnight = PlainTime.fromThrowing(0);

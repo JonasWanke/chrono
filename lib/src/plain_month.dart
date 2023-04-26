@@ -24,10 +24,10 @@ enum PlainMonth
         number > PlainMonth.december.number) {
       return Err('Invalid month number: $number');
     }
-    return Ok(_fromNumberUnchecked(number));
+    return Ok(fromNumberUnchecked(number));
   }
 
-  static PlainMonth _fromNumberUnchecked(int number) =>
+  static PlainMonth fromNumberUnchecked(int number) =>
       values[number - PlainMonth.january.number];
   static PlainMonth fromNumberThrowing(int number) =>
       PlainMonth.fromNumber(number).unwrap();

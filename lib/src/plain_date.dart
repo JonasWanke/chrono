@@ -14,7 +14,7 @@ import 'utils.dart';
 final class PlainDate
     with ComparisonOperatorsFromComparable<PlainDate>
     implements Comparable<PlainDate> {
-  const PlainDate._fromYearMonthAndDayUnchecked(this.yearMonth, this.day);
+  const PlainDate.fromYearMonthAndDayUnchecked(this.yearMonth, this.day);
   factory PlainDate.fromThrowing(
     PlainYear year, [
     PlainMonth month = PlainMonth.january,
@@ -28,7 +28,7 @@ final class PlainDate
       fromYearMonthAndDay(yearMonth, day).unwrap();
 
   PlainDate.fromDateTime(DateTime dateTime)
-      : this._fromYearMonthAndDayUnchecked(
+      : this.fromYearMonthAndDayUnchecked(
           PlainYearMonth.fromDateTime(dateTime),
           dateTime.day,
         );
@@ -54,7 +54,7 @@ final class PlainDate
     if (day < 0 || day > yearMonth.numberOfDays) {
       return Err('Invalid day for $yearMonth: $day');
     }
-    return Ok(PlainDate._fromYearMonthAndDayUnchecked(yearMonth, day));
+    return Ok(PlainDate.fromYearMonthAndDayUnchecked(yearMonth, day));
   }
 
   final PlainYearMonth yearMonth;
