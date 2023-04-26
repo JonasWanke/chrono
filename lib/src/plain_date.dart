@@ -26,6 +26,50 @@ final class PlainDate
     int day,
   ) =>
       fromYearMonthAndDay(yearMonth, day).unwrap();
+  factory PlainDate.fromDaysSinceUnixEpoch(int daysSinceUnixEpoch) {
+    // https://howardhinnant.github.io/date_algorithms.html#civil_from_days
+    daysSinceUnixEpoch += 719468;
+
+    final era = (daysSinceUnixEpoch >= 0
+            ? daysSinceUnixEpoch
+            : daysSinceUnixEpoch - 146096) ~/
+        146097;
+
+    final dayOfEra = daysSinceUnixEpoch % 146097;
+    assert(0 <= dayOfEra && dayOfEra <= 146096);
+
+    final yearOfEra = (dayOfEra -
+            dayOfEra ~/ 1460 +
+            dayOfEra ~/ 36524 -
+            dayOfEra ~/ 146096) ~/
+        365;
+    assert(0 <= yearOfEra && yearOfEra <= 399);
+
+    final shiftedYear = yearOfEra + era * 400;
+
+    final dayOfYear =
+        dayOfEra - (yearOfEra * 365 + yearOfEra ~/ 4 - yearOfEra ~/ 100);
+    assert(0 <= dayOfYear && dayOfYear <= 365);
+
+    final shiftedMonth = (dayOfYear * 5 + 2) ~/ 153;
+    assert(0 <= shiftedMonth && shiftedMonth <= 11);
+
+    final day = dayOfYear - (shiftedMonth * 153 + 2) ~/ 5 + 1;
+    assert(1 <= day && day <= 31);
+
+    final (year, month) = shiftedMonth < 10
+        ? (shiftedYear, shiftedMonth + 3)
+        : (shiftedYear + 1, shiftedMonth - 9);
+    assert(1 <= month && month <= 12);
+
+    return PlainDate.fromYearMonthAndDayUnchecked(
+      PlainYearMonth.from(
+        PlainYear.from(year),
+        PlainMonth.fromNumberUnchecked(month),
+      ),
+      day,
+    );
+  }
 
   PlainDate.fromDateTime(DateTime dateTime)
       : this.fromYearMonthAndDayUnchecked(
@@ -63,6 +107,27 @@ final class PlainDate
   final int day;
 
   // TODO: week and day of week
+
+  int get daysSinceUnixEpoch {
+    // https://howardhinnant.github.io/date_algorithms.html#days_from_civil
+    final (year, month) = this.month <= PlainMonth.february
+        ? (this.year.value - 1, this.month.number + 9)
+        : (this.year.value, this.month.number - 3);
+
+    final era = (year >= 0 ? year : year - 399) ~/ 400;
+
+    final yearOfEra = year - era * 400;
+    assert(0 <= yearOfEra && yearOfEra <= 399);
+
+    final dayOfYear = (month * 153 + 2) ~/ 5 + day - 1;
+    assert(0 <= dayOfYear && dayOfYear <= 365);
+
+    final dayOfEra =
+        yearOfEra * 365 + yearOfEra ~/ 4 - yearOfEra ~/ 100 + dayOfYear;
+    assert(0 <= dayOfEra && dayOfEra <= 146096);
+
+    return era * 146097 + dayOfEra - 719468;
+  }
 
   bool isTodayInLocalZone({Clock? clockOverride}) =>
       this == PlainDate.todayInLocalZone(clockOverride: clockOverride);
