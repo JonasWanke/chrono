@@ -96,7 +96,7 @@ final class PlainDate
     PlainYearMonth yearMonth,
     int day,
   ) {
-    if (day < 0 || day > yearMonth.numberOfDays) {
+    if (day < 1 || day > yearMonth.numberOfDays) {
       return Err('Invalid day for $yearMonth: $day');
     }
     return Ok(PlainDate.fromYearMonthAndDayUnchecked(yearMonth, day));
