@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
@@ -18,11 +19,16 @@ final class PlainDate
   ]) : this.fromYearMonthAndDay(PlainYearMonth(year, month), day);
   const PlainDate.fromYearMonthAndDay(this.yearMonth, this.day);
   // TODO: validation
+
   PlainDate.fromDateTime(DateTime dateTime)
       : this.fromYearMonthAndDay(
           PlainYearMonth.fromDateTime(dateTime),
           dateTime.day,
         );
+  PlainDate.todayInLocalZone({Clock? clockOverride})
+      : this.fromDateTime((clockOverride ?? clock).now().toLocal());
+  PlainDate.todayInUtc({Clock? clockOverride})
+      : this.fromDateTime((clockOverride ?? clock).now().toUtc());
 
   factory PlainDate.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<PlainDate, FormatException> parse(String value) =>

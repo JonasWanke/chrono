@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
@@ -11,9 +12,14 @@ final class PlainYearMonth
     with ComparisonOperatorsFromComparable<PlainYearMonth>
     implements Comparable<PlainYearMonth> {
   const PlainYearMonth(this.year, [this.month = PlainMonth.january]);
+
   PlainYearMonth.fromDateTime(DateTime dateTime)
       : year = PlainYear.fromDateTime(dateTime),
         month = PlainMonth.fromDateTime(dateTime);
+  PlainYearMonth.currentInLocalZone({Clock? clockOverride})
+      : this.fromDateTime((clockOverride ?? clock).now().toLocal());
+  PlainYearMonth.currentInUtc({Clock? clockOverride})
+      : this.fromDateTime((clockOverride ?? clock).now().toUtc());
 
   factory PlainYearMonth.fromJson(String json) =>
       unwrapParserResult(parse(json));

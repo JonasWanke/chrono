@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
@@ -12,9 +13,14 @@ final class PlainDateTime
     with ComparisonOperatorsFromComparable<PlainDateTime>
     implements Comparable<PlainDateTime> {
   const PlainDateTime(this.date, this.time);
+
   PlainDateTime.fromDateTime(DateTime dateTime)
       : date = PlainDate.fromDateTime(dateTime),
         time = PlainTime.fromDateTime(dateTime);
+  PlainDateTime.nowInLocalZone({Clock? clockOverride})
+      : this.fromDateTime((clockOverride ?? clock).now().toLocal());
+  PlainDateTime.nowInUtc({Clock? clockOverride})
+      : this.fromDateTime((clockOverride ?? clock).now().toUtc());
 
   factory PlainDateTime.fromJson(String json) =>
       unwrapParserResult(parse(json));

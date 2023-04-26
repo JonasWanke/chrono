@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:fixed/fixed.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
@@ -12,6 +13,7 @@ final class PlainTime
   PlainTime(this.hour, [this.minute = 0, this.second = 0, Fixed? fraction])
       : fraction = fraction ?? Fixed.zero;
   // TODO: validation
+
   PlainTime.fromDateTime(DateTime dateTime)
       : hour = dateTime.hour,
         minute = dateTime.minute,
@@ -21,6 +23,10 @@ final class PlainTime
               dateTime.microsecond,
           scale: 6,
         );
+  PlainTime.nowInLocalZone({Clock? clockOverride})
+      : this.fromDateTime((clockOverride ?? clock).now().toLocal());
+  PlainTime.nowInUtc({Clock? clockOverride})
+      : this.fromDateTime((clockOverride ?? clock).now().toUtc());
 
   factory PlainTime.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<PlainTime, FormatException> parse(String value) =>

@@ -1,3 +1,5 @@
+import 'package:clock/clock.dart';
+
 import 'utils.dart';
 
 enum PlainMonth
@@ -22,14 +24,18 @@ enum PlainMonth
     return values[number - PlainMonth.january.number];
   }
 
+  static PlainMonth fromDateTime(DateTime dateTime) =>
+      fromNumber(dateTime.month)!;
+  static PlainMonth currentInLocalZone({Clock? clockOverride}) =>
+      fromDateTime((clockOverride ?? clock).now().toLocal());
+  static PlainMonth currentInUtc({Clock? clockOverride}) =>
+      fromDateTime((clockOverride ?? clock).now().toUtc());
+
   static PlainMonth fromJson(int json) {
     final result = fromNumber(json);
     if (result == null) throw FormatException('Invalid month number: $json');
     return result;
   }
-
-  static PlainMonth fromDateTime(DateTime dateTime) =>
-      fromNumber(dateTime.month)!;
 
   static final minNumber = PlainMonth.january.number;
   static final maxNumber = PlainMonth.december.number;

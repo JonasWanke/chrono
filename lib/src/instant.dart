@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
@@ -10,8 +11,11 @@ final class Instant
     with ComparisonOperatorsFromComparable<Instant>
     implements Comparable<Instant> {
   const Instant.fromMicrosecondsSinceUnixEpoch(this.microsecondsSinceUnixEpoch);
+
   Instant.fromDateTime(DateTime dateTime)
       : microsecondsSinceUnixEpoch = dateTime.microsecondsSinceEpoch;
+  Instant.now({Clock? clockOverride})
+      : this.fromDateTime((clockOverride ?? clock).now());
 
   factory Instant.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<Instant, FormatException> parse(String value) =>
