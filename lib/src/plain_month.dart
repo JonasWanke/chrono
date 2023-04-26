@@ -63,7 +63,7 @@ enum PlainMonth
   /// The result is always in the range [28, 31].
   int get numberOfDaysInCommonYear {
     // https://howardhinnant.github.io/date_algorithms.html#last_day_of_month_common_year
-    const days = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    const days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     return days[index];
   }
 
