@@ -34,6 +34,9 @@ void main() {
   Glados<Weekday>().test('Weekday', (weekday) {
     expect(weekday, Weekday.fromJson(weekday.toJson()));
   });
+  Glados<PlainWeekDate>().test('PlainWeekDate', (weekDate) {
+    expect(weekDate, PlainWeekDate.fromJson(weekDate.toJson()));
+  });
   Glados<DateTime>().test('DateTime compatibility', (dateTimeInLocalZone) {
     expect(
       dateTimeInLocalZone,

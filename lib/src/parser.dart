@@ -7,9 +7,11 @@ import 'plain_date.dart';
 import 'plain_date_time.dart';
 import 'plain_month.dart';
 import 'plain_time.dart';
+import 'plain_week_date.dart';
 import 'plain_year.dart';
 import 'plain_year_month.dart';
 import 'plain_year_week.dart';
+import 'weekday.dart';
 
 // Date and time strings only use ASCII, hence we don't need to worry about
 // proper Unicode handling.
@@ -22,6 +24,8 @@ final class Parser {
       _parse(value, (it) => it._parseDateTime());
   static Result<PlainDate, FormatException> parseDate(String value) =>
       _parse(value, (it) => it._parseDate());
+  static Result<PlainWeekDate, FormatException> parseWeekDate(String value) =>
+      _parse(value, (it) => it._parseWeekDate());
   static Result<PlainYearMonth, FormatException> parseYearMonth(String value) =>
       _parse(value, (it) => it._parseYearMonth());
   static Result<PlainYearWeek, FormatException> parseYearWeek(String value) =>
@@ -74,6 +78,15 @@ final class Parser {
     return _parseYearMonth()
         .andAlso(() => _requireSeparator({'-'}, 'month', 'day'))
         .andThen(_parseDay);
+  }
+
+  Result<PlainWeekDate, FormatException> _parseWeekDate() {
+    return _parseYearWeek()
+        .andAlso(() => _requireSeparator({'-'}, 'week number', 'weekday'))
+        .andThen(
+          (yearWeek) => _parseWeekday()
+              .map((weekday) => PlainWeekDate(yearWeek, weekday)),
+        );
   }
 
   Result<PlainYearMonth, FormatException> _parseYearMonth() {
@@ -177,6 +190,16 @@ final class Parser {
     );
     return value.andThen((it) => PlainDate.fromYearMonthAndDay(yearMonth, it)
         .mapErr(FormatException.new));
+  }
+
+  Result<Weekday, FormatException> _parseWeekday() {
+    return _parseInt(
+      'weekday',
+      minDigits: 1,
+      maxDigits: 1,
+      minValue: Weekday.minNumber,
+      maxValue: Weekday.maxNumber,
+    ).map(Weekday.fromNumberUnchecked);
   }
 
   Result<int, FormatException> _parseInt(

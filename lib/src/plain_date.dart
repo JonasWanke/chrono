@@ -8,6 +8,7 @@ import 'plain_month.dart';
 import 'plain_time.dart';
 import 'plain_year.dart';
 import 'plain_year_month.dart';
+import 'plain_year_week.dart';
 import 'utils.dart';
 import 'weekday.dart';
 
@@ -114,10 +115,28 @@ final class PlainDate
   PlainMonth get month => yearMonth.month;
   final int day;
 
+  int get dayOfYear {
+    // https://en.wikipedia.org/wiki/Ordinal_date#Zeller-like
+    final marchBased = (153 * ((month.number - 3) % 12) + 2) ~/ 5 + day;
+    return month >= PlainMonth.march
+        ? marchBased + 9 + (year.isLeapYear ? 1 : 0)
+        : marchBased - 306;
+  }
+
+  PlainYearWeek get yearWeek {
+    // Algorithm from https://en.wikipedia.org/wiki/ISO_week_date#Algorithms
+    final weekOfYear = (dayOfYear - weekday.number + 10) ~/ 7;
+    return switch (weekOfYear) {
+      0 =>
+        PlainYearWeek.fromUnchecked(year.previous, year.previous.numberOfWeeks),
+      53 when year.numberOfWeeks == 52 =>
+        PlainYearWeek.fromUnchecked(year.next, 1),
+      _ => PlainYearWeek.fromUnchecked(year, weekOfYear)
+    };
+  }
+
   Weekday get weekday =>
       Weekday.fromNumberUnchecked((daysSinceUnixEpoch + 3) % 7 + 1);
-
-  // TODO: week
 
   int get daysSinceUnixEpoch {
     // https://howardhinnant.github.io/date_algorithms.html#days_from_civil

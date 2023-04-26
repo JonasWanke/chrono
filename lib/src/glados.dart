@@ -8,6 +8,7 @@ import 'plain_date.dart';
 import 'plain_date_time.dart';
 import 'plain_month.dart';
 import 'plain_time.dart';
+import 'plain_week_date.dart';
 import 'plain_year.dart';
 import 'plain_year_month.dart';
 import 'plain_year_week.dart';
@@ -19,6 +20,7 @@ void setPlainDateTimeGladosDefaults() {
   Any.setDefault(any.plainDateTime);
   Any.setDefault(any.plainMonth);
   Any.setDefault(any.plainTime);
+  Any.setDefault(any.plainWeekDate);
   Any.setDefault(any.plainYear);
   Any.setDefault(any.plainYearMonth);
   Any.setDefault(any.plainYearWeek);
@@ -65,6 +67,8 @@ extension PlainDateTimeAny on Any {
     );
   }
 
+  Generator<PlainWeekDate> get plainWeekDate =>
+      combine2(plainYearWeek, weekday, PlainWeekDate.new);
   Generator<PlainYear> get plainYear => this.int.map(PlainYear.new);
   Generator<PlainYearMonth> get plainYearMonth =>
       combine2(plainYear, plainMonth, PlainYearMonth.from);
