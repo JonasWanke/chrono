@@ -24,5 +24,24 @@ void main() {
   });
   Glados<Instant>().test('Instant', (instant) {
     expect(instant, Instant.fromJson(instant.toJson()));
+    expect(instant, instant.plainDateTimeInLocalZone.inLocalZone);
+    expect(instant, instant.plainDateTimeInUtc.inUtc);
+  });
+  Glados<DateTime>().test('DateTime compatibility', (dateTimeInLocalZone) {
+    expect(
+      dateTimeInLocalZone,
+      Instant.fromDateTime(dateTimeInLocalZone).dateTimeInLocalZone,
+    );
+    expect(
+      dateTimeInLocalZone,
+      PlainDateTime.fromDateTime(dateTimeInLocalZone).dateTimeInLocalZone,
+    );
+
+    final dateTimeInUtc = dateTimeInLocalZone.toUtc();
+    expect(dateTimeInUtc, Instant.fromDateTime(dateTimeInUtc).dateTimeInUtc);
+    expect(
+      dateTimeInUtc,
+      PlainDateTime.fromDateTime(dateTimeInUtc).dateTimeInUtc,
+    );
   });
 }
