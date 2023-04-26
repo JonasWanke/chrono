@@ -49,7 +49,9 @@ final class PlainYearMonth
 
   @override
   int compareTo(PlainYearMonth other) {
-    if (year != other.year) return year.compareTo(other.year);
+    final result = year.compareTo(other.year);
+    if (result != 0) return result;
+
     return month.compareTo(other.month);
   }
 
