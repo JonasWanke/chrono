@@ -64,7 +64,7 @@ final class PlainDate
 
     return PlainDate.fromYearMonthAndDayUnchecked(
       PlainYearMonth.from(
-        PlainYear.from(year),
+        PlainYear(year),
         PlainMonth.fromNumberUnchecked(month),
       ),
       day,

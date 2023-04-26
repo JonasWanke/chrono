@@ -61,7 +61,7 @@ extension PlainDateTimeAny on Any {
     );
   }
 
-  Generator<PlainYear> get plainYear => this.int.map(PlainYear.from);
+  Generator<PlainYear> get plainYear => this.int.map(PlainYear.new);
   Generator<PlainYearMonth> get plainYearMonth =>
       combine2(plainYear, plainMonth, PlainYearMonth.from);
 

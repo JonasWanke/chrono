@@ -48,11 +48,8 @@ void main() {
 
   test('Exhaustive arithmetic check for chrono', () {
     // https://howardhinnant.github.io/date_algorithms.html#Yes,%20but%20how%20do%20you%20know%20this%20all%20really%20works?
-    final unixEpoch = PlainDate.fromThrowing(
-      const PlainYear.from(1970),
-      PlainMonth.january,
-      1,
-    );
+    final unixEpoch =
+        PlainDate.fromThrowing(const PlainYear(1970), PlainMonth.january, 1);
     expect(
       unixEpoch.daysSinceUnixEpoch,
       0,
@@ -66,13 +63,13 @@ void main() {
 
     const startYear = -100000; // -1000000;
     final startDate = PlainDate.fromThrowing(
-      const PlainYear.from(startYear),
+      const PlainYear(startYear),
       PlainMonth.january,
       1,
     );
     const endYear = -startYear;
     final endDate = PlainDate.fromThrowing(
-      const PlainYear.from(endYear),
+      const PlainYear(endYear),
       PlainMonth.december,
       31,
     );
@@ -82,7 +79,7 @@ void main() {
     final startTime = Instant.now();
     for (var y = startYear; y <= endYear; ++y) {
       for (final month in PlainMonth.values) {
-        final yearMonth = PlainYearMonth.from(PlainYear.from(y), month);
+        final yearMonth = PlainYearMonth.from(PlainYear(y), month);
         final e = yearMonth.numberOfDays;
         for (var d = 1; d <= e; ++d) {
           final date = PlainDate.fromYearMonthAndDayThrowing(yearMonth, d);

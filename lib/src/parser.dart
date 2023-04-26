@@ -128,7 +128,7 @@ final class Parser {
       default:
         value = _parseInt('year', minDigits: 4, maxDigits: 4);
     }
-    return value.map(PlainYear.from);
+    return value.map(PlainYear.new);
   }
 
   Result<PlainMonth, FormatException> _parseMonth() {
