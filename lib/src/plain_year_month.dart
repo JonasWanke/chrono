@@ -29,6 +29,11 @@ final class PlainYearMonth
   final PlainYear year;
   final PlainMonth month;
 
+  bool isCurrentInLocalZone({Clock? clockOverride}) =>
+      this == PlainYearMonth.currentInLocalZone(clockOverride: clockOverride);
+  bool isCurrentInUtc({Clock? clockOverride}) =>
+      this == PlainYearMonth.currentInUtc(clockOverride: clockOverride);
+
   /// The number of days in this year and month.
   ///
   /// The result is always in the range [28, 31].

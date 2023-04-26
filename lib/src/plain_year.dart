@@ -27,6 +27,11 @@ final class PlainYear
 
   final int value;
 
+  bool isCurrentInLocalZone({Clock? clockOverride}) =>
+      this == PlainYear.currentInLocalZone(clockOverride: clockOverride);
+  bool isCurrentInUtc({Clock? clockOverride}) =>
+      this == PlainYear.currentInUtc(clockOverride: clockOverride);
+
   /// Whether this year is a common (non-leap) year.
   bool get isCommonYear => !isLeapYear;
 
@@ -35,8 +40,6 @@ final class PlainYear
     // https://howardhinnant.github.io/date_algorithms.html#is_leap
     return value % 4 == 0 && (value % 100 != 0 || value % 400 == 0);
   }
-
-  // TODO: isCurrentYearInLocalZone, isCurrentYearInUtc?
 
   @override
   int compareTo(PlainYear other) => value.compareTo(other.value);

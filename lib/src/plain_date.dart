@@ -62,6 +62,11 @@ final class PlainDate
 
   // TODO: week and day of week
 
+  bool isTodayInLocalZone({Clock? clockOverride}) =>
+      this == PlainDate.todayInLocalZone(clockOverride: clockOverride);
+  bool isTodayInUtc({Clock? clockOverride}) =>
+      this == PlainDate.todayInUtc(clockOverride: clockOverride);
+
   Result<PlainDate, String> copyWith({
     PlainYearMonth? yearMonth,
     PlainYear? year,

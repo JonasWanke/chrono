@@ -50,6 +50,11 @@ enum PlainMonth
 
   int get number => index + 1;
 
+  bool isCurrentInLocalZone({Clock? clockOverride}) =>
+      this == PlainMonth.currentInLocalZone(clockOverride: clockOverride);
+  bool isCurrentInUtc({Clock? clockOverride}) =>
+      this == PlainMonth.currentInUtc(clockOverride: clockOverride);
+
   PlainMonth get next => values[(index + 1) % values.length];
   PlainMonth get previous => values[(index - 1) % values.length];
 
