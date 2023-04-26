@@ -1,1 +1,7 @@
 include: package:supernova/lints.yaml
+
+linter:
+  rules:
+    # Some “constructors” return a result, but leaving them next to normal
+    # constructors makes more sense.
+    sort_constructors_first: false
