@@ -13,6 +13,9 @@ void main() {
   Glados<PlainYearMonth>().test('PlainYearMonth', (yearMonth) {
     expect(yearMonth, PlainYearMonth.fromJson(yearMonth.toJson()));
   });
+  Glados<PlainYearWeek>().test('PlainYearWeek', (yearWeek) {
+    expect(yearWeek, PlainYearWeek.fromJson(yearWeek.toJson()));
+  });
   Glados<PlainDate>().test('PlainDate', (date) {
     expect(date, PlainDate.fromJson(date.toJson()));
     expect(date, PlainDate.fromDaysSinceUnixEpoch(date.daysSinceUnixEpoch));

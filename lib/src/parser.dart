@@ -9,6 +9,7 @@ import 'plain_month.dart';
 import 'plain_time.dart';
 import 'plain_year.dart';
 import 'plain_year_month.dart';
+import 'plain_year_week.dart';
 
 // Date and time strings only use ASCII, hence we don't need to worry about
 // proper Unicode handling.
@@ -23,6 +24,8 @@ final class Parser {
       _parse(value, (it) => it._parseDate());
   static Result<PlainYearMonth, FormatException> parseYearMonth(String value) =>
       _parse(value, (it) => it._parseYearMonth());
+  static Result<PlainYearWeek, FormatException> parseYearWeek(String value) =>
+      _parse(value, (it) => it._parseYearWeek());
   static Result<PlainTime, FormatException> parseTime(String value) =>
       _parse(value, (it) => it._parseTime());
 
@@ -78,6 +81,16 @@ final class Parser {
         .andAlso(() => _requireSeparator({'-'}, 'year', 'month'))
         .andThen(
           (year) => _parseMonth().map((it) => PlainYearMonth.from(year, it)),
+        );
+  }
+
+  Result<PlainYearWeek, FormatException> _parseYearWeek() {
+    return _parseYear()
+        .andAlso(() => _requireSeparator({'-'}, 'year', 'week number'))
+        .andThen(
+          (year) => _parseWeek(year.numberOfWeeks).andThen(
+            (it) => PlainYearWeek.from(year, it).mapErr(FormatException.new),
+          ),
         );
   }
 
@@ -140,6 +153,18 @@ final class Parser {
       maxValue: PlainMonth.maxNumber,
     );
     return value.map(PlainMonth.fromNumberThrowing);
+  }
+
+  Result<int, FormatException> _parseWeek(int numberOfWeeksInYear) {
+    return _requireDesignator('W', 'week number').andThen(
+      (_) => _parseInt(
+        'week number',
+        minDigits: 2,
+        maxDigits: 2,
+        minValue: 1,
+        maxValue: numberOfWeeksInYear,
+      ),
+    );
   }
 
   Result<PlainDate, FormatException> _parseDay(PlainYearMonth yearMonth) {

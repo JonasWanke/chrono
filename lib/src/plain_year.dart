@@ -1,7 +1,10 @@
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 
+import 'plain_date.dart';
+import 'plain_month.dart';
 import 'utils.dart';
+import 'weekday.dart';
 
 /// | Value |   Meaning   |
 /// |-------|-------------|
@@ -40,6 +43,19 @@ final class PlainYear
     // https://howardhinnant.github.io/date_algorithms.html#is_leap
     return value % 4 == 0 && (value % 100 != 0 || value % 400 == 0);
   }
+
+  int get numberOfWeeks {
+    // https://en.wikipedia.org/wiki/ISO_week_date#Weeks_per_year
+    Weekday weekdayOfDecember31(PlainYear year) =>
+        PlainDate.fromUnchecked(year, PlainMonth.december, 31).weekday;
+
+    final isLongWeek = weekdayOfDecember31(this) == Weekday.thursday ||
+        weekdayOfDecember31(previous) == Weekday.wednesday;
+    return isLongWeek ? 53 : 52;
+  }
+
+  PlainYear get next => PlainYear(value + 1);
+  PlainYear get previous => PlainYear(value - 1);
 
   @override
   int compareTo(PlainYear other) => value.compareTo(other.value);

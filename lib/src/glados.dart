@@ -10,6 +10,7 @@ import 'plain_month.dart';
 import 'plain_time.dart';
 import 'plain_year.dart';
 import 'plain_year_month.dart';
+import 'plain_year_week.dart';
 import 'weekday.dart';
 
 void setPlainDateTimeGladosDefaults() {
@@ -20,6 +21,7 @@ void setPlainDateTimeGladosDefaults() {
   Any.setDefault(any.plainTime);
   Any.setDefault(any.plainYear);
   Any.setDefault(any.plainYearMonth);
+  Any.setDefault(any.plainYearWeek);
   Any.setDefault(any.weekday);
 }
 
@@ -46,7 +48,7 @@ extension PlainDateTimeAny on Any {
         yield* day.shrink().map((it) => (yearMonth, it));
       },
     ).map(
-      (it) => PlainDate.fromYearMonthAndDayThrowing(it.$1.value, it.$2.value),
+      (it) => PlainDate.fromYearMonthAndDayUnchecked(it.$1.value, it.$2.value),
     );
   }
 
@@ -59,13 +61,36 @@ extension PlainDateTimeAny on Any {
       intInRange(0, 60),
       intInRange(0, 60),
       _fraction,
-      PlainTime.fromThrowing,
+      PlainTime.fromUnchecked,
     );
   }
 
   Generator<PlainYear> get plainYear => this.int.map(PlainYear.new);
   Generator<PlainYearMonth> get plainYearMonth =>
       combine2(plainYear, plainMonth, PlainYearMonth.from);
+  Generator<PlainYearWeek> get plainYearWeek {
+    return simple(
+      generate: (random, size) {
+        final weekBasedYear = plainYear(random, size);
+        final week =
+            intInRange(1, weekBasedYear.value.numberOfWeeks + 1)(random, size);
+        return (weekBasedYear, week);
+      },
+      shrink: (input) sync* {
+        final (weekBasedYear, week) = input;
+        yield* weekBasedYear.shrink().map((weekBasedYear) {
+          final actualWeek = week.value <= weekBasedYear.value.numberOfWeeks
+              ? week
+              : week.shrink().firstWhere(
+                    (it) => it.value <= weekBasedYear.value.numberOfWeeks,
+                  );
+          return (weekBasedYear, actualWeek);
+        });
+        yield* week.shrink().map((it) => (weekBasedYear, it));
+      },
+    ).map((it) => PlainYearWeek.fromUnchecked(it.$1.value, it.$2.value));
+  }
+
   Generator<Weekday> get weekday => choose(Weekday.values);
 
   Generator<Fixed> get _fraction {
