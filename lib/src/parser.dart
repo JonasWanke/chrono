@@ -303,7 +303,10 @@ final class Parser {
   }
 
   String _plural(
-          int value, String Function() singular, String Function(int) plural) =>
+    int value,
+    String Function() singular,
+    String Function(int) plural,
+  ) =>
       value == 1 ? singular() : plural(value);
 }
 
