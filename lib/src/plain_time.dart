@@ -32,6 +32,9 @@ final class PlainTime
   static Result<PlainTime, FormatException> parse(String value) =>
       Parser.parseTime(value);
 
+  static final PlainTime midnight = PlainTime(0);
+  static final PlainTime noon = PlainTime(12);
+
   final int hour;
   final int minute;
   final int second;
