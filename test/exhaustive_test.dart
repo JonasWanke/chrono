@@ -59,6 +59,7 @@ void main() {
 
     final totalNumberOfDays =
         endDate.daysSinceUnixEpoch - startDate.daysSinceUnixEpoch + 1;
+    expect(totalNumberOfDays, 730485366);
 
     final endTime = Instant.now();
     print(
