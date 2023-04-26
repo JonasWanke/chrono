@@ -3,7 +3,9 @@ import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import 'parser.dart';
+import 'plain_date_time.dart';
 import 'plain_month.dart';
+import 'plain_time.dart';
 import 'plain_year.dart';
 import 'plain_year_month.dart';
 import 'utils.dart';
@@ -66,6 +68,8 @@ final class PlainDate
       this == PlainDate.todayInLocalZone(clockOverride: clockOverride);
   bool isTodayInUtc({Clock? clockOverride}) =>
       this == PlainDate.todayInUtc(clockOverride: clockOverride);
+
+  PlainDateTime at(PlainTime time) => PlainDateTime(this, time);
 
   Result<PlainDate, String> copyWith({
     PlainYearMonth? yearMonth,
