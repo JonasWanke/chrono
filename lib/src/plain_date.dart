@@ -12,16 +12,21 @@ import 'utils.dart';
 final class PlainDate
     with ComparisonOperatorsFromComparable<PlainDate>
     implements Comparable<PlainDate> {
-  PlainDate(
+  const PlainDate._fromYearMonthAndDayUnchecked(this.yearMonth, this.day);
+  factory PlainDate.fromThrowing(
     PlainYear year, [
     PlainMonth month = PlainMonth.january,
     int day = 1,
-  ]) : this.fromYearMonthAndDay(PlainYearMonth(year, month), day);
-  const PlainDate.fromYearMonthAndDay(this.yearMonth, this.day);
-  // TODO: validation
+  ]) =>
+      from(year, month, day).unwrap();
+  factory PlainDate.fromYearMonthAndDayThrowing(
+    PlainYearMonth yearMonth,
+    int day,
+  ) =>
+      fromYearMonthAndDay(yearMonth, day).unwrap();
 
   PlainDate.fromDateTime(DateTime dateTime)
-      : this.fromYearMonthAndDay(
+      : this._fromYearMonthAndDayUnchecked(
           PlainYearMonth.fromDateTime(dateTime),
           dateTime.day,
         );
@@ -34,6 +39,22 @@ final class PlainDate
   static Result<PlainDate, FormatException> parse(String value) =>
       Parser.parseDate(value);
 
+  static Result<PlainDate, String> from(
+    PlainYear year, [
+    PlainMonth month = PlainMonth.january,
+    int day = 1,
+  ]) =>
+      fromYearMonthAndDay(PlainYearMonth.from(year, month), day);
+  static Result<PlainDate, String> fromYearMonthAndDay(
+    PlainYearMonth yearMonth,
+    int day,
+  ) {
+    if (day < 0 || day > yearMonth.numberOfDays) {
+      return Err('Invalid day for $yearMonth: $day');
+    }
+    return Ok(PlainDate._fromYearMonthAndDayUnchecked(yearMonth, day));
+  }
+
   final PlainYearMonth yearMonth;
   PlainYear get year => yearMonth.year;
   PlainMonth get month => yearMonth.month;
@@ -41,18 +62,16 @@ final class PlainDate
 
   // TODO: week and day of week
 
-  PlainDate copyWith({
+  Result<PlainDate, String> copyWith({
     PlainYearMonth? yearMonth,
     PlainYear? year,
     PlainMonth? month,
     int? day,
   }) {
-    // TODO: throwing/clamping/wrapping variants?
     assert(yearMonth == null || (year == null && month == null));
 
-    return PlainDate(
-      yearMonth?.year ?? year ?? this.year,
-      yearMonth?.month ?? month ?? this.month,
+    return PlainDate.fromYearMonthAndDay(
+      yearMonth ?? PlainYearMonth.from(year ?? this.year, month ?? this.month),
       day ?? this.day,
     );
   }

@@ -43,7 +43,9 @@ extension PlainDateTimeAny on Any {
         });
         yield* day.shrink().map((it) => (yearMonth, it));
       },
-    ).map((it) => PlainDate.fromYearMonthAndDay(it.$1.value, it.$2.value));
+    ).map(
+      (it) => PlainDate.fromYearMonthAndDayThrowing(it.$1.value, it.$2.value),
+    );
   }
 
   Generator<PlainDateTime> get plainDateTime =>
@@ -55,13 +57,13 @@ extension PlainDateTimeAny on Any {
       intInRange(0, 60),
       intInRange(0, 60),
       _fraction,
-      PlainTime.new,
+      PlainTime.fromThrowing,
     );
   }
 
-  Generator<PlainYear> get plainYear => this.int.map(PlainYear.new);
+  Generator<PlainYear> get plainYear => this.int.map(PlainYear.from);
   Generator<PlainYearMonth> get plainYearMonth =>
-      combine2(plainYear, plainMonth, PlainYearMonth.new);
+      combine2(plainYear, plainMonth, PlainYearMonth.from);
 
   Generator<Fixed> get _fraction {
     return simple(

@@ -1,4 +1,5 @@
 import 'package:clock/clock.dart';
+import 'package:oxidized/oxidized.dart';
 
 import 'utils.dart';
 
@@ -18,14 +19,21 @@ enum PlainMonth
   november,
   december;
 
-  static PlainMonth? fromNumber(int number) {
+  static Result<PlainMonth, String> fromNumber(int number) {
     if (number < PlainMonth.january.number ||
-        number > PlainMonth.december.number) return null;
-    return values[number - PlainMonth.january.number];
+        number > PlainMonth.december.number) {
+      return Err('Invalid month number: $number');
+    }
+    return Ok(_fromNumberUnchecked(number));
   }
 
+  static PlainMonth _fromNumberUnchecked(int number) =>
+      values[number - PlainMonth.january.number];
+  static PlainMonth fromNumberThrowing(int number) =>
+      PlainMonth.fromNumber(number).unwrap();
+
   static PlainMonth fromDateTime(DateTime dateTime) =>
-      fromNumber(dateTime.month)!;
+      fromNumberThrowing(dateTime.month);
   static PlainMonth currentInLocalZone({Clock? clockOverride}) =>
       fromDateTime((clockOverride ?? clock).now().toLocal());
   static PlainMonth currentInUtc({Clock? clockOverride}) =>
@@ -33,8 +41,8 @@ enum PlainMonth
 
   static PlainMonth fromJson(int json) {
     final result = fromNumber(json);
-    if (result == null) throw FormatException('Invalid month number: $json');
-    return result;
+    if (result.isErr()) throw FormatException(result.unwrapErr());
+    return result.unwrap();
   }
 
   static final minNumber = PlainMonth.january.number;

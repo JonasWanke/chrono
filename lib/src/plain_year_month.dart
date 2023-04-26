@@ -11,7 +11,7 @@ import 'utils.dart';
 final class PlainYearMonth
     with ComparisonOperatorsFromComparable<PlainYearMonth>
     implements Comparable<PlainYearMonth> {
-  const PlainYearMonth(this.year, [this.month = PlainMonth.january]);
+  const PlainYearMonth.from(this.year, [this.month = PlainMonth.january]);
 
   PlainYearMonth.fromDateTime(DateTime dateTime)
       : year = PlainYear.fromDateTime(dateTime),
@@ -25,11 +25,6 @@ final class PlainYearMonth
       unwrapParserResult(parse(json));
   static Result<PlainYearMonth, FormatException> parse(String value) =>
       Parser.parseYearMonth(value);
-
-  // TODO
-  // static PlainYearMonth thisMonthInLocalZone() =>
-  //     PlainDate.todayInLocalZone().yearMonth;
-  // static PlainYearMonth thisMonthInUtc() => PlainDate.todayInUtc().yearMonth;
 
   final PlainYear year;
   final PlainMonth month;
@@ -47,7 +42,7 @@ final class PlainYearMonth
   // TODO: isCurrentMonthInLocalZone, isCurrentMonthInUtc?
 
   PlainYearMonth copyWith({PlainYear? year, PlainMonth? month}) =>
-      PlainYearMonth(year ?? this.year, month ?? this.month);
+      PlainYearMonth.from(year ?? this.year, month ?? this.month);
 
   @override
   int compareTo(PlainYearMonth other) {

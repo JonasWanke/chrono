@@ -10,18 +10,25 @@ import 'utils.dart';
 final class PlainTime
     with ComparisonOperatorsFromComparable<PlainTime>
     implements Comparable<PlainTime> {
-  PlainTime(this.hour, [this.minute = 0, this.second = 0, Fixed? fraction])
-      : fraction = fraction ?? Fixed.zero;
-  // TODO: validation
+  PlainTime._fromUnchecked(this.hour, this.minute, this.second, this.fraction);
+  factory PlainTime.fromThrowing(
+    int hour, [
+    int minute = 0,
+    int second = 0,
+    Fixed? fraction,
+  ]) =>
+      from(hour, minute, second, fraction).unwrap();
 
   PlainTime.fromDateTime(DateTime dateTime)
-      : hour = dateTime.hour,
-        minute = dateTime.minute,
-        second = dateTime.second,
-        fraction = Fixed.fromInt(
-          dateTime.millisecond * Duration.microsecondsPerMillisecond +
-              dateTime.microsecond,
-          scale: 6,
+      : this._fromUnchecked(
+          dateTime.hour,
+          dateTime.minute,
+          dateTime.second,
+          Fixed.fromInt(
+            dateTime.millisecond * Duration.microsecondsPerMillisecond +
+                dateTime.microsecond,
+            scale: 6,
+          ),
         );
   PlainTime.nowInLocalZone({Clock? clockOverride})
       : this.fromDateTime((clockOverride ?? clock).now().toLocal());
@@ -32,24 +39,44 @@ final class PlainTime
   static Result<PlainTime, FormatException> parse(String value) =>
       Parser.parseTime(value);
 
-  static final PlainTime midnight = PlainTime(0);
-  static final PlainTime noon = PlainTime(12);
+  static Result<PlainTime, String> from(
+    int hour, [
+    int minute = 0,
+    int second = 0,
+    Fixed? fraction,
+  ]) {
+    if (hour < 0 || hour >= Duration.hoursPerDay) {
+      return Err('Invalid hour: $hour');
+    }
+    if (minute < 0 || minute >= Duration.minutesPerHour) {
+      return Err('Invalid minute: $minute');
+    }
+    if (second < 0 || second >= Duration.secondsPerMinute) {
+      return Err('Invalid second: $second');
+    }
+    if (fraction != null && (fraction < Fixed.zero || fraction >= Fixed.one)) {
+      return Err('Invalid fraction of a second: $fraction');
+    }
+    fraction ??= Fixed.zero;
+
+    return Ok(PlainTime._fromUnchecked(hour, minute, second, fraction));
+  }
+
+  static final PlainTime midnight = PlainTime.fromThrowing(0);
+  static final PlainTime noon = PlainTime.fromThrowing(12);
 
   final int hour;
   final int minute;
   final int second;
   final Fixed fraction;
 
-  // TODO: week and day of week
-
-  PlainTime copyWith({
+  Result<PlainTime, String> copyWith({
     int? hour,
     int? minute,
     int? second,
     Fixed? fraction,
   }) {
-    // TODO: throwing/clamping/wrapping variants?
-    return PlainTime(
+    return PlainTime.from(
       hour ?? this.hour,
       minute ?? this.minute,
       second ?? this.second,

@@ -77,7 +77,9 @@ final class Parser {
   Result<PlainYearMonth, FormatException> _parseYearMonth() {
     return _parseYear()
         .andAlso(() => _requireSeparator({'-'}, 'year', 'month'))
-        .andThen((year) => _parseMonth().map((it) => PlainYearMonth(year, it)));
+        .andThen(
+          (year) => _parseMonth().map((it) => PlainYearMonth.from(year, it)),
+        );
   }
 
   Result<PlainTime, FormatException> _parseTime() {
@@ -107,9 +109,10 @@ final class Parser {
               (it) => (hourMinuteSecond, Fixed.fromInt(it.$1, scale: it.$2)),
             )
           : Ok((hourMinuteSecond, Fixed.zero));
-    }).map((it) {
+    }).andThen((it) {
       final (((hour, minute), second), fraction) = it;
-      return PlainTime(hour, minute, second, fraction);
+      return PlainTime.from(hour, minute, second, fraction)
+          .mapErr(FormatException.new);
     });
   }
 
@@ -125,7 +128,7 @@ final class Parser {
       default:
         value = _parseInt('year', minDigits: 4, maxDigits: 4);
     }
-    return value.map(PlainYear.new);
+    return value.map(PlainYear.from);
   }
 
   Result<PlainMonth, FormatException> _parseMonth() {
@@ -136,7 +139,7 @@ final class Parser {
       minValue: PlainMonth.minNumber,
       maxValue: PlainMonth.maxNumber,
     );
-    return value.map((it) => PlainMonth.fromNumber(it)!);
+    return value.map(PlainMonth.fromNumberThrowing);
   }
 
   Result<PlainDate, FormatException> _parseDay(PlainYearMonth yearMonth) {
@@ -147,7 +150,8 @@ final class Parser {
       minValue: 1,
       maxValue: yearMonth.numberOfDays,
     );
-    return value.map((it) => PlainDate.fromYearMonthAndDay(yearMonth, it));
+    return value.andThen((it) => PlainDate.fromYearMonthAndDay(yearMonth, it)
+        .mapErr(FormatException.new));
   }
 
   Result<int, FormatException> _parseInt(
