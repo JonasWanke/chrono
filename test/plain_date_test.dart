@@ -1,5 +1,6 @@
 import 'package:glados/glados.dart';
 import 'package:plain_date_time/plain_date_time.dart';
+import 'package:supernova/supernova.dart' hide Instant;
 
 void main() {
   setPlainDateTimeGladosDefaults();
@@ -77,12 +78,11 @@ void main() {
     var previousDaysSinceUnixEpoch = startDate.daysSinceUnixEpoch - 1;
     expect(previousDaysSinceUnixEpoch, lessThan(0));
     final startTime = Instant.now();
-    for (var y = startYear; y <= endYear; ++y) {
+    for (var year = startYear; year <= endYear; ++year) {
       for (final month in PlainMonth.values) {
-        final yearMonth = PlainYearMonth.from(PlainYear(y), month);
-        final e = yearMonth.numberOfDays;
-        for (var d = 1; d <= e; ++d) {
-          final date = PlainDate.fromYearMonthAndDayThrowing(yearMonth, d);
+        final yearMonth = PlainYearMonth.from(PlainYear(year), month);
+        for (final day in 1.rangeTo(yearMonth.numberOfDays)) {
+          final date = PlainDate.fromYearMonthAndDayThrowing(yearMonth, day);
           final daysSinceEpoch = date.daysSinceUnixEpoch;
           expect(daysSinceEpoch, previousDaysSinceUnixEpoch + 1);
 
