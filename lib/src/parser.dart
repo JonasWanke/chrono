@@ -64,7 +64,6 @@ final class Parser {
 
   Result<PlainDateTime, FormatException> _parseDateTime() {
     return _parseDate()
-        .andAlso(() => _requireSeparator({'T'}, 'date', 'time'))
         .andThen((date) => _parseTime().map((it) => PlainDateTime(date, it)));
   }
 
@@ -93,7 +92,8 @@ final class Parser {
       );
     }
 
-    return parse('hour', maxValue: 23)
+    return _requireDesignator('T', 'time', isCaseSensitive: false)
+        .andThen((_) => parse('hour', maxValue: 23))
         .andAlso(() => _requireSeparator({':'}, 'hour', 'minute'))
         .andThen(
           (hour) => parse('minute', maxValue: 59).map((it) => (hour, it)),
@@ -239,6 +239,25 @@ final class Parser {
   }
 
   @useResult
+  Result<Unit, FormatException> _requireDesignator(
+    String character,
+    String label, {
+    bool isCaseSensitive = true,
+  }) {
+    assert(character.length == 1);
+
+    return _require(
+      isValid: (it) => isCaseSensitive
+          ? it == character
+          : it.toUpperCase() == character.toUpperCase(),
+      messageStart: () {
+        return 'Expected the designator character “$character” to mark the '
+            'start of the $label, but';
+      },
+    );
+  }
+
+  @useResult
   Result<Unit, FormatException> _requireSeparator(
     Set<String> validCharacters,
     String left,
@@ -246,15 +265,24 @@ final class Parser {
   ) {
     assert(validCharacters.every((it) => it.length == 1));
 
-    String messageStart() {
-      final charactersMessage = _plural(
-        validCharacters.length,
-        () => 'the character “${validCharacters.single}”',
-        (_) => 'one of the characters “${validCharacters.join('”, “')}”',
-      );
-      return 'Expected $charactersMessage to separate $left and $right, but';
-    }
+    return _require(
+      isValid: (it) => validCharacters.contains(it),
+      messageStart: () {
+        final charactersMessage = _plural(
+          validCharacters.length,
+          () => 'the character “${validCharacters.single}”',
+          (_) => 'one of the characters “${validCharacters.join('”, “')}”',
+        );
+        return 'Expected $charactersMessage to separate $left and $right, but';
+      },
+    );
+  }
 
+  @useResult
+  Result<Unit, FormatException> _require({
+    required bool Function(String character) isValid,
+    required String Function() messageStart,
+  }) {
     if (_offset >= _source.length) {
       return _error(
         '${messageStart()} reached the end of the input string.',
@@ -263,7 +291,7 @@ final class Parser {
     }
 
     final actual = _peek()!;
-    if (!validCharacters.contains(actual)) {
+    if (!isValid(actual)) {
       return _error(
         '${messageStart()} found the following character: “$actual”.',
         _offset,
