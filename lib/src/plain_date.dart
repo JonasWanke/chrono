@@ -15,18 +15,41 @@ import 'weekday.dart';
 final class PlainDate
     with ComparisonOperatorsFromComparable<PlainDate>
     implements Comparable<PlainDate> {
+  static Result<PlainDate, String> fromYearMonthAndDay(
+    PlainYearMonth yearMonth,
+    int day,
+  ) {
+    if (day < 1 || day > yearMonth.numberOfDays) {
+      return Err('Invalid day for $yearMonth: $day');
+    }
+    return Ok(PlainDate.fromYearMonthAndDayUnchecked(yearMonth, day));
+  }
+
+  factory PlainDate.fromYearMonthAndDayThrowing(
+    PlainYearMonth yearMonth,
+    int day,
+  ) =>
+      fromYearMonthAndDay(yearMonth, day).unwrap();
   const PlainDate.fromYearMonthAndDayUnchecked(this.yearMonth, this.day);
+
+  static Result<PlainDate, String> from(
+    PlainYear year, [
+    PlainMonth month = PlainMonth.january,
+    int day = 1,
+  ]) =>
+      fromYearMonthAndDay(PlainYearMonth.from(year, month), day);
   factory PlainDate.fromThrowing(
     PlainYear year, [
     PlainMonth month = PlainMonth.january,
     int day = 1,
   ]) =>
       from(year, month, day).unwrap();
-  factory PlainDate.fromYearMonthAndDayThrowing(
-    PlainYearMonth yearMonth,
-    int day,
-  ) =>
-      fromYearMonthAndDay(yearMonth, day).unwrap();
+  PlainDate.fromUnchecked(
+    PlainYear year, [
+    PlainMonth month = PlainMonth.january,
+    int day = 1,
+  ]) : this.fromYearMonthAndDayUnchecked(PlainYearMonth.from(year, month), day);
+
   factory PlainDate.fromDaysSinceUnixEpoch(int daysSinceUnixEpoch) {
     // https://howardhinnant.github.io/date_algorithms.html#civil_from_days
     daysSinceUnixEpoch += 719468;
@@ -85,22 +108,6 @@ final class PlainDate
   factory PlainDate.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<PlainDate, FormatException> parse(String value) =>
       Parser.parseDate(value);
-
-  static Result<PlainDate, String> from(
-    PlainYear year, [
-    PlainMonth month = PlainMonth.january,
-    int day = 1,
-  ]) =>
-      fromYearMonthAndDay(PlainYearMonth.from(year, month), day);
-  static Result<PlainDate, String> fromYearMonthAndDay(
-    PlainYearMonth yearMonth,
-    int day,
-  ) {
-    if (day < 1 || day > yearMonth.numberOfDays) {
-      return Err('Invalid day for $yearMonth: $day');
-    }
-    return Ok(PlainDate.fromYearMonthAndDayUnchecked(yearMonth, day));
-  }
 
   final PlainYearMonth yearMonth;
   PlainYear get year => yearMonth.year;

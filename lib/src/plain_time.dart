@@ -10,35 +10,6 @@ import 'utils.dart';
 final class PlainTime
     with ComparisonOperatorsFromComparable<PlainTime>
     implements Comparable<PlainTime> {
-  PlainTime.fromUnchecked(this.hour, this.minute, this.second, this.fraction);
-  factory PlainTime.fromThrowing(
-    int hour, [
-    int minute = 0,
-    int second = 0,
-    Fixed? fraction,
-  ]) =>
-      from(hour, minute, second, fraction).unwrap();
-
-  PlainTime.fromDateTime(DateTime dateTime)
-      : this.fromUnchecked(
-          dateTime.hour,
-          dateTime.minute,
-          dateTime.second,
-          Fixed.fromInt(
-            dateTime.millisecond * Duration.microsecondsPerMillisecond +
-                dateTime.microsecond,
-            scale: 6,
-          ),
-        );
-  PlainTime.nowInLocalZone({Clock? clockOverride})
-      : this.fromDateTime((clockOverride ?? clock).now().toLocal());
-  PlainTime.nowInUtc({Clock? clockOverride})
-      : this.fromDateTime((clockOverride ?? clock).now().toUtc());
-
-  factory PlainTime.fromJson(String json) => unwrapParserResult(parse(json));
-  static Result<PlainTime, FormatException> parse(String value) =>
-      Parser.parseTime(value);
-
   static Result<PlainTime, String> from(
     int hour, [
     int minute = 0,
@@ -61,6 +32,35 @@ final class PlainTime
 
     return Ok(PlainTime.fromUnchecked(hour, minute, second, fraction));
   }
+
+  factory PlainTime.fromThrowing(
+    int hour, [
+    int minute = 0,
+    int second = 0,
+    Fixed? fraction,
+  ]) =>
+      from(hour, minute, second, fraction).unwrap();
+  PlainTime.fromUnchecked(this.hour, this.minute, this.second, this.fraction);
+
+  PlainTime.fromDateTime(DateTime dateTime)
+      : this.fromUnchecked(
+          dateTime.hour,
+          dateTime.minute,
+          dateTime.second,
+          Fixed.fromInt(
+            dateTime.millisecond * Duration.microsecondsPerMillisecond +
+                dateTime.microsecond,
+            scale: 6,
+          ),
+        );
+  PlainTime.nowInLocalZone({Clock? clockOverride})
+      : this.fromDateTime((clockOverride ?? clock).now().toLocal());
+  PlainTime.nowInUtc({Clock? clockOverride})
+      : this.fromDateTime((clockOverride ?? clock).now().toUtc());
+
+  factory PlainTime.fromJson(String json) => unwrapParserResult(parse(json));
+  static Result<PlainTime, FormatException> parse(String value) =>
+      Parser.parseTime(value);
 
   static final PlainTime midnight = PlainTime.fromThrowing(0);
   static final PlainTime noon = PlainTime.fromThrowing(12);
