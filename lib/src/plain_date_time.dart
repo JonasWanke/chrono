@@ -1,4 +1,5 @@
 import 'package:clock/clock.dart';
+import 'package:fixed/fixed.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
@@ -33,29 +34,22 @@ final class PlainDateTime
   Instant get inLocalZone => Instant.fromDateTime(dateTimeInLocalZone);
   Instant get inUtc => Instant.fromDateTime(dateTimeInUtc);
 
-  DateTime get dateTimeInLocalZone {
-    return DateTime(
+  DateTime get dateTimeInLocalZone => _getDateTime(isUtc: false);
+  DateTime get dateTimeInUtc => _getDateTime(isUtc: true);
+  DateTime _getDateTime({required bool isUtc}) {
+    final fractionAsMicroseconds = (time.fraction *
+            Fixed.fromNum(Duration.microsecondsPerSecond, scale: 1))
+        .integerPart
+        .toInt();
+    return (isUtc ? DateTime.utc : DateTime.new)(
       date.year.value,
       date.month.number,
       date.day,
       time.hour,
       time.minute,
       time.second,
-      // time.millisecond, // TODO
-      // time.microsecond,
-    );
-  }
-
-  DateTime get dateTimeInUtc {
-    return DateTime.utc(
-      date.year.value,
-      date.month.number,
-      date.day,
-      time.hour,
-      time.minute,
-      time.second,
-      // time.millisecond, // TODO
-      // time.microsecond,
+      0,
+      fractionAsMicroseconds,
     );
   }
 
