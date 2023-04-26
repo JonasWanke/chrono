@@ -1,4 +1,5 @@
 import 'package:clock/clock.dart';
+import 'package:fixed/fixed.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
@@ -10,10 +11,11 @@ import 'utils.dart';
 final class Instant
     with ComparisonOperatorsFromComparable<Instant>
     implements Comparable<Instant> {
-  const Instant.fromMicrosecondsSinceUnixEpoch(this.microsecondsSinceUnixEpoch);
+  const Instant.fromSecondsSinceUnixEpoch(this.secondsSinceUnixEpoch);
 
   Instant.fromDateTime(DateTime dateTime)
-      : microsecondsSinceUnixEpoch = dateTime.microsecondsSinceEpoch;
+      : secondsSinceUnixEpoch =
+            Fixed.fromInt(dateTime.microsecondsSinceEpoch, scale: 6);
   Instant.now({Clock? clockOverride})
       : this.fromDateTime((clockOverride ?? clock).now());
 
@@ -21,40 +23,35 @@ final class Instant
   static Result<Instant, FormatException> parse(String value) =>
       Parser.parseInstant(value);
 
-  final int microsecondsSinceUnixEpoch;
+  final Fixed secondsSinceUnixEpoch;
 
   PlainDateTime get plainDateTimeInLocalZone =>
       PlainDateTime.fromDateTime(dateTimeInLocalZone);
   PlainDateTime get plainDateTimeInUtc =>
       PlainDateTime.fromDateTime(dateTimeInUtc);
 
-  DateTime get dateTimeInLocalZone {
+  DateTime get dateTimeInLocalZone => _getDateTime(isUtc: false);
+  DateTime get dateTimeInUtc => _getDateTime(isUtc: true);
+  DateTime _getDateTime({required bool isUtc}) {
     return DateTime.fromMicrosecondsSinceEpoch(
-      microsecondsSinceUnixEpoch,
-      isUtc: false,
-    );
-  }
-
-  DateTime get dateTimeInUtc {
-    return DateTime.fromMicrosecondsSinceEpoch(
-      microsecondsSinceUnixEpoch,
-      isUtc: true,
+      secondsSinceUnixEpoch.secondsAsMicroseconds,
+      isUtc: isUtc,
     );
   }
 
   @override
   int compareTo(Instant other) =>
-      microsecondsSinceUnixEpoch.compareTo(other.microsecondsSinceUnixEpoch);
+      secondsSinceUnixEpoch.compareTo(other.secondsSinceUnixEpoch);
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is Instant &&
-            microsecondsSinceUnixEpoch == other.microsecondsSinceUnixEpoch);
+            secondsSinceUnixEpoch == other.secondsSinceUnixEpoch);
   }
 
   @override
-  int get hashCode => microsecondsSinceUnixEpoch.hashCode;
+  int get hashCode => secondsSinceUnixEpoch.hashCode;
 
   @override
   String toString() => '${plainDateTimeInUtc}Z';
