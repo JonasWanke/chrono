@@ -39,11 +39,8 @@ enum PlainMonth
   static PlainMonth currentInUtc({Clock? clockOverride}) =>
       fromDateTime((clockOverride ?? clock).now().toUtc());
 
-  static PlainMonth fromJson(int json) {
-    final result = fromNumber(json);
-    if (result.isErr()) throw FormatException(result.unwrapErr());
-    return result.unwrap();
-  }
+  static PlainMonth fromJson(int json) =>
+      fromNumber(json).unwrapOrThrowAsFormatException();
 
   static final minNumber = PlainMonth.january.number;
   static final maxNumber = PlainMonth.december.number;

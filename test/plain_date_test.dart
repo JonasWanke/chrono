@@ -29,6 +29,9 @@ void main() {
     expect(instant, instant.plainDateTimeInLocalZone.inLocalZone);
     expect(instant, instant.plainDateTimeInUtc.inUtc);
   });
+  Glados<Weekday>().test('Weekday', (weekday) {
+    expect(weekday, Weekday.fromJson(weekday.toJson()));
+  });
   Glados<DateTime>().test('DateTime compatibility', (dateTimeInLocalZone) {
     expect(
       dateTimeInLocalZone,

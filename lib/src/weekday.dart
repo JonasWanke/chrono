@@ -1,3 +1,5 @@
+import 'package:oxidized/oxidized.dart';
+
 import 'utils.dart';
 
 enum Weekday
@@ -11,13 +13,20 @@ enum Weekday
   saturday,
   sunday;
 
-  static Weekday? fromNumber(int number) {
+  static Result<Weekday, String> fromNumber(int number) {
     if (number < Weekday.monday.number || number > Weekday.sunday.number) {
-      return null;
+      return Err('Invalid weekday number: $number');
     }
-
-    return values[number - Weekday.monday.number];
+    return Ok(fromNumberUnchecked(number));
   }
+
+  static Weekday fromNumberUnchecked(int number) =>
+      values[number - Weekday.monday.number];
+  static Weekday fromNumberThrowing(int number) =>
+      Weekday.fromNumber(number).unwrap();
+
+  static Weekday fromJson(int json) =>
+      fromNumber(json).unwrapOrThrowAsFormatException();
 
   static final minNumber = Weekday.monday.number;
   static final maxNumber = Weekday.sunday.number;
@@ -29,4 +38,6 @@ enum Weekday
 
   @override
   int compareTo(Weekday other) => index.compareTo(other.index);
+
+  int toJson() => number;
 }

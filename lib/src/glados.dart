@@ -10,6 +10,7 @@ import 'plain_month.dart';
 import 'plain_time.dart';
 import 'plain_year.dart';
 import 'plain_year_month.dart';
+import 'weekday.dart';
 
 void setPlainDateTimeGladosDefaults() {
   Any.setDefault(any.instant);
@@ -19,6 +20,7 @@ void setPlainDateTimeGladosDefaults() {
   Any.setDefault(any.plainTime);
   Any.setDefault(any.plainYear);
   Any.setDefault(any.plainYearMonth);
+  Any.setDefault(any.weekday);
 }
 
 extension PlainDateTimeAny on Any {
@@ -64,6 +66,7 @@ extension PlainDateTimeAny on Any {
   Generator<PlainYear> get plainYear => this.int.map(PlainYear.new);
   Generator<PlainYearMonth> get plainYearMonth =>
       combine2(plainYear, plainMonth, PlainYearMonth.from);
+  Generator<Weekday> get weekday => choose(Weekday.values);
 
   Generator<Fixed> get _fraction {
     return simple(
