@@ -117,10 +117,13 @@ final class PlainDate
 
   int get dayOfYear {
     // https://en.wikipedia.org/wiki/Ordinal_date#Zeller-like
-    final marchBased = (153 * ((month.number - 3) % 12) + 2) ~/ 5 + day;
-    return month >= PlainMonth.march
-        ? marchBased + 9 + (year.isLeapYear ? 1 : 0)
-        : marchBased - 306;
+    final isJanuaryOrFebruary = this.month <= PlainMonth.february;
+    final month =
+        isJanuaryOrFebruary ? this.month.number + 12 : this.month.number;
+    final marchBased = (153 * ((month - 3) % 12) + 2) ~/ 5 + day;
+    return isJanuaryOrFebruary
+        ? marchBased - 306
+        : marchBased + 59 + (year.isLeapYear ? 1 : 0);
   }
 
   PlainYearWeek get yearWeek {
