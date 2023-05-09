@@ -19,6 +19,8 @@ void main() {
   Glados<PlainDate>().test('PlainDate', (date) {
     expect(date, PlainDate.fromJson(date.toJson()));
     expect(date, PlainDate.fromDaysSinceUnixEpoch(date.daysSinceUnixEpoch));
+    expect(date, date.asOrdinalDate.asDate);
+    expect(date, date.asWeekDate.asDate);
   });
   Glados<PlainTime>().test('PlainTime', (timet) {
     expect(timet, PlainTime.fromJson(timet.toJson()));
@@ -34,11 +36,15 @@ void main() {
   Glados<Weekday>().test('Weekday', (weekday) {
     expect(weekday, Weekday.fromJson(weekday.toJson()));
   });
-  Glados<PlainOrdinalDate>().test('PlainOrdinalDate', (weekDate) {
-    expect(weekDate, PlainOrdinalDate.fromJson(weekDate.toJson()));
+  Glados<PlainOrdinalDate>().test('PlainOrdinalDate', (ordinalDate) {
+    expect(ordinalDate, PlainOrdinalDate.fromJson(ordinalDate.toJson()));
+    expect(ordinalDate, ordinalDate.asDate.asOrdinalDate);
+    expect(ordinalDate, ordinalDate.asWeekDate.asOrdinalDate);
   });
   Glados<PlainWeekDate>().test('PlainWeekDate', (weekDate) {
     expect(weekDate, PlainWeekDate.fromJson(weekDate.toJson()));
+    expect(weekDate, weekDate.asDate.asWeekDate);
+    expect(weekDate, weekDate.asOrdinalDate.asWeekDate);
   });
   Glados<DateTime>().test('DateTime compatibility', (dateTimeInLocalZone) {
     expect(
