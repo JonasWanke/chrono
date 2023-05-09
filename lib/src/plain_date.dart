@@ -7,6 +7,7 @@ import 'parser.dart';
 import 'period_days.dart';
 import 'plain_date_time.dart';
 import 'plain_month.dart';
+import 'plain_ordinal_date.dart';
 import 'plain_time.dart';
 import 'plain_week_date.dart';
 import 'plain_year.dart';
@@ -130,6 +131,9 @@ final class PlainDate
         ? marchBased - 306
         : marchBased + 59 + (year.isLeapYear ? 1 : 0);
   }
+
+  PlainOrdinalDate get asOrdinalDate =>
+      PlainOrdinalDate.fromUnchecked(year, dayOfYear);
 
   PlainYearWeek get yearWeek {
     // Algorithm from https://en.wikipedia.org/wiki/ISO_week_date#Algorithms

@@ -61,6 +61,7 @@ void main() {
               ? 1
               : previous.dayOfYear + 1,
         );
+        expect(date, date.asOrdinalDate.asDate);
 
         final weekday = date.weekday;
         expect(previous.weekday.next, weekday);

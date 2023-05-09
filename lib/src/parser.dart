@@ -6,6 +6,7 @@ import 'instant.dart';
 import 'plain_date.dart';
 import 'plain_date_time.dart';
 import 'plain_month.dart';
+import 'plain_ordinal_date.dart';
 import 'plain_time.dart';
 import 'plain_week_date.dart';
 import 'plain_year.dart';
@@ -26,6 +27,10 @@ final class Parser {
       _parse(value, (it) => it._parseDate());
   static Result<PlainWeekDate, FormatException> parseWeekDate(String value) =>
       _parse(value, (it) => it._parseWeekDate());
+  static Result<PlainOrdinalDate, FormatException> parseOrdinalDate(
+    String value,
+  ) =>
+      _parse(value, (it) => it._parseOrdinalDate());
   static Result<PlainYearMonth, FormatException> parseYearMonth(String value) =>
       _parse(value, (it) => it._parseYearMonth());
   static Result<PlainYearWeek, FormatException> parseYearWeek(String value) =>
@@ -87,6 +92,21 @@ final class Parser {
           (yearWeek) => _parseWeekday()
               .map((weekday) => PlainWeekDate(yearWeek, weekday)),
         );
+  }
+
+  Result<PlainOrdinalDate, FormatException> _parseOrdinalDate() {
+    return _parseYear()
+        .andAlso(() => _requireSeparator({'-'}, 'year', 'day of year'))
+        .andThen((year) {
+      final dayOfYear = _parseInt(
+        'day of year',
+        minDigits: 3,
+        maxDigits: 3,
+        minValue: 1,
+        maxValue: year.lengthInDays.value,
+      );
+      return dayOfYear.map((it) => PlainOrdinalDate.fromUnchecked(year, it));
+    });
   }
 
   Result<PlainYearMonth, FormatException> _parseYearMonth() {

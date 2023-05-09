@@ -7,6 +7,7 @@ import 'instant.dart';
 import 'plain_date.dart';
 import 'plain_date_time.dart';
 import 'plain_month.dart';
+import 'plain_ordinal_date.dart';
 import 'plain_time.dart';
 import 'plain_week_date.dart';
 import 'plain_year.dart';
@@ -20,6 +21,7 @@ void setPlainDateTimeGladosDefaults() {
   Any.setDefault(any.plainDateTime);
   Any.setDefault(any.plainMonth);
   Any.setDefault(any.plainTime);
+  Any.setDefault(any.plainOrdinalDate);
   Any.setDefault(any.plainWeekDate);
   Any.setDefault(any.plainYear);
   Any.setDefault(any.plainYearMonth);
@@ -64,6 +66,31 @@ extension PlainDateTimeAny on Any {
       intInRange(0, 60),
       _fraction,
       PlainTime.fromUnchecked,
+    );
+  }
+
+  Generator<PlainOrdinalDate> get plainOrdinalDate {
+    return simple(
+      generate: (random, size) {
+        final year = plainYear(random, size);
+        final day =
+            intInRange(1, year.value.lengthInDays.value + 1)(random, size);
+        return (year, day);
+      },
+      shrink: (input) sync* {
+        final (year, day) = input;
+        yield* year.shrink().map((year) {
+          final actualDay = day.value <= year.value.lengthInDays.value
+              ? day
+              : day.shrink().firstWhere(
+                    (it) => it.value <= year.value.lengthInDays.value,
+                  );
+          return (year, actualDay);
+        });
+        yield* day.shrink().map((it) => (year, it));
+      },
+    ).map(
+      (it) => PlainOrdinalDate.fromUnchecked(it.$1.value, it.$2.value),
     );
   }
 

@@ -4,6 +4,7 @@ export 'src/period_days.dart';
 export 'src/plain_date.dart';
 export 'src/plain_date_time.dart';
 export 'src/plain_month.dart';
+export 'src/plain_ordinal_date.dart';
 export 'src/plain_time.dart';
 export 'src/plain_week_date.dart';
 export 'src/plain_year.dart';
