@@ -65,6 +65,11 @@ final class PlainOrdinalDate
 
   PlainWeekDate get asWeekDate => asDate.asWeekDate;
 
+  bool isTodayInLocalZone({Clock? clockOverride}) =>
+      this == PlainOrdinalDate.todayInLocalZone(clockOverride: clockOverride);
+  bool isTodayInUtc({Clock? clockOverride}) =>
+      this == PlainOrdinalDate.todayInUtc(clockOverride: clockOverride);
+
   Result<PlainOrdinalDate, String> copyWith({PlainYear? year, int? dayOfYear}) {
     return PlainOrdinalDate.from(
       year ?? this.year,

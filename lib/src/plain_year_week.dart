@@ -1,7 +1,9 @@
+import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import 'parser.dart';
+import 'plain_date.dart';
 import 'plain_week_date.dart';
 import 'plain_year.dart';
 import 'utils.dart';
@@ -22,6 +24,13 @@ final class PlainYearWeek
   factory PlainYearWeek.fromThrowing(PlainYear weekBasedYear, int week) =>
       from(weekBasedYear, week).unwrap();
 
+  factory PlainYearWeek.fromDateTime(DateTime dateTime) =>
+      PlainDate.fromDateTime(dateTime).yearWeek;
+  factory PlainYearWeek.currentInLocalZone({Clock? clockOverride}) =>
+      PlainYearWeek.fromDateTime((clockOverride ?? clock).now().toLocal());
+  factory PlainYearWeek.currentInUtc({Clock? clockOverride}) =>
+      PlainYearWeek.fromDateTime((clockOverride ?? clock).now().toUtc());
+
   factory PlainYearWeek.fromJson(String json) =>
       unwrapParserResult(parse(json));
   static Result<PlainYearWeek, FormatException> parse(String value) =>
@@ -29,6 +38,11 @@ final class PlainYearWeek
 
   final PlainYear weekBasedYear;
   final int week;
+
+  bool isCurrentInLocalZone({Clock? clockOverride}) =>
+      this == PlainYearWeek.currentInLocalZone(clockOverride: clockOverride);
+  bool isCurrentInUtc({Clock? clockOverride}) =>
+      this == PlainYearWeek.currentInUtc(clockOverride: clockOverride);
 
   PlainWeekDate get firstDay => PlainWeekDate(this, Weekday.values.first);
   PlainWeekDate get lastDay => PlainWeekDate(this, Weekday.values.last);
