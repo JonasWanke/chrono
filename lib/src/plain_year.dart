@@ -1,8 +1,13 @@
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 
-import '../plain_date_time.dart';
+import 'period_days.dart';
+import 'plain_date.dart';
+import 'plain_month.dart';
+import 'plain_year_month.dart';
+import 'plain_year_week.dart';
 import 'utils.dart';
+import 'weekday.dart';
 
 /// | Value |   Meaning   |
 /// |-------|-------------|
@@ -54,8 +59,22 @@ final class PlainYear
 
   PlainYearMonth get firstMonth => PlainYearMonth(this, PlainMonth.january);
   PlainYearMonth get lastMonth => PlainYearMonth(this, PlainMonth.december);
+  Iterable<PlainYearMonth> get months =>
+      PlainMonth.values.map((month) => PlainYearMonth(this, month));
+
+  PlainYearWeek get firstWeek => PlainYearWeek.fromUnchecked(this, 1);
+  PlainYearWeek get lastWeek =>
+      PlainYearWeek.fromUnchecked(this, numberOfWeeks);
+  Iterable<PlainYearWeek> get weeks {
+    return Iterable.generate(
+      numberOfWeeks,
+      (it) => PlainYearWeek.fromUnchecked(this, it + 1),
+    );
+  }
+
   PlainDate get firstDay => firstMonth.firstDay;
   PlainDate get lastDay => lastMonth.lastDay;
+  Iterable<PlainDate> get days => months.expand((it) => it.days);
 
   PlainYear operator +(Years period) => PlainYear(value + period.value);
   PlainYear operator -(Years period) => PlainYear(value - period.value);

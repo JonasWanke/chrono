@@ -2,8 +2,10 @@ import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import 'parser.dart';
+import 'plain_week_date.dart';
 import 'plain_year.dart';
 import 'utils.dart';
+import 'weekday.dart';
 
 @immutable
 final class PlainYearWeek
@@ -27,6 +29,11 @@ final class PlainYearWeek
 
   final PlainYear weekBasedYear;
   final int week;
+
+  PlainWeekDate get firstDay => PlainWeekDate(this, Weekday.values.first);
+  PlainWeekDate get lastDay => PlainWeekDate(this, Weekday.values.last);
+  Iterable<PlainWeekDate> get days =>
+      Weekday.values.map((weekday) => PlainWeekDate(this, weekday));
 
   // TODO: arithmetic
 

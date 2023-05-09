@@ -49,6 +49,12 @@ final class PlainYearMonth
   PlainDate get firstDay => PlainDate.fromYearMonthAndDayUnchecked(this, 1);
   PlainDate get lastDay =>
       PlainDate.fromYearMonthAndDayUnchecked(this, lengthInDays.value);
+  Iterable<PlainDate> get days {
+    return Iterable.generate(
+      lengthInDays.value,
+      (it) => PlainDate.fromYearMonthAndDayUnchecked(this, it + 1),
+    );
+  }
 
   PlainYearMonth operator +(MonthsPeriod period) {
     final (years, months) = period.inYearsAndMonths;

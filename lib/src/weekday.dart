@@ -14,22 +14,21 @@ enum Weekday
   sunday;
 
   static Result<Weekday, String> fromNumber(int number) {
-    if (number < Weekday.monday.number || number > Weekday.sunday.number) {
+    if (number < minNumber || number > maxNumber) {
       return Err('Invalid weekday number: $number');
     }
     return Ok(fromNumberUnchecked(number));
   }
 
-  static Weekday fromNumberUnchecked(int number) =>
-      values[number - Weekday.monday.number];
+  static Weekday fromNumberUnchecked(int number) => values[number - minNumber];
   static Weekday fromNumberThrowing(int number) =>
       Weekday.fromNumber(number).unwrap();
 
   static Weekday fromJson(int json) =>
       fromNumber(json).unwrapOrThrowAsFormatException();
 
-  static final minNumber = Weekday.monday.number;
-  static final maxNumber = Weekday.sunday.number;
+  static const minNumber = 1; // Weekday.monday.number
+  static const maxNumber = 7; // Weekday.sunday.number
 
   int get number => index + 1;
 

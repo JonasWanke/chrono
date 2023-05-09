@@ -1,6 +1,5 @@
 import 'package:glados/glados.dart';
 import 'package:plain_date_time/plain_date_time.dart';
-import 'package:supernova/supernova.dart' hide Instant, Weekday;
 
 void main() {
   test('Exhaustive arithmetic check for chrono', () {
@@ -50,33 +49,28 @@ void main() {
 
     final startTime = Instant.now();
     for (var year = startYear; year <= endYear; year += const Years(1)) {
-      for (final month in PlainMonth.values) {
-        final yearMonth = PlainYearMonth.from(year, month);
-        for (final day in 1.rangeTo(yearMonth.lengthInDays.value)) {
-          final date = PlainDate.fromYearMonthAndDayThrowing(yearMonth, day);
+      for (final date in year.days) {
+        final daysSinceEpoch = date.daysSinceUnixEpoch;
+        expect(daysSinceEpoch, previous.daysSinceUnixEpoch + const Days(1));
+        expect(date, PlainDate.fromDaysSinceUnixEpoch(daysSinceEpoch));
 
-          final daysSinceEpoch = date.daysSinceUnixEpoch;
-          expect(daysSinceEpoch, previous.daysSinceUnixEpoch + const Days(1));
-          expect(date, PlainDate.fromDaysSinceUnixEpoch(daysSinceEpoch));
+        final dayOfYear = date.dayOfYear;
+        expect(
+          dayOfYear,
+          date.month == PlainMonth.january && date.day == 1
+              ? 1
+              : previous.dayOfYear + 1,
+        );
 
-          final dayOfYear = date.dayOfYear;
-          expect(
-            dayOfYear,
-            date.month == PlainMonth.january && date.day == 1
-                ? 1
-                : previous.dayOfYear + 1,
-          );
+        final weekday = date.weekday;
+        expect(previous.weekday.next, weekday);
+        expect(weekday.previous, previous.weekday);
 
-          final weekday = date.weekday;
-          expect(previous.weekday.next, weekday);
-          expect(weekday.previous, previous.weekday);
-
-          previous = (
-            daysSinceUnixEpoch: daysSinceEpoch,
-            dayOfYear: dayOfYear,
-            weekday: weekday,
-          );
-        }
+        previous = (
+          daysSinceUnixEpoch: daysSinceEpoch,
+          dayOfYear: dayOfYear,
+          weekday: weekday,
+        );
       }
     }
     final endTime = Instant.now();

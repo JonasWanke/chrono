@@ -30,7 +30,7 @@ enum PlainMonth
   static PlainMonth fromNumberThrowing(int number) =>
       PlainMonth.fromNumber(number).unwrap();
   static PlainMonth fromNumberUnchecked(int number) =>
-      values[number - PlainMonth.january.number];
+      values[number - minNumber];
 
   static PlainMonth fromDateTime(DateTime dateTime) =>
       fromNumberThrowing(dateTime.month);
