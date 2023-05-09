@@ -47,6 +47,7 @@ final class PlainYear
     return value % 4 == 0 && (value % 100 != 0 || value % 400 == 0);
   }
 
+  Days get lengthInDays => isLeapYear ? const Days(366) : const Days(365);
   int get numberOfWeeks {
     // https://en.wikipedia.org/wiki/ISO_week_date#Weeks_per_year
     Weekday weekdayOfDecember31(PlainYear year) =>
