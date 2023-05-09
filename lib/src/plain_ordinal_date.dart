@@ -5,6 +5,7 @@ import 'package:oxidized/oxidized.dart';
 import 'parser.dart';
 import 'plain_date.dart';
 import 'plain_month.dart';
+import 'plain_week_date.dart';
 import 'plain_year.dart';
 import 'plain_year_month.dart';
 import 'utils.dart';
@@ -61,6 +62,8 @@ final class PlainOrdinalDate
     final dayOfMonth = dayOfYear - firstDayOfYear(month.month) + 1;
     return PlainDate.fromYearMonthAndDayUnchecked(month, dayOfMonth);
   }
+
+  PlainWeekDate get asWeekDate => asDate.asWeekDate;
 
   Result<PlainOrdinalDate, String> copyWith({PlainYear? year, int? dayOfYear}) {
     return PlainOrdinalDate.from(

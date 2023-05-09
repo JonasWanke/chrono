@@ -3,7 +3,11 @@ import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import 'parser.dart';
+import 'period_days.dart';
 import 'plain_date.dart';
+import 'plain_month.dart';
+import 'plain_ordinal_date.dart';
+import 'plain_year.dart';
 import 'plain_year_week.dart';
 import 'utils.dart';
 import 'weekday.dart';
@@ -31,7 +35,33 @@ final class PlainWeekDate
   final PlainYearWeek yearWeek;
   final Weekday weekday;
 
-  // TODO: asDate
+  PlainOrdinalDate get asOrdinalDate {
+    // https://en.wikipedia.org/wiki/ISO_week_date#Calculating_an_ordinal_or_month_date_from_a_week_date
+    final january4 =
+        PlainDate.fromUnchecked(yearWeek.weekBasedYear, PlainMonth.january, 4);
+
+    final rawDayOfYear = Days.perWeek.value * yearWeek.week +
+        weekday.number -
+        (january4.weekday.number + 3);
+    final PlainYear year;
+    final int dayOfYear;
+    if (rawDayOfYear < 1) {
+      year = yearWeek.weekBasedYear - const Years(1);
+      dayOfYear = rawDayOfYear + year.lengthInDays.value;
+    } else {
+      final daysInCurrentYear = yearWeek.weekBasedYear.lengthInDays.value;
+      if (rawDayOfYear > daysInCurrentYear) {
+        year = yearWeek.weekBasedYear + const Years(1);
+        dayOfYear = rawDayOfYear - daysInCurrentYear;
+      } else {
+        year = yearWeek.weekBasedYear;
+        dayOfYear = rawDayOfYear;
+      }
+    }
+    return PlainOrdinalDate.fromUnchecked(year, dayOfYear);
+  }
+
+  PlainDate get asDate => asOrdinalDate.asDate;
 
   bool isTodayInLocalZone({Clock? clockOverride}) =>
       this == PlainWeekDate.todayInLocalZone(clockOverride: clockOverride);
