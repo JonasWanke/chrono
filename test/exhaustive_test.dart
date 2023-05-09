@@ -9,7 +9,7 @@ void main() {
     const unixEpoch = PlainDate.unixEpoch;
     expect(
       unixEpoch.daysSinceUnixEpoch,
-      0,
+      const Days(0),
       reason: '1970-01-01 is day 0',
     );
     expect(
