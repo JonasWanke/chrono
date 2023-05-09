@@ -43,6 +43,8 @@ final class Days extends FixedDaysPeriod {
   const Days(this.value);
   const Days.fromJson(int json) : this(json);
 
+  static const perWeek = Days(DateTime.daysPerWeek);
+
   final int value;
 
   @override
@@ -65,12 +67,10 @@ final class Weeks extends FixedDaysPeriod {
   const Weeks(this.value);
   const Weeks.fromJson(int json) : this(json);
 
-  static const daysPerWeek = DateTime.daysPerWeek;
-
   final int value;
 
   @override
-  Days get inDays => Days(value * daysPerWeek);
+  Days get inDays => Days.perWeek * value;
 
   Weeks operator +(Weeks period) => Weeks(value + period.value);
   Weeks operator -(Weeks period) => Weeks(value - period.value);
