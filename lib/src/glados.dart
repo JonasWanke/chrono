@@ -34,17 +34,16 @@ extension PlainDateTimeAny on Any {
       generate: (random, size) {
         final yearMonth = plainYearMonth(random, size);
         final day =
-            intInRange(1, yearMonth.value.numberOfDays + 1)(random, size);
+            intInRange(1, yearMonth.value.lengthInDays.value + 1)(random, size);
         return (yearMonth, day);
       },
       shrink: (input) sync* {
         final (yearMonth, day) = input;
         yield* yearMonth.shrink().map((yearMonth) {
-          final actualDay = day.value <= yearMonth.value.numberOfDays
+          final actualDay = day.value <= yearMonth.value.lengthInDays.value
               ? day
-              : day
-                  .shrink()
-                  .firstWhere((it) => it.value <= yearMonth.value.numberOfDays);
+              : day.shrink().firstWhere(
+                  (it) => it.value <= yearMonth.value.lengthInDays.value);
           return (yearMonth, actualDay);
         });
         yield* day.shrink().map((it) => (yearMonth, it));

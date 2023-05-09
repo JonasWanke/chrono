@@ -28,6 +28,8 @@ final class PlainYearWeek
   final PlainYear weekBasedYear;
   final int week;
 
+  // TODO: arithmetic
+
   Result<PlainYearWeek, String> copyWith({
     PlainYear? weekBasedYear,
     int? week,

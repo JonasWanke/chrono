@@ -1,11 +1,14 @@
 import 'package:clock/clock.dart';
+import 'package:dartx/dartx.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import 'parser.dart';
+import 'period_days.dart';
 import 'plain_date_time.dart';
 import 'plain_month.dart';
 import 'plain_time.dart';
+import 'plain_week_date.dart';
 import 'plain_year.dart';
 import 'plain_year_month.dart';
 import 'plain_year_week.dart';
@@ -20,7 +23,7 @@ final class PlainDate
     PlainYearMonth yearMonth,
     int day,
   ) {
-    if (day < 1 || day > yearMonth.numberOfDays) {
+    if (day < 1 || day > yearMonth.lengthInDays.value) {
       return Err('Invalid day for $yearMonth: $day');
     }
     return Ok(PlainDate.fromYearMonthAndDayUnchecked(yearMonth, day));
@@ -51,8 +54,13 @@ final class PlainDate
     int day = 1,
   ]) : this.fromYearMonthAndDayUnchecked(PlainYearMonth.from(year, month), day);
 
-  factory PlainDate.fromDaysSinceUnixEpoch(int daysSinceUnixEpoch) {
+  static const unixEpoch = PlainDate.fromYearMonthAndDayUnchecked(
+    PlainYearMonth.from(PlainYear(1970), PlainMonth.january),
+    1,
+  );
+  factory PlainDate.fromDaysSinceUnixEpoch(Days sinceUnixEpoch) {
     // https://howardhinnant.github.io/date_algorithms.html#civil_from_days
+    var daysSinceUnixEpoch = sinceUnixEpoch.value;
     daysSinceUnixEpoch += 719468;
 
     final era = (daysSinceUnixEpoch >= 0
@@ -130,18 +138,22 @@ final class PlainDate
     // Algorithm from https://en.wikipedia.org/wiki/ISO_week_date#Algorithms
     final weekOfYear = (dayOfYear - weekday.number + 10) ~/ 7;
     return switch (weekOfYear) {
-      0 =>
-        PlainYearWeek.fromUnchecked(year.previous, year.previous.numberOfWeeks),
+      0 => PlainYearWeek.fromUnchecked(
+          year.previousYear,
+          year.previousYear.numberOfWeeks,
+        ),
       53 when year.numberOfWeeks == 52 =>
-        PlainYearWeek.fromUnchecked(year.next, 1),
+        PlainYearWeek.fromUnchecked(year.nextYear, 1),
       _ => PlainYearWeek.fromUnchecked(year, weekOfYear)
     };
   }
 
   Weekday get weekday =>
-      Weekday.fromNumberUnchecked((daysSinceUnixEpoch + 3) % 7 + 1);
+      Weekday.fromNumberUnchecked((daysSinceUnixEpoch.value + 3) % 7 + 1);
 
-  int get daysSinceUnixEpoch {
+  PlainWeekDate get asWeekDate => PlainWeekDate(yearWeek, weekday);
+
+  Days get daysSinceUnixEpoch {
     // https://howardhinnant.github.io/date_algorithms.html#days_from_civil
     final (year, month) = this.month <= PlainMonth.february
         ? (this.year.value - 1, this.month.number + 9)
@@ -159,7 +171,7 @@ final class PlainDate
         yearOfEra * 365 + yearOfEra ~/ 4 - yearOfEra ~/ 100 + dayOfYear;
     assert(0 <= dayOfEra && dayOfEra <= 146096);
 
-    return era * 146097 + dayOfEra - 719468;
+    return Days(era * 146097 + dayOfEra - 719468);
   }
 
   bool isTodayInLocalZone({Clock? clockOverride}) =>
@@ -168,6 +180,26 @@ final class PlainDate
       this == PlainDate.todayInUtc(clockOverride: clockOverride);
 
   PlainDateTime at(PlainTime time) => PlainDateTime(this, time);
+
+  PlainDate operator +(DaysPeriod period) {
+    final (months, days) = period.inMonthsAndDays;
+    final yearMonthWithMonths = yearMonth + months;
+    final dateWithMonths = PlainDate.fromYearMonthAndDayUnchecked(
+      yearMonthWithMonths,
+      day.coerceAtMost(yearMonthWithMonths.lengthInDays.value),
+    );
+
+    return days.value == 0
+        ? dateWithMonths
+        : PlainDate.fromDaysSinceUnixEpoch(
+            dateWithMonths.daysSinceUnixEpoch + days,
+          );
+  }
+
+  PlainDate operator -(DaysPeriod period) => this + (-period);
+
+  PlainDate get nextDay => this + const Days(1);
+  PlainDate get previousDay => this - const Days(1);
 
   Result<PlainDate, String> copyWith({
     PlainYearMonth? yearMonth,

@@ -186,7 +186,7 @@ final class Parser {
       minDigits: 2,
       maxDigits: 2,
       minValue: 1,
-      maxValue: yearMonth.numberOfDays,
+      maxValue: yearMonth.lengthInDays.value,
     );
     return value.andThen((it) => PlainDate.fromYearMonthAndDay(yearMonth, it)
         .mapErr(FormatException.new));

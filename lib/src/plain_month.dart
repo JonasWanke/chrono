@@ -1,6 +1,7 @@
 import 'package:clock/clock.dart';
 import 'package:oxidized/oxidized.dart';
 
+import 'period_days.dart';
 import 'utils.dart';
 
 enum PlainMonth
@@ -20,8 +21,7 @@ enum PlainMonth
   december;
 
   static Result<PlainMonth, String> fromNumber(int number) {
-    if (number < PlainMonth.january.number ||
-        number > PlainMonth.december.number) {
+    if (number < minNumber || number > maxNumber) {
       return Err('Invalid month number: $number');
     }
     return Ok(fromNumberUnchecked(number));
@@ -42,8 +42,8 @@ enum PlainMonth
   static PlainMonth fromJson(int json) =>
       fromNumber(json).unwrapOrThrowAsFormatException();
 
-  static final minNumber = PlainMonth.january.number;
-  static final maxNumber = PlainMonth.december.number;
+  static const minNumber = 1; // PlainMonth.january.number
+  static const maxNumber = 12; // PlainMonth.december.number
 
   int get number => index + 1;
 
@@ -58,18 +58,26 @@ enum PlainMonth
   /// The number of days in this month of a common (non-leap) year.
   ///
   /// The result is always in the range [28, 31].
-  int get numberOfDaysInCommonYear {
+  Days get lengthInDaysInCommonYear {
     // https://howardhinnant.github.io/date_algorithms.html#last_day_of_month_common_year
-    const days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    const days = [
+      //
+      Days(31), Days(28), Days(31), Days(30), Days(31), Days(30),
+      Days(31), Days(31), Days(30), Days(31), Days(30), Days(31),
+    ];
     return days[index];
   }
 
   /// The number of days in this month of a leap year.
   ///
   /// The result is always in the range [29, 31].
-  int get numberOfDaysInLeapYear {
+  Days get lengthInDaysInLeapYear {
     // https://howardhinnant.github.io/date_algorithms.html#last_day_of_month_leap_year
-    const days = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    const days = [
+      //
+      Days(31), Days(29), Days(31), Days(30), Days(31), Days(30),
+      Days(31), Days(31), Days(30), Days(31), Days(30), Days(31),
+    ];
     return days[index];
   }
 

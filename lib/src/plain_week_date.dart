@@ -38,6 +38,8 @@ final class PlainWeekDate
   bool isTodayInUtc({Clock? clockOverride}) =>
       this == PlainWeekDate.todayInUtc(clockOverride: clockOverride);
 
+  // TODO: arithmetic
+
   PlainWeekDate copyWith({PlainYearWeek? yearWeek, Weekday? weekday}) =>
       PlainWeekDate(yearWeek ?? this.yearWeek, weekday ?? this.weekday);
 

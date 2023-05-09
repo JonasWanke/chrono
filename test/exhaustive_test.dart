@@ -7,15 +7,14 @@ void main() {
     // Inspired by this website, plus some extra tests:
     // https://howardhinnant.github.io/date_algorithms.html#Yes,%20but%20how%20do%20you%20know%20this%20all%20really%20works?
 
-    final unixEpoch =
-        PlainDate.fromThrowing(const PlainYear(1970), PlainMonth.january, 1);
+    const unixEpoch = PlainDate.unixEpoch;
     expect(
       unixEpoch.daysSinceUnixEpoch,
       0,
       reason: '1970-01-01 is day 0',
     );
     expect(
-      PlainDate.fromDaysSinceUnixEpoch(0),
+      PlainDate.fromDaysSinceUnixEpoch(const Days(0)),
       unixEpoch,
       reason: '1970-01-01 is day 0',
     );
@@ -25,29 +24,23 @@ void main() {
       reason: '1970-01-01 is a Thursday',
     );
 
-    const startYear = -10000; // -1000000;
-    final startDate = PlainDate.fromThrowing(
-      const PlainYear(startYear),
-      PlainMonth.january,
-      1,
-    );
+    const startYear = PlainYear(-10000); // PlainYear(-1000000);
+    final startDate = startYear.firstDay;
     final startDateDaysSinceUnixEpoch = startDate.daysSinceUnixEpoch;
 
-    const endYear = -startYear;
-    final endDate = PlainDate.fromThrowing(
-      const PlainYear(endYear),
-      PlainMonth.december,
-      31,
-    );
+    final endYear = PlainYear(-startYear.value);
+    final endDate = endYear.lastDay;
 
-    final totalNumberOfDays =
-        endDate.daysSinceUnixEpoch - startDate.daysSinceUnixEpoch + 1;
+    final totalNumberOfDays = endDate.daysSinceUnixEpoch -
+        startDate.daysSinceUnixEpoch +
+        const Days(1);
     // expect(totalNumberOfDays, 730485366);
 
-    final previousDate =
-        PlainDate.fromDaysSinceUnixEpoch(startDateDaysSinceUnixEpoch - 1);
+    final previousDate = PlainDate.fromDaysSinceUnixEpoch(
+      startDateDaysSinceUnixEpoch - const Days(1),
+    );
     var previous = (
-      daysSinceUnixEpoch: startDateDaysSinceUnixEpoch - 1,
+      daysSinceUnixEpoch: startDateDaysSinceUnixEpoch - const Days(1),
       dayOfYear: previousDate.dayOfYear,
       weekday: previousDate.weekday,
     );
@@ -56,14 +49,14 @@ void main() {
     // expect(previous.weekday, TODO);
 
     final startTime = Instant.now();
-    for (var year = startYear; year <= endYear; ++year) {
+    for (var year = startYear; year <= endYear; year += const Years(1)) {
       for (final month in PlainMonth.values) {
-        final yearMonth = PlainYearMonth.from(PlainYear(year), month);
-        for (final day in 1.rangeTo(yearMonth.numberOfDays)) {
+        final yearMonth = PlainYearMonth.from(year, month);
+        for (final day in 1.rangeTo(yearMonth.lengthInDays.value)) {
           final date = PlainDate.fromYearMonthAndDayThrowing(yearMonth, day);
 
           final daysSinceEpoch = date.daysSinceUnixEpoch;
-          expect(daysSinceEpoch, previous.daysSinceUnixEpoch + 1);
+          expect(daysSinceEpoch, previous.daysSinceUnixEpoch + const Days(1));
           expect(date, PlainDate.fromDaysSinceUnixEpoch(daysSinceEpoch));
 
           final dayOfYear = date.dayOfYear;

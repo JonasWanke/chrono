@@ -1,10 +1,8 @@
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 
-import 'plain_date.dart';
-import 'plain_month.dart';
+import '../plain_date_time.dart';
 import 'utils.dart';
-import 'weekday.dart';
 
 /// | Value |   Meaning   |
 /// |-------|-------------|
@@ -50,12 +48,22 @@ final class PlainYear
         PlainDate.fromUnchecked(year, PlainMonth.december, 31).weekday;
 
     final isLongWeek = weekdayOfDecember31(this) == Weekday.thursday ||
-        weekdayOfDecember31(previous) == Weekday.wednesday;
+        weekdayOfDecember31(previousYear) == Weekday.wednesday;
     return isLongWeek ? 53 : 52;
   }
 
-  PlainYear get next => PlainYear(value + 1);
-  PlainYear get previous => PlainYear(value - 1);
+  PlainYearMonth get firstMonth =>
+      PlainYearMonth.from(this, PlainMonth.january);
+  PlainYearMonth get lastMonth =>
+      PlainYearMonth.from(this, PlainMonth.december);
+  PlainDate get firstDay => firstMonth.firstDay;
+  PlainDate get lastDay => lastMonth.lastDay;
+
+  PlainYear operator +(Years period) => PlainYear(value + period.value);
+  PlainYear operator -(Years period) => PlainYear(value - period.value);
+
+  PlainYear get nextYear => this + const Years(1);
+  PlainYear get previousYear => this - const Years(1);
 
   @override
   int compareTo(PlainYear other) => value.compareTo(other.value);
