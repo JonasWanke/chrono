@@ -43,7 +43,8 @@ extension PlainDateTimeAny on Any {
           final actualDay = day.value <= yearMonth.value.lengthInDays.value
               ? day
               : day.shrink().firstWhere(
-                  (it) => it.value <= yearMonth.value.lengthInDays.value);
+                    (it) => it.value <= yearMonth.value.lengthInDays.value,
+                  );
           return (yearMonth, actualDay);
         });
         yield* day.shrink().map((it) => (yearMonth, it));
@@ -70,7 +71,7 @@ extension PlainDateTimeAny on Any {
       combine2(plainYearWeek, weekday, PlainWeekDate.new);
   Generator<PlainYear> get plainYear => this.int.map(PlainYear.new);
   Generator<PlainYearMonth> get plainYearMonth =>
-      combine2(plainYear, plainMonth, PlainYearMonth.from);
+      combine2(plainYear, plainMonth, PlainYearMonth.new);
   Generator<PlainYearWeek> get plainYearWeek {
     return simple(
       generate: (random, size) {

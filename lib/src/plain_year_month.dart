@@ -13,7 +13,7 @@ import 'utils.dart';
 final class PlainYearMonth
     with ComparisonOperatorsFromComparable<PlainYearMonth>
     implements Comparable<PlainYearMonth> {
-  const PlainYearMonth.from(this.year, [this.month = PlainMonth.january]);
+  const PlainYearMonth(this.year, [this.month = PlainMonth.january]);
 
   PlainYearMonth.fromDateTime(DateTime dateTime)
       : year = PlainYear.fromDateTime(dateTime),
@@ -66,7 +66,7 @@ final class PlainYearMonth
       _ => (const Years(0), rawNewMonth),
     };
 
-    return PlainYearMonth.from(
+    return PlainYearMonth(
       year + years + yearAdjustment,
       PlainMonth.fromNumberUnchecked(month),
     );
@@ -78,7 +78,7 @@ final class PlainYearMonth
   PlainYearMonth get previousMonth => this - const Months(1);
 
   PlainYearMonth copyWith({PlainYear? year, PlainMonth? month}) =>
-      PlainYearMonth.from(year ?? this.year, month ?? this.month);
+      PlainYearMonth(year ?? this.year, month ?? this.month);
 
   @override
   int compareTo(PlainYearMonth other) {

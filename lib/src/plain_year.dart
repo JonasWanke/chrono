@@ -52,10 +52,8 @@ final class PlainYear
     return isLongWeek ? 53 : 52;
   }
 
-  PlainYearMonth get firstMonth =>
-      PlainYearMonth.from(this, PlainMonth.january);
-  PlainYearMonth get lastMonth =>
-      PlainYearMonth.from(this, PlainMonth.december);
+  PlainYearMonth get firstMonth => PlainYearMonth(this, PlainMonth.january);
+  PlainYearMonth get lastMonth => PlainYearMonth(this, PlainMonth.december);
   PlainDate get firstDay => firstMonth.firstDay;
   PlainDate get lastDay => lastMonth.lastDay;
 

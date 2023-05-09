@@ -93,7 +93,7 @@ final class Parser {
     return _parseYear()
         .andAlso(() => _requireSeparator({'-'}, 'year', 'month'))
         .andThen(
-          (year) => _parseMonth().map((it) => PlainYearMonth.from(year, it)),
+          (year) => _parseMonth().map((it) => PlainYearMonth(year, it)),
         );
   }
 

@@ -41,7 +41,7 @@ final class PlainDate
     PlainMonth month = PlainMonth.january,
     int day = 1,
   ]) =>
-      fromYearMonthAndDay(PlainYearMonth.from(year, month), day);
+      fromYearMonthAndDay(PlainYearMonth(year, month), day);
   factory PlainDate.fromThrowing(
     PlainYear year, [
     PlainMonth month = PlainMonth.january,
@@ -52,10 +52,10 @@ final class PlainDate
     PlainYear year, [
     PlainMonth month = PlainMonth.january,
     int day = 1,
-  ]) : this.fromYearMonthAndDayUnchecked(PlainYearMonth.from(year, month), day);
+  ]) : this.fromYearMonthAndDayUnchecked(PlainYearMonth(year, month), day);
 
   static const unixEpoch = PlainDate.fromYearMonthAndDayUnchecked(
-    PlainYearMonth.from(PlainYear(1970), PlainMonth.january),
+    PlainYearMonth(PlainYear(1970), PlainMonth.january),
     1,
   );
   factory PlainDate.fromDaysSinceUnixEpoch(Days sinceUnixEpoch) {
@@ -96,10 +96,7 @@ final class PlainDate
     assert(1 <= month && month <= 12);
 
     return PlainDate.fromYearMonthAndDayUnchecked(
-      PlainYearMonth.from(
-        PlainYear(year),
-        PlainMonth.fromNumberUnchecked(month),
-      ),
+      PlainYearMonth(PlainYear(year), PlainMonth.fromNumberUnchecked(month)),
       day,
     );
   }
@@ -210,7 +207,7 @@ final class PlainDate
     assert(yearMonth == null || (year == null && month == null));
 
     return PlainDate.fromYearMonthAndDay(
-      yearMonth ?? PlainYearMonth.from(year ?? this.year, month ?? this.month),
+      yearMonth ?? PlainYearMonth(year ?? this.year, month ?? this.month),
       day ?? this.day,
     );
   }
