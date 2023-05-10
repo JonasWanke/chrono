@@ -1,5 +1,6 @@
 import 'package:oxidized/oxidized.dart';
 
+import 'period_days.dart';
 import 'utils.dart';
 
 enum Weekday
@@ -34,6 +35,11 @@ enum Weekday
 
   Weekday get next => values[(index + 1) % values.length];
   Weekday get previous => values[(index - 1) % values.length];
+
+  Days untilNextOrSame(Weekday other) =>
+      Days((other.index - index) % values.length);
+  Days untilPreviousOrSame(Weekday other) =>
+      Days(-((index - other.index) % values.length));
 
   @override
   int compareTo(Weekday other) => index.compareTo(other.index);
