@@ -181,6 +181,8 @@ final class PlainDate
       this == PlainDate.todayInUtc(clockOverride: clockOverride);
 
   PlainDateTime at(PlainTime time) => PlainDateTime(this, time);
+  PlainDateTime get atMidnight => at(PlainTime.midnight);
+  PlainDateTime get atNoon => at(PlainTime.noon);
 
   PlainDate operator +(DaysPeriod period) {
     final (months, days) = period.inMonthsAndDays;
