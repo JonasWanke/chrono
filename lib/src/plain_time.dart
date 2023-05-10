@@ -4,6 +4,7 @@ import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import 'parser.dart';
+import 'period_time.dart';
 import 'utils.dart';
 
 @immutable
@@ -43,6 +44,30 @@ final class PlainTime
       from(hour, minute, second, fraction).unwrap();
   PlainTime.fromUnchecked(this.hour, this.minute, this.second, this.fraction);
 
+  static Result<PlainTime, String> fromTimeSinceMidnight(TimePeriod time) {
+    if (time.isNegative) {
+      return Err('Time since midnight must not be negative, but was: $time');
+    }
+    if (time.inSeconds.value >= Seconds.perDay.value) {
+      return Err(
+        'Time since midnight must not be greater than a day, but was: $time',
+      );
+    }
+    return Ok(PlainTime.fromTimeSinceMidnightUnchecked(time));
+  }
+
+  factory PlainTime.fromTimeSinceMidnightThrowing(TimePeriod time) =>
+      fromTimeSinceMidnight(time).unwrap();
+  factory PlainTime.fromTimeSinceMidnightUnchecked(TimePeriod time) {
+    final inSeconds = time.inSeconds;
+    return PlainTime.fromUnchecked(
+      inSeconds.value ~/ Seconds.perHour.value,
+      (inSeconds.value % Seconds.perHour.value) ~/ Seconds.perMinute.value,
+      inSeconds.value % Seconds.perMinute.value,
+      FixedPlainDateTimeInternal.zero,
+    );
+  }
+
   PlainTime.fromDateTime(DateTime dateTime)
       : this.fromUnchecked(
           dateTime.hour,
@@ -70,6 +95,12 @@ final class PlainTime
   final int minute;
   final int second;
   final Fixed fraction;
+
+  Hours get hoursSinceMidnight => Hours(hour);
+  Minutes get minutesSinceMidnight =>
+      hoursSinceMidnight.inMinutes + Minutes(minute);
+  Seconds get secondsSinceMidnight =>
+      minutesSinceMidnight.inSeconds + Seconds(second);
 
   Result<PlainTime, String> copyWith({
     int? hour,
