@@ -186,7 +186,7 @@ packages:
     source: hosted
     version: "2.3.0"
   dartx:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: dartx
       sha256: "45d7176701f16c5a5e00a4798791c1964bc231491b879369c818dd9a9c764871"
