@@ -26,10 +26,9 @@ final class PlainTime
     if (second < 0 || second >= Duration.secondsPerMinute) {
       return Err('Invalid second: $second');
     }
-    if (fraction != null &&
-        (fraction.isNegative || fraction >= FixedPlainDateTimeInternal.one)) {
-      return Err('Invalid fraction of a second: $fraction');
-    }
+
+    final fractionError = _validateFraction(fraction);
+    if (fractionError != null) return Err(fractionError);
     fraction ??= FixedPlainDateTimeInternal.zero;
 
     return Ok(PlainTime.fromUnchecked(hour, minute, second, fraction));
@@ -44,7 +43,10 @@ final class PlainTime
       from(hour, minute, second, fraction).unwrap();
   PlainTime.fromUnchecked(this.hour, this.minute, this.second, this.fraction);
 
-  static Result<PlainTime, String> fromTimeSinceMidnight(TimePeriod time) {
+  static Result<PlainTime, String> fromTimeSinceMidnight(
+    TimePeriod time, [
+    Fixed? fraction,
+  ]) {
     if (time.isNegative) {
       return Err('Time since midnight must not be negative, but was: $time');
     }
@@ -53,18 +55,28 @@ final class PlainTime
         'Time since midnight must not be greater than a day, but was: $time',
       );
     }
-    return Ok(PlainTime.fromTimeSinceMidnightUnchecked(time));
+
+    final fractionError = _validateFraction(fraction);
+    if (fractionError != null) return Err(fractionError);
+
+    return Ok(PlainTime.fromTimeSinceMidnightUnchecked(time, fraction));
   }
 
-  factory PlainTime.fromTimeSinceMidnightThrowing(TimePeriod time) =>
-      fromTimeSinceMidnight(time).unwrap();
-  factory PlainTime.fromTimeSinceMidnightUnchecked(TimePeriod time) {
+  factory PlainTime.fromTimeSinceMidnightThrowing(
+    TimePeriod time, [
+    Fixed? fraction,
+  ]) =>
+      fromTimeSinceMidnight(time, fraction).unwrap();
+  factory PlainTime.fromTimeSinceMidnightUnchecked(
+    TimePeriod time, [
+    Fixed? fraction,
+  ]) {
     final inSeconds = time.inSeconds;
     return PlainTime.fromUnchecked(
       inSeconds.value ~/ Seconds.perHour.value,
       (inSeconds.value % Seconds.perHour.value) ~/ Seconds.perMinute.value,
       inSeconds.value % Seconds.perMinute.value,
-      FixedPlainDateTimeInternal.zero,
+      fraction ?? Fixed.zero,
     );
   }
 
@@ -87,6 +99,14 @@ final class PlainTime
   factory PlainTime.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<PlainTime, FormatException> parse(String value) =>
       Parser.parseTime(value);
+
+  static String? _validateFraction(Fixed? fraction) {
+    if (fraction != null &&
+        (fraction.isNegative || fraction >= FixedPlainDateTimeInternal.one)) {
+      return 'Invalid fraction of a second: $fraction';
+    }
+    return null;
+  }
 
   static final PlainTime midnight = PlainTime.fromThrowing(0);
   static final PlainTime noon = PlainTime.fromThrowing(12);
