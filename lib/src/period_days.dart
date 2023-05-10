@@ -1,14 +1,24 @@
 import 'package:meta/meta.dart';
 
+import 'period.dart';
+import 'period_time.dart';
 import 'utils.dart';
 
 @immutable
-abstract class DaysPeriod {
+abstract class DaysPeriod extends Period {
   const DaysPeriod();
 
   (Months, Days) get inMonthsAndDays;
 
+  @override
+  CompoundPeriod get inMonthsAndDaysAndSeconds {
+    final (months, days) = inMonthsAndDays;
+    return CompoundPeriod(months, days, const Seconds(0));
+  }
+
+  @override
   DaysPeriod operator -();
+  @override
   DaysPeriod operator *(int factor);
 }
 
@@ -21,6 +31,11 @@ abstract class FixedDaysPeriod extends DaysPeriod
 
   @override
   (Months, Days) get inMonthsAndDays => (const Months(0), inDays);
+
+  bool get isPositive => inDays.value > 0;
+  bool get isNonPositive => inDays.value <= 0;
+  bool get isNegative => inDays.value < 0;
+  bool get isNonNegative => inDays.value >= 0;
 
   @override
   FixedDaysPeriod operator -();
@@ -102,6 +117,11 @@ abstract class MonthsPeriod extends DaysPeriod
 
   @override
   (Months, Days) get inMonthsAndDays => (inMonths, const Days(0));
+
+  bool get isPositive => inMonths.value > 0;
+  bool get isNonPositive => inMonths.value <= 0;
+  bool get isNegative => inMonths.value < 0;
+  bool get isNonNegative => inMonths.value >= 0;
 
   @override
   MonthsPeriod operator -();
