@@ -3,7 +3,7 @@ import 'package:meta/meta.dart';
 import 'utils.dart';
 
 @immutable
-sealed class DaysPeriod {
+abstract class DaysPeriod {
   const DaysPeriod();
 
   (Months, Days) get inMonthsAndDays;
@@ -12,7 +12,7 @@ sealed class DaysPeriod {
   DaysPeriod operator *(int factor);
 }
 
-sealed class FixedDaysPeriod extends DaysPeriod
+abstract class FixedDaysPeriod extends DaysPeriod
     with ComparisonOperatorsFromComparable<FixedDaysPeriod>
     implements Comparable<FixedDaysPeriod> {
   const FixedDaysPeriod();
@@ -85,7 +85,7 @@ final class Weeks extends FixedDaysPeriod {
   int toJson() => value;
 }
 
-sealed class MonthsPeriod extends DaysPeriod
+abstract class MonthsPeriod extends DaysPeriod
     with ComparisonOperatorsFromComparable<MonthsPeriod>
     implements Comparable<MonthsPeriod> {
   const MonthsPeriod();
