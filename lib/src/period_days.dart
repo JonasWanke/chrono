@@ -50,8 +50,8 @@ final class Days extends FixedDaysPeriod {
   @override
   Days get inDays => this;
 
-  Days operator +(Days period) => Days(value + period.value);
-  Days operator -(Days period) => Days(value - period.value);
+  Days operator +(FixedDaysPeriod period) => Days(value + period.inDays.value);
+  Days operator -(FixedDaysPeriod period) => Days(value - period.inDays.value);
   @override
   Days operator -() => Days(-value);
   @override
@@ -131,8 +131,10 @@ final class Months extends MonthsPeriod {
   @override
   Months get inMonths => this;
 
-  Months operator +(Months period) => Months(value + period.value);
-  Months operator -(Months period) => Months(value - period.value);
+  Months operator +(MonthsPeriod period) =>
+      Months(value + period.inMonths.value);
+  Months operator -(MonthsPeriod period) =>
+      Months(value - period.inMonths.value);
   @override
   Months operator -() => Months(-value);
   @override
