@@ -202,6 +202,11 @@ final class PlainDate
   PlainDate get nextDay => this + const Days(1);
   PlainDate get previousDay => this - const Days(1);
 
+  PlainDate nextOrSame(Weekday weekday) =>
+      this + this.weekday.untilNextOrSame(weekday);
+  PlainDate previousOrSame(Weekday weekday) =>
+      this + this.weekday.untilPreviousOrSame(weekday);
+
   Result<PlainDate, String> copyWith({
     PlainYearMonth? yearMonth,
     PlainYear? year,

@@ -84,6 +84,26 @@ final class PlainWeekDate
         : PlainWeekDate(yearWeek, weekday.previous);
   }
 
+  PlainWeekDate nextOrSame(Weekday weekday) {
+    // ignore: avoid_returning_this
+    if (weekday == this.weekday) return this;
+
+    return PlainWeekDate(
+      weekday < this.weekday ? yearWeek.nextWeek : yearWeek,
+      weekday,
+    );
+  }
+
+  PlainWeekDate previousOrSame(Weekday weekday) {
+    // ignore: avoid_returning_this
+    if (weekday == this.weekday) return this;
+
+    return PlainWeekDate(
+      weekday > this.weekday ? yearWeek.previousWeek : yearWeek,
+      weekday,
+    );
+  }
+
   PlainWeekDate copyWith({PlainYearWeek? yearWeek, Weekday? weekday}) =>
       PlainWeekDate(yearWeek ?? this.yearWeek, weekday ?? this.weekday);
 
