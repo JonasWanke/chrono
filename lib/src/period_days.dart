@@ -20,6 +20,10 @@ abstract class DaysPeriod extends Period {
   DaysPeriod operator -();
   @override
   DaysPeriod operator *(int factor);
+  @override
+  DaysPeriod operator ~/(int divisor);
+  @override
+  DaysPeriod operator %(int divisor);
 }
 
 abstract class FixedDaysPeriod extends DaysPeriod
@@ -41,6 +45,10 @@ abstract class FixedDaysPeriod extends DaysPeriod
   FixedDaysPeriod operator -();
   @override
   FixedDaysPeriod operator *(int factor);
+  @override
+  FixedDaysPeriod operator ~/(int divisor);
+  @override
+  FixedDaysPeriod operator %(int divisor);
 
   @override
   int compareTo(FixedDaysPeriod other) =>
@@ -71,6 +79,10 @@ final class Days extends FixedDaysPeriod {
   Days operator -() => Days(-value);
   @override
   Days operator *(int factor) => Days(value * factor);
+  @override
+  Days operator ~/(int divisor) => Days(value ~/ divisor);
+  @override
+  Days operator %(int divisor) => Days(value % divisor);
 
   @override
   String toString() => value.abs() == 1 ? '$value day' : '$value days';
@@ -93,6 +105,10 @@ final class Weeks extends FixedDaysPeriod {
   Weeks operator -() => Weeks(-value);
   @override
   Weeks operator *(int factor) => Weeks(value * factor);
+  @override
+  Weeks operator ~/(int divisor) => Weeks(value ~/ divisor);
+  @override
+  Weeks operator %(int divisor) => Weeks(value % divisor);
 
   @override
   String toString() => value.abs() == 1 ? '$value week' : '$value weeks';
@@ -127,6 +143,10 @@ abstract class MonthsPeriod extends DaysPeriod
   MonthsPeriod operator -();
   @override
   MonthsPeriod operator *(int factor);
+  @override
+  MonthsPeriod operator ~/(int divisor);
+  @override
+  MonthsPeriod operator %(int divisor);
 
   @override
   int compareTo(MonthsPeriod other) =>
@@ -159,6 +179,10 @@ final class Months extends MonthsPeriod {
   Months operator -() => Months(-value);
   @override
   Months operator *(int factor) => Months(value * factor);
+  @override
+  Months operator ~/(int divisor) => Months(value ~/ divisor);
+  @override
+  Months operator %(int divisor) => Months(value % divisor);
 
   @override
   String toString() => value.abs() == 1 ? '$value month' : '$value months';
@@ -183,6 +207,10 @@ final class Years extends MonthsPeriod {
   Years operator -() => Years(-value);
   @override
   Years operator *(int factor) => Years(value * factor);
+  @override
+  Years operator ~/(int divisor) => Years(value ~/ divisor);
+  @override
+  Years operator %(int divisor) => Years(value % divisor);
 
   @override
   String toString() => value.abs() == 1 ? '$value year' : '$value years';

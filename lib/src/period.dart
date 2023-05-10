@@ -11,6 +11,8 @@ abstract class Period {
 
   Period operator -();
   Period operator *(int factor);
+  Period operator ~/(int divisor);
+  Period operator %(int divisor);
 }
 
 final class CompoundPeriod extends Period {
@@ -29,6 +31,12 @@ final class CompoundPeriod extends Period {
   @override
   CompoundPeriod operator *(int factor) =>
       CompoundPeriod(months * factor, days * factor, seconds * factor);
+  @override
+  CompoundPeriod operator ~/(int divisor) =>
+      CompoundPeriod(months ~/ divisor, days ~/ divisor, seconds ~/ divisor);
+  @override
+  CompoundPeriod operator %(int divisor) =>
+      CompoundPeriod(months % divisor, days % divisor, seconds % divisor);
 
   @override
   bool operator ==(Object other) =>

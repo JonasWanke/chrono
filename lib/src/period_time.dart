@@ -22,6 +22,10 @@ abstract class TimePeriod extends Period
   TimePeriod operator -();
   @override
   TimePeriod operator *(int factor);
+  @override
+  TimePeriod operator ~/(int divisor);
+  @override
+  TimePeriod operator %(int divisor);
 
   @override
   int compareTo(TimePeriod other) =>
@@ -55,6 +59,10 @@ final class Seconds extends TimePeriod {
   Seconds operator -() => Seconds(-value);
   @override
   Seconds operator *(int factor) => Seconds(value * factor);
+  @override
+  Seconds operator ~/(int divisor) => Seconds(value ~/ divisor);
+  @override
+  Seconds operator %(int divisor) => Seconds(value % divisor);
 
   @override
   String toString() => value.abs() == 1 ? '$value second' : '$value seconds';
@@ -72,6 +80,10 @@ abstract class MinutesPeriod extends TimePeriod {
   MinutesPeriod operator -();
   @override
   MinutesPeriod operator *(int factor);
+  @override
+  MinutesPeriod operator ~/(int divisor);
+  @override
+  MinutesPeriod operator %(int divisor);
 }
 
 final class Minutes extends MinutesPeriod {
@@ -93,6 +105,10 @@ final class Minutes extends MinutesPeriod {
   Minutes operator -() => Minutes(-value);
   @override
   Minutes operator *(int factor) => Minutes(value * factor);
+  @override
+  Minutes operator ~/(int divisor) => Minutes(value ~/ divisor);
+  @override
+  Minutes operator %(int divisor) => Minutes(value % divisor);
 
   @override
   String toString() => value.abs() == 1 ? '$value minute' : '$value minutes';
@@ -114,6 +130,10 @@ final class Hours extends MinutesPeriod {
   Hours operator -() => Hours(-value);
   @override
   Hours operator *(int factor) => Hours(value * factor);
+  @override
+  Hours operator ~/(int divisor) => Hours(value ~/ divisor);
+  @override
+  Hours operator %(int divisor) => Hours(value % divisor);
 
   @override
   String toString() => value.abs() == 1 ? '$value hour' : '$value hours';
