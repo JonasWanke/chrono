@@ -3,6 +3,7 @@ import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import 'parser.dart';
+import 'period_days.dart';
 import 'plain_date.dart';
 import 'plain_week_date.dart';
 import 'plain_year.dart';
@@ -49,7 +50,25 @@ final class PlainYearWeek
   Iterable<PlainWeekDate> get days =>
       Weekday.values.map((weekday) => PlainWeekDate(this, weekday));
 
-  // TODO: arithmetic
+  PlainYearWeek operator +(Weeks period) {
+    final newDate = PlainWeekDate(this, Weekday.monday) + period;
+    assert(newDate.weekday == Weekday.monday);
+    return newDate.yearWeek;
+  }
+
+  PlainYearWeek operator -(Weeks period) => this + (-period);
+
+  PlainYearWeek get nextWeek {
+    return week == weekBasedYear.numberOfWeeks
+        ? PlainYearWeek.fromUnchecked(weekBasedYear + const Years(1), 1)
+        : PlainYearWeek.fromUnchecked(weekBasedYear, week + 1);
+  }
+
+  PlainYearWeek get previousWeek {
+    return week == 1
+        ? PlainYearWeek.fromUnchecked(weekBasedYear - const Years(1), 1)
+        : PlainYearWeek.fromUnchecked(weekBasedYear, week - 1);
+  }
 
   Result<PlainYearWeek, String> copyWith({
     PlainYear? weekBasedYear,

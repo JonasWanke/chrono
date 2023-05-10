@@ -3,6 +3,7 @@ import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import 'parser.dart';
+import 'period_days.dart';
 import 'plain_date.dart';
 import 'plain_month.dart';
 import 'plain_week_date.dart';
@@ -69,6 +70,22 @@ final class PlainOrdinalDate
       this == PlainOrdinalDate.todayInLocalZone(clockOverride: clockOverride);
   bool isTodayInUtc({Clock? clockOverride}) =>
       this == PlainOrdinalDate.todayInUtc(clockOverride: clockOverride);
+
+  PlainOrdinalDate operator +(FixedDaysPeriod period) =>
+      (asDate + period).asOrdinalDate;
+  PlainOrdinalDate operator -(FixedDaysPeriod period) => this + (-period);
+
+  PlainOrdinalDate get nextDay {
+    return dayOfYear == year.lengthInDays.value
+        ? PlainOrdinalDate.fromUnchecked(year + const Years(1), 1)
+        : PlainOrdinalDate.fromUnchecked(year, dayOfYear + 1);
+  }
+
+  PlainOrdinalDate get previousDay {
+    return dayOfYear == 1
+        ? PlainOrdinalDate.fromUnchecked(year - const Years(1), 1)
+        : PlainOrdinalDate.fromUnchecked(year, dayOfYear - 1);
+  }
 
   Result<PlainOrdinalDate, String> copyWith({PlainYear? year, int? dayOfYear}) {
     return PlainOrdinalDate.from(

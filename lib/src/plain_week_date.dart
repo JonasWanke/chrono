@@ -68,7 +68,21 @@ final class PlainWeekDate
   bool isTodayInUtc({Clock? clockOverride}) =>
       this == PlainWeekDate.todayInUtc(clockOverride: clockOverride);
 
-  // TODO: arithmetic
+  PlainWeekDate operator +(FixedDaysPeriod period) =>
+      (asDate + period).asWeekDate;
+  PlainWeekDate operator -(FixedDaysPeriod period) => this + (-period);
+
+  PlainWeekDate get nextDate {
+    return weekday == Weekday.values.last
+        ? PlainWeekDate(yearWeek + const Weeks(1), Weekday.values.first)
+        : PlainWeekDate(yearWeek, weekday.next);
+  }
+
+  PlainWeekDate get previousDate {
+    return weekday == Weekday.values.first
+        ? PlainWeekDate(yearWeek - const Weeks(1), Weekday.values.last)
+        : PlainWeekDate(yearWeek, weekday.previous);
+  }
 
   PlainWeekDate copyWith({PlainYearWeek? yearWeek, Weekday? weekday}) =>
       PlainWeekDate(yearWeek ?? this.yearWeek, weekday ?? this.weekday);
