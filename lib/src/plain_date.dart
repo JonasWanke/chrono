@@ -216,6 +216,34 @@ final class PlainDate
     );
   }
 
+  PlainDate copyWithThrowing({
+    PlainYearMonth? yearMonth,
+    PlainYear? year,
+    PlainMonth? month,
+    int? day,
+  }) {
+    assert(yearMonth == null || (year == null && month == null));
+
+    return PlainDate.fromYearMonthAndDayThrowing(
+      yearMonth ?? PlainYearMonth(year ?? this.year, month ?? this.month),
+      day ?? this.day,
+    );
+  }
+
+  PlainDate copyWithUnchecked({
+    PlainYearMonth? yearMonth,
+    PlainYear? year,
+    PlainMonth? month,
+    int? day,
+  }) {
+    assert(yearMonth == null || (year == null && month == null));
+
+    return PlainDate.fromYearMonthAndDayUnchecked(
+      yearMonth ?? PlainYearMonth(year ?? this.year, month ?? this.month),
+      day ?? this.day,
+    );
+  }
+
   @override
   int compareTo(PlainDate other) {
     final result = yearMonth.compareTo(other.yearMonth);

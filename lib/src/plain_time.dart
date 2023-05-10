@@ -84,6 +84,34 @@ final class PlainTime
     );
   }
 
+  PlainTime copyWithThrowing({
+    int? hour,
+    int? minute,
+    int? second,
+    Fixed? fraction,
+  }) {
+    return PlainTime.fromThrowing(
+      hour ?? this.hour,
+      minute ?? this.minute,
+      second ?? this.second,
+      fraction ?? this.fraction,
+    );
+  }
+
+  PlainTime copyWithUnchecked({
+    int? hour,
+    int? minute,
+    int? second,
+    Fixed? fraction,
+  }) {
+    return PlainTime.fromUnchecked(
+      hour ?? this.hour,
+      minute ?? this.minute,
+      second ?? this.second,
+      fraction ?? this.fraction,
+    );
+  }
+
   @override
   int compareTo(PlainTime other) {
     if (hour != other.hour) return hour.compareTo(other.hour);

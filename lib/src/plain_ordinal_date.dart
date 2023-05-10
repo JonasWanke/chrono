@@ -94,6 +94,20 @@ final class PlainOrdinalDate
     );
   }
 
+  PlainOrdinalDate copyWithThrowing({PlainYear? year, int? dayOfYear}) {
+    return PlainOrdinalDate.fromThrowing(
+      year ?? this.year,
+      dayOfYear ?? this.dayOfYear,
+    );
+  }
+
+  PlainOrdinalDate copyWithUnchecked({PlainYear? year, int? dayOfYear}) {
+    return PlainOrdinalDate.fromUnchecked(
+      year ?? this.year,
+      dayOfYear ?? this.dayOfYear,
+    );
+  }
+
   @override
   int compareTo(PlainOrdinalDate other) {
     final result = year.compareTo(other.year);

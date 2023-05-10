@@ -80,6 +80,20 @@ final class PlainYearWeek
     );
   }
 
+  PlainYearWeek copyWithThrowing({PlainYear? weekBasedYear, int? week}) {
+    return PlainYearWeek.fromThrowing(
+      weekBasedYear ?? this.weekBasedYear,
+      week ?? this.week,
+    );
+  }
+
+  PlainYearWeek copyWithUnchecked({PlainYear? weekBasedYear, int? week}) {
+    return PlainYearWeek.fromUnchecked(
+      weekBasedYear ?? this.weekBasedYear,
+      week ?? this.week,
+    );
+  }
+
   @override
   int compareTo(PlainYearWeek other) {
     final result = weekBasedYear.compareTo(other.weekBasedYear);
