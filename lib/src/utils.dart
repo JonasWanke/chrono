@@ -9,6 +9,10 @@ mixin ComparisonOperatorsFromComparable<T> implements Comparable<T> {
 }
 
 extension FixedPlainDateTimeInternal on Fixed {
+  // `Fixed`'s finals have a scale of 16, which we don't need.
+  static final zero = Fixed.fromBigInt(BigInt.zero, scale: 0);
+  static final one = Fixed.fromBigInt(BigInt.one, scale: 0);
+
   int get secondsAsMicroseconds {
     // `Fixed`'s `*` operator performs rounding to a `double` internally,
     // causing precision loss.

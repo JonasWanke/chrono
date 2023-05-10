@@ -25,10 +25,11 @@ final class PlainTime
     if (second < 0 || second >= Duration.secondsPerMinute) {
       return Err('Invalid second: $second');
     }
-    if (fraction != null && (fraction < Fixed.zero || fraction >= Fixed.one)) {
+    if (fraction != null &&
+        (fraction.isNegative || fraction >= FixedPlainDateTimeInternal.one)) {
       return Err('Invalid fraction of a second: $fraction');
     }
-    fraction ??= Fixed.zero;
+    fraction ??= FixedPlainDateTimeInternal.zero;
 
     return Ok(PlainTime.fromUnchecked(hour, minute, second, fraction));
   }
@@ -138,9 +139,8 @@ final class PlainTime
     final hour = this.hour.toString().padLeft(2, '0');
     final minute = this.minute.toString().padLeft(2, '0');
     final second = this.second.toString().padLeft(2, '0');
-    final fraction = this.fraction == Fixed.zero
-        ? ''
-        : this.fraction.toString().substring(1);
+    final fraction =
+        this.fraction.isZero ? '' : this.fraction.toString().substring(1);
     return 'T$hour:$minute:$second$fraction';
   }
 
