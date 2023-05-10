@@ -74,7 +74,7 @@ abstract class MinutesPeriod extends TimePeriod {
   Minutes get inMinutes;
 
   @override
-  Seconds get inSeconds => inMinutes.inSeconds;
+  Seconds get inSeconds => Seconds.perMinute * inMinutes.value;
 
   @override
   MinutesPeriod operator -();
