@@ -4,7 +4,9 @@ import 'package:oxidized/oxidized.dart';
 
 import 'instant.dart';
 import 'parser.dart';
+import 'period.dart';
 import 'period_days.dart';
+import 'period_time.dart';
 import 'plain_date.dart';
 import 'plain_time.dart';
 import 'utils.dart';
@@ -49,11 +51,21 @@ final class PlainDateTime
     );
   }
 
-  // TODO: support finer granularity
-  PlainDateTime operator +(DaysPeriod period) =>
-      PlainDateTime(date + period, time);
-  PlainDateTime operator -(DaysPeriod period) =>
-      PlainDateTime(date - period, time);
+  PlainDateTime operator +(Period period) {
+    final compoundPeriod = period.inMonthsAndDaysAndSeconds;
+    var newDate = date + compoundPeriod.months + compoundPeriod.days;
+
+    final rawNewTimeSinceMidnight =
+        time.secondsSinceMidnight + compoundPeriod.seconds;
+    newDate += Days(rawNewTimeSinceMidnight.value ~/ Seconds.perDay.value);
+    final newTime = PlainTime.fromTimeSinceMidnightUnchecked(
+      Seconds(rawNewTimeSinceMidnight.value.remainder(Seconds.perDay.value)),
+      time.fraction,
+    );
+    return PlainDateTime(newDate, newTime);
+  }
+
+  PlainDateTime operator -(Period period) => this + (-period);
 
   PlainDateTime copyWith({PlainDate? date, PlainTime? time}) =>
       PlainDateTime(date ?? this.date, time ?? this.time);
