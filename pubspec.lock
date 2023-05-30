@@ -229,10 +229,10 @@ packages:
     dependency: "direct main"
     description:
       name: fixed
-      sha256: "928887f443d9e667dc50d1a060a9129833a9910ec1912801c0375ab8fe56b1ac"
+      sha256: a3f30da101780c96787066fe6cc444d32e49f1693b7e4eb5d74191642c83a7bd
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.0"
+    version: "3.0.0"
   fixnum:
     dependency: transitive
     description:
