@@ -3,6 +3,7 @@ import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import 'instant.dart';
+import 'period_time.dart';
 import 'plain_date.dart';
 import 'plain_date_time.dart';
 import 'plain_month.dart';
@@ -12,7 +13,6 @@ import 'plain_week_date.dart';
 import 'plain_year.dart';
 import 'plain_year_month.dart';
 import 'plain_year_week.dart';
-import 'utils.dart';
 import 'weekday.dart';
 
 // Date and time strings only use ASCII, hence we don't need to worry about
@@ -153,9 +153,12 @@ final class Parser {
         .andThen((hourMinuteSecond) {
       return _maybeConsume('.')
           ? _parseIntRaw('fractional second', minDigits: 1).map(
-              (it) => (hourMinuteSecond, Fixed.fromInt(it.$1, scale: it.$2)),
+              (it) => (
+                hourMinuteSecond,
+                FractionalSeconds(Fixed.fromInt(it.$1, scale: it.$2)),
+              ),
             )
-          : Ok((hourMinuteSecond, FixedPlainDateTimeInternal.zero));
+          : Ok((hourMinuteSecond, FractionalSeconds.zero));
     }).andThen((it) {
       final (((hour, minute), second), fraction) = it;
       return PlainTime.from(hour, minute, second, fraction)

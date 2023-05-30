@@ -1,5 +1,4 @@
 import 'package:clock/clock.dart';
-import 'package:fixed/fixed.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
@@ -15,7 +14,7 @@ final class PlainTime
     int hour, [
     int minute = 0,
     int second = 0,
-    Fixed? fraction,
+    FractionalSeconds? fraction,
   ]) {
     if (hour < 0 || hour >= Duration.hoursPerDay) {
       return Err('Invalid hour: $hour');
@@ -29,7 +28,7 @@ final class PlainTime
 
     final fractionError = _validateFraction(fraction);
     if (fractionError != null) return Err(fractionError);
-    fraction ??= FixedPlainDateTimeInternal.zero;
+    fraction ??= FractionalSeconds.zero;
 
     return Ok(PlainTime.fromUnchecked(hour, minute, second, fraction));
   }
@@ -38,45 +37,34 @@ final class PlainTime
     int hour, [
     int minute = 0,
     int second = 0,
-    Fixed? fraction,
+    FractionalSeconds? fraction,
   ]) =>
       from(hour, minute, second, fraction).unwrap();
   PlainTime.fromUnchecked(this.hour, this.minute, this.second, this.fraction);
 
-  static Result<PlainTime, String> fromTimeSinceMidnight(
-    TimePeriod time, [
-    Fixed? fraction,
-  ]) {
+  static Result<PlainTime, String> fromTimeSinceMidnight(TimePeriod time) {
     if (time.isNegative) {
       return Err('Time since midnight must not be negative, but was: $time');
     }
-    if (time.inSeconds.value >= Seconds.perDay.value) {
+    if (time.inFractionalSeconds.value >= FractionalSeconds.perDay.value) {
       return Err(
-        'Time since midnight must not be greater than a day, but was: $time',
+        'Time since midnight must not be ≥ a day, but was: $time',
       );
     }
 
-    final fractionError = _validateFraction(fraction);
-    if (fractionError != null) return Err(fractionError);
-
-    return Ok(PlainTime.fromTimeSinceMidnightUnchecked(time, fraction));
+    return Ok(PlainTime.fromTimeSinceMidnightUnchecked(time));
   }
 
-  factory PlainTime.fromTimeSinceMidnightThrowing(
-    TimePeriod time, [
-    Fixed? fraction,
-  ]) =>
-      fromTimeSinceMidnight(time, fraction).unwrap();
-  factory PlainTime.fromTimeSinceMidnightUnchecked(
-    TimePeriod time, [
-    Fixed? fraction,
-  ]) {
-    final inSeconds = time.inSeconds;
+  factory PlainTime.fromTimeSinceMidnightThrowing(TimePeriod time) =>
+      fromTimeSinceMidnight(time).unwrap();
+  factory PlainTime.fromTimeSinceMidnightUnchecked(TimePeriod time) {
+    final (inSeconds, fraction) = time.inSecondsAndFraction;
+    final (hours, minutes, seconds) = inSeconds.inHoursAndMinutesAndSeconds;
     return PlainTime.fromUnchecked(
-      inSeconds.value ~/ Seconds.perHour.value,
-      (inSeconds.value % Seconds.perHour.value) ~/ Seconds.perMinute.value,
-      inSeconds.value % Seconds.perMinute.value,
-      fraction ?? Fixed.zero,
+      hours.value,
+      minutes.value,
+      seconds.value,
+      fraction,
     );
   }
 
@@ -85,11 +73,8 @@ final class PlainTime
           dateTime.hour,
           dateTime.minute,
           dateTime.second,
-          Fixed.fromInt(
-            dateTime.millisecond * Duration.microsecondsPerMillisecond +
-                dateTime.microsecond,
-            scale: 6,
-          ),
+          FractionalSeconds.millisecond * dateTime.millisecond +
+              FractionalSeconds.microsecond * dateTime.microsecond,
         );
   PlainTime.nowInLocalZone({Clock? clockOverride})
       : this.fromDateTime((clockOverride ?? clock).now().toLocal());
@@ -100,9 +85,9 @@ final class PlainTime
   static Result<PlainTime, FormatException> parse(String value) =>
       Parser.parseTime(value);
 
-  static String? _validateFraction(Fixed? fraction) {
+  static String? _validateFraction(FractionalSeconds? fraction) {
     if (fraction != null &&
-        (fraction.isNegative || fraction >= FixedPlainDateTimeInternal.one)) {
+        (fraction.isNegative || fraction >= FractionalSeconds.second)) {
       return 'Invalid fraction of a second: $fraction';
     }
     return null;
@@ -114,19 +99,34 @@ final class PlainTime
   final int hour;
   final int minute;
   final int second;
-  final Fixed fraction;
+  final FractionalSeconds fraction;
 
   Hours get hoursSinceMidnight => Hours(hour);
   Minutes get minutesSinceMidnight =>
       hoursSinceMidnight.inMinutes + Minutes(minute);
   Seconds get secondsSinceMidnight =>
       minutesSinceMidnight.inSeconds + Seconds(second);
+  FractionalSeconds get fractionalSecondsSinceMidnight =>
+      secondsSinceMidnight.inFractionalSeconds + fraction;
+
+  Result<PlainTime, String> add(TimePeriod period) =>
+      PlainTime.fromTimeSinceMidnight(_add(period));
+  PlainTime addThrowing(TimePeriod period) =>
+      PlainTime.fromTimeSinceMidnightThrowing(_add(period));
+  PlainTime addUnchecked(TimePeriod period) =>
+      PlainTime.fromTimeSinceMidnightUnchecked(_add(period));
+  FractionalSeconds _add(TimePeriod period) =>
+      fractionalSecondsSinceMidnight + period.inFractionalSeconds;
+
+  Result<PlainTime, String> subtract(TimePeriod period) => add(-period);
+  PlainTime subtractThrowing(TimePeriod period) => addThrowing(-period);
+  PlainTime subtractUnchecked(TimePeriod period) => addUnchecked(-period);
 
   Result<PlainTime, String> copyWith({
     int? hour,
     int? minute,
     int? second,
-    Fixed? fraction,
+    FractionalSeconds? fraction,
   }) {
     return PlainTime.from(
       hour ?? this.hour,
@@ -140,7 +140,7 @@ final class PlainTime
     int? hour,
     int? minute,
     int? second,
-    Fixed? fraction,
+    FractionalSeconds? fraction,
   }) {
     return PlainTime.fromThrowing(
       hour ?? this.hour,
@@ -154,7 +154,7 @@ final class PlainTime
     int? hour,
     int? minute,
     int? second,
-    Fixed? fraction,
+    FractionalSeconds? fraction,
   }) {
     return PlainTime.fromUnchecked(
       hour ?? this.hour,
@@ -190,8 +190,9 @@ final class PlainTime
     final hour = this.hour.toString().padLeft(2, '0');
     final minute = this.minute.toString().padLeft(2, '0');
     final second = this.second.toString().padLeft(2, '0');
-    final fraction =
-        this.fraction.isZero ? '' : this.fraction.toString().substring(1);
+    final fraction = this.fraction == FractionalSeconds.zero
+        ? ''
+        : this.fraction.toString().substring(1);
     return 'T$hour:$minute:$second$fraction';
   }
 

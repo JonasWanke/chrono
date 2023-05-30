@@ -13,14 +13,19 @@ abstract class Period {
   Period operator *(int factor);
   Period operator ~/(int divisor);
   Period operator %(int divisor);
+  Period remainder(int divisor);
 }
 
 final class CompoundPeriod extends Period {
-  const CompoundPeriod(this.months, this.days, this.seconds);
+  CompoundPeriod(
+    this.months, [
+    this.days = const Days(0),
+    FractionalSeconds? seconds,
+  ]) : seconds = seconds ?? FractionalSeconds.zero;
 
   final Months months;
   final Days days;
-  final Seconds seconds;
+  final FractionalSeconds seconds;
 
   @override
   CompoundPeriod get inMonthsAndDaysAndSeconds => this;
@@ -37,14 +42,24 @@ final class CompoundPeriod extends Period {
   @override
   CompoundPeriod operator %(int divisor) =>
       CompoundPeriod(months % divisor, days % divisor, seconds % divisor);
+  @override
+  CompoundPeriod remainder(int divisor) {
+    return CompoundPeriod(
+      months.remainder(divisor),
+      days.remainder(divisor),
+      seconds.remainder(divisor),
+    );
+  }
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is CompoundPeriod &&
-          months == other.months &&
-          days == other.days &&
-          seconds == other.seconds);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is CompoundPeriod &&
+            months == other.months &&
+            days == other.days &&
+            seconds == other.seconds);
+  }
+
   @override
   int get hashCode => Object.hash(months, days, seconds);
 

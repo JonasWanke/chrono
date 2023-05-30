@@ -47,7 +47,7 @@ final class PlainDateTime
       time.minute,
       time.second,
       0,
-      time.fraction.secondsAsMicroseconds,
+      time.fraction.inMicrosecondsRounded,
     );
   }
 
@@ -56,11 +56,13 @@ final class PlainDateTime
     var newDate = date + compoundPeriod.months + compoundPeriod.days;
 
     final rawNewTimeSinceMidnight =
-        time.secondsSinceMidnight + compoundPeriod.seconds;
-    newDate += Days(rawNewTimeSinceMidnight.value ~/ Seconds.perDay.value);
+        time.fractionalSecondsSinceMidnight + compoundPeriod.seconds;
+    final (rawNewSecondsSinceMidnight, newFractionSinceMidnight) =
+        rawNewTimeSinceMidnight.inSecondsAndFraction;
+    newDate += Days(rawNewSecondsSinceMidnight.value ~/ Seconds.perDay.value);
     final newTime = PlainTime.fromTimeSinceMidnightUnchecked(
-      Seconds(rawNewTimeSinceMidnight.value.remainder(Seconds.perDay.value)),
-      time.fraction,
+      newFractionSinceMidnight +
+          rawNewSecondsSinceMidnight.remainder(Seconds.perDay.value),
     );
     return PlainDateTime(newDate, newTime);
   }

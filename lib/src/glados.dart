@@ -4,6 +4,7 @@ import 'package:fixed/fixed.dart';
 import 'package:glados/glados.dart';
 
 import 'instant.dart';
+import 'period_time.dart';
 import 'plain_date.dart';
 import 'plain_date_time.dart';
 import 'plain_month.dart';
@@ -124,7 +125,7 @@ extension PlainDateTimeAny on Any {
 
   Generator<Weekday> get weekday => choose(Weekday.values);
 
-  Generator<Fixed> get _fraction {
+  Generator<FractionalSeconds> get _fraction {
     return simple(
       generate: (random, size) {
         final scale = positiveInt(random, math.log(size).ceil()).value;
@@ -133,20 +134,20 @@ extension PlainDateTimeAny on Any {
           BigInt.from(10).pow(scale),
         )(random, size)
             .value;
-        return Fixed.fromBigInt(minorUnits, scale: scale);
+        return FractionalSeconds(Fixed.fromBigInt(minorUnits, scale: scale));
       },
       shrink: (input) sync* {
         if (input.isPositive) {
-          yield Fixed.fromBigInt(
-            input.minorUnits - BigInt.one,
-            scale: input.scale,
-          );
+          yield FractionalSeconds(Fixed.fromBigInt(
+            input.value.minorUnits - BigInt.one,
+            scale: input.value.scale,
+          ));
         }
-        if (input.scale > 1) {
-          yield Fixed.fromBigInt(
-            input.minorUnits ~/ BigInt.from(10),
-            scale: input.scale - 1,
-          );
+        if (input.value.scale > 1) {
+          yield FractionalSeconds(Fixed.fromBigInt(
+            input.value.minorUnits ~/ BigInt.from(10),
+            scale: input.value.scale - 1,
+          ));
         }
       },
     );

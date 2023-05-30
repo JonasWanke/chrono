@@ -1,9 +1,9 @@
 import 'package:clock/clock.dart';
-import 'package:fixed/fixed.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import 'parser.dart';
+import 'period_time.dart';
 import 'plain_date_time.dart';
 import 'utils.dart';
 
@@ -15,7 +15,7 @@ final class Instant
 
   Instant.fromDateTime(DateTime dateTime)
       : secondsSinceUnixEpoch =
-            Fixed.fromInt(dateTime.microsecondsSinceEpoch, scale: 6);
+            FractionalSeconds.microsecond * dateTime.microsecondsSinceEpoch;
   Instant.now({Clock? clockOverride})
       : this.fromDateTime((clockOverride ?? clock).now());
 
@@ -23,7 +23,7 @@ final class Instant
   static Result<Instant, FormatException> parse(String value) =>
       Parser.parseInstant(value);
 
-  final Fixed secondsSinceUnixEpoch;
+  final FractionalSeconds secondsSinceUnixEpoch;
 
   PlainDateTime get plainDateTimeInLocalZone =>
       PlainDateTime.fromDateTime(dateTimeInLocalZone);
@@ -34,7 +34,7 @@ final class Instant
   DateTime get dateTimeInUtc => _getDateTime(isUtc: true);
   DateTime _getDateTime({required bool isUtc}) {
     return DateTime.fromMicrosecondsSinceEpoch(
-      secondsSinceUnixEpoch.secondsAsMicroseconds,
+      secondsSinceUnixEpoch.inMicrosecondsRounded,
       isUtc: isUtc,
     );
   }

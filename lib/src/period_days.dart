@@ -1,3 +1,4 @@
+import 'package:fixed/fixed.dart';
 import 'package:meta/meta.dart';
 
 import 'period.dart';
@@ -13,7 +14,7 @@ abstract class DaysPeriod extends Period {
   @override
   CompoundPeriod get inMonthsAndDaysAndSeconds {
     final (months, days) = inMonthsAndDays;
-    return CompoundPeriod(months, days, const Seconds(0));
+    return CompoundPeriod(months, days, FractionalSeconds(Fixed.zero));
   }
 
   @override
@@ -24,6 +25,8 @@ abstract class DaysPeriod extends Period {
   DaysPeriod operator ~/(int divisor);
   @override
   DaysPeriod operator %(int divisor);
+  @override
+  DaysPeriod remainder(int divisor);
 }
 
 abstract class FixedDaysPeriod extends DaysPeriod
@@ -49,6 +52,8 @@ abstract class FixedDaysPeriod extends DaysPeriod
   FixedDaysPeriod operator ~/(int divisor);
   @override
   FixedDaysPeriod operator %(int divisor);
+  @override
+  FixedDaysPeriod remainder(int divisor);
 
   @override
   int compareTo(FixedDaysPeriod other) =>
@@ -83,6 +88,8 @@ final class Days extends FixedDaysPeriod {
   Days operator ~/(int divisor) => Days(value ~/ divisor);
   @override
   Days operator %(int divisor) => Days(value % divisor);
+  @override
+  Days remainder(int divisor) => Days(value.remainder(divisor));
 
   @override
   String toString() => value.abs() == 1 ? '$value day' : '$value days';
@@ -109,6 +116,8 @@ final class Weeks extends FixedDaysPeriod {
   Weeks operator ~/(int divisor) => Weeks(value ~/ divisor);
   @override
   Weeks operator %(int divisor) => Weeks(value % divisor);
+  @override
+  Weeks remainder(int divisor) => Weeks(value.remainder(divisor));
 
   @override
   String toString() => value.abs() == 1 ? '$value week' : '$value weeks';
@@ -147,6 +156,8 @@ abstract class MonthsPeriod extends DaysPeriod
   MonthsPeriod operator ~/(int divisor);
   @override
   MonthsPeriod operator %(int divisor);
+  @override
+  MonthsPeriod remainder(int divisor);
 
   @override
   int compareTo(MonthsPeriod other) =>
@@ -183,6 +194,8 @@ final class Months extends MonthsPeriod {
   Months operator ~/(int divisor) => Months(value ~/ divisor);
   @override
   Months operator %(int divisor) => Months(value % divisor);
+  @override
+  Months remainder(int divisor) => Months(value.remainder(divisor));
 
   @override
   String toString() => value.abs() == 1 ? '$value month' : '$value months';
@@ -211,6 +224,8 @@ final class Years extends MonthsPeriod {
   Years operator ~/(int divisor) => Years(value ~/ divisor);
   @override
   Years operator %(int divisor) => Years(value % divisor);
+  @override
+  Years remainder(int divisor) => Years(value.remainder(divisor));
 
   @override
   String toString() => value.abs() == 1 ? '$value year' : '$value years';
