@@ -24,4 +24,4 @@ extension ResultWithStringErrorPlainDateTimeInternal<T extends Object>
     if (isErr()) throw FormatException(unwrapErr());
     return unwrap();
   }
-} 
+}
