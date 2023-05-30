@@ -1,8 +1,8 @@
 import 'package:clock/clock.dart';
 import 'package:oxidized/oxidized.dart';
 
-import 'period_days.dart';
-import 'utils.dart';
+import '../../utils.dart';
+import '../period.dart';
 
 enum PlainMonth
     with ComparisonOperatorsFromComparable<PlainMonth>

@@ -2,18 +2,18 @@ import 'package:fixed/fixed.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
-import 'instant.dart';
-import 'period_time.dart';
-import 'plain_date.dart';
-import 'plain_date_time.dart';
-import 'plain_month.dart';
-import 'plain_ordinal_date.dart';
-import 'plain_time.dart';
-import 'plain_week_date.dart';
-import 'plain_year.dart';
-import 'plain_year_month.dart';
-import 'plain_year_week.dart';
-import 'weekday.dart';
+import 'date/date.dart';
+import 'date/month/month.dart';
+import 'date/month/year_month.dart';
+import 'date/ordinal_date.dart';
+import 'date/week/week_date.dart';
+import 'date/week/year_week.dart';
+import 'date/weekday.dart';
+import 'date/year.dart';
+import 'date_time/date_time.dart';
+import 'date_time/instant.dart';
+import 'time/period.dart';
+import 'time/time.dart';
 
 // Date and time strings only use ASCII, hence we don't need to worry about
 // proper Unicode handling.

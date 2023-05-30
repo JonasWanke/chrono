@@ -2,9 +2,9 @@ import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
-import 'parser.dart';
-import 'period_time.dart';
-import 'utils.dart';
+import '../parser.dart';
+import '../utils.dart';
+import 'period.dart';
 
 @immutable
 final class PlainTime

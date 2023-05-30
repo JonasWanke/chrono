@@ -2,15 +2,15 @@ import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
-import 'parser.dart';
-import 'period_days.dart';
-import 'plain_date.dart';
-import 'plain_month.dart';
-import 'plain_ordinal_date.dart';
-import 'plain_year.dart';
-import 'plain_year_week.dart';
-import 'utils.dart';
-import 'weekday.dart';
+import '../../parser.dart';
+import '../../utils.dart';
+import '../date.dart';
+import '../month/month.dart';
+import '../ordinal_date.dart';
+import '../period.dart';
+import '../weekday.dart';
+import '../year.dart';
+import 'year_week.dart';
 
 @immutable
 final class PlainWeekDate

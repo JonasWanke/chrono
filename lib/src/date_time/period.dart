@@ -1,7 +1,7 @@
 import 'package:meta/meta.dart';
 
-import 'period_days.dart';
-import 'period_time.dart';
+import '../date/period.dart';
+import '../time/period.dart';
 
 @immutable
 abstract class Period {

@@ -1,8 +1,8 @@
 import 'package:fixed/fixed.dart';
 
-import 'period.dart';
-import 'period_days.dart';
-import 'utils.dart';
+import '../date/period.dart';
+import '../date_time/period.dart';
+import '../utils.dart';
 
 abstract class TimePeriod extends Period
     with ComparisonOperatorsFromComparable<TimePeriod>

@@ -2,14 +2,14 @@ import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
-import 'parser.dart';
-import 'period_days.dart';
-import 'plain_date.dart';
-import 'plain_month.dart';
-import 'plain_week_date.dart';
-import 'plain_year.dart';
-import 'plain_year_month.dart';
-import 'utils.dart';
+import '../parser.dart';
+import '../utils.dart';
+import 'date.dart';
+import 'month/month.dart';
+import 'month/year_month.dart';
+import 'period.dart';
+import 'week/week_date.dart';
+import 'year.dart';
 
 @immutable
 final class PlainOrdinalDate

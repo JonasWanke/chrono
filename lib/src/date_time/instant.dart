@@ -2,10 +2,10 @@ import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
-import 'parser.dart';
-import 'period_time.dart';
-import 'plain_date_time.dart';
-import 'utils.dart';
+import '../parser.dart';
+import '../time/period.dart';
+import '../utils.dart';
+import 'date_time.dart';
 
 @immutable
 final class Instant

@@ -1,12 +1,12 @@
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 
-import 'period_days.dart';
-import 'plain_date.dart';
-import 'plain_month.dart';
-import 'plain_year_month.dart';
-import 'plain_year_week.dart';
-import 'utils.dart';
+import '../utils.dart';
+import 'date.dart';
+import 'month/month.dart';
+import 'month/year_month.dart';
+import 'period.dart';
+import 'week/year_week.dart';
 import 'weekday.dart';
 
 /// | Value |   Meaning   |

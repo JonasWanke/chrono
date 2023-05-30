@@ -1,9 +1,9 @@
 import 'package:fixed/fixed.dart';
 import 'package:meta/meta.dart';
 
-import 'period.dart';
-import 'period_time.dart';
-import 'utils.dart';
+import '../date_time/period.dart';
+import '../time/period.dart';
+import '../utils.dart';
 
 @immutable
 abstract class DaysPeriod extends Period {
