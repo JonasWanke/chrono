@@ -66,9 +66,12 @@ final class FractionalSeconds extends TimePeriod {
 
   final Fixed value;
 
-  int get inNanosecondsRounded => Fixed.copyWith(value, scale: 9).toInt();
-  int get inMicrosecondsRounded => Fixed.copyWith(value, scale: 6).toInt();
-  int get inMillisecondsRounded => Fixed.copyWith(value, scale: 3).toInt();
+  int get inNanosecondsRounded =>
+      Fixed.copyWith(value, scale: 9).minorUnits.toInt();
+  int get inMicrosecondsRounded =>
+      Fixed.copyWith(value, scale: 6).minorUnits.toInt();
+  int get inMillisecondsRounded =>
+      Fixed.copyWith(value, scale: 3).minorUnits.toInt();
 
   @override
   FractionalSeconds get inFractionalSeconds => this;
