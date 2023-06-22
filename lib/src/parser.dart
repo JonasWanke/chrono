@@ -77,6 +77,7 @@ final class Parser {
 
   Result<PlainDateTime, FormatException> _parseDateTime() {
     return _parseDate()
+        .andAlso(() => _requireDesignator('T', 'time', isCaseSensitive: false))
         .andThen((date) => _parseTime().map((it) => PlainDateTime(date, it)));
   }
 
@@ -139,8 +140,7 @@ final class Parser {
       );
     }
 
-    return _requireDesignator('T', 'time', isCaseSensitive: false)
-        .andThen((_) => parse('hour', maxValue: 23))
+    return parse('hour', maxValue: 23)
         .andAlso(() => _requireSeparator({':'}, 'hour', 'minute'))
         .andThen(
           (hour) => parse('minute', maxValue: 59).map((it) => (hour, it)),

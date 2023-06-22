@@ -90,7 +90,7 @@ final class PlainDateTime
   int get hashCode => Object.hash(date, time);
 
   @override
-  String toString() => '$date$time';
+  String toString() => '${date}T$time';
 
   String toJson() => toString();
 }

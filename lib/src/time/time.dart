@@ -193,7 +193,7 @@ final class PlainTime
     final fraction = this.fraction == FractionalSeconds.zero
         ? ''
         : this.fraction.value.toString().substring(1);
-    return 'T$hour:$minute:$second$fraction';
+    return '$hour:$minute:$second$fraction';
   }
 
   String toJson() => toString();
