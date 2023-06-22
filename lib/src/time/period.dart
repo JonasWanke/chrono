@@ -37,14 +37,24 @@ abstract class TimePeriod extends Period
   TimePeriod remainder(int divisor);
 
   @override
-  int compareTo(TimePeriod other) =>
-      inFractionalSeconds.value.compareTo(other.inFractionalSeconds.value);
+  int compareTo(TimePeriod other) {
+    var thisValue = inFractionalSeconds.value;
+    var otherValue = other.inFractionalSeconds.value;
+    if (thisValue.scale < otherValue.scale) {
+      thisValue = Fixed.copyWith(thisValue, scale: otherValue.scale);
+    } else if (otherValue.scale < thisValue.scale) {
+      otherValue = Fixed.copyWith(otherValue, scale: thisValue.scale);
+    }
+    return thisValue.minorUnits.compareTo(otherValue.minorUnits);
+  }
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Seconds &&
-          inFractionalSeconds.value == other.inFractionalSeconds.value);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is TimePeriod &&
+            inFractionalSeconds.value == other.inFractionalSeconds.value);
+  }
+
   @override
   int get hashCode => inFractionalSeconds.value.hashCode;
 }
