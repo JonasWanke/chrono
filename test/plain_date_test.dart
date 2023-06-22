@@ -22,8 +22,8 @@ void main() {
     expect(date, date.asOrdinalDate.asDate);
     expect(date, date.asWeekDate.asDate);
   });
-  Glados<PlainTime>().test('PlainTime', (timet) {
-    expect(timet, PlainTime.fromJson(timet.toJson()));
+  Glados<PlainTime>().test('PlainTime', (time) {
+    expect(time, PlainTime.fromJson(time.toJson()));
   });
   Glados<PlainDateTime>().test('PlainDateTime', (dateTime) {
     expect(dateTime, PlainDateTime.fromJson(dateTime.toJson()));
