@@ -192,7 +192,7 @@ final class PlainTime
     final second = this.second.toString().padLeft(2, '0');
     final fraction = this.fraction == FractionalSeconds.zero
         ? ''
-        : this.fraction.toString().substring(1);
+        : this.fraction.value.toString().substring(1);
     return 'T$hour:$minute:$second$fraction';
   }
 
