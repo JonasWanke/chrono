@@ -1,77 +1,80 @@
+import 'dart:core';
+import 'dart:core' as core;
+
 import 'package:glados/glados.dart';
 import 'package:plain_date_time/plain_date_time.dart';
 
 void main() {
-  setPlainDateTimeGladosDefaults();
+  setDateTimeGladosDefaults();
 
-  Glados<PlainYear>().test('PlainYear', (year) {
+  Glados<Year>().test('Year', (year) {
     _checkEquals(year);
-    expect(year, PlainYear.fromJson(year.toJson()));
+    expect(year, Year.fromJson(year.toJson()));
   });
-  Glados<PlainMonth>().test('PlainMonth', (month) {
+  Glados<Month>().test('Month', (month) {
     _checkEquals(month);
-    expect(month, PlainMonth.fromJson(month.toJson()));
+    expect(month, Month.fromJson(month.toJson()));
   });
-  Glados<PlainYearMonth>().test('PlainYearMonth', (yearMonth) {
+  Glados<YearMonth>().test('YearMonth', (yearMonth) {
     _checkEquals(yearMonth);
-    expect(yearMonth, PlainYearMonth.fromJson(yearMonth.toJson()));
+    expect(yearMonth, YearMonth.fromJson(yearMonth.toJson()));
   });
-  Glados<PlainYearWeek>().test('PlainYearWeek', (yearWeek) {
+  Glados<YearWeek>().test('YearWeek', (yearWeek) {
     _checkEquals(yearWeek);
-    expect(yearWeek, PlainYearWeek.fromJson(yearWeek.toJson()));
+    expect(yearWeek, YearWeek.fromJson(yearWeek.toJson()));
   });
-  Glados<PlainDate>().test('PlainDate', (date) {
+  Glados<Date>().test('Date', (date) {
     _checkEquals(date);
-    expect(date, PlainDate.fromJson(date.toJson()));
-    expect(date, PlainDate.fromDaysSinceUnixEpoch(date.daysSinceUnixEpoch));
+    expect(date, Date.fromJson(date.toJson()));
+    expect(date, Date.fromDaysSinceUnixEpoch(date.daysSinceUnixEpoch));
     expect(date, date.asOrdinalDate.asDate);
     expect(date, date.asWeekDate.asDate);
   });
-  Glados<PlainTime>().test('PlainTime', (time) {
+  Glados<Time>().test('Time', (time) {
     _checkEquals(time);
-    expect(time, PlainTime.fromJson(time.toJson()));
+    expect(time, Time.fromJson(time.toJson()));
   });
-  Glados<PlainDateTime>().test('PlainDateTime', (dateTime) {
+  Glados<DateTime>().test('DateTime', (dateTime) {
     _checkEquals(dateTime);
-    expect(dateTime, PlainDateTime.fromJson(dateTime.toJson()));
+    expect(dateTime, DateTime.fromJson(dateTime.toJson()));
   });
   Glados<Instant>().test('Instant', (instant) {
     _checkEquals(instant);
     expect(instant, Instant.fromJson(instant.toJson()));
-    expect(instant, instant.plainDateTimeInLocalZone.inLocalZone);
-    expect(instant, instant.plainDateTimeInUtc.inUtc);
+    expect(instant, instant.dateTimeInLocalZone.inLocalZone);
+    expect(instant, instant.dateTimeInUtc.inUtc);
   });
   Glados<Weekday>().test('Weekday', (weekday) {
     _checkEquals(weekday);
     expect(weekday, Weekday.fromJson(weekday.toJson()));
   });
-  Glados<PlainOrdinalDate>().test('PlainOrdinalDate', (ordinalDate) {
+  Glados<OrdinalDate>().test('OrdinalDate', (ordinalDate) {
     _checkEquals(ordinalDate);
-    expect(ordinalDate, PlainOrdinalDate.fromJson(ordinalDate.toJson()));
+    expect(ordinalDate, OrdinalDate.fromJson(ordinalDate.toJson()));
     expect(ordinalDate, ordinalDate.asDate.asOrdinalDate);
     expect(ordinalDate, ordinalDate.asWeekDate.asOrdinalDate);
   });
-  Glados<PlainWeekDate>().test('PlainWeekDate', (weekDate) {
+  Glados<WeekDate>().test('WeekDate', (weekDate) {
     _checkEquals(weekDate);
-    expect(weekDate, PlainWeekDate.fromJson(weekDate.toJson()));
+    expect(weekDate, WeekDate.fromJson(weekDate.toJson()));
     expect(weekDate, weekDate.asDate.asWeekDate);
     expect(weekDate, weekDate.asOrdinalDate.asWeekDate);
   });
-  Glados<DateTime>().test('DateTime compatibility', (dateTimeInLocalZone) {
+  Glados<core.DateTime>().test('DateTime compatibility', (dateTimeInLocalZone) {
     expect(
       dateTimeInLocalZone,
-      Instant.fromDateTime(dateTimeInLocalZone).dateTimeInLocalZone,
+      Instant.fromDart(dateTimeInLocalZone).dateTimeInLocalZone,
     );
     expect(
       dateTimeInLocalZone,
-      PlainDateTime.fromDateTime(dateTimeInLocalZone).dateTimeInLocalZone,
+      DateTime.fromDart(dateTimeInLocalZone).dartDateTimeInLocalZone,
     );
 
     final dateTimeInUtc = dateTimeInLocalZone.toUtc();
-    expect(dateTimeInUtc, Instant.fromDateTime(dateTimeInUtc).dateTimeInUtc);
+    expect(dateTimeInUtc, Instant.fromDart(dateTimeInUtc).dateTimeInUtc);
     expect(
       dateTimeInUtc,
-      PlainDateTime.fromDateTime(dateTimeInUtc).dateTimeInUtc,
+      DateTime.fromDart(dateTimeInUtc).dartDateTimeInUtc,
     );
   });
 }

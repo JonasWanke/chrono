@@ -1,3 +1,6 @@
+import 'dart:core';
+import 'dart:core' as core;
+
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
@@ -13,11 +16,11 @@ final class Instant
     implements Comparable<Instant> {
   const Instant.fromSecondsSinceUnixEpoch(this.secondsSinceUnixEpoch);
 
-  Instant.fromDateTime(DateTime dateTime)
+  Instant.fromDart(core.DateTime dateTime)
       : secondsSinceUnixEpoch =
             FractionalSeconds.microsecond * dateTime.microsecondsSinceEpoch;
   Instant.now({Clock? clockOverride})
-      : this.fromDateTime((clockOverride ?? clock).now());
+      : this.fromDart((clockOverride ?? clock).now());
 
   factory Instant.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<Instant, FormatException> parse(String value) =>
@@ -25,15 +28,14 @@ final class Instant
 
   final FractionalSeconds secondsSinceUnixEpoch;
 
-  PlainDateTime get plainDateTimeInLocalZone =>
-      PlainDateTime.fromDateTime(dateTimeInLocalZone);
-  PlainDateTime get plainDateTimeInUtc =>
-      PlainDateTime.fromDateTime(dateTimeInUtc);
+  DateTime get dateTimeInLocalZone =>
+      DateTime.fromDart(dartDateTimeInLocalZone);
+  DateTime get dateTimeInUtc => DateTime.fromDart(dartDateTimeInUtc);
 
-  DateTime get dateTimeInLocalZone => _getDateTime(isUtc: false);
-  DateTime get dateTimeInUtc => _getDateTime(isUtc: true);
-  DateTime _getDateTime({required bool isUtc}) {
-    return DateTime.fromMicrosecondsSinceEpoch(
+  core.DateTime get dartDateTimeInLocalZone => _getDateTime(isUtc: false);
+  core.DateTime get dartDateTimeInUtc => _getDateTime(isUtc: true);
+  core.DateTime _getDateTime({required bool isUtc}) {
+    return core.DateTime.fromMicrosecondsSinceEpoch(
       secondsSinceUnixEpoch.inMicrosecondsRounded,
       isUtc: isUtc,
     );
@@ -54,7 +56,7 @@ final class Instant
   int get hashCode => secondsSinceUnixEpoch.hashCode;
 
   @override
-  String toString() => '${plainDateTimeInUtc}Z';
+  String toString() => '${dateTimeInUtc}Z';
 
   String toJson() => toString();
 }

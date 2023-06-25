@@ -1,3 +1,6 @@
+import 'dart:core';
+import 'dart:core' as core;
+
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
@@ -10,84 +13,80 @@ import '../year.dart';
 import 'month.dart';
 
 @immutable
-final class PlainYearMonth
-    with ComparisonOperatorsFromComparable<PlainYearMonth>
-    implements Comparable<PlainYearMonth> {
-  const PlainYearMonth(this.year, [this.month = PlainMonth.january]);
+final class YearMonth
+    with ComparisonOperatorsFromComparable<YearMonth>
+    implements Comparable<YearMonth> {
+  const YearMonth(this.year, [this.month = Month.january]);
 
-  PlainYearMonth.fromDateTime(DateTime dateTime)
-      : year = PlainYear.fromDateTime(dateTime),
-        month = PlainMonth.fromDateTime(dateTime);
-  PlainYearMonth.currentInLocalZone({Clock? clockOverride})
-      : this.fromDateTime((clockOverride ?? clock).now().toLocal());
-  PlainYearMonth.currentInUtc({Clock? clockOverride})
-      : this.fromDateTime((clockOverride ?? clock).now().toUtc());
+  YearMonth.fromDart(core.DateTime dateTime)
+      : year = Year.fromDart(dateTime),
+        month = Month.fromDart(dateTime);
+  YearMonth.currentInLocalZone({Clock? clockOverride})
+      : this.fromDart((clockOverride ?? clock).now().toLocal());
+  YearMonth.currentInUtc({Clock? clockOverride})
+      : this.fromDart((clockOverride ?? clock).now().toUtc());
 
-  factory PlainYearMonth.fromJson(String json) =>
-      unwrapParserResult(parse(json));
-  static Result<PlainYearMonth, FormatException> parse(String value) =>
+  factory YearMonth.fromJson(String json) => unwrapParserResult(parse(json));
+  static Result<YearMonth, FormatException> parse(String value) =>
       Parser.parseYearMonth(value);
 
-  final PlainYear year;
-  final PlainMonth month;
+  final Year year;
+  final Month month;
 
   bool isCurrentInLocalZone({Clock? clockOverride}) =>
-      this == PlainYearMonth.currentInLocalZone(clockOverride: clockOverride);
+      this == YearMonth.currentInLocalZone(clockOverride: clockOverride);
   bool isCurrentInUtc({Clock? clockOverride}) =>
-      this == PlainYearMonth.currentInUtc(clockOverride: clockOverride);
+      this == YearMonth.currentInUtc(clockOverride: clockOverride);
 
   /// The number of days in this year and month.
   ///
   /// The result is always in the range [28, 31].
   Days get lengthInDays {
     // https://howardhinnant.github.io/date_algorithms.html#last_day_of_month
-    return month != PlainMonth.february || year.isCommonYear
+    return month != Month.february || year.isCommonYear
         ? month.lengthInDaysInCommonYear
         : const Days(29);
   }
 
-  PlainDate get firstDay => PlainDate.fromYearMonthAndDayUnchecked(this, 1);
-  PlainDate get lastDay =>
-      PlainDate.fromYearMonthAndDayUnchecked(this, lengthInDays.value);
-  Iterable<PlainDate> get days {
+  Date get firstDay => Date.fromYearMonthAndDayUnchecked(this, 1);
+  Date get lastDay =>
+      Date.fromYearMonthAndDayUnchecked(this, lengthInDays.value);
+  Iterable<Date> get days {
     return Iterable.generate(
       lengthInDays.value,
-      (it) => PlainDate.fromYearMonthAndDayUnchecked(this, it + 1),
+      (it) => Date.fromYearMonthAndDayUnchecked(this, it + 1),
     );
   }
 
-  PlainYearMonth operator +(MonthsPeriod period) {
+  YearMonth operator +(MonthsPeriod period) {
     final (years, months) = period.inYearsAndMonths;
 
     final rawNewMonth = this.month.number + months.value % Months.perYear.value;
     final (yearAdjustment, month) = switch (rawNewMonth) {
-      < PlainMonth.minNumber => (
+      < Month.minNumber => (
           -const Years(1),
           rawNewMonth + Months.perYear.value
         ),
-      > PlainMonth.maxNumber => (
-          const Years(1),
-          rawNewMonth - Months.perYear.value
-        ),
+      > Month.maxNumber => (const Years(1), rawNewMonth - Months.perYear.value),
       _ => (const Years(0), rawNewMonth),
     };
 
-    return PlainYearMonth(
+    return YearMonth(
       year + years + yearAdjustment,
-      PlainMonth.fromNumberUnchecked(month),
+      Month.fromNumberUnchecked(month),
     );
   }
 
-  PlainYearMonth operator -(MonthsPeriod period) => this + (-period);
+  YearMonth operator -(MonthsPeriod period) => this + (-period);
 
-  PlainYearMonth get nextMonth => this + const Months(1);
-  PlainYearMonth get previousMonth => this - const Months(1);
+  YearMonth get nextMonth => this + const Months(1);
+  YearMonth get previousMonth => this - const Months(1);
 
-  PlainYearMonth copyWith({PlainYear? year, PlainMonth? month}) =>
-      PlainYearMonth(year ?? this.year, month ?? this.month);
+  YearMonth copyWith({Year? year, Month? month}) =>
+      YearMonth(year ?? this.year, month ?? this.month);
 
   @override
-  int compareTo(PlainYearMonth other) {
+  int compareTo(YearMonth other) {
     final result = year.compareTo(other.year);
     if (result != 0) return result;
 
@@ -97,7 +96,7 @@ final class PlainYearMonth
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is PlainYearMonth && year == other.year && month == other.month);
+        (other is YearMonth && year == other.year && month == other.month);
   }
 
   @override

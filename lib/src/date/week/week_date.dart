@@ -1,3 +1,6 @@
+import 'dart:core';
+import 'dart:core' as core;
+
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
@@ -13,37 +16,36 @@ import '../year.dart';
 import 'year_week.dart';
 
 @immutable
-final class PlainWeekDate
-    with ComparisonOperatorsFromComparable<PlainWeekDate>
-    implements Comparable<PlainWeekDate> {
-  const PlainWeekDate(this.yearWeek, this.weekday);
+final class WeekDate
+    with ComparisonOperatorsFromComparable<WeekDate>
+    implements Comparable<WeekDate> {
+  const WeekDate(this.yearWeek, this.weekday);
 
-  PlainWeekDate.fromDate(PlainDate date) : this(date.yearWeek, date.weekday);
+  WeekDate.fromDate(Date date) : this(date.yearWeek, date.weekday);
 
-  PlainWeekDate.fromDateTime(DateTime dateTime)
-      : this.fromDate(PlainDate.fromDateTime(dateTime));
-  PlainWeekDate.todayInLocalZone({Clock? clockOverride})
-      : this.fromDateTime((clockOverride ?? clock).now().toLocal());
-  PlainWeekDate.todayInUtc({Clock? clockOverride})
-      : this.fromDateTime((clockOverride ?? clock).now().toUtc());
+  WeekDate.fromDart(core.DateTime dateTime)
+      : this.fromDate(Date.fromDart(dateTime));
+  WeekDate.todayInLocalZone({Clock? clockOverride})
+      : this.fromDart((clockOverride ?? clock).now().toLocal());
+  WeekDate.todayInUtc({Clock? clockOverride})
+      : this.fromDart((clockOverride ?? clock).now().toUtc());
 
-  factory PlainWeekDate.fromJson(String json) =>
-      unwrapParserResult(parse(json));
-  static Result<PlainWeekDate, FormatException> parse(String value) =>
+  factory WeekDate.fromJson(String json) => unwrapParserResult(parse(json));
+  static Result<WeekDate, FormatException> parse(String value) =>
       Parser.parseWeekDate(value);
 
-  final PlainYearWeek yearWeek;
+  final YearWeek yearWeek;
   final Weekday weekday;
 
-  PlainOrdinalDate get asOrdinalDate {
+  OrdinalDate get asOrdinalDate {
     // https://en.wikipedia.org/wiki/ISO_week_date#Calculating_an_ordinal_or_month_date_from_a_week_date
     final january4 =
-        PlainDate.fromUnchecked(yearWeek.weekBasedYear, PlainMonth.january, 4);
+        Date.fromUnchecked(yearWeek.weekBasedYear, Month.january, 4);
 
     final rawDayOfYear = Days.perWeek.value * yearWeek.week +
         weekday.number -
         (january4.weekday.number + 3);
-    final PlainYear year;
+    final Year year;
     final int dayOfYear;
     if (rawDayOfYear < 1) {
       year = yearWeek.weekBasedYear - const Years(1);
@@ -58,57 +60,56 @@ final class PlainWeekDate
         dayOfYear = rawDayOfYear;
       }
     }
-    return PlainOrdinalDate.fromUnchecked(year, dayOfYear);
+    return OrdinalDate.fromUnchecked(year, dayOfYear);
   }
 
-  PlainDate get asDate => asOrdinalDate.asDate;
+  Date get asDate => asOrdinalDate.asDate;
 
   bool isTodayInLocalZone({Clock? clockOverride}) =>
-      this == PlainWeekDate.todayInLocalZone(clockOverride: clockOverride);
+      this == WeekDate.todayInLocalZone(clockOverride: clockOverride);
   bool isTodayInUtc({Clock? clockOverride}) =>
-      this == PlainWeekDate.todayInUtc(clockOverride: clockOverride);
+      this == WeekDate.todayInUtc(clockOverride: clockOverride);
 
-  PlainWeekDate operator +(FixedDaysPeriod period) =>
-      (asDate + period).asWeekDate;
-  PlainWeekDate operator -(FixedDaysPeriod period) => this + (-period);
+  WeekDate operator +(FixedDaysPeriod period) => (asDate + period).asWeekDate;
+  WeekDate operator -(FixedDaysPeriod period) => this + (-period);
 
-  PlainWeekDate get nextDate {
+  WeekDate get nextDate {
     return weekday == Weekday.values.last
-        ? PlainWeekDate(yearWeek + const Weeks(1), Weekday.values.first)
-        : PlainWeekDate(yearWeek, weekday.next);
+        ? WeekDate(yearWeek + const Weeks(1), Weekday.values.first)
+        : WeekDate(yearWeek, weekday.next);
   }
 
-  PlainWeekDate get previousDate {
+  WeekDate get previousDate {
     return weekday == Weekday.values.first
-        ? PlainWeekDate(yearWeek - const Weeks(1), Weekday.values.last)
-        : PlainWeekDate(yearWeek, weekday.previous);
+        ? WeekDate(yearWeek - const Weeks(1), Weekday.values.last)
+        : WeekDate(yearWeek, weekday.previous);
   }
 
-  PlainWeekDate nextOrSame(Weekday weekday) {
+  WeekDate nextOrSame(Weekday weekday) {
     // ignore: avoid_returning_this
     if (weekday == this.weekday) return this;
 
-    return PlainWeekDate(
+    return WeekDate(
       weekday < this.weekday ? yearWeek.nextWeek : yearWeek,
       weekday,
     );
   }
 
-  PlainWeekDate previousOrSame(Weekday weekday) {
+  WeekDate previousOrSame(Weekday weekday) {
     // ignore: avoid_returning_this
     if (weekday == this.weekday) return this;
 
-    return PlainWeekDate(
+    return WeekDate(
       weekday > this.weekday ? yearWeek.previousWeek : yearWeek,
       weekday,
     );
   }
 
-  PlainWeekDate copyWith({PlainYearWeek? yearWeek, Weekday? weekday}) =>
-      PlainWeekDate(yearWeek ?? this.yearWeek, weekday ?? this.weekday);
+  WeekDate copyWith({YearWeek? yearWeek, Weekday? weekday}) =>
+      WeekDate(yearWeek ?? this.yearWeek, weekday ?? this.weekday);
 
   @override
-  int compareTo(PlainWeekDate other) {
+  int compareTo(WeekDate other) {
     final result = yearWeek.compareTo(other.yearWeek);
     if (result != 0) return result;
 
@@ -118,7 +119,7 @@ final class PlainWeekDate
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is PlainWeekDate &&
+        (other is WeekDate &&
             yearWeek == other.yearWeek &&
             weekday == other.weekday);
   }

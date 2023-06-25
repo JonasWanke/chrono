@@ -1,3 +1,6 @@
+import 'dart:core';
+import 'dart:core' as core;
+
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
@@ -12,104 +15,98 @@ import 'week/week_date.dart';
 import 'year.dart';
 
 @immutable
-final class PlainOrdinalDate
-    with ComparisonOperatorsFromComparable<PlainOrdinalDate>
-    implements Comparable<PlainOrdinalDate> {
-  static Result<PlainOrdinalDate, String> from(PlainYear year, int dayOfYear) {
+final class OrdinalDate
+    with ComparisonOperatorsFromComparable<OrdinalDate>
+    implements Comparable<OrdinalDate> {
+  static Result<OrdinalDate, String> from(Year year, int dayOfYear) {
     if (dayOfYear < 1 || dayOfYear > year.lengthInDays.value) {
       return Err('Invalid day of year for year $year: $dayOfYear');
     }
-    return Ok(PlainOrdinalDate.fromUnchecked(year, dayOfYear));
+    return Ok(OrdinalDate.fromUnchecked(year, dayOfYear));
   }
 
-  factory PlainOrdinalDate.fromThrowing(PlainYear year, int dayOfYear) =>
+  factory OrdinalDate.fromThrowing(Year year, int dayOfYear) =>
       from(year, dayOfYear).unwrap();
-  PlainOrdinalDate.fromUnchecked(this.year, this.dayOfYear);
+  OrdinalDate.fromUnchecked(this.year, this.dayOfYear);
 
-  PlainOrdinalDate.fromDate(PlainDate date)
+  OrdinalDate.fromDate(Date date)
       : this.fromUnchecked(date.year, date.dayOfYear);
 
-  PlainOrdinalDate.fromDateTime(DateTime dateTime)
-      : this.fromDate(PlainDate.fromDateTime(dateTime));
-  PlainOrdinalDate.todayInLocalZone({Clock? clockOverride})
-      : this.fromDateTime((clockOverride ?? clock).now().toLocal());
-  PlainOrdinalDate.todayInUtc({Clock? clockOverride})
-      : this.fromDateTime((clockOverride ?? clock).now().toUtc());
+  OrdinalDate.fromDart(core.DateTime dateTime)
+      : this.fromDate(Date.fromDart(dateTime));
+  OrdinalDate.todayInLocalZone({Clock? clockOverride})
+      : this.fromDart((clockOverride ?? clock).now().toLocal());
+  OrdinalDate.todayInUtc({Clock? clockOverride})
+      : this.fromDart((clockOverride ?? clock).now().toUtc());
 
-  factory PlainOrdinalDate.fromJson(String json) =>
-      unwrapParserResult(parse(json));
-  static Result<PlainOrdinalDate, FormatException> parse(String value) =>
+  factory OrdinalDate.fromJson(String json) => unwrapParserResult(parse(json));
+  static Result<OrdinalDate, FormatException> parse(String value) =>
       Parser.parseOrdinalDate(value);
 
-  final PlainYear year;
+  final Year year;
   final int dayOfYear;
 
-  PlainDate get asDate {
-    int firstDayOfYear(PlainMonth month) {
+  Date get asDate {
+    int firstDayOfYear(Month month) {
       final firstDayOfYearList = year.isCommonYear
           ? const [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335]
           : const [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336];
       return firstDayOfYearList[month.index];
     }
 
-    final rawMonth = PlainYearMonth(
+    final rawMonth = YearMonth(
       year,
-      PlainMonth.fromNumberUnchecked((dayOfYear - 1) ~/ 31 + 1),
+      Month.fromNumberUnchecked((dayOfYear - 1) ~/ 31 + 1),
     );
     final monthEnd =
         firstDayOfYear(rawMonth.month) + rawMonth.lengthInDays.value - 1;
     final month = dayOfYear > monthEnd ? rawMonth.nextMonth : rawMonth;
 
     final dayOfMonth = dayOfYear - firstDayOfYear(month.month) + 1;
-    return PlainDate.fromYearMonthAndDayUnchecked(month, dayOfMonth);
+    return Date.fromYearMonthAndDayUnchecked(month, dayOfMonth);
   }
 
-  PlainWeekDate get asWeekDate => asDate.asWeekDate;
+  WeekDate get asWeekDate => asDate.asWeekDate;
 
   bool isTodayInLocalZone({Clock? clockOverride}) =>
-      this == PlainOrdinalDate.todayInLocalZone(clockOverride: clockOverride);
+      this == OrdinalDate.todayInLocalZone(clockOverride: clockOverride);
   bool isTodayInUtc({Clock? clockOverride}) =>
-      this == PlainOrdinalDate.todayInUtc(clockOverride: clockOverride);
+      this == OrdinalDate.todayInUtc(clockOverride: clockOverride);
 
-  PlainOrdinalDate operator +(FixedDaysPeriod period) =>
+  OrdinalDate operator +(FixedDaysPeriod period) =>
       (asDate + period).asOrdinalDate;
-  PlainOrdinalDate operator -(FixedDaysPeriod period) => this + (-period);
+  OrdinalDate operator -(FixedDaysPeriod period) => this + (-period);
 
-  PlainOrdinalDate get nextDay {
+  OrdinalDate get nextDay {
     return dayOfYear == year.lengthInDays.value
-        ? PlainOrdinalDate.fromUnchecked(year + const Years(1), 1)
-        : PlainOrdinalDate.fromUnchecked(year, dayOfYear + 1);
+        ? OrdinalDate.fromUnchecked(year + const Years(1), 1)
+        : OrdinalDate.fromUnchecked(year, dayOfYear + 1);
   }
 
-  PlainOrdinalDate get previousDay {
+  OrdinalDate get previousDay {
     return dayOfYear == 1
-        ? PlainOrdinalDate.fromUnchecked(year - const Years(1), 1)
-        : PlainOrdinalDate.fromUnchecked(year, dayOfYear - 1);
+        ? OrdinalDate.fromUnchecked(year - const Years(1), 1)
+        : OrdinalDate.fromUnchecked(year, dayOfYear - 1);
   }
 
-  Result<PlainOrdinalDate, String> copyWith({PlainYear? year, int? dayOfYear}) {
-    return PlainOrdinalDate.from(
+  Result<OrdinalDate, String> copyWith({Year? year, int? dayOfYear}) =>
+      OrdinalDate.from(year ?? this.year, dayOfYear ?? this.dayOfYear);
+  OrdinalDate copyWithThrowing({Year? year, int? dayOfYear}) {
+    return OrdinalDate.fromThrowing(
       year ?? this.year,
       dayOfYear ?? this.dayOfYear,
     );
   }
 
-  PlainOrdinalDate copyWithThrowing({PlainYear? year, int? dayOfYear}) {
-    return PlainOrdinalDate.fromThrowing(
-      year ?? this.year,
-      dayOfYear ?? this.dayOfYear,
-    );
-  }
-
-  PlainOrdinalDate copyWithUnchecked({PlainYear? year, int? dayOfYear}) {
-    return PlainOrdinalDate.fromUnchecked(
+  OrdinalDate copyWithUnchecked({Year? year, int? dayOfYear}) {
+    return OrdinalDate.fromUnchecked(
       year ?? this.year,
       dayOfYear ?? this.dayOfYear,
     );
   }
 
   @override
-  int compareTo(PlainOrdinalDate other) {
+  int compareTo(OrdinalDate other) {
     final result = year.compareTo(other.year);
     if (result != 0) return result;
 
@@ -119,7 +116,7 @@ final class PlainOrdinalDate
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is PlainOrdinalDate &&
+        (other is OrdinalDate &&
             year == other.year &&
             dayOfYear == other.dayOfYear);
   }

@@ -22,21 +22,21 @@ final class Parser {
 
   static Result<Instant, FormatException> parseInstant(String value) =>
       _parse(value, (it) => it._parseInstant());
-  static Result<PlainDateTime, FormatException> parseDateTime(String value) =>
+  static Result<DateTime, FormatException> parseDateTime(String value) =>
       _parse(value, (it) => it._parseDateTime());
-  static Result<PlainDate, FormatException> parseDate(String value) =>
+  static Result<Date, FormatException> parseDate(String value) =>
       _parse(value, (it) => it._parseDate());
-  static Result<PlainWeekDate, FormatException> parseWeekDate(String value) =>
+  static Result<WeekDate, FormatException> parseWeekDate(String value) =>
       _parse(value, (it) => it._parseWeekDate());
-  static Result<PlainOrdinalDate, FormatException> parseOrdinalDate(
+  static Result<OrdinalDate, FormatException> parseOrdinalDate(
     String value,
   ) =>
       _parse(value, (it) => it._parseOrdinalDate());
-  static Result<PlainYearMonth, FormatException> parseYearMonth(String value) =>
+  static Result<YearMonth, FormatException> parseYearMonth(String value) =>
       _parse(value, (it) => it._parseYearMonth());
-  static Result<PlainYearWeek, FormatException> parseYearWeek(String value) =>
+  static Result<YearWeek, FormatException> parseYearWeek(String value) =>
       _parse(value, (it) => it._parseYearWeek());
-  static Result<PlainTime, FormatException> parseTime(String value) =>
+  static Result<Time, FormatException> parseTime(String value) =>
       _parse(value, (it) => it._parseTime());
 
   static Result<T, FormatException> _parse<T extends Object>(
@@ -75,28 +75,28 @@ final class Parser {
     }).map((it) => it.inUtc);
   }
 
-  Result<PlainDateTime, FormatException> _parseDateTime() {
+  Result<DateTime, FormatException> _parseDateTime() {
     return _parseDate()
         .andAlso(() => _requireDesignator('T', 'time', isCaseSensitive: false))
-        .andThen((date) => _parseTime().map((it) => PlainDateTime(date, it)));
+        .andThen((date) => _parseTime().map((it) => DateTime(date, it)));
   }
 
-  Result<PlainDate, FormatException> _parseDate() {
+  Result<Date, FormatException> _parseDate() {
     return _parseYearMonth()
         .andAlso(() => _requireSeparator({'-'}, 'month', 'day'))
         .andThen(_parseDay);
   }
 
-  Result<PlainWeekDate, FormatException> _parseWeekDate() {
+  Result<WeekDate, FormatException> _parseWeekDate() {
     return _parseYearWeek()
         .andAlso(() => _requireSeparator({'-'}, 'week number', 'weekday'))
         .andThen(
-          (yearWeek) => _parseWeekday()
-              .map((weekday) => PlainWeekDate(yearWeek, weekday)),
+          (yearWeek) =>
+              _parseWeekday().map((weekday) => WeekDate(yearWeek, weekday)),
         );
   }
 
-  Result<PlainOrdinalDate, FormatException> _parseOrdinalDate() {
+  Result<OrdinalDate, FormatException> _parseOrdinalDate() {
     return _parseYear()
         .andAlso(() => _requireSeparator({'-'}, 'year', 'day of year'))
         .andThen((year) {
@@ -107,29 +107,29 @@ final class Parser {
         minValue: 1,
         maxValue: year.lengthInDays.value,
       );
-      return dayOfYear.map((it) => PlainOrdinalDate.fromUnchecked(year, it));
+      return dayOfYear.map((it) => OrdinalDate.fromUnchecked(year, it));
     });
   }
 
-  Result<PlainYearMonth, FormatException> _parseYearMonth() {
+  Result<YearMonth, FormatException> _parseYearMonth() {
     return _parseYear()
         .andAlso(() => _requireSeparator({'-'}, 'year', 'month'))
         .andThen(
-          (year) => _parseMonth().map((it) => PlainYearMonth(year, it)),
+          (year) => _parseMonth().map((it) => YearMonth(year, it)),
         );
   }
 
-  Result<PlainYearWeek, FormatException> _parseYearWeek() {
+  Result<YearWeek, FormatException> _parseYearWeek() {
     return _parseYear()
         .andAlso(() => _requireSeparator({'-'}, 'year', 'week number'))
         .andThen(
           (year) => _parseWeek(year.numberOfWeeks).andThen(
-            (it) => PlainYearWeek.from(year, it).mapErr(FormatException.new),
+            (it) => YearWeek.from(year, it).mapErr(FormatException.new),
           ),
         );
   }
 
-  Result<PlainTime, FormatException> _parseTime() {
+  Result<Time, FormatException> _parseTime() {
     Result<int, FormatException> parse(String label, {required int maxValue}) {
       return _parseInt(
         label,
@@ -161,12 +161,12 @@ final class Parser {
           : Ok((hourMinuteSecond, FractionalSeconds.zero));
     }).andThen((it) {
       final (((hour, minute), second), fraction) = it;
-      return PlainTime.from(hour, minute, second, fraction)
+      return Time.from(hour, minute, second, fraction)
           .mapErr(FormatException.new);
     });
   }
 
-  Result<PlainYear, FormatException> _parseYear() {
+  Result<Year, FormatException> _parseYear() {
     final Result<int, FormatException> value;
     switch (_peek()) {
       case '+':
@@ -178,18 +178,18 @@ final class Parser {
       default:
         value = _parseInt('year', minDigits: 4, maxDigits: 4);
     }
-    return value.map(PlainYear.new);
+    return value.map(Year.new);
   }
 
-  Result<PlainMonth, FormatException> _parseMonth() {
+  Result<Month, FormatException> _parseMonth() {
     final value = _parseInt(
       'month',
       minDigits: 2,
       maxDigits: 2,
-      minValue: PlainMonth.minNumber,
-      maxValue: PlainMonth.maxNumber,
+      minValue: Month.minNumber,
+      maxValue: Month.maxNumber,
     );
-    return value.map(PlainMonth.fromNumberThrowing);
+    return value.map(Month.fromNumberThrowing);
   }
 
   Result<int, FormatException> _parseWeek(int numberOfWeeksInYear) {
@@ -204,7 +204,7 @@ final class Parser {
     );
   }
 
-  Result<PlainDate, FormatException> _parseDay(PlainYearMonth yearMonth) {
+  Result<Date, FormatException> _parseDay(YearMonth yearMonth) {
     final value = _parseInt(
       'day',
       minDigits: 2,
@@ -212,8 +212,8 @@ final class Parser {
       minValue: 1,
       maxValue: yearMonth.lengthInDays.value,
     );
-    return value.andThen((it) => PlainDate.fromYearMonthAndDay(yearMonth, it)
-        .mapErr(FormatException.new));
+    return value.andThen((it) =>
+        Date.fromYearMonthAndDay(yearMonth, it).mapErr(FormatException.new));
   }
 
   Result<Weekday, FormatException> _parseWeekday() {

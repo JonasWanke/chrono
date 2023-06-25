@@ -1,12 +1,15 @@
+import 'dart:core';
+import 'dart:core' as core;
+
 import 'package:clock/clock.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../../utils.dart';
 import '../period.dart';
 
-enum PlainMonth
-    with ComparisonOperatorsFromComparable<PlainMonth>
-    implements Comparable<PlainMonth> {
+enum Month
+    with ComparisonOperatorsFromComparable<Month>
+    implements Comparable<Month> {
   january,
   february,
   march,
@@ -20,40 +23,39 @@ enum PlainMonth
   november,
   december;
 
-  static Result<PlainMonth, String> fromNumber(int number) {
+  static Result<Month, String> fromNumber(int number) {
     if (number < minNumber || number > maxNumber) {
       return Err('Invalid month number: $number');
     }
     return Ok(fromNumberUnchecked(number));
   }
 
-  static PlainMonth fromNumberThrowing(int number) =>
-      PlainMonth.fromNumber(number).unwrap();
-  static PlainMonth fromNumberUnchecked(int number) =>
-      values[number - minNumber];
+  static Month fromNumberThrowing(int number) =>
+      Month.fromNumber(number).unwrap();
+  static Month fromNumberUnchecked(int number) => values[number - minNumber];
 
-  static PlainMonth fromDateTime(DateTime dateTime) =>
+  static Month fromDart(core.DateTime dateTime) =>
       fromNumberThrowing(dateTime.month);
-  static PlainMonth currentInLocalZone({Clock? clockOverride}) =>
-      fromDateTime((clockOverride ?? clock).now().toLocal());
-  static PlainMonth currentInUtc({Clock? clockOverride}) =>
-      fromDateTime((clockOverride ?? clock).now().toUtc());
+  static Month currentInLocalZone({Clock? clockOverride}) =>
+      fromDart((clockOverride ?? clock).now().toLocal());
+  static Month currentInUtc({Clock? clockOverride}) =>
+      fromDart((clockOverride ?? clock).now().toUtc());
 
-  static PlainMonth fromJson(int json) =>
+  static Month fromJson(int json) =>
       fromNumber(json).unwrapOrThrowAsFormatException();
 
-  static const minNumber = 1; // PlainMonth.january.number
-  static const maxNumber = 12; // PlainMonth.december.number
+  static const minNumber = 1; // Month.january.number
+  static const maxNumber = 12; // Month.december.number
 
   int get number => index + 1;
 
   bool isCurrentInLocalZone({Clock? clockOverride}) =>
-      this == PlainMonth.currentInLocalZone(clockOverride: clockOverride);
+      this == Month.currentInLocalZone(clockOverride: clockOverride);
   bool isCurrentInUtc({Clock? clockOverride}) =>
-      this == PlainMonth.currentInUtc(clockOverride: clockOverride);
+      this == Month.currentInUtc(clockOverride: clockOverride);
 
-  PlainMonth get next => values[(index + 1) % values.length];
-  PlainMonth get previous => values[(index - 1) % values.length];
+  Month get next => values[(index + 1) % values.length];
+  Month get previous => values[(index - 1) % values.length];
 
   /// The number of days in this month of a common (non-leap) year.
   ///
@@ -82,7 +84,7 @@ enum PlainMonth
   }
 
   @override
-  int compareTo(PlainMonth other) => index.compareTo(other.index);
+  int compareTo(Month other) => index.compareTo(other.index);
 
   int toJson() => number;
 }

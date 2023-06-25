@@ -1,3 +1,6 @@
+import 'dart:core';
+import 'dart:core' as core;
+
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
@@ -7,10 +10,10 @@ import '../utils.dart';
 import 'period.dart';
 
 @immutable
-final class PlainTime
-    with ComparisonOperatorsFromComparable<PlainTime>
-    implements Comparable<PlainTime> {
-  static Result<PlainTime, String> from(
+final class Time
+    with ComparisonOperatorsFromComparable<Time>
+    implements Comparable<Time> {
+  static Result<Time, String> from(
     int hour, [
     int minute = 0,
     int second = 0,
@@ -30,19 +33,19 @@ final class PlainTime
     if (fractionError != null) return Err(fractionError);
     fraction ??= FractionalSeconds.zero;
 
-    return Ok(PlainTime.fromUnchecked(hour, minute, second, fraction));
+    return Ok(Time.fromUnchecked(hour, minute, second, fraction));
   }
 
-  factory PlainTime.fromThrowing(
+  factory Time.fromThrowing(
     int hour, [
     int minute = 0,
     int second = 0,
     FractionalSeconds? fraction,
   ]) =>
       from(hour, minute, second, fraction).unwrap();
-  PlainTime.fromUnchecked(this.hour, this.minute, this.second, this.fraction);
+  Time.fromUnchecked(this.hour, this.minute, this.second, this.fraction);
 
-  static Result<PlainTime, String> fromTimeSinceMidnight(TimePeriod time) {
+  static Result<Time, String> fromTimeSinceMidnight(TimePeriod time) {
     if (time.isNegative) {
       return Err('Time since midnight must not be negative, but was: $time');
     }
@@ -52,15 +55,15 @@ final class PlainTime
       );
     }
 
-    return Ok(PlainTime.fromTimeSinceMidnightUnchecked(time));
+    return Ok(Time.fromTimeSinceMidnightUnchecked(time));
   }
 
-  factory PlainTime.fromTimeSinceMidnightThrowing(TimePeriod time) =>
+  factory Time.fromTimeSinceMidnightThrowing(TimePeriod time) =>
       fromTimeSinceMidnight(time).unwrap();
-  factory PlainTime.fromTimeSinceMidnightUnchecked(TimePeriod time) {
+  factory Time.fromTimeSinceMidnightUnchecked(TimePeriod time) {
     final (inSeconds, fraction) = time.inSecondsAndFraction;
     final (hours, minutes, seconds) = inSeconds.inHoursAndMinutesAndSeconds;
-    return PlainTime.fromUnchecked(
+    return Time.fromUnchecked(
       hours.value,
       minutes.value,
       seconds.value,
@@ -68,7 +71,7 @@ final class PlainTime
     );
   }
 
-  PlainTime.fromDateTime(DateTime dateTime)
+  Time.fromDart(core.DateTime dateTime)
       : this.fromUnchecked(
           dateTime.hour,
           dateTime.minute,
@@ -76,13 +79,13 @@ final class PlainTime
           FractionalSeconds.millisecond * dateTime.millisecond +
               FractionalSeconds.microsecond * dateTime.microsecond,
         );
-  PlainTime.nowInLocalZone({Clock? clockOverride})
-      : this.fromDateTime((clockOverride ?? clock).now().toLocal());
-  PlainTime.nowInUtc({Clock? clockOverride})
-      : this.fromDateTime((clockOverride ?? clock).now().toUtc());
+  Time.nowInLocalZone({Clock? clockOverride})
+      : this.fromDart((clockOverride ?? clock).now().toLocal());
+  Time.nowInUtc({Clock? clockOverride})
+      : this.fromDart((clockOverride ?? clock).now().toUtc());
 
-  factory PlainTime.fromJson(String json) => unwrapParserResult(parse(json));
-  static Result<PlainTime, FormatException> parse(String value) =>
+  factory Time.fromJson(String json) => unwrapParserResult(parse(json));
+  static Result<Time, FormatException> parse(String value) =>
       Parser.parseTime(value);
 
   static String? _validateFraction(FractionalSeconds? fraction) {
@@ -93,8 +96,8 @@ final class PlainTime
     return null;
   }
 
-  static final PlainTime midnight = PlainTime.fromThrowing(0);
-  static final PlainTime noon = PlainTime.fromThrowing(12);
+  static final Time midnight = Time.fromThrowing(0);
+  static final Time noon = Time.fromThrowing(12);
 
   final int hour;
   final int minute;
@@ -107,26 +110,26 @@ final class PlainTime
   FractionalSeconds get fractionalSecondsSinceMidnight =>
       fraction + secondsSinceMidnight;
 
-  Result<PlainTime, String> add(TimePeriod period) =>
-      PlainTime.fromTimeSinceMidnight(_add(period));
-  PlainTime addThrowing(TimePeriod period) =>
-      PlainTime.fromTimeSinceMidnightThrowing(_add(period));
-  PlainTime addUnchecked(TimePeriod period) =>
-      PlainTime.fromTimeSinceMidnightUnchecked(_add(period));
+  Result<Time, String> add(TimePeriod period) =>
+      Time.fromTimeSinceMidnight(_add(period));
+  Time addThrowing(TimePeriod period) =>
+      Time.fromTimeSinceMidnightThrowing(_add(period));
+  Time addUnchecked(TimePeriod period) =>
+      Time.fromTimeSinceMidnightUnchecked(_add(period));
   FractionalSeconds _add(TimePeriod period) =>
       fractionalSecondsSinceMidnight + period.inFractionalSeconds;
 
-  Result<PlainTime, String> subtract(TimePeriod period) => add(-period);
-  PlainTime subtractThrowing(TimePeriod period) => addThrowing(-period);
-  PlainTime subtractUnchecked(TimePeriod period) => addUnchecked(-period);
+  Result<Time, String> subtract(TimePeriod period) => add(-period);
+  Time subtractThrowing(TimePeriod period) => addThrowing(-period);
+  Time subtractUnchecked(TimePeriod period) => addUnchecked(-period);
 
-  Result<PlainTime, String> copyWith({
+  Result<Time, String> copyWith({
     int? hour,
     int? minute,
     int? second,
     FractionalSeconds? fraction,
   }) {
-    return PlainTime.from(
+    return Time.from(
       hour ?? this.hour,
       minute ?? this.minute,
       second ?? this.second,
@@ -134,13 +137,13 @@ final class PlainTime
     );
   }
 
-  PlainTime copyWithThrowing({
+  Time copyWithThrowing({
     int? hour,
     int? minute,
     int? second,
     FractionalSeconds? fraction,
   }) {
-    return PlainTime.fromThrowing(
+    return Time.fromThrowing(
       hour ?? this.hour,
       minute ?? this.minute,
       second ?? this.second,
@@ -148,13 +151,13 @@ final class PlainTime
     );
   }
 
-  PlainTime copyWithUnchecked({
+  Time copyWithUnchecked({
     int? hour,
     int? minute,
     int? second,
     FractionalSeconds? fraction,
   }) {
-    return PlainTime.fromUnchecked(
+    return Time.fromUnchecked(
       hour ?? this.hour,
       minute ?? this.minute,
       second ?? this.second,
@@ -163,7 +166,7 @@ final class PlainTime
   }
 
   @override
-  int compareTo(PlainTime other) {
+  int compareTo(Time other) {
     if (hour != other.hour) return hour.compareTo(other.hour);
     if (minute != other.minute) return minute.compareTo(other.minute);
     if (second != other.second) return second.compareTo(other.second);
@@ -173,7 +176,7 @@ final class PlainTime
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is PlainTime &&
+        (other is Time &&
             hour == other.hour &&
             minute == other.minute &&
             second == other.second &&

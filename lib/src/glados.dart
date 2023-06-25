@@ -16,26 +16,26 @@ import 'date_time/instant.dart';
 import 'time/period.dart';
 import 'time/time.dart';
 
-void setPlainDateTimeGladosDefaults() {
+void setDateTimeGladosDefaults() {
   Any.setDefault(any.instant);
-  Any.setDefault(any.plainDate);
-  Any.setDefault(any.plainDateTime);
-  Any.setDefault(any.plainMonth);
-  Any.setDefault(any.plainTime);
-  Any.setDefault(any.plainOrdinalDate);
-  Any.setDefault(any.plainWeekDate);
-  Any.setDefault(any.plainYear);
-  Any.setDefault(any.plainYearMonth);
-  Any.setDefault(any.plainYearWeek);
+  Any.setDefault(any.date);
+  Any.setDefault(any.dateTimePlain);
+  Any.setDefault(any.month);
+  Any.setDefault(any.time);
+  Any.setDefault(any.ordinalDate);
+  Any.setDefault(any.weekDate);
+  Any.setDefault(any.year);
+  Any.setDefault(any.yearMonth);
+  Any.setDefault(any.yearWeek);
   Any.setDefault(any.weekday);
 }
 
-extension PlainDateTimeAny on Any {
-  Generator<Instant> get instant => plainDateTime.map((it) => it.inUtc);
-  Generator<PlainDate> get plainDate {
+extension DateTimeAny on Any {
+  Generator<Instant> get instant => dateTimePlain.map((it) => it.inUtc);
+  Generator<Date> get date {
     return simple(
       generate: (random, size) {
-        final yearMonth = plainYearMonth(random, size);
+        final yearMonth = this.yearMonth(random, size);
         final day =
             intInRange(1, yearMonth.value.lengthInDays.value + 1)(random, size);
         return (yearMonth, day);
@@ -53,27 +53,26 @@ extension PlainDateTimeAny on Any {
         yield* day.shrink().map((it) => (yearMonth, it));
       },
     ).map(
-      (it) => PlainDate.fromYearMonthAndDayUnchecked(it.$1.value, it.$2.value),
+      (it) => Date.fromYearMonthAndDayUnchecked(it.$1.value, it.$2.value),
     );
   }
 
-  Generator<PlainDateTime> get plainDateTime =>
-      combine2(plainDate, plainTime, PlainDateTime.new);
-  Generator<PlainMonth> get plainMonth => choose(PlainMonth.values);
-  Generator<PlainTime> get plainTime {
+  Generator<DateTime> get dateTimePlain => combine2(date, time, DateTime.new);
+  Generator<Month> get month => choose(Month.values);
+  Generator<Time> get time {
     return combine4(
       intInRange(0, 24),
       intInRange(0, 60),
       intInRange(0, 60),
       _fraction,
-      PlainTime.fromUnchecked,
+      Time.fromUnchecked,
     );
   }
 
-  Generator<PlainOrdinalDate> get plainOrdinalDate {
+  Generator<OrdinalDate> get ordinalDate {
     return simple(
       generate: (random, size) {
-        final year = plainYear(random, size);
+        final year = this.year(random, size);
         final day =
             intInRange(1, year.value.lengthInDays.value + 1)(random, size);
         return (year, day);
@@ -91,19 +90,17 @@ extension PlainDateTimeAny on Any {
         yield* day.shrink().map((it) => (year, it));
       },
     ).map(
-      (it) => PlainOrdinalDate.fromUnchecked(it.$1.value, it.$2.value),
+      (it) => OrdinalDate.fromUnchecked(it.$1.value, it.$2.value),
     );
   }
 
-  Generator<PlainWeekDate> get plainWeekDate =>
-      combine2(plainYearWeek, weekday, PlainWeekDate.new);
-  Generator<PlainYear> get plainYear => this.int.map(PlainYear.new);
-  Generator<PlainYearMonth> get plainYearMonth =>
-      combine2(plainYear, plainMonth, PlainYearMonth.new);
-  Generator<PlainYearWeek> get plainYearWeek {
+  Generator<WeekDate> get weekDate => combine2(yearWeek, weekday, WeekDate.new);
+  Generator<Year> get year => this.int.map(Year.new);
+  Generator<YearMonth> get yearMonth => combine2(year, month, YearMonth.new);
+  Generator<YearWeek> get yearWeek {
     return simple(
       generate: (random, size) {
-        final weekBasedYear = plainYear(random, size);
+        final weekBasedYear = year(random, size);
         final week =
             intInRange(1, weekBasedYear.value.numberOfWeeks + 1)(random, size);
         return (weekBasedYear, week);
@@ -120,7 +117,7 @@ extension PlainDateTimeAny on Any {
         });
         yield* week.shrink().map((it) => (weekBasedYear, it));
       },
-    ).map((it) => PlainYearWeek.fromUnchecked(it.$1.value, it.$2.value));
+    ).map((it) => YearWeek.fromUnchecked(it.$1.value, it.$2.value));
   }
 
   Generator<Weekday> get weekday => choose(Weekday.values);

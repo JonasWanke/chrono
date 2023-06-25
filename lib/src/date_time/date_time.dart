@@ -1,3 +1,6 @@
+import 'dart:core';
+import 'dart:core' as core;
+
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
@@ -12,34 +15,33 @@ import 'instant.dart';
 import 'period.dart';
 
 @immutable
-final class PlainDateTime
-    with ComparisonOperatorsFromComparable<PlainDateTime>
-    implements Comparable<PlainDateTime> {
-  const PlainDateTime(this.date, this.time);
+final class DateTime
+    with ComparisonOperatorsFromComparable<DateTime>
+    implements Comparable<DateTime> {
+  const DateTime(this.date, this.time);
 
-  PlainDateTime.fromDateTime(DateTime dateTime)
-      : date = PlainDate.fromDateTime(dateTime),
-        time = PlainTime.fromDateTime(dateTime);
-  PlainDateTime.nowInLocalZone({Clock? clockOverride})
-      : this.fromDateTime((clockOverride ?? clock).now().toLocal());
-  PlainDateTime.nowInUtc({Clock? clockOverride})
-      : this.fromDateTime((clockOverride ?? clock).now().toUtc());
+  DateTime.fromDart(core.DateTime dateTime)
+      : date = Date.fromDart(dateTime),
+        time = Time.fromDart(dateTime);
+  DateTime.nowInLocalZone({Clock? clockOverride})
+      : this.fromDart((clockOverride ?? clock).now().toLocal());
+  DateTime.nowInUtc({Clock? clockOverride})
+      : this.fromDart((clockOverride ?? clock).now().toUtc());
 
-  factory PlainDateTime.fromJson(String json) =>
-      unwrapParserResult(parse(json));
-  static Result<PlainDateTime, FormatException> parse(String value) =>
+  factory DateTime.fromJson(String json) => unwrapParserResult(parse(json));
+  static Result<DateTime, FormatException> parse(String value) =>
       Parser.parseDateTime(value);
 
-  final PlainDate date;
-  final PlainTime time;
+  final Date date;
+  final Time time;
 
-  Instant get inLocalZone => Instant.fromDateTime(dateTimeInLocalZone);
-  Instant get inUtc => Instant.fromDateTime(dateTimeInUtc);
+  Instant get inLocalZone => Instant.fromDart(dartDateTimeInLocalZone);
+  Instant get inUtc => Instant.fromDart(dartDateTimeInUtc);
 
-  DateTime get dateTimeInLocalZone => _getDateTime(isUtc: false);
-  DateTime get dateTimeInUtc => _getDateTime(isUtc: true);
-  DateTime _getDateTime({required bool isUtc}) {
-    return (isUtc ? DateTime.utc : DateTime.new)(
+  core.DateTime get dartDateTimeInLocalZone => _getDartDateTime(isUtc: false);
+  core.DateTime get dartDateTimeInUtc => _getDartDateTime(isUtc: true);
+  core.DateTime _getDartDateTime({required bool isUtc}) {
+    return (isUtc ? core.DateTime.utc : core.DateTime.new)(
       date.year.value,
       date.month.number,
       date.day,
@@ -51,7 +53,7 @@ final class PlainDateTime
     );
   }
 
-  PlainDateTime operator +(Period period) {
+  DateTime operator +(Period period) {
     final compoundPeriod = period.inMonthsAndDaysAndSeconds;
     var newDate = date + compoundPeriod.months + compoundPeriod.days;
 
@@ -60,20 +62,20 @@ final class PlainDateTime
     final (rawNewSecondsSinceMidnight, newFractionSinceMidnight) =
         rawNewTimeSinceMidnight.inSecondsAndFraction;
     newDate += Days(rawNewSecondsSinceMidnight.value ~/ Seconds.perDay.value);
-    final newTime = PlainTime.fromTimeSinceMidnightUnchecked(
+    final newTime = Time.fromTimeSinceMidnightUnchecked(
       newFractionSinceMidnight +
           rawNewSecondsSinceMidnight.remainder(Seconds.perDay.value),
     );
-    return PlainDateTime(newDate, newTime);
+    return DateTime(newDate, newTime);
   }
 
-  PlainDateTime operator -(Period period) => this + (-period);
+  DateTime operator -(Period period) => this + (-period);
 
-  PlainDateTime copyWith({PlainDate? date, PlainTime? time}) =>
-      PlainDateTime(date ?? this.date, time ?? this.time);
+  DateTime copyWith({Date? date, Time? time}) =>
+      DateTime(date ?? this.date, time ?? this.time);
 
   @override
-  int compareTo(PlainDateTime other) {
+  int compareTo(DateTime other) {
     final result = date.compareTo(other.date);
     if (result != 0) return result;
 
@@ -83,7 +85,7 @@ final class PlainDateTime
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is PlainDateTime && date == other.date && time == other.time);
+        (other is DateTime && date == other.date && time == other.time);
   }
 
   @override

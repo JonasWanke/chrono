@@ -6,14 +6,14 @@ void main() {
     // Inspired by this website, plus some extra tests:
     // https://howardhinnant.github.io/date_algorithms.html#Yes,%20but%20how%20do%20you%20know%20this%20all%20really%20works?
 
-    const unixEpoch = PlainDate.unixEpoch;
+    const unixEpoch = Date.unixEpoch;
     expect(
       unixEpoch.daysSinceUnixEpoch,
       const Days(0),
       reason: '1970-01-01 is day 0',
     );
     expect(
-      PlainDate.fromDaysSinceUnixEpoch(const Days(0)),
+      Date.fromDaysSinceUnixEpoch(const Days(0)),
       unixEpoch,
       reason: '1970-01-01 is day 0',
     );
@@ -23,11 +23,11 @@ void main() {
       reason: '1970-01-01 is a Thursday',
     );
 
-    const startYear = PlainYear(-10000); // PlainYear(-1000000);
+    const startYear = Year(-10000); // Year(-1000000);
     final startDate = startYear.firstDay;
     final startDateDaysSinceUnixEpoch = startDate.daysSinceUnixEpoch;
 
-    final endYear = PlainYear(-startYear.value);
+    final endYear = Year(-startYear.value);
     final endDate = endYear.lastDay;
 
     final totalNumberOfDays = endDate.daysSinceUnixEpoch -
@@ -35,7 +35,7 @@ void main() {
         const Days(1);
     // expect(totalNumberOfDays, 730485366);
 
-    final previousDate = PlainDate.fromDaysSinceUnixEpoch(
+    final previousDate = Date.fromDaysSinceUnixEpoch(
       startDateDaysSinceUnixEpoch - const Days(1),
     );
     var previous = (
@@ -52,12 +52,12 @@ void main() {
       for (final date in year.days) {
         final daysSinceEpoch = date.daysSinceUnixEpoch;
         expect(daysSinceEpoch, previous.daysSinceUnixEpoch + const Days(1));
-        expect(date, PlainDate.fromDaysSinceUnixEpoch(daysSinceEpoch));
+        expect(date, Date.fromDaysSinceUnixEpoch(daysSinceEpoch));
 
         final dayOfYear = date.dayOfYear;
         expect(
           dayOfYear,
-          date.month == PlainMonth.january && date.day == 1
+          date.month == Month.january && date.day == 1
               ? 1
               : previous.dayOfYear + 1,
         );
@@ -78,7 +78,7 @@ void main() {
     final endTime = Instant.now();
 
     print(
-      'Tested $totalNumberOfDays days in ${endTime.dateTimeInUtc.difference(startTime.dateTimeInUtc)}',
+      'Tested $totalNumberOfDays days in ${endTime.dartDateTimeInUtc.difference(startTime.dartDateTimeInUtc)}',
     );
   });
 }
