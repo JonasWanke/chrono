@@ -102,12 +102,10 @@ final class PlainTime
   final FractionalSeconds fraction;
 
   Hours get hoursSinceMidnight => Hours(hour);
-  Minutes get minutesSinceMidnight =>
-      hoursSinceMidnight.inMinutes + Minutes(minute);
-  Seconds get secondsSinceMidnight =>
-      minutesSinceMidnight.inSeconds + Seconds(second);
+  Minutes get minutesSinceMidnight => Minutes(minute) + hoursSinceMidnight;
+  Seconds get secondsSinceMidnight => Seconds(second) + minutesSinceMidnight;
   FractionalSeconds get fractionalSecondsSinceMidnight =>
-      secondsSinceMidnight.inFractionalSeconds + fraction;
+      fraction + secondsSinceMidnight;
 
   Result<PlainTime, String> add(TimePeriod period) =>
       PlainTime.fromTimeSinceMidnight(_add(period));
