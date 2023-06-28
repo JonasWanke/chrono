@@ -60,23 +60,26 @@ void main() {
     expect(weekDate, weekDate.asDate.asWeekDate);
     expect(weekDate, weekDate.asOrdinalDate.asWeekDate);
   });
-  Glados<core.DateTime>().test('DateTime compatibility', (dateTimeInLocalZone) {
-    expect(
-      dateTimeInLocalZone,
-      Instant.fromDart(dateTimeInLocalZone).dateTimeInLocalZone,
-    );
-    expect(
-      dateTimeInLocalZone,
-      DateTime.fromDart(dateTimeInLocalZone).dartDateTimeInLocalZone,
-    );
+  Glados<core.DateTime>().test(
+    'core.DateTime compatibility',
+    (dateTimeInLocalZone) {
+      expect(
+        dateTimeInLocalZone,
+        Instant.fromDart(dateTimeInLocalZone).dartDateTimeInLocalZone,
+      );
+      expect(
+        dateTimeInLocalZone,
+        DateTime.fromDart(dateTimeInLocalZone).dartDateTimeInLocalZone,
+      );
 
-    final dateTimeInUtc = dateTimeInLocalZone.toUtc();
-    expect(dateTimeInUtc, Instant.fromDart(dateTimeInUtc).dateTimeInUtc);
-    expect(
-      dateTimeInUtc,
-      DateTime.fromDart(dateTimeInUtc).dartDateTimeInUtc,
-    );
-  });
+      final dateTimeInUtc = dateTimeInLocalZone.toUtc();
+      expect(dateTimeInUtc, Instant.fromDart(dateTimeInUtc).dartDateTimeInUtc);
+      expect(
+        dateTimeInUtc,
+        DateTime.fromDart(dateTimeInUtc).dartDateTimeInUtc,
+      );
+    },
+  );
 }
 
 void _checkEquals<T extends Comparable<T>>(T value) {
