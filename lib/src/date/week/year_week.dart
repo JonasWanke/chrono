@@ -8,7 +8,7 @@ import 'package:oxidized/oxidized.dart';
 import '../../parser.dart';
 import '../../utils.dart';
 import '../date.dart';
-import '../period.dart';
+import '../duration.dart';
 import '../weekday.dart';
 import '../year.dart';
 import 'week_date.dart';
@@ -52,13 +52,13 @@ final class YearWeek
   Iterable<WeekDate> get days =>
       Weekday.values.map((weekday) => WeekDate(this, weekday));
 
-  YearWeek operator +(Weeks period) {
-    final newDate = WeekDate(this, Weekday.monday) + period;
+  YearWeek operator +(Weeks duration) {
+    final newDate = WeekDate(this, Weekday.monday) + duration;
     assert(newDate.weekday == Weekday.monday);
     return newDate.yearWeek;
   }
 
-  YearWeek operator -(Weeks period) => this + (-period);
+  YearWeek operator -(Weeks duration) => this + (-duration);
 
   YearWeek get nextWeek {
     return week == weekBasedYear.numberOfWeeks

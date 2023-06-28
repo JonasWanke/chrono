@@ -6,9 +6,9 @@ import 'package:meta/meta.dart';
 
 import '../utils.dart';
 import 'date.dart';
+import 'duration.dart';
 import 'month/month.dart';
 import 'month/year_month.dart';
-import 'period.dart';
 import 'week/year_week.dart';
 import 'weekday.dart';
 
@@ -79,8 +79,8 @@ final class Year
   Date get lastDay => lastMonth.lastDay;
   Iterable<Date> get days => months.expand((it) => it.days);
 
-  Year operator +(Years period) => Year(value + period.value);
-  Year operator -(Years period) => Year(value - period.value);
+  Year operator +(Years duration) => Year(value + duration.value);
+  Year operator -(Years duration) => Year(value - duration.value);
 
   Year get nextYear => this + const Years(1);
   Year get previousYear => this - const Years(1);

@@ -6,7 +6,7 @@ import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../parser.dart';
-import '../time/period.dart';
+import '../time/duration.dart';
 import '../utils.dart';
 import 'date_time.dart';
 

@@ -8,7 +8,7 @@ import 'package:oxidized/oxidized.dart';
 import '../../parser.dart';
 import '../../utils.dart';
 import '../date.dart';
-import '../period.dart';
+import '../duration.dart';
 import '../year.dart';
 import 'month.dart';
 
@@ -58,8 +58,8 @@ final class YearMonth
     );
   }
 
-  YearMonth operator +(MonthsPeriod period) {
-    final (years, months) = period.inYearsAndMonths;
+  YearMonth operator +(MonthsDuration duration) {
+    final (years, months) = duration.inYearsAndMonths;
 
     final rawNewMonth = this.month.number + months.value % Months.perYear.value;
     final (yearAdjustment, month) = switch (rawNewMonth) {
@@ -77,7 +77,7 @@ final class YearMonth
     );
   }
 
-  YearMonth operator -(MonthsPeriod period) => this + (-period);
+  YearMonth operator -(MonthsDuration duration) => this + (-duration);
 
   YearMonth get nextMonth => this + const Months(1);
   YearMonth get previousMonth => this - const Months(1);

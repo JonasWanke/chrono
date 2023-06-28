@@ -7,7 +7,7 @@ import 'package:oxidized/oxidized.dart';
 
 import '../parser.dart';
 import '../utils.dart';
-import 'period.dart';
+import 'duration.dart';
 
 @immutable
 final class Time
@@ -45,7 +45,7 @@ final class Time
       from(hour, minute, second, fraction).unwrap();
   Time.fromUnchecked(this.hour, this.minute, this.second, this.fraction);
 
-  static Result<Time, String> fromTimeSinceMidnight(TimePeriod time) {
+  static Result<Time, String> fromTimeSinceMidnight(TimeDuration time) {
     if (time.isNegative) {
       return Err('Time since midnight must not be negative, but was: $time');
     }
@@ -58,9 +58,9 @@ final class Time
     return Ok(Time.fromTimeSinceMidnightUnchecked(time));
   }
 
-  factory Time.fromTimeSinceMidnightThrowing(TimePeriod time) =>
+  factory Time.fromTimeSinceMidnightThrowing(TimeDuration time) =>
       fromTimeSinceMidnight(time).unwrap();
-  factory Time.fromTimeSinceMidnightUnchecked(TimePeriod time) {
+  factory Time.fromTimeSinceMidnightUnchecked(TimeDuration time) {
     final (inSeconds, fraction) = time.inSecondsAndFraction;
     final (hours, minutes, seconds) = inSeconds.inHoursAndMinutesAndSeconds;
     return Time.fromUnchecked(
@@ -110,18 +110,18 @@ final class Time
   FractionalSeconds get fractionalSecondsSinceMidnight =>
       fraction + secondsSinceMidnight;
 
-  Result<Time, String> add(TimePeriod period) =>
-      Time.fromTimeSinceMidnight(_add(period));
-  Time addThrowing(TimePeriod period) =>
-      Time.fromTimeSinceMidnightThrowing(_add(period));
-  Time addUnchecked(TimePeriod period) =>
-      Time.fromTimeSinceMidnightUnchecked(_add(period));
-  FractionalSeconds _add(TimePeriod period) =>
-      fractionalSecondsSinceMidnight + period.inFractionalSeconds;
+  Result<Time, String> add(TimeDuration duration) =>
+      Time.fromTimeSinceMidnight(_add(duration));
+  Time addThrowing(TimeDuration duration) =>
+      Time.fromTimeSinceMidnightThrowing(_add(duration));
+  Time addUnchecked(TimeDuration duration) =>
+      Time.fromTimeSinceMidnightUnchecked(_add(duration));
+  FractionalSeconds _add(TimeDuration duration) =>
+      fractionalSecondsSinceMidnight + duration.inFractionalSeconds;
 
-  Result<Time, String> subtract(TimePeriod period) => add(-period);
-  Time subtractThrowing(TimePeriod period) => addThrowing(-period);
-  Time subtractUnchecked(TimePeriod period) => addUnchecked(-period);
+  Result<Time, String> subtract(TimeDuration duration) => add(-duration);
+  Time subtractThrowing(TimeDuration duration) => addThrowing(-duration);
+  Time subtractUnchecked(TimeDuration duration) => addUnchecked(-duration);
 
   Result<Time, String> copyWith({
     int? hour,

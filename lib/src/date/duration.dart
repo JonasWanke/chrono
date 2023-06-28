@@ -1,38 +1,38 @@
 import 'package:fixed/fixed.dart';
 import 'package:meta/meta.dart';
 
-import '../date_time/period.dart';
-import '../time/period.dart';
+import '../date_time/duration.dart';
+import '../time/duration.dart';
 import '../utils.dart';
 
 @immutable
-abstract class DaysPeriod extends Period {
-  const DaysPeriod();
+abstract class DaysDuration extends Duration {
+  const DaysDuration();
 
   (Months, Days) get inMonthsAndDays;
 
   @override
-  CompoundPeriod get inMonthsAndDaysAndSeconds {
+  CompoundDuration get inMonthsAndDaysAndSeconds {
     final (months, days) = inMonthsAndDays;
-    return CompoundPeriod(months, days, FractionalSeconds(Fixed.zero));
+    return CompoundDuration(months, days, FractionalSeconds(Fixed.zero));
   }
 
   @override
-  DaysPeriod operator -();
+  DaysDuration operator -();
   @override
-  DaysPeriod operator *(int factor);
+  DaysDuration operator *(int factor);
   @override
-  DaysPeriod operator ~/(int divisor);
+  DaysDuration operator ~/(int divisor);
   @override
-  DaysPeriod operator %(int divisor);
+  DaysDuration operator %(int divisor);
   @override
-  DaysPeriod remainder(int divisor);
+  DaysDuration remainder(int divisor);
 }
 
-abstract class FixedDaysPeriod extends DaysPeriod
-    with ComparisonOperatorsFromComparable<FixedDaysPeriod>
-    implements Comparable<FixedDaysPeriod> {
-  const FixedDaysPeriod();
+abstract class FixedDaysDuration extends DaysDuration
+    with ComparisonOperatorsFromComparable<FixedDaysDuration>
+    implements Comparable<FixedDaysDuration> {
+  const FixedDaysDuration();
 
   Days get inDays;
 
@@ -45,29 +45,29 @@ abstract class FixedDaysPeriod extends DaysPeriod
   bool get isNonNegative => inDays.value >= 0;
 
   @override
-  FixedDaysPeriod operator -();
+  FixedDaysDuration operator -();
   @override
-  FixedDaysPeriod operator *(int factor);
+  FixedDaysDuration operator *(int factor);
   @override
-  FixedDaysPeriod operator ~/(int divisor);
+  FixedDaysDuration operator ~/(int divisor);
   @override
-  FixedDaysPeriod operator %(int divisor);
+  FixedDaysDuration operator %(int divisor);
   @override
-  FixedDaysPeriod remainder(int divisor);
+  FixedDaysDuration remainder(int divisor);
 
   @override
-  int compareTo(FixedDaysPeriod other) =>
+  int compareTo(FixedDaysDuration other) =>
       inDays.value.compareTo(other.inDays.value);
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is FixedDaysPeriod && inDays.value == other.inDays.value);
+      (other is FixedDaysDuration && inDays.value == other.inDays.value);
   @override
   int get hashCode => inDays.value.hashCode;
 }
 
-final class Days extends FixedDaysPeriod {
+final class Days extends FixedDaysDuration {
   const Days(this.value);
   const Days.fromJson(int json) : this(json);
 
@@ -78,8 +78,10 @@ final class Days extends FixedDaysPeriod {
   @override
   Days get inDays => this;
 
-  Days operator +(FixedDaysPeriod period) => Days(value + period.inDays.value);
-  Days operator -(FixedDaysPeriod period) => Days(value - period.inDays.value);
+  Days operator +(FixedDaysDuration duration) =>
+      Days(value + duration.inDays.value);
+  Days operator -(FixedDaysDuration duration) =>
+      Days(value - duration.inDays.value);
   @override
   Days operator -() => Days(-value);
   @override
@@ -97,7 +99,7 @@ final class Days extends FixedDaysPeriod {
   int toJson() => value;
 }
 
-final class Weeks extends FixedDaysPeriod {
+final class Weeks extends FixedDaysDuration {
   const Weeks(this.value);
   const Weeks.fromJson(int json) : this(json);
 
@@ -106,8 +108,8 @@ final class Weeks extends FixedDaysPeriod {
   @override
   Days get inDays => Days.perWeek * value;
 
-  Weeks operator +(Weeks period) => Weeks(value + period.value);
-  Weeks operator -(Weeks period) => Weeks(value - period.value);
+  Weeks operator +(Weeks duration) => Weeks(value + duration.value);
+  Weeks operator -(Weeks duration) => Weeks(value - duration.value);
   @override
   Weeks operator -() => Weeks(-value);
   @override
@@ -125,10 +127,10 @@ final class Weeks extends FixedDaysPeriod {
   int toJson() => value;
 }
 
-abstract class MonthsPeriod extends DaysPeriod
-    with ComparisonOperatorsFromComparable<MonthsPeriod>
-    implements Comparable<MonthsPeriod> {
-  const MonthsPeriod();
+abstract class MonthsDuration extends DaysDuration
+    with ComparisonOperatorsFromComparable<MonthsDuration>
+    implements Comparable<MonthsDuration> {
+  const MonthsDuration();
 
   /// Both are `>= 0` or both are `<= 0`.
   (Years, Months) get inYearsAndMonths {
@@ -149,29 +151,29 @@ abstract class MonthsPeriod extends DaysPeriod
   bool get isNonNegative => inMonths.value >= 0;
 
   @override
-  MonthsPeriod operator -();
+  MonthsDuration operator -();
   @override
-  MonthsPeriod operator *(int factor);
+  MonthsDuration operator *(int factor);
   @override
-  MonthsPeriod operator ~/(int divisor);
+  MonthsDuration operator ~/(int divisor);
   @override
-  MonthsPeriod operator %(int divisor);
+  MonthsDuration operator %(int divisor);
   @override
-  MonthsPeriod remainder(int divisor);
+  MonthsDuration remainder(int divisor);
 
   @override
-  int compareTo(MonthsPeriod other) =>
+  int compareTo(MonthsDuration other) =>
       inMonths.value.compareTo(other.inMonths.value);
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is MonthsPeriod && inMonths.value == other.inMonths.value);
+      (other is MonthsDuration && inMonths.value == other.inMonths.value);
   @override
   int get hashCode => inMonths.value.hashCode;
 }
 
-final class Months extends MonthsPeriod {
+final class Months extends MonthsDuration {
   const Months(this.value);
   const Months.fromJson(int json) : this(json);
 
@@ -182,10 +184,10 @@ final class Months extends MonthsPeriod {
   @override
   Months get inMonths => this;
 
-  Months operator +(MonthsPeriod period) =>
-      Months(value + period.inMonths.value);
-  Months operator -(MonthsPeriod period) =>
-      Months(value - period.inMonths.value);
+  Months operator +(MonthsDuration duration) =>
+      Months(value + duration.inMonths.value);
+  Months operator -(MonthsDuration duration) =>
+      Months(value - duration.inMonths.value);
   @override
   Months operator -() => Months(-value);
   @override
@@ -203,7 +205,7 @@ final class Months extends MonthsPeriod {
   int toJson() => value;
 }
 
-final class Years extends MonthsPeriod {
+final class Years extends MonthsDuration {
   const Years(this.value);
   const Years.fromJson(int json) : this(json);
 
@@ -214,8 +216,8 @@ final class Years extends MonthsPeriod {
   @override
   Months get inMonths => Months.perYear * value;
 
-  Years operator +(Years period) => Years(value + period.value);
-  Years operator -(Years period) => Years(value - period.value);
+  Years operator +(Years duration) => Years(value + duration.value);
+  Years operator -(Years duration) => Years(value - duration.value);
   @override
   Years operator -() => Years(-value);
   @override

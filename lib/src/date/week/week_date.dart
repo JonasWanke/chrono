@@ -8,9 +8,9 @@ import 'package:oxidized/oxidized.dart';
 import '../../parser.dart';
 import '../../utils.dart';
 import '../date.dart';
+import '../duration.dart';
 import '../month/month.dart';
 import '../ordinal_date.dart';
-import '../period.dart';
 import '../weekday.dart';
 import '../year.dart';
 import 'year_week.dart';
@@ -70,8 +70,9 @@ final class WeekDate
   bool isTodayInUtc({Clock? clockOverride}) =>
       this == WeekDate.todayInUtc(clockOverride: clockOverride);
 
-  WeekDate operator +(FixedDaysPeriod period) => (asDate + period).asWeekDate;
-  WeekDate operator -(FixedDaysPeriod period) => this + (-period);
+  WeekDate operator +(FixedDaysDuration duration) =>
+      (asDate + duration).asWeekDate;
+  WeekDate operator -(FixedDaysDuration duration) => this + (-duration);
 
   WeekDate get nextDate {
     return weekday == Weekday.values.last

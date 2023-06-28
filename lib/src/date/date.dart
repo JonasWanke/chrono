@@ -10,10 +10,10 @@ import '../date_time/date_time.dart';
 import '../parser.dart';
 import '../time/time.dart';
 import '../utils.dart';
+import 'duration.dart';
 import 'month/month.dart';
 import 'month/year_month.dart';
 import 'ordinal_date.dart';
-import 'period.dart';
 import 'week/week_date.dart';
 import 'week/year_week.dart';
 import 'weekday.dart';
@@ -179,8 +179,8 @@ final class Date
   DateTime get atMidnight => at(Time.midnight);
   DateTime get atNoon => at(Time.noon);
 
-  Date operator +(DaysPeriod period) {
-    final (months, days) = period.inMonthsAndDays;
+  Date operator +(DaysDuration duration) {
+    final (months, days) = duration.inMonthsAndDays;
     final yearMonthWithMonths = yearMonth + months;
     final dateWithMonths = Date.fromYearMonthAndDayUnchecked(
       yearMonthWithMonths,
@@ -192,7 +192,7 @@ final class Date
         : Date.fromDaysSinceUnixEpoch(dateWithMonths.daysSinceUnixEpoch + days);
   }
 
-  Date operator -(DaysPeriod period) => this + (-period);
+  Date operator -(DaysDuration duration) => this + (-duration);
 
   Date get nextDay => this + const Days(1);
   Date get previousDay => this - const Days(1);

@@ -5,7 +5,7 @@ import 'package:clock/clock.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../../utils.dart';
-import '../period.dart';
+import '../duration.dart';
 
 enum Month
     with ComparisonOperatorsFromComparable<Month>

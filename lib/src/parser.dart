@@ -12,7 +12,7 @@ import 'date/weekday.dart';
 import 'date/year.dart';
 import 'date_time/date_time.dart';
 import 'date_time/instant.dart';
-import 'time/period.dart';
+import 'time/duration.dart';
 import 'time/time.dart';
 
 // Date and time strings only use ASCII, hence we don't need to worry about
@@ -49,6 +49,8 @@ final class Parser {
 
   final String _source;
   int _offset = 0;
+
+  // Date and Time
 
   Result<Instant, FormatException> _parseInstant() {
     return _parseDateTime().andAlso(() {
@@ -225,6 +227,8 @@ final class Parser {
       maxValue: Weekday.maxNumber,
     ).map(Weekday.fromNumberUnchecked);
   }
+
+  // Utils
 
   Result<int, FormatException> _parseInt(
     String label, {

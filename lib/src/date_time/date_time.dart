@@ -6,13 +6,13 @@ import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../date/date.dart';
-import '../date/period.dart';
+import '../date/duration.dart';
 import '../parser.dart';
-import '../time/period.dart';
+import '../time/duration.dart';
 import '../time/time.dart';
 import '../utils.dart';
+import 'duration.dart';
 import 'instant.dart';
-import 'period.dart';
 
 @immutable
 final class DateTime
@@ -53,12 +53,12 @@ final class DateTime
     );
   }
 
-  DateTime operator +(Period period) {
-    final compoundPeriod = period.inMonthsAndDaysAndSeconds;
-    var newDate = date + compoundPeriod.months + compoundPeriod.days;
+  DateTime operator +(Duration duration) {
+    final compoundDuration = duration.inMonthsAndDaysAndSeconds;
+    var newDate = date + compoundDuration.months + compoundDuration.days;
 
     final rawNewTimeSinceMidnight =
-        time.fractionalSecondsSinceMidnight + compoundPeriod.seconds;
+        time.fractionalSecondsSinceMidnight + compoundDuration.seconds;
     final (rawNewSecondsSinceMidnight, newFractionSinceMidnight) =
         rawNewTimeSinceMidnight.inSecondsAndFraction;
     newDate += Days(rawNewSecondsSinceMidnight.value ~/ Seconds.perDay.value);
@@ -69,7 +69,7 @@ final class DateTime
     return DateTime(newDate, newTime);
   }
 
-  DateTime operator -(Period period) => this + (-period);
+  DateTime operator -(Duration duration) => this + (-duration);
 
   DateTime copyWith({Date? date, Time? time}) =>
       DateTime(date ?? this.date, time ?? this.time);

@@ -13,7 +13,7 @@ import 'date/weekday.dart';
 import 'date/year.dart';
 import 'date_time/date_time.dart';
 import 'date_time/instant.dart';
-import 'time/period.dart';
+import 'time/duration.dart';
 import 'time/time.dart';
 
 void setDateTimeGladosDefaults() {

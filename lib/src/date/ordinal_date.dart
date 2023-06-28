@@ -8,9 +8,9 @@ import 'package:oxidized/oxidized.dart';
 import '../parser.dart';
 import '../utils.dart';
 import 'date.dart';
+import 'duration.dart';
 import 'month/month.dart';
 import 'month/year_month.dart';
-import 'period.dart';
 import 'week/week_date.dart';
 import 'year.dart';
 
@@ -73,9 +73,9 @@ final class OrdinalDate
   bool isTodayInUtc({Clock? clockOverride}) =>
       this == OrdinalDate.todayInUtc(clockOverride: clockOverride);
 
-  OrdinalDate operator +(FixedDaysPeriod period) =>
-      (asDate + period).asOrdinalDate;
-  OrdinalDate operator -(FixedDaysPeriod period) => this + (-period);
+  OrdinalDate operator +(FixedDaysDuration duration) =>
+      (asDate + duration).asOrdinalDate;
+  OrdinalDate operator -(FixedDaysDuration duration) => this + (-duration);
 
   OrdinalDate get nextDay {
     return dayOfYear == year.lengthInDays.value

@@ -1,7 +1,7 @@
 import 'package:oxidized/oxidized.dart';
 
 import '../utils.dart';
-import 'period.dart';
+import 'duration.dart';
 
 enum Weekday
     with ComparisonOperatorsFromComparable<Weekday>
