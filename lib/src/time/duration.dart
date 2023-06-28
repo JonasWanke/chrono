@@ -149,7 +149,8 @@ final class Nanoseconds extends NanosecondsDuration {
   static const perHour = Nanoseconds(1000 * core.Duration.microsecondsPerHour);
   static const perDay = Nanoseconds(1000 * core.Duration.microsecondsPerDay);
   static const perWeek = Nanoseconds(
-      1000 * core.Duration.microsecondsPerDay * DateTime.daysPerWeek);
+    1000 * core.Duration.microsecondsPerDay * DateTime.daysPerWeek,
+  );
 
   final int value;
 
