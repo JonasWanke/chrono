@@ -415,8 +415,10 @@ final class Parser {
 }
 
 T unwrapParserResult<T extends Object>(Result<T, FormatException> result) {
-  if (result.isErr()) throw result.unwrapErr();
-  return result.unwrap();
+  return switch (result) {
+    Ok(:final value) => value,
+    Err(:final error) => throw error,
+  };
 }
 
 extension<T extends Object, E extends Object> on Result<T, E> {

@@ -13,7 +13,7 @@ dependencies:
   glados: ^1.1.6
   intl: ^0.18.1
   meta: ^1.3.0
-  oxidized: ^5.3.0
+  oxidized: ^6.0.0
   time: ^2.1.1
 
 dev_dependencies:
@@ -21,5 +21,8 @@ dev_dependencies:
     git:
       url: https://github.com/JonasWanke/supernova.git
       path: supernova
-      ref: 3276339a5e21ee456160616167b4697209a02cad
+      ref: d66051f0f016cc42c3b5c6f0135a48875df5417e
   test: ^1.24.2
+
+dependency_overrides:
+  http: ^1.0.0

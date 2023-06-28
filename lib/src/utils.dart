@@ -21,7 +21,9 @@ extension FixedPlainDateTimeInternal on Fixed {
 extension ResultWithStringErrorPlainDateTimeInternal<T extends Object>
     on Result<T, String> {
   T unwrapOrThrowAsFormatException() {
-    if (isErr()) throw FormatException(unwrapErr());
-    return unwrap();
+    return switch (this) {
+      Ok(:final value) => value,
+      Err(:final error) => throw FormatException(error),
+    };
   }
 }
