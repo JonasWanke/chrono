@@ -33,10 +33,7 @@ final class Date
     return Ok(Date.fromYearMonthAndDayUnchecked(yearMonth, day));
   }
 
-  factory Date.fromYearMonthAndDayThrowing(
-    YearMonth yearMonth,
-    int day,
-  ) =>
+  factory Date.fromYearMonthAndDayThrowing(YearMonth yearMonth, int day) =>
       fromYearMonthAndDay(yearMonth, day).unwrap();
   const Date.fromYearMonthAndDayUnchecked(this.yearMonth, this.day);
 
