@@ -8,7 +8,7 @@ mixin ComparisonOperatorsFromComparable<T> implements Comparable<T> {
   bool operator >=(T other) => compareTo(other) >= 0;
 }
 
-extension FixedPlainDateTimeInternal on Fixed {
+extension FixedChronoInternal on Fixed {
   (BigInt, Fixed) get integerAndDecimalParts {
     final scaleFactor = this.scaleFactor;
     final integerPart = minorUnits ~/ scaleFactor;
@@ -18,7 +18,7 @@ extension FixedPlainDateTimeInternal on Fixed {
   }
 }
 
-extension ResultWithStringErrorPlainDateTimeInternal<T extends Object>
+extension ResultWithStringErrorChronoInternal<T extends Object>
     on Result<T, String> {
   T unwrapOrThrowAsFormatException() {
     return switch (this) {

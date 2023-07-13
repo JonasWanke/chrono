@@ -1,6 +1,6 @@
-name: plain_date_time
+name: chrono
 version: 0.0.0
-homepage: https://github.com/JonasWanke/plain_date_time
+homepage: https://github.com/JonasWanke/chrono
 
 environment:
   sdk: '>=3.0.0-417.2.beta <4.0.0'

@@ -1,8 +1,8 @@
 import 'dart:core';
 import 'dart:core' as core;
 
+import 'package:chrono/chrono.dart';
 import 'package:glados/glados.dart';
-import 'package:plain_date_time/plain_date_time.dart';
 
 void main() {
   setDateTimeGladosDefaults();
