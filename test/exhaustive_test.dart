@@ -78,7 +78,7 @@ void main() {
     final endTime = Instant.now();
 
     print(
-      'Tested $totalNumberOfDays days in ${endTime.coreDateTimeInUtc.difference(startTime.coreDateTimeInUtc)}',
+      'Tested $totalNumberOfDays days in ${endTime.asCoreDateTimeInUtc.difference(startTime.asCoreDateTimeInUtc)}',
     );
   });
 }

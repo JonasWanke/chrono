@@ -29,11 +29,11 @@ final class Instant
   final FractionalSeconds secondsSinceUnixEpoch;
 
   DateTime get dateTimeInLocalZone =>
-      DateTime.fromCore(coreDateTimeInLocalZone);
-  DateTime get dateTimeInUtc => DateTime.fromCore(coreDateTimeInUtc);
+      DateTime.fromCore(asCoreDateTimeInLocalZone);
+  DateTime get dateTimeInUtc => DateTime.fromCore(asCoreDateTimeInUtc);
 
-  core.DateTime get coreDateTimeInLocalZone => _getDateTime(isUtc: false);
-  core.DateTime get coreDateTimeInUtc => _getDateTime(isUtc: true);
+  core.DateTime get asCoreDateTimeInLocalZone => _getDateTime(isUtc: false);
+  core.DateTime get asCoreDateTimeInUtc => _getDateTime(isUtc: true);
   core.DateTime _getDateTime({required bool isUtc}) {
     return core.DateTime.fromMicrosecondsSinceEpoch(
       secondsSinceUnixEpoch.inMicrosecondsRounded,

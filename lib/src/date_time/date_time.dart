@@ -35,11 +35,11 @@ final class DateTime
   final Date date;
   final Time time;
 
-  Instant get inLocalZone => Instant.fromCore(coreDateTimeInLocalZone);
-  Instant get inUtc => Instant.fromCore(coreDateTimeInUtc);
+  Instant get inLocalZone => Instant.fromCore(asCoreDateTimeInLocalZone);
+  Instant get inUtc => Instant.fromCore(asCoreDateTimeInUtc);
 
-  core.DateTime get coreDateTimeInLocalZone => _getDartDateTime(isUtc: false);
-  core.DateTime get coreDateTimeInUtc => _getDartDateTime(isUtc: true);
+  core.DateTime get asCoreDateTimeInLocalZone => _getDartDateTime(isUtc: false);
+  core.DateTime get asCoreDateTimeInUtc => _getDartDateTime(isUtc: true);
   core.DateTime _getDartDateTime({required bool isUtc}) {
     return (isUtc ? core.DateTime.utc : core.DateTime.new)(
       date.year.value,
