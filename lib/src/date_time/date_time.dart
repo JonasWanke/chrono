@@ -54,7 +54,7 @@ final class DateTime
   }
 
   DateTime operator +(Duration duration) {
-    final compoundDuration = duration.inMonthsAndDaysAndSeconds;
+    final compoundDuration = duration.asCompoundDuration;
     var newDate = date + compoundDuration.months + compoundDuration.days;
 
     final rawNewTimeSinceMidnight =

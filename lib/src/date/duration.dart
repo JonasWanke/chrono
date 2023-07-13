@@ -1,21 +1,13 @@
-import 'package:fixed/fixed.dart';
-import 'package:meta/meta.dart';
-
 import '../date_time/duration.dart';
-import '../time/duration.dart';
 import '../utils.dart';
 
-@immutable
 abstract class DaysDuration extends Duration {
   const DaysDuration();
 
-  (Months, Days) get inMonthsAndDays;
-
+  CompoundDaysDuration get asCompoundDaysDuration;
   @override
-  CompoundDuration get inMonthsAndDaysAndSeconds {
-    final (months, days) = inMonthsAndDays;
-    return CompoundDuration(months, days, FractionalSeconds(Fixed.zero));
-  }
+  CompoundDuration get asCompoundDuration =>
+      CompoundDuration(monthsAndDays: asCompoundDaysDuration);
 
   @override
   DaysDuration operator -();
@@ -29,6 +21,62 @@ abstract class DaysDuration extends Duration {
   DaysDuration remainder(int divisor);
 }
 
+final class CompoundDaysDuration extends DaysDuration {
+  const CompoundDaysDuration({
+    this.months = const Months(0),
+    this.days = const Days(0),
+  });
+
+  final Months months;
+  final Days days;
+
+  @override
+  CompoundDaysDuration get asCompoundDaysDuration => this;
+
+  CompoundDaysDuration operator +(DaysDuration duration) {
+    final CompoundDaysDuration(:months, :days) =
+        duration.asCompoundDaysDuration;
+    return CompoundDaysDuration(
+      months: this.months + months,
+      days: this.days + days,
+    );
+  }
+
+  @override
+  CompoundDaysDuration operator -() =>
+      CompoundDaysDuration(months: -months, days: -days);
+  @override
+  CompoundDaysDuration operator *(int factor) =>
+      CompoundDaysDuration(months: months * factor, days: days * factor);
+  @override
+  CompoundDaysDuration operator ~/(int divisor) =>
+      CompoundDaysDuration(months: months ~/ divisor, days: days ~/ divisor);
+  @override
+  CompoundDaysDuration operator %(int divisor) =>
+      CompoundDaysDuration(months: months % divisor, days: days % divisor);
+  @override
+  CompoundDaysDuration remainder(int divisor) {
+    return CompoundDaysDuration(
+      months: months.remainder(divisor),
+      days: days.remainder(divisor),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is CompoundDuration &&
+            months == other.months &&
+            days == other.days);
+  }
+
+  @override
+  int get hashCode => Object.hash(months, days);
+
+  @override
+  String toString() => '$months, $days';
+}
+
 abstract class FixedDaysDuration extends DaysDuration
     with ComparisonOperatorsFromComparable<FixedDaysDuration>
     implements Comparable<FixedDaysDuration> {
@@ -37,7 +85,8 @@ abstract class FixedDaysDuration extends DaysDuration
   Days get inDays;
 
   @override
-  (Months, Days) get inMonthsAndDays => (const Months(0), inDays);
+  CompoundDaysDuration get asCompoundDaysDuration =>
+      CompoundDaysDuration(days: inDays);
 
   bool get isPositive => inDays.value > 0;
   bool get isNonPositive => inDays.value <= 0;
@@ -143,7 +192,8 @@ abstract class MonthsDuration extends DaysDuration
   Months get inMonths;
 
   @override
-  (Months, Days) get inMonthsAndDays => (inMonths, const Days(0));
+  CompoundDaysDuration get asCompoundDaysDuration =>
+      CompoundDaysDuration(months: inMonths);
 
   bool get isPositive => inMonths.value > 0;
   bool get isNonPositive => inMonths.value <= 0;

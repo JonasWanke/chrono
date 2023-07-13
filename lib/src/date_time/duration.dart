@@ -7,7 +7,7 @@ import '../time/duration.dart';
 abstract class Duration {
   const Duration();
 
-  CompoundDuration get inMonthsAndDaysAndSeconds;
+  CompoundDuration get asCompoundDuration;
 
   Duration operator -();
   Duration operator *(int factor);
@@ -17,37 +17,72 @@ abstract class Duration {
 }
 
 final class CompoundDuration extends Duration {
-  CompoundDuration(
-    this.months, [
-    this.days = const Days(0),
+  CompoundDuration({
+    CompoundDaysDuration? monthsAndDays,
+    Months? months,
+    Days? days,
     FractionalSeconds? seconds,
-  ]) : seconds = seconds ?? FractionalSeconds.zero;
+  })  : assert(
+          monthsAndDays == null || (months == null && days == null),
+          'Cannot specify both `monthsAndDays` and `months`/`days`.',
+        ),
+        monthsAndDays = monthsAndDays ??
+            CompoundDaysDuration(
+              months: months ?? const Months(0),
+              days: const Days(0),
+            ),
+        seconds = seconds ?? FractionalSeconds.zero;
 
-  final Months months;
-  final Days days;
+  final CompoundDaysDuration monthsAndDays;
+  Months get months => monthsAndDays.months;
+  Days get days => monthsAndDays.days;
   final FractionalSeconds seconds;
 
   @override
-  CompoundDuration get inMonthsAndDaysAndSeconds => this;
+  CompoundDuration get asCompoundDuration => this;
+
+  CompoundDuration operator +(Duration duration) {
+    final CompoundDuration(:monthsAndDays, :seconds) =
+        duration.asCompoundDuration;
+    return CompoundDuration(
+      monthsAndDays: this.monthsAndDays + monthsAndDays,
+      seconds: this.seconds + seconds,
+    );
+  }
 
   @override
-  CompoundDuration operator -() => CompoundDuration(-months, -days, -seconds);
+  CompoundDuration operator -() =>
+      CompoundDuration(monthsAndDays: -monthsAndDays, seconds: -seconds);
 
   @override
-  CompoundDuration operator *(int factor) =>
-      CompoundDuration(months * factor, days * factor, seconds * factor);
+  CompoundDuration operator *(int factor) {
+    return CompoundDuration(
+      monthsAndDays: monthsAndDays * factor,
+      seconds: seconds * factor,
+    );
+  }
+
   @override
-  CompoundDuration operator ~/(int divisor) =>
-      CompoundDuration(months ~/ divisor, days ~/ divisor, seconds ~/ divisor);
+  CompoundDuration operator ~/(int divisor) {
+    return CompoundDuration(
+      monthsAndDays: monthsAndDays ~/ divisor,
+      seconds: seconds ~/ divisor,
+    );
+  }
+
   @override
-  CompoundDuration operator %(int divisor) =>
-      CompoundDuration(months % divisor, days % divisor, seconds % divisor);
+  CompoundDuration operator %(int divisor) {
+    return CompoundDuration(
+      monthsAndDays: monthsAndDays % divisor,
+      seconds: seconds % divisor,
+    );
+  }
+
   @override
   CompoundDuration remainder(int divisor) {
     return CompoundDuration(
-      months.remainder(divisor),
-      days.remainder(divisor),
-      seconds.remainder(divisor),
+      monthsAndDays: monthsAndDays.remainder(divisor),
+      seconds: seconds.remainder(divisor),
     );
   }
 

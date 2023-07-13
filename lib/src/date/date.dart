@@ -180,7 +180,8 @@ final class Date
   DateTime get atNoon => at(Time.noon);
 
   Date operator +(DaysDuration duration) {
-    final (months, days) = duration.inMonthsAndDays;
+    final CompoundDaysDuration(:months, :days) =
+        duration.asCompoundDaysDuration;
     final yearMonthWithMonths = yearMonth + months;
     final dateWithMonths = Date.fromYearMonthAndDayUnchecked(
       yearMonthWithMonths,

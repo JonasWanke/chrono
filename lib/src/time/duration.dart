@@ -3,7 +3,6 @@ import 'dart:core' as core;
 
 import 'package:fixed/fixed.dart';
 
-import '../date/duration.dart';
 import '../date_time/duration.dart';
 import '../utils.dart';
 
@@ -22,8 +21,8 @@ abstract class TimeDuration extends Duration
   }
 
   @override
-  CompoundDuration get inMonthsAndDaysAndSeconds =>
-      CompoundDuration(const Months(0), const Days(0), inFractionalSeconds);
+  CompoundDuration get asCompoundDuration =>
+      CompoundDuration(seconds: inFractionalSeconds);
 
   bool get isPositive => inFractionalSeconds.value.isPositive;
   bool get isNonPositive => !isPositive;
