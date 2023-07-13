@@ -43,7 +43,7 @@ final class Time
     FractionalSeconds? fraction,
   ]) =>
       from(hour, minute, second, fraction).unwrap();
-  Time.fromUnchecked(this.hour, this.minute, this.second, this.fraction);
+  const Time.fromUnchecked(this.hour, this.minute, this.second, this.fraction);
 
   static Result<Time, String> fromTimeSinceMidnight(TimeDuration time) {
     if (time.isNegative) {
@@ -71,7 +71,7 @@ final class Time
     );
   }
 
-  Time.fromDart(core.DateTime dateTime)
+  Time.fromCore(core.DateTime dateTime)
       : this.fromUnchecked(
           dateTime.hour,
           dateTime.minute,
@@ -80,9 +80,9 @@ final class Time
               FractionalSeconds.microsecond * dateTime.microsecond,
         );
   Time.nowInLocalZone({Clock? clockOverride})
-      : this.fromDart((clockOverride ?? clock).now().toLocal());
+      : this.fromCore((clockOverride ?? clock).now().toLocal());
   Time.nowInUtc({Clock? clockOverride})
-      : this.fromDart((clockOverride ?? clock).now().toUtc());
+      : this.fromCore((clockOverride ?? clock).now().toUtc());
 
   factory Time.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<Time, FormatException> parse(String value) =>

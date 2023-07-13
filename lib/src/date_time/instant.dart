@@ -16,11 +16,11 @@ final class Instant
     implements Comparable<Instant> {
   const Instant.fromSecondsSinceUnixEpoch(this.secondsSinceUnixEpoch);
 
-  Instant.fromDart(core.DateTime dateTime)
+  Instant.fromCore(core.DateTime dateTime)
       : secondsSinceUnixEpoch =
             FractionalSeconds.microsecond * dateTime.microsecondsSinceEpoch;
   Instant.now({Clock? clockOverride})
-      : this.fromDart((clockOverride ?? clock).now());
+      : this.fromCore((clockOverride ?? clock).now());
 
   factory Instant.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<Instant, FormatException> parse(String value) =>
@@ -29,11 +29,11 @@ final class Instant
   final FractionalSeconds secondsSinceUnixEpoch;
 
   DateTime get dateTimeInLocalZone =>
-      DateTime.fromDart(dartDateTimeInLocalZone);
-  DateTime get dateTimeInUtc => DateTime.fromDart(dartDateTimeInUtc);
+      DateTime.fromCore(coreDateTimeInLocalZone);
+  DateTime get dateTimeInUtc => DateTime.fromCore(coreDateTimeInUtc);
 
-  core.DateTime get dartDateTimeInLocalZone => _getDateTime(isUtc: false);
-  core.DateTime get dartDateTimeInUtc => _getDateTime(isUtc: true);
+  core.DateTime get coreDateTimeInLocalZone => _getDateTime(isUtc: false);
+  core.DateTime get coreDateTimeInUtc => _getDateTime(isUtc: true);
   core.DateTime _getDateTime({required bool isUtc}) {
     return core.DateTime.fromMicrosecondsSinceEpoch(
       secondsSinceUnixEpoch.inMicrosecondsRounded,

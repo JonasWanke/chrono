@@ -23,12 +23,12 @@ final class WeekDate
 
   WeekDate.fromDate(Date date) : this(date.yearWeek, date.weekday);
 
-  WeekDate.fromDart(core.DateTime dateTime)
-      : this.fromDate(Date.fromDart(dateTime));
+  WeekDate.fromCore(core.DateTime dateTime)
+      : this.fromDate(Date.fromCore(dateTime));
   WeekDate.todayInLocalZone({Clock? clockOverride})
-      : this.fromDart((clockOverride ?? clock).now().toLocal());
+      : this.fromCore((clockOverride ?? clock).now().toLocal());
   WeekDate.todayInUtc({Clock? clockOverride})
-      : this.fromDart((clockOverride ?? clock).now().toUtc());
+      : this.fromCore((clockOverride ?? clock).now().toUtc());
 
   factory WeekDate.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<WeekDate, FormatException> parse(String value) =>

@@ -26,11 +26,11 @@ final class Year
     implements Comparable<Year> {
   const Year(this.value);
 
-  Year.fromDart(core.DateTime dateTime) : value = dateTime.year;
+  Year.fromCore(core.DateTime dateTime) : value = dateTime.year;
   Year.currentInLocalZone({Clock? clockOverride})
-      : this.fromDart((clockOverride ?? clock).now().toLocal());
+      : this.fromCore((clockOverride ?? clock).now().toLocal());
   Year.currentInUtc({Clock? clockOverride})
-      : this.fromDart((clockOverride ?? clock).now().toUtc());
+      : this.fromCore((clockOverride ?? clock).now().toUtc());
 
   const Year.fromJson(int json) : this(json);
 

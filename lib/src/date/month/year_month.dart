@@ -18,13 +18,13 @@ final class YearMonth
     implements Comparable<YearMonth> {
   const YearMonth(this.year, [this.month = Month.january]);
 
-  YearMonth.fromDart(core.DateTime dateTime)
-      : year = Year.fromDart(dateTime),
-        month = Month.fromDart(dateTime);
+  YearMonth.fromCore(core.DateTime dateTime)
+      : year = Year.fromCore(dateTime),
+        month = Month.fromCore(dateTime);
   YearMonth.currentInLocalZone({Clock? clockOverride})
-      : this.fromDart((clockOverride ?? clock).now().toLocal());
+      : this.fromCore((clockOverride ?? clock).now().toLocal());
   YearMonth.currentInUtc({Clock? clockOverride})
-      : this.fromDart((clockOverride ?? clock).now().toUtc());
+      : this.fromCore((clockOverride ?? clock).now().toUtc());
 
   factory YearMonth.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<YearMonth, FormatException> parse(String value) =>

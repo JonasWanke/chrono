@@ -34,12 +34,12 @@ enum Month
       Month.fromNumber(number).unwrap();
   static Month fromNumberUnchecked(int number) => values[number - minNumber];
 
-  static Month fromDart(core.DateTime dateTime) =>
+  static Month fromCore(core.DateTime dateTime) =>
       fromNumberThrowing(dateTime.month);
   static Month currentInLocalZone({Clock? clockOverride}) =>
-      fromDart((clockOverride ?? clock).now().toLocal());
+      fromCore((clockOverride ?? clock).now().toLocal());
   static Month currentInUtc({Clock? clockOverride}) =>
-      fromDart((clockOverride ?? clock).now().toUtc());
+      fromCore((clockOverride ?? clock).now().toUtc());
 
   static Month fromJson(int json) =>
       fromNumber(json).unwrapOrThrowAsFormatException();

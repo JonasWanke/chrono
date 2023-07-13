@@ -32,12 +32,12 @@ final class OrdinalDate
   OrdinalDate.fromDate(Date date)
       : this.fromUnchecked(date.year, date.dayOfYear);
 
-  OrdinalDate.fromDart(core.DateTime dateTime)
-      : this.fromDate(Date.fromDart(dateTime));
+  OrdinalDate.fromCore(core.DateTime dateTime)
+      : this.fromDate(Date.fromCore(dateTime));
   OrdinalDate.todayInLocalZone({Clock? clockOverride})
-      : this.fromDart((clockOverride ?? clock).now().toLocal());
+      : this.fromCore((clockOverride ?? clock).now().toLocal());
   OrdinalDate.todayInUtc({Clock? clockOverride})
-      : this.fromDart((clockOverride ?? clock).now().toUtc());
+      : this.fromCore((clockOverride ?? clock).now().toUtc());
 
   factory OrdinalDate.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<OrdinalDate, FormatException> parse(String value) =>

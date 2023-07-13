@@ -28,12 +28,12 @@ final class YearWeek
   factory YearWeek.fromThrowing(Year weekBasedYear, int week) =>
       from(weekBasedYear, week).unwrap();
 
-  factory YearWeek.fromDart(core.DateTime dateTime) =>
-      Date.fromDart(dateTime).yearWeek;
+  factory YearWeek.fromCore(core.DateTime dateTime) =>
+      Date.fromCore(dateTime).yearWeek;
   factory YearWeek.currentInLocalZone({Clock? clockOverride}) =>
-      YearWeek.fromDart((clockOverride ?? clock).now().toLocal());
+      YearWeek.fromCore((clockOverride ?? clock).now().toLocal());
   factory YearWeek.currentInUtc({Clock? clockOverride}) =>
-      YearWeek.fromDart((clockOverride ?? clock).now().toUtc());
+      YearWeek.fromCore((clockOverride ?? clock).now().toUtc());
 
   factory YearWeek.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<YearWeek, FormatException> parse(String value) =>

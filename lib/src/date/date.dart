@@ -102,15 +102,15 @@ final class Date
     );
   }
 
-  Date.fromDart(core.DateTime dateTime)
+  Date.fromCore(core.DateTime dateTime)
       : this.fromYearMonthAndDayUnchecked(
-          YearMonth.fromDart(dateTime),
+          YearMonth.fromCore(dateTime),
           dateTime.day,
         );
   Date.todayInLocalZone({Clock? clockOverride})
-      : this.fromDart((clockOverride ?? clock).now().toLocal());
+      : this.fromCore((clockOverride ?? clock).now().toLocal());
   Date.todayInUtc({Clock? clockOverride})
-      : this.fromDart((clockOverride ?? clock).now().toUtc());
+      : this.fromCore((clockOverride ?? clock).now().toUtc());
 
   factory Date.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<Date, FormatException> parse(String value) =>

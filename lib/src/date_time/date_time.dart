@@ -20,13 +20,13 @@ final class DateTime
     implements Comparable<DateTime> {
   const DateTime(this.date, this.time);
 
-  DateTime.fromDart(core.DateTime dateTime)
-      : date = Date.fromDart(dateTime),
-        time = Time.fromDart(dateTime);
+  DateTime.fromCore(core.DateTime dateTime)
+      : date = Date.fromCore(dateTime),
+        time = Time.fromCore(dateTime);
   DateTime.nowInLocalZone({Clock? clockOverride})
-      : this.fromDart((clockOverride ?? clock).now().toLocal());
+      : this.fromCore((clockOverride ?? clock).now().toLocal());
   DateTime.nowInUtc({Clock? clockOverride})
-      : this.fromDart((clockOverride ?? clock).now().toUtc());
+      : this.fromCore((clockOverride ?? clock).now().toUtc());
 
   factory DateTime.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<DateTime, FormatException> parse(String value) =>
@@ -35,11 +35,11 @@ final class DateTime
   final Date date;
   final Time time;
 
-  Instant get inLocalZone => Instant.fromDart(dartDateTimeInLocalZone);
-  Instant get inUtc => Instant.fromDart(dartDateTimeInUtc);
+  Instant get inLocalZone => Instant.fromCore(coreDateTimeInLocalZone);
+  Instant get inUtc => Instant.fromCore(coreDateTimeInUtc);
 
-  core.DateTime get dartDateTimeInLocalZone => _getDartDateTime(isUtc: false);
-  core.DateTime get dartDateTimeInUtc => _getDartDateTime(isUtc: true);
+  core.DateTime get coreDateTimeInLocalZone => _getDartDateTime(isUtc: false);
+  core.DateTime get coreDateTimeInUtc => _getDartDateTime(isUtc: true);
   core.DateTime _getDartDateTime({required bool isUtc}) {
     return (isUtc ? core.DateTime.utc : core.DateTime.new)(
       date.year.value,

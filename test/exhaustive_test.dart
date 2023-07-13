@@ -78,7 +78,7 @@ void main() {
     final endTime = Instant.now();
 
     print(
-      'Tested $totalNumberOfDays days in ${endTime.dartDateTimeInUtc.difference(startTime.dartDateTimeInUtc)}',
+      'Tested $totalNumberOfDays days in ${endTime.coreDateTimeInUtc.difference(startTime.coreDateTimeInUtc)}',
     );
   });
 }

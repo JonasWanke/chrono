@@ -65,18 +65,18 @@ void main() {
     (dateTimeInLocalZone) {
       expect(
         dateTimeInLocalZone,
-        Instant.fromDart(dateTimeInLocalZone).dartDateTimeInLocalZone,
+        Instant.fromCore(dateTimeInLocalZone).coreDateTimeInLocalZone,
       );
       expect(
         dateTimeInLocalZone,
-        DateTime.fromDart(dateTimeInLocalZone).dartDateTimeInLocalZone,
+        DateTime.fromCore(dateTimeInLocalZone).coreDateTimeInLocalZone,
       );
 
       final dateTimeInUtc = dateTimeInLocalZone.toUtc();
-      expect(dateTimeInUtc, Instant.fromDart(dateTimeInUtc).dartDateTimeInUtc);
+      expect(dateTimeInUtc, Instant.fromCore(dateTimeInUtc).coreDateTimeInUtc);
       expect(
         dateTimeInUtc,
-        DateTime.fromDart(dateTimeInUtc).dartDateTimeInUtc,
+        DateTime.fromCore(dateTimeInUtc).coreDateTimeInUtc,
       );
     },
   );
