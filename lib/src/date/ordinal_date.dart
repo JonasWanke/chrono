@@ -73,9 +73,9 @@ final class OrdinalDate
   bool isTodayInUtc({Clock? clockOverride}) =>
       this == OrdinalDate.todayInUtc(clockOverride: clockOverride);
 
-  OrdinalDate operator +(FixedDaysDuration duration) =>
+  OrdinalDate operator +(DaysDuration duration) =>
       (asDate + duration).asOrdinalDate;
-  OrdinalDate operator -(FixedDaysDuration duration) => this + (-duration);
+  OrdinalDate operator -(DaysDuration duration) => this + (-duration);
 
   OrdinalDate get nextDay {
     return dayOfYear == year.lengthInDays.value
