@@ -23,6 +23,19 @@ jobs:
 
       - run: dart test
 
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dart-lang/setup-dart@v1
+      - run: dart pub get
+
+      - run: dart pub global activate coverage ^1.0.0
+      - run: dart pub global run coverage:test_with_coverage
+
+      - uses: codecov/codecov-action@v3
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
