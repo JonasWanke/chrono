@@ -37,6 +37,8 @@ final class WeekDate
   final YearWeek yearWeek;
   final Weekday weekday;
 
+  Date get asDate => asOrdinalDate.asDate;
+
   OrdinalDate get asOrdinalDate {
     // https://en.wikipedia.org/wiki/ISO_week_date#Calculating_an_ordinal_or_month_date_from_a_week_date
     final january4 =
@@ -63,16 +65,13 @@ final class WeekDate
     return OrdinalDate.fromUnchecked(year, dayOfYear);
   }
 
-  Date get asDate => asOrdinalDate.asDate;
-
   bool isTodayInLocalZone({Clock? clockOverride}) =>
       this == WeekDate.todayInLocalZone(clockOverride: clockOverride);
   bool isTodayInUtc({Clock? clockOverride}) =>
       this == WeekDate.todayInUtc(clockOverride: clockOverride);
 
-  WeekDate operator +(FixedDaysDuration duration) =>
-      (asDate + duration).asWeekDate;
-  WeekDate operator -(FixedDaysDuration duration) => this + (-duration);
+  WeekDate operator +(DaysDuration duration) => (asDate + duration).asWeekDate;
+  WeekDate operator -(DaysDuration duration) => this + (-duration);
 
   WeekDate get next {
     return weekday == Weekday.values.last
