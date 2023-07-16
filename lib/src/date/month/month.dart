@@ -54,9 +54,6 @@ enum Month
   bool isCurrentInUtc({Clock? clockOverride}) =>
       this == Month.currentInUtc(clockOverride: clockOverride);
 
-  Month get next => values[(index + 1) % values.length];
-  Month get previous => values[(index - 1) % values.length];
-
   /// The number of days in this month of a common (non-leap) year.
   ///
   /// The result is always in the range [28, 31].
@@ -83,6 +80,12 @@ enum Month
     return days[index];
   }
 
+  Month operator +(MonthsDuration duration) =>
+      values[(index + duration.inMonths.value) % values.length];
+  Month operator -(MonthsDuration duration) => this + (-duration);
+
+  Month get next => this + const Months(1);
+  Month get previous => this - const Months(1);
   @override
   int compareTo(Month other) => index.compareTo(other.index);
 
