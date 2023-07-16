@@ -82,8 +82,9 @@ final class Year
   Year operator +(Years duration) => Year(value + duration.value);
   Year operator -(Years duration) => Year(value - duration.value);
 
-  Year get nextYear => this + const Years(1);
-  Year get previousYear => this - const Years(1);
+  Year get next => this + const Years(1);
+
+  Year get previous => this - const Years(1);
 
   @override
   int compareTo(Year other) => value.compareTo(other.value);

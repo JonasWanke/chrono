@@ -60,7 +60,7 @@ final class OrdinalDate
     );
     final monthEnd =
         firstDayOfYear(rawMonth.month) + rawMonth.lengthInDays.value - 1;
-    final month = dayOfYear > monthEnd ? rawMonth.nextMonth : rawMonth;
+    final month = dayOfYear > monthEnd ? rawMonth.next : rawMonth;
 
     final dayOfMonth = dayOfYear - firstDayOfYear(month.month) + 1;
     return Date.fromYearMonthAndDayUnchecked(month, dayOfMonth);

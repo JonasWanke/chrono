@@ -138,8 +138,8 @@ final class Date
     // Algorithm from https://en.wikipedia.org/wiki/ISO_week_date#Algorithms
     final weekOfYear = (dayOfYear - weekday.number + 10) ~/ 7;
     return switch (weekOfYear) {
-      0 => year.previousYear.lastWeek,
-      53 when year.numberOfWeeks == 52 => year.nextYear.firstWeek,
+      0 => year.previous.lastWeek,
+      53 when year.numberOfWeeks == 52 => year.next.firstWeek,
       _ => YearWeek.fromUnchecked(year, weekOfYear)
     };
   }
@@ -195,8 +195,8 @@ final class Date
 
   Date operator -(DaysDuration duration) => this + (-duration);
 
-  Date get nextDay => this + const Days(1);
-  Date get previousDay => this - const Days(1);
+  Date get next => this + const Days(1);
+  Date get previous => this - const Days(1);
 
   Date nextOrSame(Weekday weekday) =>
       this + this.weekday.untilNextOrSame(weekday);

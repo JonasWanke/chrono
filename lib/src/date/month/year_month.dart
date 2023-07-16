@@ -76,8 +76,8 @@ final class YearMonth
 
   YearMonth operator -(MonthsDuration duration) => this + (-duration);
 
-  YearMonth get nextMonth => this + const Months(1);
-  YearMonth get previousMonth => this - const Months(1);
+  YearMonth get next => this + const Months(1);
+  YearMonth get previous => this - const Months(1);
 
   YearMonth copyWith({Year? year, Month? month}) =>
       YearMonth(year ?? this.year, month ?? this.month);
