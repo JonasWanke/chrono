@@ -5,7 +5,7 @@ import 'package:chrono/chrono.dart';
 import 'package:glados/glados.dart';
 
 void main() {
-  setDateTimeGladosDefaults();
+  setChronoGladosDefaults();
 
   Glados<Year>().test('Year', (year) {
     _checkEquals(year);
