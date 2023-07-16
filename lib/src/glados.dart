@@ -4,6 +4,7 @@ import 'package:fixed/fixed.dart';
 import 'package:glados/glados.dart';
 
 import 'date/date.dart';
+import 'date/duration.dart';
 import 'date/month/month.dart';
 import 'date/month/year_month.dart';
 import 'date/ordinal_date.dart';
@@ -16,10 +17,10 @@ import 'date_time/instant.dart';
 import 'time/duration.dart';
 import 'time/time.dart';
 
-void setDateTimeGladosDefaults() {
+void setChronoGladosDefaults() {
   Any.setDefault(any.instant);
   Any.setDefault(any.date);
-  Any.setDefault(any.dateTimePlain);
+  Any.setDefault(any.dateTimeChrono);
   Any.setDefault(any.month);
   Any.setDefault(any.time);
   Any.setDefault(any.ordinalDate);
@@ -28,10 +29,19 @@ void setDateTimeGladosDefaults() {
   Any.setDefault(any.yearMonth);
   Any.setDefault(any.yearWeek);
   Any.setDefault(any.weekday);
+
+  Any.setDefault(any.daysDuration);
+  Any.setDefault(any.fixedDaysDuration);
+  Any.setDefault(any.days);
+  Any.setDefault(any.weeks);
+  Any.setDefault(any.monthsDuration);
+  Any.setDefault(any.months);
+  Any.setDefault(any.years);
+  // TODO: `Duration` and all `TimeDuration`s
 }
 
-extension DateTimeAny on Any {
-  Generator<Instant> get instant => dateTimePlain.map((it) => it.inUtc);
+extension ChronoAny on Any {
+  Generator<Instant> get instant => dateTimeChrono.map((it) => it.inUtc);
   Generator<Date> get date {
     return simple(
       generate: (random, size) {
@@ -57,7 +67,7 @@ extension DateTimeAny on Any {
     );
   }
 
-  Generator<DateTime> get dateTimePlain => combine2(date, time, DateTime.new);
+  Generator<DateTime> get dateTimeChrono => combine2(date, time, DateTime.new);
   Generator<Month> get month => choose(Month.values);
   Generator<Time> get time {
     return combine4(
@@ -149,4 +159,15 @@ extension DateTimeAny on Any {
       },
     );
   }
+
+  Generator<DaysDuration> get daysDuration =>
+      either(fixedDaysDuration, monthsDuration);
+
+  Generator<FixedDaysDuration> get fixedDaysDuration => either(days, weeks);
+  Generator<Days> get days => this.int.map(Days.new);
+  Generator<Weeks> get weeks => this.int.map(Weeks.new);
+
+  Generator<MonthsDuration> get monthsDuration => either(months, years);
+  Generator<Months> get months => this.int.map(Months.new);
+  Generator<Years> get years => this.int.map(Years.new);
 }
