@@ -64,10 +64,15 @@ final class Date
     int day = 1,
   ]) : this.fromYearMonthAndDayUnchecked(YearMonth(year, month), day);
 
+  /// The UNIX epoch: 1970-01-01.
+  ///
+  /// https://en.wikipedia.org/wiki/Unix_time
   static const unixEpoch = Date.fromYearMonthAndDayUnchecked(
     YearMonth(Year(1970), Month.january),
     1,
   );
+
+  /// The date corresponding to the given number of days since the [unixEpoch].
   factory Date.fromDaysSinceUnixEpoch(Days sinceUnixEpoch) {
     // https://howardhinnant.github.io/date_algorithms.html#civil_from_days
     var daysSinceUnixEpoch = sinceUnixEpoch.value;
@@ -128,8 +133,11 @@ final class Date
   final YearMonth yearMonth;
   Year get year => yearMonth.year;
   Month get month => yearMonth.month;
+
+  /// The one-based day of the month.
   final int day;
 
+  /// The one-based day of the year.
   int get dayOfYear {
     // https://en.wikipedia.org/wiki/Ordinal_date#Zeller-like
     final isJanuaryOrFebruary = this.month <= Month.february;
@@ -141,6 +149,7 @@ final class Date
         : marchBased + 59 + (year.isLeapYear ? 1 : 0);
   }
 
+  /// This date, represented as an [OrdinalDate].
   OrdinalDate get asOrdinalDate => OrdinalDate.fromUnchecked(year, dayOfYear);
 
   YearWeek get yearWeek {
@@ -156,8 +165,10 @@ final class Date
   Weekday get weekday =>
       Weekday.fromNumberUnchecked((daysSinceUnixEpoch.value + 3) % 7 + 1);
 
+  /// This date, represented as a [WeekDate].
   WeekDate get asWeekDate => WeekDate(yearWeek, weekday);
 
+  /// The number of days since the [unixEpoch].
   Days get daysSinceUnixEpoch {
     // https://howardhinnant.github.io/date_algorithms.html#days_from_civil
     final (year, month) = this.month <= Month.february
@@ -215,8 +226,15 @@ final class Date
   /// The date before this one.
   Date get previous => this - const Days(1);
 
+  /// The next-closest date with the given [weekday].
+  ///
+  /// If this date already falls on the given [weekday], it is returned.
   Date nextOrSame(Weekday weekday) =>
       this + this.weekday.untilNextOrSame(weekday);
+
+  /// The next-closest previous date with the given [weekday].
+  ///
+  /// If this date already falls on the given [weekday], it is returned.
   Date previousOrSame(Weekday weekday) =>
       this + this.weekday.untilPreviousOrSame(weekday);
 

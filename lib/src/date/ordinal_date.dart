@@ -12,8 +12,18 @@ import 'duration.dart';
 import 'month/month.dart';
 import 'month/year_month.dart';
 import 'week/week_date.dart';
+import 'week/year_week.dart';
+import 'weekday.dart';
 import 'year.dart';
 
+/// A date in the ISO 8601 calendar, represented by a [Year] and a day of the
+/// year.
+///
+/// See also:
+///
+/// - [Date], which represents a date by a [YearMonth] (= [Year] + [Month]) and
+///   a day of the month.
+/// - [WeekDate], which represents a date by a [YearWeek] and a [Weekday].
 @immutable
 final class OrdinalDate
     with ComparisonOperatorsFromComparable<OrdinalDate>
@@ -41,8 +51,11 @@ final class OrdinalDate
       Parser.parseOrdinalDate(value);
 
   final Year year;
+
+  /// The one-based day of the year.
   final int dayOfYear;
 
+  /// This date, represented as a [Date].
   Date get asDate {
     int firstDayOfYear(Month month) {
       final firstDayOfYearList = year.isCommonYear
@@ -63,6 +76,7 @@ final class OrdinalDate
     return Date.fromYearMonthAndDayUnchecked(month, dayOfMonth);
   }
 
+  /// This date, represented as a [WeekDate].
   WeekDate get asWeekDate => asDate.asWeekDate;
 
   bool isTodayInLocalZone({Clock? clockOverride}) =>
@@ -74,12 +88,14 @@ final class OrdinalDate
       (asDate + duration).asOrdinalDate;
   OrdinalDate operator -(DaysDuration duration) => this + (-duration);
 
+  /// The date after this one.
   OrdinalDate get next {
     return dayOfYear == year.lengthInDays.value
         ? (year + const Years(1)).firstOrdinalDate
         : OrdinalDate.fromUnchecked(year, dayOfYear + 1);
   }
 
+  /// The date before this one.
   OrdinalDate get previous {
     return dayOfYear == 1
         ? (year - const Years(1)).lastOrdinalDate

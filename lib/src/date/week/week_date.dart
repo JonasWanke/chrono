@@ -10,11 +10,22 @@ import '../../utils.dart';
 import '../date.dart';
 import '../duration.dart';
 import '../month/month.dart';
+import '../month/year_month.dart';
 import '../ordinal_date.dart';
 import '../weekday.dart';
 import '../year.dart';
 import 'year_week.dart';
 
+/// A date in the ISO 8601 week-based calendar.
+///
+/// https://en.wikipedia.org/wiki/ISO_week_date
+///
+///
+/// See also:
+///
+/// - [Date], which represents a date by a [YearMonth] (= [Year] + [Month]) and
+///   a day of the month.
+/// - [OrdinalDate], which represents a date by a [Year] and a day of the year.
 @immutable
 final class WeekDate
     with ComparisonOperatorsFromComparable<WeekDate>
@@ -35,8 +46,10 @@ final class WeekDate
   final YearWeek yearWeek;
   final Weekday weekday;
 
+  /// This date, represented as a [Date].
   Date get asDate => asOrdinalDate.asDate;
 
+  /// This date, represented as an [OrdinalDate].
   OrdinalDate get asOrdinalDate {
     // https://en.wikipedia.org/wiki/ISO_week_date#Calculating_an_ordinal_or_month_date_from_a_week_date
     final january4 =
@@ -71,21 +84,29 @@ final class WeekDate
   WeekDate operator +(DaysDuration duration) => (asDate + duration).asWeekDate;
   WeekDate operator -(DaysDuration duration) => this + (-duration);
 
+  /// The date after this one.
   WeekDate get next {
     return weekday == Weekday.values.last
         ? WeekDate(yearWeek + const Weeks(1), Weekday.values.first)
         : WeekDate(yearWeek, weekday.next);
   }
 
+  /// The date before this one.
   WeekDate get previous {
     return weekday == Weekday.values.first
         ? WeekDate(yearWeek - const Weeks(1), Weekday.values.last)
         : WeekDate(yearWeek, weekday.previous);
   }
 
+  /// The next-closest date with the given [weekday].
+  ///
+  /// If this date already falls on the given [weekday], it is returned.
   WeekDate nextOrSame(Weekday weekday) =>
       this + this.weekday.untilNextOrSame(weekday);
 
+  /// The next-closest previous date with the given [weekday].
+  ///
+  /// If this date already falls on the given [weekday], it is returned.
   WeekDate previousOrSame(Weekday weekday) =>
       this + this.weekday.untilPreviousOrSame(weekday);
 
