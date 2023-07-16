@@ -78,111 +78,6 @@ final class CompoundDaysDuration extends DaysDuration {
   String toString() => '$months, $days';
 }
 
-abstract class FixedDaysDuration extends DaysDuration
-    with ComparisonOperatorsFromComparable<FixedDaysDuration>
-    implements Comparable<FixedDaysDuration> {
-  const FixedDaysDuration();
-
-  Days get asDays;
-  Hours get asNormalHours => Hours(asDays.inDays * Hours.perNormalDay);
-  Minutes get asNormalMinutes => asNormalHours.asMinutes;
-  Seconds get asNormalSeconds => asNormalHours.asSeconds;
-  Milliseconds get asNormalMilliseconds => asNormalHours.asMilliseconds;
-  Microseconds get asNormalMicroseconds => asNormalHours.asMicroseconds;
-  Nanoseconds get asNormalNanoseconds => asNormalHours.asNanoseconds;
-
-  @override
-  CompoundDaysDuration get asCompoundDaysDuration =>
-      CompoundDaysDuration(days: asDays);
-
-  bool get isPositive => asDays.inDays > 0;
-  bool get isNonPositive => asDays.inDays <= 0;
-  bool get isNegative => asDays.inDays < 0;
-  bool get isNonNegative => asDays.inDays >= 0;
-
-  @override
-  FixedDaysDuration operator -();
-  @override
-  FixedDaysDuration operator *(int factor);
-  @override
-  FixedDaysDuration operator ~/(int divisor);
-  @override
-  FixedDaysDuration operator %(int divisor);
-  @override
-  FixedDaysDuration remainder(int divisor);
-
-  @override
-  int compareTo(FixedDaysDuration other) =>
-      asDays.inDays.compareTo(other.asDays.inDays);
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is FixedDaysDuration && asDays.inDays == other.asDays.inDays);
-  @override
-  int get hashCode => asDays.inDays.hashCode;
-}
-
-final class Days extends FixedDaysDuration {
-  const Days(this.inDays);
-  const Days.fromJson(int json) : this(json);
-
-  static const perWeek = 7;
-
-  final int inDays;
-
-  @override
-  Days get asDays => this;
-
-  Days operator +(FixedDaysDuration duration) =>
-      Days(inDays + duration.asDays.inDays);
-  Days operator -(FixedDaysDuration duration) =>
-      Days(inDays - duration.asDays.inDays);
-  @override
-  Days operator -() => Days(-inDays);
-  @override
-  Days operator *(int factor) => Days(inDays * factor);
-  @override
-  Days operator ~/(int divisor) => Days(inDays ~/ divisor);
-  @override
-  Days operator %(int divisor) => Days(inDays % divisor);
-  @override
-  Days remainder(int divisor) => Days(inDays.remainder(divisor));
-
-  @override
-  String toString() => inDays.abs() == 1 ? '$inDays day' : '$inDays days';
-
-  int toJson() => inDays;
-}
-
-final class Weeks extends FixedDaysDuration {
-  const Weeks(this.inWeeks);
-  const Weeks.fromJson(int json) : this(json);
-
-  final int inWeeks;
-
-  @override
-  Days get asDays => Days(inWeeks * Days.perWeek);
-
-  Weeks operator +(Weeks duration) => Weeks(inWeeks + duration.inWeeks);
-  Weeks operator -(Weeks duration) => Weeks(inWeeks - duration.inWeeks);
-  @override
-  Weeks operator -() => Weeks(-inWeeks);
-  @override
-  Weeks operator *(int factor) => Weeks(inWeeks * factor);
-  @override
-  Weeks operator ~/(int divisor) => Weeks(inWeeks ~/ divisor);
-  @override
-  Weeks operator %(int divisor) => Weeks(inWeeks % divisor);
-  @override
-  Weeks remainder(int divisor) => Weeks(inWeeks.remainder(divisor));
-
-  @override
-  String toString() => inWeeks.abs() == 1 ? '$inWeeks week' : '$inWeeks weeks';
-
-  int toJson() => inWeeks;
-}
-
 abstract class MonthsDuration extends DaysDuration
     with ComparisonOperatorsFromComparable<MonthsDuration>
     implements Comparable<MonthsDuration> {
@@ -291,4 +186,109 @@ final class Years extends MonthsDuration {
   String toString() => inYears.abs() == 1 ? '$inYears year' : '$inYears years';
 
   int toJson() => inYears;
+}
+
+abstract class FixedDaysDuration extends DaysDuration
+    with ComparisonOperatorsFromComparable<FixedDaysDuration>
+    implements Comparable<FixedDaysDuration> {
+  const FixedDaysDuration();
+
+  Days get asDays;
+  Hours get asNormalHours => Hours(asDays.inDays * Hours.perNormalDay);
+  Minutes get asNormalMinutes => asNormalHours.asMinutes;
+  Seconds get asNormalSeconds => asNormalHours.asSeconds;
+  Milliseconds get asNormalMilliseconds => asNormalHours.asMilliseconds;
+  Microseconds get asNormalMicroseconds => asNormalHours.asMicroseconds;
+  Nanoseconds get asNormalNanoseconds => asNormalHours.asNanoseconds;
+
+  @override
+  CompoundDaysDuration get asCompoundDaysDuration =>
+      CompoundDaysDuration(days: asDays);
+
+  bool get isPositive => asDays.inDays > 0;
+  bool get isNonPositive => asDays.inDays <= 0;
+  bool get isNegative => asDays.inDays < 0;
+  bool get isNonNegative => asDays.inDays >= 0;
+
+  @override
+  FixedDaysDuration operator -();
+  @override
+  FixedDaysDuration operator *(int factor);
+  @override
+  FixedDaysDuration operator ~/(int divisor);
+  @override
+  FixedDaysDuration operator %(int divisor);
+  @override
+  FixedDaysDuration remainder(int divisor);
+
+  @override
+  int compareTo(FixedDaysDuration other) =>
+      asDays.inDays.compareTo(other.asDays.inDays);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FixedDaysDuration && asDays.inDays == other.asDays.inDays);
+  @override
+  int get hashCode => asDays.inDays.hashCode;
+}
+
+final class Days extends FixedDaysDuration {
+  const Days(this.inDays);
+  const Days.fromJson(int json) : this(json);
+
+  static const perWeek = 7;
+
+  final int inDays;
+
+  @override
+  Days get asDays => this;
+
+  Days operator +(FixedDaysDuration duration) =>
+      Days(inDays + duration.asDays.inDays);
+  Days operator -(FixedDaysDuration duration) =>
+      Days(inDays - duration.asDays.inDays);
+  @override
+  Days operator -() => Days(-inDays);
+  @override
+  Days operator *(int factor) => Days(inDays * factor);
+  @override
+  Days operator ~/(int divisor) => Days(inDays ~/ divisor);
+  @override
+  Days operator %(int divisor) => Days(inDays % divisor);
+  @override
+  Days remainder(int divisor) => Days(inDays.remainder(divisor));
+
+  @override
+  String toString() => inDays.abs() == 1 ? '$inDays day' : '$inDays days';
+
+  int toJson() => inDays;
+}
+
+final class Weeks extends FixedDaysDuration {
+  const Weeks(this.inWeeks);
+  const Weeks.fromJson(int json) : this(json);
+
+  final int inWeeks;
+
+  @override
+  Days get asDays => Days(inWeeks * Days.perWeek);
+
+  Weeks operator +(Weeks duration) => Weeks(inWeeks + duration.inWeeks);
+  Weeks operator -(Weeks duration) => Weeks(inWeeks - duration.inWeeks);
+  @override
+  Weeks operator -() => Weeks(-inWeeks);
+  @override
+  Weeks operator *(int factor) => Weeks(inWeeks * factor);
+  @override
+  Weeks operator ~/(int divisor) => Weeks(inWeeks ~/ divisor);
+  @override
+  Weeks operator %(int divisor) => Weeks(inWeeks % divisor);
+  @override
+  Weeks remainder(int divisor) => Weeks(inWeeks.remainder(divisor));
+
+  @override
+  String toString() => inWeeks.abs() == 1 ? '$inWeeks week' : '$inWeeks weeks';
+
+  int toJson() => inWeeks;
 }
