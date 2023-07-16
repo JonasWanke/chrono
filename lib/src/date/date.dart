@@ -19,6 +19,15 @@ import 'week/year_week.dart';
 import 'weekday.dart';
 import 'year.dart';
 
+/// A date in the ISO 8601 calendar.
+///
+/// The date is represented by a [YearMonth] (= [Year] + [Month]) and a [day]
+/// of the month.
+///
+/// See also:
+///
+/// - [WeekDate], which represents a date by a [YearWeek] and a [Weekday].
+/// - [OrdinalDate], which represents a date by a [Year] and a day of the year.
 @immutable
 final class Date
     with ComparisonOperatorsFromComparable<Date>
@@ -175,8 +184,13 @@ final class Date
   bool isTodayInUtc({Clock? clockOverride}) =>
       this == Date.todayInUtc(clockOverride: clockOverride);
 
+  /// A [DateTime] combining this [Date] and the given [time].
   DateTime at(Time time) => DateTime(this, time);
+
+  /// A [DateTime] at [Time.midnight] on this date.
   DateTime get atMidnight => at(Time.midnight);
+
+  /// A [DateTime] at [Time.noon] on this date.
   DateTime get atNoon => at(Time.noon);
 
   Date operator +(DaysDuration duration) {
@@ -195,7 +209,10 @@ final class Date
 
   Date operator -(DaysDuration duration) => this + (-duration);
 
+  /// The date after this one.
   Date get next => this + const Days(1);
+
+  /// The date before this one.
   Date get previous => this - const Days(1);
 
   Date nextOrSame(Weekday weekday) =>

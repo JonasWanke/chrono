@@ -12,6 +12,7 @@ import '../duration.dart';
 import '../year.dart';
 import 'month.dart';
 
+/// The combination of a [Year] and a [Month].
 @immutable
 final class YearMonth
     with ComparisonOperatorsFromComparable<YearMonth>
@@ -48,9 +49,14 @@ final class YearMonth
         : const Days(29);
   }
 
+  /// The first day of this month.
   Date get firstDay => Date.fromYearMonthAndDayUnchecked(this, 1);
+
+  /// The last day of this month.
   Date get lastDay =>
       Date.fromYearMonthAndDayUnchecked(this, lengthInDays.value);
+
+  /// An iterable of all days in this month.
   Iterable<Date> get days {
     return Iterable.generate(
       lengthInDays.value,
@@ -76,7 +82,10 @@ final class YearMonth
 
   YearMonth operator -(MonthsDuration duration) => this + (-duration);
 
+  /// The month after this one.
   YearMonth get next => this + const Months(1);
+
+  /// The month before this one.
   YearMonth get previous => this - const Months(1);
 
   YearMonth copyWith({Year? year, Month? month}) =>

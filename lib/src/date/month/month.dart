@@ -7,6 +7,7 @@ import 'package:oxidized/oxidized.dart';
 import '../../utils.dart';
 import '../duration.dart';
 
+/// A month in the ISO 8601 calendar.
 enum Month
     with ComparisonOperatorsFromComparable<Month>
     implements Comparable<Month> {
@@ -23,6 +24,10 @@ enum Month
   november,
   december;
 
+  /// Returns the month with the given [number].
+  ///
+  /// The number must be in the range 1 for January, …, 12 for December. For any
+  /// other number, an error is returned.
   static Result<Month, String> fromNumber(int number) {
     if (number < minNumber || number > maxNumber) {
       return Err('Invalid month number: $number');
@@ -47,6 +52,7 @@ enum Month
   static const minNumber = 1; // Month.january.number
   static const maxNumber = 12; // Month.december.number
 
+  /// The number of this month (1 for January, …, 12 for December).
   int get number => index + 1;
 
   bool isCurrentInLocalZone({Clock? clockOverride}) =>
@@ -84,11 +90,21 @@ enum Month
       values[(index + duration.inMonths.value) % values.length];
   Month operator -(MonthsDuration duration) => this + (-duration);
 
+  /// The month after this one, wrapping around after January.
   Month get next => this + const Months(1);
+
+  /// The month before this one, wrapping around before January.
   Month get previous => this - const Months(1);
 
+  /// The number of months from this month to the next [other] month.
+  ///
+  /// The result is always in the range `Months(0)` to `Months(11)`.
   Months untilNextOrSame(Month other) =>
       Months((other.index - index) % values.length);
+
+  /// The number of months from this month to the previous [other] month.
+  ///
+  /// The result is always in the range `Months(0)` to `Months(-11)`.
   Months untilPreviousOrSame(Month other) =>
       Months(-((index - other.index) % values.length));
 

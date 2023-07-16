@@ -12,6 +12,10 @@ import 'month/year_month.dart';
 import 'week/year_week.dart';
 import 'weekday.dart';
 
+/// A year in the ISO 8601 calendar.
+///
+/// The [number] corresponds to these years, according to ISO 8601:
+///
 /// | Value |   Meaning   |
 /// |-------|-------------|
 /// |  2023 | 2023  CE/AD |
@@ -20,6 +24,8 @@ import 'weekday.dart';
 /// |     0 |    1 BCE/BC |
 /// |    -1 |    2 BCE/BC |
 /// |     … |      …      |
+///
+/// There is no limitation on the range of years.
 @immutable
 final class Year
     with ComparisonOperatorsFromComparable<Year>
@@ -61,13 +67,23 @@ final class Year
     return isLongWeek ? 53 : 52;
   }
 
+  /// The first month of this year.
   YearMonth get firstMonth => YearMonth(this, Month.january);
+
+  /// The last month of this year.
   YearMonth get lastMonth => YearMonth(this, Month.december);
+
+  /// An iterable of all months in this year.
   Iterable<YearMonth> get months =>
       Month.values.map((month) => YearMonth(this, month));
 
+  /// The first week of this year.
   YearWeek get firstWeek => YearWeek.fromUnchecked(this, 1);
+
+  /// The last week of this year.
   YearWeek get lastWeek => YearWeek.fromUnchecked(this, numberOfWeeks);
+
+  /// An iterable of all weeks in this year.
   Iterable<YearWeek> get weeks {
     return Iterable.generate(
       numberOfWeeks,
@@ -75,15 +91,22 @@ final class Year
     );
   }
 
+  /// The first day of this year.
   Date get firstDay => firstMonth.firstDay;
+
+  /// The last day of this year.
   Date get lastDay => lastMonth.lastDay;
+
+  /// An iterable of all days in this year.
   Iterable<Date> get days => months.expand((it) => it.days);
 
   Year operator +(Years duration) => Year(number + duration.value);
   Year operator -(Years duration) => Year(number - duration.value);
 
+  /// The year after this one.
   Year get next => this + const Years(1);
 
+  /// The year before this one.
   Year get previous => this - const Years(1);
 
   @override
