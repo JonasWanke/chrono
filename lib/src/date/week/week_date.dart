@@ -83,25 +83,11 @@ final class WeekDate
         : WeekDate(yearWeek, weekday.previous);
   }
 
-  WeekDate nextOrSame(Weekday weekday) {
-    // ignore: avoid_returning_this
-    if (weekday == this.weekday) return this;
+  WeekDate nextOrSame(Weekday weekday) =>
+      this + this.weekday.untilNextOrSame(weekday);
 
-    return WeekDate(
-      weekday < this.weekday ? yearWeek.next : yearWeek,
-      weekday,
-    );
-  }
-
-  WeekDate previousOrSame(Weekday weekday) {
-    // ignore: avoid_returning_this
-    if (weekday == this.weekday) return this;
-
-    return WeekDate(
-      weekday > this.weekday ? yearWeek.previous : yearWeek,
-      weekday,
-    );
-  }
+  WeekDate previousOrSame(Weekday weekday) =>
+      this + this.weekday.untilPreviousOrSame(weekday);
 
   WeekDate copyWith({YearWeek? yearWeek, Weekday? weekday}) =>
       WeekDate(yearWeek ?? this.yearWeek, weekday ?? this.weekday);
