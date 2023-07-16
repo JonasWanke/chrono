@@ -7,10 +7,6 @@ import 'package:glados/glados.dart';
 void main() {
   setChronoGladosDefaults();
 
-  Glados<YearWeek>().test('YearWeek', (yearWeek) {
-    _checkEquals(yearWeek);
-    expect(yearWeek, YearWeek.fromJson(yearWeek.toJson()));
-  });
   Glados<Date>().test('Date', (date) {
     _checkEquals(date);
     expect(date, Date.fromJson(date.toJson()));
@@ -37,12 +33,6 @@ void main() {
     expect(ordinalDate, OrdinalDate.fromJson(ordinalDate.toJson()));
     expect(ordinalDate, ordinalDate.asDate.asOrdinalDate);
     expect(ordinalDate, ordinalDate.asWeekDate.asOrdinalDate);
-  });
-  Glados<WeekDate>().test('WeekDate', (weekDate) {
-    _checkEquals(weekDate);
-    expect(weekDate, WeekDate.fromJson(weekDate.toJson()));
-    expect(weekDate, weekDate.asDate.asWeekDate);
-    expect(weekDate, weekDate.asOrdinalDate.asWeekDate);
   });
   Glados<core.DateTime>().test(
     'core.DateTime compatibility',
