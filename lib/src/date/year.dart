@@ -57,7 +57,7 @@ final class Year
     return number % 4 == 0 && (number % 100 != 0 || number % 400 == 0);
   }
 
-  Days get lengthInDays => isLeapYear ? const Days(366) : const Days(365);
+  Days get length => isLeapYear ? const Days(366) : const Days(365);
   int get numberOfWeeks {
     // https://en.wikipedia.org/wiki/ISO_week_date#Weeks_per_year
     Weekday weekdayOfDecember31(Year year) =>
@@ -103,7 +103,7 @@ final class Year
 
   /// The last day of this year as an [OrdinalDate].
   OrdinalDate get lastOrdinalDate =>
-      OrdinalDate.fromUnchecked(this, lengthInDays.inDays);
+      OrdinalDate.fromUnchecked(this, length.inDays);
 
   /// An iterable of all days in this year.
   Iterable<Date> get days => months.expand((it) => it.days);

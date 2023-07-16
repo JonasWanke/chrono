@@ -61,9 +61,9 @@ final class WeekDate
     final int dayOfYear;
     if (rawDayOfYear < 1) {
       year = yearWeek.weekBasedYear - const Years(1);
-      dayOfYear = rawDayOfYear + year.lengthInDays.inDays;
+      dayOfYear = rawDayOfYear + year.length.inDays;
     } else {
-      final daysInCurrentYear = yearWeek.weekBasedYear.lengthInDays.inDays;
+      final daysInCurrentYear = yearWeek.weekBasedYear.length.inDays;
       if (rawDayOfYear > daysInCurrentYear) {
         year = yearWeek.weekBasedYear + const Years(1);
         dayOfYear = rawDayOfYear - daysInCurrentYear;

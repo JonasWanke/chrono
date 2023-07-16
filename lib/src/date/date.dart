@@ -36,7 +36,7 @@ final class Date
     YearMonth yearMonth,
     int day,
   ) {
-    if (day < 1 || day > yearMonth.lengthInDays.inDays) {
+    if (day < 1 || day > yearMonth.length.inDays) {
       return Err('Invalid day for $yearMonth: $day');
     }
     return Ok(Date.fromYearMonthAndDayUnchecked(yearMonth, day));
@@ -204,7 +204,7 @@ final class Date
     final yearMonthWithMonths = yearMonth + months;
     final dateWithMonths = Date.fromYearMonthAndDayUnchecked(
       yearMonthWithMonths,
-      day.coerceAtMost(yearMonthWithMonths.lengthInDays.inDays),
+      day.coerceAtMost(yearMonthWithMonths.length.inDays),
     );
 
     return days.inDays == 0

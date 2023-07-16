@@ -30,7 +30,7 @@ final class OrdinalDate
     with ComparisonOperatorsFromComparable<OrdinalDate>
     implements Comparable<OrdinalDate> {
   static Result<OrdinalDate, String> from(Year year, int dayOfYear) {
-    if (dayOfYear < 1 || dayOfYear > year.lengthInDays.inDays) {
+    if (dayOfYear < 1 || dayOfYear > year.length.inDays) {
       return Err('Invalid day of year for year $year: $dayOfYear');
     }
     return Ok(OrdinalDate.fromUnchecked(year, dayOfYear));
@@ -68,7 +68,7 @@ final class OrdinalDate
       Month.fromNumberUnchecked((dayOfYear - 1) ~/ 31 + 1),
     );
     final monthEnd =
-        firstDayOfYear(rawMonth.month) + rawMonth.lengthInDays.inDays - 1;
+        firstDayOfYear(rawMonth.month) + rawMonth.length.inDays - 1;
     final month = dayOfYear > monthEnd ? rawMonth.next : rawMonth;
 
     final dayOfMonth = dayOfYear - firstDayOfYear(month.month) + 1;
@@ -89,7 +89,7 @@ final class OrdinalDate
 
   /// The date after this one.
   OrdinalDate get next {
-    return dayOfYear == year.lengthInDays.inDays
+    return dayOfYear == year.length.inDays
         ? (year + const Years(1)).firstOrdinalDate
         : OrdinalDate.fromUnchecked(year, dayOfYear + 1);
   }

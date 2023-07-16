@@ -62,7 +62,7 @@ enum Month
   /// The number of days in this month of a common (non-leap) year.
   ///
   /// The result is always in the range [28, 31].
-  Days get lengthInDaysInCommonYear {
+  Days get lengthInCommonYear {
     // https://howardhinnant.github.io/date_algorithms.html#last_day_of_month_common_year
     const days = [
       //
@@ -75,7 +75,7 @@ enum Month
   /// The number of days in this month of a leap year.
   ///
   /// The result is always in the range [29, 31].
-  Days get lengthInDaysInLeapYear {
+  Days get lengthInLeapYear {
     // https://howardhinnant.github.io/date_algorithms.html#last_day_of_month_leap_year
     const days = [
       //

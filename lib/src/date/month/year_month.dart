@@ -40,10 +40,10 @@ final class YearMonth
   /// The number of days in this year and month.
   ///
   /// The result is always in the range [28, 31].
-  Days get lengthInDays {
+  Days get length {
     // https://howardhinnant.github.io/date_algorithms.html#last_day_of_month
     return month != Month.february || year.isCommonYear
-        ? month.lengthInDaysInCommonYear
+        ? month.lengthInCommonYear
         : const Days(29);
   }
 
@@ -51,13 +51,12 @@ final class YearMonth
   Date get firstDay => Date.fromYearMonthAndDayUnchecked(this, 1);
 
   /// The last day of this month.
-  Date get lastDay =>
-      Date.fromYearMonthAndDayUnchecked(this, lengthInDays.inDays);
+  Date get lastDay => Date.fromYearMonthAndDayUnchecked(this, length.inDays);
 
   /// An iterable of all days in this month.
   Iterable<Date> get days {
     return Iterable.generate(
-      lengthInDays.inDays,
+      length.inDays,
       (it) => Date.fromYearMonthAndDayUnchecked(this, it + 1),
     );
   }
