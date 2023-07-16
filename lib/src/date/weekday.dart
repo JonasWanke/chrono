@@ -33,8 +33,12 @@ enum Weekday
 
   int get number => index + 1;
 
-  Weekday get next => values[(index + 1) % values.length];
-  Weekday get previous => values[(index - 1) % values.length];
+  Weekday operator +(FixedDaysDuration duration) =>
+      values[(index + duration.inDays.value) % values.length];
+  Weekday operator -(FixedDaysDuration duration) => this + (-duration);
+
+  Weekday get next => this + const Days(1);
+  Weekday get previous => this - const Days(1);
 
   Days untilNextOrSame(Weekday other) =>
       Days((other.index - index) % values.length);
