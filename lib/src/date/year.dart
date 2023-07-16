@@ -9,6 +9,7 @@ import 'date.dart';
 import 'duration.dart';
 import 'month/month.dart';
 import 'month/year_month.dart';
+import 'ordinal_date.dart';
 import 'week/year_week.dart';
 import 'weekday.dart';
 
@@ -96,6 +97,13 @@ final class Year
 
   /// The last day of this year.
   Date get lastDay => lastMonth.lastDay;
+
+  /// The first day of this year as an [OrdinalDate].
+  OrdinalDate get firstOrdinalDate => OrdinalDate.fromUnchecked(this, 1);
+
+  /// The last day of this year as an [OrdinalDate].
+  OrdinalDate get lastOrdinalDate =>
+      OrdinalDate.fromUnchecked(this, lengthInDays.value);
 
   /// An iterable of all days in this year.
   Iterable<Date> get days => months.expand((it) => it.days);
