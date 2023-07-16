@@ -62,13 +62,13 @@ final class YearWeek
 
   YearWeek get next {
     return week == weekBasedYear.numberOfWeeks
-        ? YearWeek.fromUnchecked(weekBasedYear + const Years(1), 1)
+        ? (weekBasedYear + const Years(1)).firstWeek
         : YearWeek.fromUnchecked(weekBasedYear, week + 1);
   }
 
   YearWeek get previous {
     return week == 1
-        ? YearWeek.fromUnchecked(weekBasedYear - const Years(1), 1)
+        ? (weekBasedYear - const Years(1)).lastWeek
         : YearWeek.fromUnchecked(weekBasedYear, week - 1);
   }
 
