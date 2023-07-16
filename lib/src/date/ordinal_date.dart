@@ -77,13 +77,13 @@ final class OrdinalDate
       (asDate + duration).asOrdinalDate;
   OrdinalDate operator -(DaysDuration duration) => this + (-duration);
 
-  OrdinalDate get nextDay {
+  OrdinalDate get next {
     return dayOfYear == year.lengthInDays.value
         ? OrdinalDate.fromUnchecked(year + const Years(1), 1)
         : OrdinalDate.fromUnchecked(year, dayOfYear + 1);
   }
 
-  OrdinalDate get previousDay {
+  OrdinalDate get previous {
     return dayOfYear == 1
         ? OrdinalDate.fromUnchecked(year - const Years(1), 1)
         : OrdinalDate.fromUnchecked(year, dayOfYear - 1);
