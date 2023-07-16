@@ -53,7 +53,7 @@ final class YearWeek
       Weekday.values.map((weekday) => WeekDate(this, weekday));
 
   YearWeek operator +(Weeks duration) {
-    final newDate = WeekDate(this, Weekday.monday) + duration;
+    final newDate = WeekDate(this, Weekday.monday).asDate + duration;
     assert(newDate.weekday == Weekday.monday);
     return newDate.yearWeek;
   }
