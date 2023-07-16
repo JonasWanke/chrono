@@ -13,6 +13,7 @@ import 'date/week/year_week.dart';
 import 'date/weekday.dart';
 import 'date/year.dart';
 import 'date_time/date_time.dart';
+import 'date_time/duration.dart';
 import 'date_time/instant.dart';
 import 'time/duration.dart';
 import 'time/time.dart';
@@ -30,14 +31,29 @@ void setChronoGladosDefaults() {
   Any.setDefault(any.yearWeek);
   Any.setDefault(any.weekday);
 
+  Any.setDefault(any.durationChrono);
+  Any.setDefault(any.compoundDuration);
   Any.setDefault(any.daysDuration);
-  Any.setDefault(any.fixedDaysDuration);
-  Any.setDefault(any.days);
-  Any.setDefault(any.weeks);
+  Any.setDefault(any.compoundDaysDuration);
   Any.setDefault(any.monthsDuration);
   Any.setDefault(any.months);
   Any.setDefault(any.years);
-  // TODO: `Duration` and all `TimeDuration`s
+  Any.setDefault(any.fixedDaysDuration);
+  Any.setDefault(any.days);
+  Any.setDefault(any.weeks);
+  Any.setDefault(any.timeDuration);
+  Any.setDefault(any.fractionalSeconds);
+  Any.setDefault(any.nanosecondsDuration);
+  Any.setDefault(any.nanoseconds);
+  Any.setDefault(any.microsecondsDuration);
+  Any.setDefault(any.microseconds);
+  Any.setDefault(any.millisecondsDuration);
+  Any.setDefault(any.milliseconds);
+  Any.setDefault(any.secondsDuration);
+  Any.setDefault(any.seconds);
+  Any.setDefault(any.minutesDuration);
+  Any.setDefault(any.minutes);
+  Any.setDefault(any.hours);
 }
 
 extension ChronoAny on Any {
@@ -74,7 +90,7 @@ extension ChronoAny on Any {
       intInRange(0, 24),
       intInRange(0, 60),
       intInRange(0, 60),
-      _fraction,
+      fractionalSeconds,
       Time.fromUnchecked,
     );
   }
@@ -131,7 +147,39 @@ extension ChronoAny on Any {
 
   Generator<Weekday> get weekday => choose(Weekday.values);
 
-  Generator<FractionalSeconds> get _fraction {
+  Generator<Duration> get durationChrono => either(daysDuration, timeDuration);
+  Generator<CompoundDuration> get compoundDuration {
+    return combine2(
+      compoundDaysDuration,
+      fractionalSeconds,
+      (monthsAndDays, fractionalSeconds) => CompoundDuration(
+        monthsAndDays: monthsAndDays,
+        seconds: fractionalSeconds,
+      ),
+    );
+  }
+
+  Generator<DaysDuration> get daysDuration =>
+      either(compoundDaysDuration, monthsDuration, fixedDaysDuration);
+  Generator<CompoundDaysDuration> get compoundDaysDuration {
+    return combine2(
+      months,
+      days,
+      (months, days) => CompoundDaysDuration(months: months, days: days),
+    );
+  }
+
+  Generator<MonthsDuration> get monthsDuration => either(months, years);
+  Generator<Months> get months => this.int.map(Months.new);
+  Generator<Years> get years => this.int.map(Years.new);
+
+  Generator<FixedDaysDuration> get fixedDaysDuration => either(days, weeks);
+  Generator<Days> get days => this.int.map(Days.new);
+  Generator<Weeks> get weeks => this.int.map(Weeks.new);
+
+  Generator<TimeDuration> get timeDuration =>
+      either(fractionalSeconds, nanosecondsDuration);
+  Generator<FractionalSeconds> get fractionalSeconds {
     return simple(
       generate: (random, size) {
         final scale = positiveInt(random, math.log(size).ceil()).value;
@@ -159,14 +207,19 @@ extension ChronoAny on Any {
     );
   }
 
-  Generator<DaysDuration> get daysDuration =>
-      either(fixedDaysDuration, monthsDuration);
-
-  Generator<FixedDaysDuration> get fixedDaysDuration => either(days, weeks);
-  Generator<Days> get days => this.int.map(Days.new);
-  Generator<Weeks> get weeks => this.int.map(Weeks.new);
-
-  Generator<MonthsDuration> get monthsDuration => either(months, years);
-  Generator<Months> get months => this.int.map(Months.new);
-  Generator<Years> get years => this.int.map(Years.new);
+  Generator<NanosecondsDuration> get nanosecondsDuration =>
+      either(nanoseconds, microseconds, milliseconds, seconds, minutes, hours);
+  Generator<Nanoseconds> get nanoseconds => this.int.map(Nanoseconds.new);
+  Generator<MicrosecondsDuration> get microsecondsDuration =>
+      either(microseconds, milliseconds, seconds, minutes, hours);
+  Generator<Microseconds> get microseconds => this.int.map(Microseconds.new);
+  Generator<MillisecondsDuration> get millisecondsDuration =>
+      either(milliseconds, seconds, minutes, hours);
+  Generator<Milliseconds> get milliseconds => this.int.map(Milliseconds.new);
+  Generator<SecondsDuration> get secondsDuration =>
+      either(seconds, minutes, hours);
+  Generator<Seconds> get seconds => this.int.map(Seconds.new);
+  Generator<MinutesDuration> get minutesDuration => either(minutes, hours);
+  Generator<Minutes> get minutes => this.int.map(Minutes.new);
+  Generator<Hours> get hours => this.int.map(Hours.new);
 }
