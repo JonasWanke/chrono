@@ -86,6 +86,12 @@ enum Month
 
   Month get next => this + const Months(1);
   Month get previous => this - const Months(1);
+
+  Months untilNextOrSame(Month other) =>
+      Months((other.index - index) % values.length);
+  Months untilPreviousOrSame(Month other) =>
+      Months(-((index - other.index) % values.length));
+
   @override
   int compareTo(Month other) => index.compareTo(other.index);
 
