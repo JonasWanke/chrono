@@ -76,13 +76,13 @@ final class OrdinalDate
 
   OrdinalDate get next {
     return dayOfYear == year.lengthInDays.value
-        ? OrdinalDate.fromUnchecked(year + const Years(1), 1)
+        ? (year + const Years(1)).firstOrdinalDate
         : OrdinalDate.fromUnchecked(year, dayOfYear + 1);
   }
 
   OrdinalDate get previous {
     return dayOfYear == 1
-        ? OrdinalDate.fromUnchecked(year - const Years(1), 1)
+        ? (year - const Years(1)).lastOrdinalDate
         : OrdinalDate.fromUnchecked(year, dayOfYear - 1);
   }
 
