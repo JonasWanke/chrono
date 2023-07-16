@@ -198,6 +198,20 @@ final class Date
   /// A [DateTime] at [Time.noon] on this date.
   DateTime get atNoon => at(Time.noon);
 
+  /// Adds the given [duration] to this date.
+  ///
+  /// The calculation is done as follows:
+  ///
+  /// 1. Add the months of the duration. If the day of the month is greater than
+  ///    the number of days in the resulting month, set it to the last day of
+  ///    that month.
+  /// 2. Add the days of the duration, potentially updating the year and month
+  ///    again.
+  ///
+  /// Examples:
+  ///
+  /// - 2023-03-31 + 1 month = 2023-04-30, since April only has 30 days.
+  /// - 2023-03-31 + 1 month and 1 day = 2023-05-01
   Date operator +(DaysDuration duration) {
     final CompoundDaysDuration(:months, :days) =
         duration.asCompoundDaysDuration;
