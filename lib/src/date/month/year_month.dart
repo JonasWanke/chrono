@@ -5,6 +5,7 @@ import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
+import '../../date_time/date_time.dart';
 import '../../parser.dart';
 import '../../utils.dart';
 import '../date.dart';
@@ -19,13 +20,10 @@ final class YearMonth
     implements Comparable<YearMonth> {
   const YearMonth(this.year, [this.month = Month.january]);
 
-  YearMonth.fromCore(core.DateTime dateTime)
-      : year = Year.fromCore(dateTime),
-        month = Month.fromCore(dateTime);
-  YearMonth.currentInLocalZone({Clock? clockOverride})
-      : this.fromCore((clockOverride ?? clock).now().toLocal());
-  YearMonth.currentInUtc({Clock? clockOverride})
-      : this.fromCore((clockOverride ?? clock).now().toUtc());
+  factory YearMonth.currentInLocalZone({Clock? clock}) =>
+      DateTime.nowInLocalZone(clock: clock).date.yearMonth;
+  factory YearMonth.currentInUtc({Clock? clock}) =>
+      DateTime.nowInUtc(clock: clock).date.yearMonth;
 
   factory YearMonth.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<YearMonth, FormatException> parse(String value) =>
@@ -34,10 +32,10 @@ final class YearMonth
   final Year year;
   final Month month;
 
-  bool isCurrentInLocalZone({Clock? clockOverride}) =>
-      this == YearMonth.currentInLocalZone(clockOverride: clockOverride);
-  bool isCurrentInUtc({Clock? clockOverride}) =>
-      this == YearMonth.currentInUtc(clockOverride: clockOverride);
+  bool isCurrentInLocalZone({Clock? clock}) =>
+      this == YearMonth.currentInLocalZone(clock: clock);
+  bool isCurrentInUtc({Clock? clock}) =>
+      this == YearMonth.currentInUtc(clock: clock);
 
   /// The number of days in this year and month.
   ///

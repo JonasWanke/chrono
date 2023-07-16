@@ -5,6 +5,7 @@ import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
+import '../date_time/date_time.dart';
 import '../parser.dart';
 import '../utils.dart';
 import 'date.dart';
@@ -39,12 +40,10 @@ final class OrdinalDate
       from(year, dayOfYear).unwrap();
   OrdinalDate.fromUnchecked(this.year, this.dayOfYear);
 
-  factory OrdinalDate.fromCore(core.DateTime dateTime) =>
-      Date.fromCore(dateTime).asOrdinalDate;
-  factory OrdinalDate.todayInLocalZone({Clock? clockOverride}) =>
-      OrdinalDate.fromCore((clockOverride ?? clock).now().toLocal());
-  factory OrdinalDate.todayInUtc({Clock? clockOverride}) =>
-      OrdinalDate.fromCore((clockOverride ?? clock).now().toUtc());
+  factory OrdinalDate.todayInLocalZone({Clock? clock}) =>
+      DateTime.nowInLocalZone(clock: clock).date.asOrdinalDate;
+  factory OrdinalDate.todayInUtc({Clock? clock}) =>
+      DateTime.nowInUtc(clock: clock).date.asOrdinalDate;
 
   factory OrdinalDate.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<OrdinalDate, FormatException> parse(String value) =>
@@ -79,10 +78,10 @@ final class OrdinalDate
   /// This date, represented as a [WeekDate].
   WeekDate get asWeekDate => asDate.asWeekDate;
 
-  bool isTodayInLocalZone({Clock? clockOverride}) =>
-      this == OrdinalDate.todayInLocalZone(clockOverride: clockOverride);
-  bool isTodayInUtc({Clock? clockOverride}) =>
-      this == OrdinalDate.todayInUtc(clockOverride: clockOverride);
+  bool isTodayInLocalZone({Clock? clock}) =>
+      this == OrdinalDate.todayInLocalZone(clock: clock);
+  bool isTodayInUtc({Clock? clock}) =>
+      this == OrdinalDate.todayInUtc(clock: clock);
 
   OrdinalDate operator +(DaysDuration duration) =>
       (asDate + duration).asOrdinalDate;

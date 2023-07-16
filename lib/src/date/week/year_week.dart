@@ -5,9 +5,9 @@ import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
+import '../../date_time/date_time.dart';
 import '../../parser.dart';
 import '../../utils.dart';
-import '../date.dart';
 import '../duration.dart';
 import '../weekday.dart';
 import '../year.dart';
@@ -28,12 +28,10 @@ final class YearWeek
   factory YearWeek.fromThrowing(Year weekBasedYear, int week) =>
       from(weekBasedYear, week).unwrap();
 
-  factory YearWeek.fromCore(core.DateTime dateTime) =>
-      Date.fromCore(dateTime).yearWeek;
-  factory YearWeek.currentInLocalZone({Clock? clockOverride}) =>
-      YearWeek.fromCore((clockOverride ?? clock).now().toLocal());
-  factory YearWeek.currentInUtc({Clock? clockOverride}) =>
-      YearWeek.fromCore((clockOverride ?? clock).now().toUtc());
+  factory YearWeek.currentInLocalZone({Clock? clock}) =>
+      DateTime.nowInLocalZone(clock: clock).date.yearWeek;
+  factory YearWeek.currentInUtc({Clock? clock}) =>
+      DateTime.nowInUtc(clock: clock).date.yearWeek;
 
   factory YearWeek.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<YearWeek, FormatException> parse(String value) =>
@@ -42,10 +40,10 @@ final class YearWeek
   final Year weekBasedYear;
   final int week;
 
-  bool isCurrentInLocalZone({Clock? clockOverride}) =>
-      this == YearWeek.currentInLocalZone(clockOverride: clockOverride);
-  bool isCurrentInUtc({Clock? clockOverride}) =>
-      this == YearWeek.currentInUtc(clockOverride: clockOverride);
+  bool isCurrentInLocalZone({Clock? clock}) =>
+      this == YearWeek.currentInLocalZone(clock: clock);
+  bool isCurrentInUtc({Clock? clock}) =>
+      this == YearWeek.currentInUtc(clock: clock);
 
   WeekDate get firstDay => WeekDate(this, Weekday.values.first);
   WeekDate get lastDay => WeekDate(this, Weekday.values.last);

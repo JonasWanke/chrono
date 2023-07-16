@@ -2,11 +2,14 @@ import 'dart:core';
 import 'dart:core' as core;
 
 import 'package:clock/clock.dart';
+import 'package:clock/clock.dart' as cl;
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../date/date.dart';
 import '../date/duration.dart';
+import '../date/month/month.dart';
+import '../date/year.dart';
 import '../parser.dart';
 import '../time/duration.dart';
 import '../time/time.dart';
@@ -21,12 +24,22 @@ final class DateTime
   const DateTime(this.date, this.time);
 
   DateTime.fromCore(core.DateTime dateTime)
-      : date = Date.fromCore(dateTime),
-        time = Time.fromCore(dateTime);
-  DateTime.nowInLocalZone({Clock? clockOverride})
-      : this.fromCore((clockOverride ?? clock).now().toLocal());
-  DateTime.nowInUtc({Clock? clockOverride})
-      : this.fromCore((clockOverride ?? clock).now().toUtc());
+      : date = Date.fromUnchecked(
+          Year(dateTime.year),
+          Month.fromNumberUnchecked(dateTime.month),
+          dateTime.day,
+        ),
+        time = Time.fromUnchecked(
+          dateTime.hour,
+          dateTime.minute,
+          dateTime.second,
+          FractionalSeconds.millisecond * dateTime.millisecond +
+              FractionalSeconds.microsecond * dateTime.microsecond,
+        );
+  DateTime.nowInLocalZone({Clock? clock})
+      : this.fromCore((clock ?? cl.clock).now().toLocal());
+  DateTime.nowInUtc({Clock? clock})
+      : this.fromCore((clock ?? cl.clock).now().toUtc());
 
   factory DateTime.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<DateTime, FormatException> parse(String value) =>

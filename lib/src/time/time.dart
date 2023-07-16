@@ -5,6 +5,7 @@ import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
+import '../date_time/date_time.dart';
 import '../parser.dart';
 import '../utils.dart';
 import 'duration.dart';
@@ -71,18 +72,9 @@ final class Time
     );
   }
 
-  Time.fromCore(core.DateTime dateTime)
-      : this.fromUnchecked(
-          dateTime.hour,
-          dateTime.minute,
-          dateTime.second,
-          FractionalSeconds.millisecond * dateTime.millisecond +
-              FractionalSeconds.microsecond * dateTime.microsecond,
-        );
-  Time.nowInLocalZone({Clock? clockOverride})
-      : this.fromCore((clockOverride ?? clock).now().toLocal());
-  Time.nowInUtc({Clock? clockOverride})
-      : this.fromCore((clockOverride ?? clock).now().toUtc());
+  factory Time.nowInLocalZone({Clock? clock}) =>
+      DateTime.nowInLocalZone(clock: clock).time;
+  factory Time.nowInUtc({Clock? clock}) => DateTime.nowInUtc(clock: clock).time;
 
   factory Time.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<Time, FormatException> parse(String value) =>

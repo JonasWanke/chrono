@@ -4,6 +4,7 @@ import 'dart:core' as core;
 import 'package:clock/clock.dart';
 import 'package:oxidized/oxidized.dart';
 
+import '../../date_time/date_time.dart';
 import '../../utils.dart';
 import '../duration.dart';
 
@@ -39,12 +40,10 @@ enum Month
       Month.fromNumber(number).unwrap();
   static Month fromNumberUnchecked(int number) => values[number - minNumber];
 
-  static Month fromCore(core.DateTime dateTime) =>
-      fromNumberThrowing(dateTime.month);
-  static Month currentInLocalZone({Clock? clockOverride}) =>
-      fromCore((clockOverride ?? clock).now().toLocal());
-  static Month currentInUtc({Clock? clockOverride}) =>
-      fromCore((clockOverride ?? clock).now().toUtc());
+  static Month currentInLocalZone({Clock? clock}) =>
+      DateTime.nowInLocalZone(clock: clock).date.month;
+  static Month currentInUtc({Clock? clock}) =>
+      DateTime.nowInUtc(clock: clock).date.month;
 
   static Month fromJson(int json) =>
       fromNumber(json).unwrapOrThrowAsFormatException();
@@ -55,10 +54,10 @@ enum Month
   /// The number of this month (1 for January, …, 12 for December).
   int get number => index + 1;
 
-  bool isCurrentInLocalZone({Clock? clockOverride}) =>
-      this == Month.currentInLocalZone(clockOverride: clockOverride);
-  bool isCurrentInUtc({Clock? clockOverride}) =>
-      this == Month.currentInUtc(clockOverride: clockOverride);
+  bool isCurrentInLocalZone({Clock? clock}) =>
+      this == Month.currentInLocalZone(clock: clock);
+  bool isCurrentInUtc({Clock? clock}) =>
+      this == Month.currentInUtc(clock: clock);
 
   /// The number of days in this month of a common (non-leap) year.
   ///

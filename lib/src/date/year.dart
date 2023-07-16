@@ -4,6 +4,7 @@ import 'dart:core' as core;
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 
+import '../date_time/date_time.dart';
 import '../utils.dart';
 import 'date.dart';
 import 'duration.dart';
@@ -33,20 +34,19 @@ final class Year
     implements Comparable<Year> {
   const Year(this.number);
 
-  Year.fromCore(core.DateTime dateTime) : number = dateTime.year;
-  Year.currentInLocalZone({Clock? clockOverride})
-      : this.fromCore((clockOverride ?? clock).now().toLocal());
-  Year.currentInUtc({Clock? clockOverride})
-      : this.fromCore((clockOverride ?? clock).now().toUtc());
+  factory Year.currentInLocalZone({Clock? clock}) =>
+      DateTime.nowInLocalZone(clock: clock).date.year;
+  factory Year.currentInUtc({Clock? clock}) =>
+      DateTime.nowInUtc(clock: clock).date.year;
 
   const Year.fromJson(int json) : this(json);
 
   final int number;
 
-  bool isCurrentInLocalZone({Clock? clockOverride}) =>
-      this == Year.currentInLocalZone(clockOverride: clockOverride);
-  bool isCurrentInUtc({Clock? clockOverride}) =>
-      this == Year.currentInUtc(clockOverride: clockOverride);
+  bool isCurrentInLocalZone({Clock? clock}) =>
+      this == Year.currentInLocalZone(clock: clock);
+  bool isCurrentInUtc({Clock? clock}) =>
+      this == Year.currentInUtc(clock: clock);
 
   /// Whether this year is a common (non-leap) year.
   bool get isCommonYear => !isLeapYear;

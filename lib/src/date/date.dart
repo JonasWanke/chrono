@@ -116,15 +116,10 @@ final class Date
     );
   }
 
-  Date.fromCore(core.DateTime dateTime)
-      : this.fromYearMonthAndDayUnchecked(
-          YearMonth.fromCore(dateTime),
-          dateTime.day,
-        );
-  Date.todayInLocalZone({Clock? clockOverride})
-      : this.fromCore((clockOverride ?? clock).now().toLocal());
-  Date.todayInUtc({Clock? clockOverride})
-      : this.fromCore((clockOverride ?? clock).now().toUtc());
+  factory Date.todayInLocalZone({Clock? clock}) =>
+      DateTime.nowInLocalZone(clock: clock).date;
+  factory Date.todayInUtc({Clock? clock}) =>
+      DateTime.nowInUtc(clock: clock).date;
 
   factory Date.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<Date, FormatException> parse(String value) =>
@@ -190,10 +185,9 @@ final class Date
     return Days(era * 146097 + dayOfEra - 719468);
   }
 
-  bool isTodayInLocalZone({Clock? clockOverride}) =>
-      this == Date.todayInLocalZone(clockOverride: clockOverride);
-  bool isTodayInUtc({Clock? clockOverride}) =>
-      this == Date.todayInUtc(clockOverride: clockOverride);
+  bool isTodayInLocalZone({Clock? clock}) =>
+      this == Date.todayInLocalZone(clock: clock);
+  bool isTodayInUtc({Clock? clock}) => this == Date.todayInUtc(clock: clock);
 
   /// A [DateTime] combining this [Date] and the given [time].
   DateTime at(Time time) => DateTime(this, time);
