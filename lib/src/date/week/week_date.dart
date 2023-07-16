@@ -21,14 +21,12 @@ final class WeekDate
     implements Comparable<WeekDate> {
   const WeekDate(this.yearWeek, this.weekday);
 
-  WeekDate.fromDate(Date date) : this(date.yearWeek, date.weekday);
-
-  WeekDate.fromCore(core.DateTime dateTime)
-      : this.fromDate(Date.fromCore(dateTime));
-  WeekDate.todayInLocalZone({Clock? clockOverride})
-      : this.fromCore((clockOverride ?? clock).now().toLocal());
-  WeekDate.todayInUtc({Clock? clockOverride})
-      : this.fromCore((clockOverride ?? clock).now().toUtc());
+  factory WeekDate.fromCore(core.DateTime dateTime) =>
+      Date.fromCore(dateTime).asWeekDate;
+  factory WeekDate.todayInLocalZone({Clock? clockOverride}) =>
+      WeekDate.fromCore((clockOverride ?? clock).now().toLocal());
+  factory WeekDate.todayInUtc({Clock? clockOverride}) =>
+      WeekDate.fromCore((clockOverride ?? clock).now().toUtc());
 
   factory WeekDate.fromJson(String json) => unwrapParserResult(parse(json));
   static Result<WeekDate, FormatException> parse(String value) =>
