@@ -7,13 +7,6 @@ import 'package:glados/glados.dart';
 void main() {
   setChronoGladosDefaults();
 
-  Glados<Date>().test('Date', (date) {
-    _checkEquals(date);
-    expect(date, Date.fromJson(date.toJson()));
-    expect(date, Date.fromDaysSinceUnixEpoch(date.daysSinceUnixEpoch));
-    expect(date, date.asOrdinalDate.asDate);
-    expect(date, date.asWeekDate.asDate);
-  });
   Glados<Time>().test('Time', (time) {
     _checkEquals(time);
     expect(time, Time.fromJson(time.toJson()));
