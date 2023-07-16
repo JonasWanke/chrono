@@ -36,7 +36,7 @@ final class Date
     YearMonth yearMonth,
     int day,
   ) {
-    if (day < 1 || day > yearMonth.lengthInDays.value) {
+    if (day < 1 || day > yearMonth.lengthInDays.inDays) {
       return Err('Invalid day for $yearMonth: $day');
     }
     return Ok(Date.fromYearMonthAndDayUnchecked(yearMonth, day));
@@ -75,7 +75,7 @@ final class Date
   /// The date corresponding to the given number of days since the [unixEpoch].
   factory Date.fromDaysSinceUnixEpoch(Days sinceUnixEpoch) {
     // https://howardhinnant.github.io/date_algorithms.html#civil_from_days
-    var daysSinceUnixEpoch = sinceUnixEpoch.value;
+    var daysSinceUnixEpoch = sinceUnixEpoch.inDays;
     daysSinceUnixEpoch += 719468;
 
     final era = (daysSinceUnixEpoch >= 0
@@ -158,7 +158,7 @@ final class Date
   }
 
   Weekday get weekday =>
-      Weekday.fromNumberUnchecked((daysSinceUnixEpoch.value + 3) % 7 + 1);
+      Weekday.fromNumberUnchecked((daysSinceUnixEpoch.inDays + 3) % 7 + 1);
 
   /// This date, represented as a [WeekDate].
   WeekDate get asWeekDate => WeekDate(yearWeek, weekday);
@@ -204,10 +204,10 @@ final class Date
     final yearMonthWithMonths = yearMonth + months;
     final dateWithMonths = Date.fromYearMonthAndDayUnchecked(
       yearMonthWithMonths,
-      day.coerceAtMost(yearMonthWithMonths.lengthInDays.value),
+      day.coerceAtMost(yearMonthWithMonths.lengthInDays.inDays),
     );
 
-    return days.value == 0
+    return days.inDays == 0
         ? dateWithMonths
         : Date.fromDaysSinceUnixEpoch(dateWithMonths.daysSinceUnixEpoch + days);
   }

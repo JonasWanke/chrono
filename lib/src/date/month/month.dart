@@ -86,7 +86,7 @@ enum Month
   }
 
   Month operator +(MonthsDuration duration) =>
-      values[(index + duration.asMonths.value) % values.length];
+      values[(index + duration.asMonths.inMonths) % values.length];
   Month operator -(MonthsDuration duration) => this + (-duration);
 
   /// The month after this one, wrapping around after January.

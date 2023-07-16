@@ -52,12 +52,12 @@ final class YearMonth
 
   /// The last day of this month.
   Date get lastDay =>
-      Date.fromYearMonthAndDayUnchecked(this, lengthInDays.value);
+      Date.fromYearMonthAndDayUnchecked(this, lengthInDays.inDays);
 
   /// An iterable of all days in this month.
   Iterable<Date> get days {
     return Iterable.generate(
-      lengthInDays.value,
+      lengthInDays.inDays,
       (it) => Date.fromYearMonthAndDayUnchecked(this, it + 1),
     );
   }
@@ -65,7 +65,7 @@ final class YearMonth
   YearMonth operator +(MonthsDuration duration) {
     final (years, months) = duration.asYearsAndMonths;
 
-    final rawNewMonth = this.month.number + months.value;
+    final rawNewMonth = this.month.number + months.inMonths;
     final (yearAdjustment, month) = switch (rawNewMonth) {
       < Month.minNumber => (-const Years(1), rawNewMonth + Months.perYear),
       > Month.maxNumber => (const Years(1), rawNewMonth - Months.perYear),

@@ -103,13 +103,13 @@ final class Year
 
   /// The last day of this year as an [OrdinalDate].
   OrdinalDate get lastOrdinalDate =>
-      OrdinalDate.fromUnchecked(this, lengthInDays.value);
+      OrdinalDate.fromUnchecked(this, lengthInDays.inDays);
 
   /// An iterable of all days in this year.
   Iterable<Date> get days => months.expand((it) => it.days);
 
-  Year operator +(Years duration) => Year(number + duration.value);
-  Year operator -(Years duration) => Year(number - duration.value);
+  Year operator +(Years duration) => Year(number + duration.inYears);
+  Year operator -(Years duration) => Year(number - duration.inYears);
 
   /// The year after this one.
   Year get next => this + const Years(1);

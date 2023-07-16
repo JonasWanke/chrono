@@ -74,7 +74,8 @@ final class DateTime
         time.fractionalSecondsSinceMidnight + compoundDuration.seconds;
     final (rawNewSecondsSinceMidnight, newFractionSinceMidnight) =
         rawNewTimeSinceMidnight.asSecondsAndFraction;
-    newDate += Days(rawNewSecondsSinceMidnight.value ~/ Seconds.perNormalDay);
+    newDate +=
+        Days(rawNewSecondsSinceMidnight.inSeconds ~/ Seconds.perNormalDay);
     final newTime = Time.fromTimeSinceMidnightUnchecked(
       newFractionSinceMidnight +
           rawNewSecondsSinceMidnight.remainder(Seconds.perNormalDay),

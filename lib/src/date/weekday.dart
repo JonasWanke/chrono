@@ -42,7 +42,7 @@ enum Weekday
   int get number => index + 1;
 
   Weekday operator +(FixedDaysDuration duration) =>
-      values[(index + duration.asDays.value) % values.length];
+      values[(index + duration.asDays.inDays) % values.length];
   Weekday operator -(FixedDaysDuration duration) => this + (-duration);
 
   /// The weekday after this one, wrapping around after Sunday.

@@ -46,17 +46,17 @@ extension ChronoAny on Any {
     return simple(
       generate: (random, size) {
         final yearMonth = this.yearMonth(random, size);
-        final day =
-            intInRange(1, yearMonth.value.lengthInDays.value + 1)(random, size);
+        final day = intInRange(1, yearMonth.value.lengthInDays.inDays + 1)(
+            random, size);
         return (yearMonth, day);
       },
       shrink: (input) sync* {
         final (yearMonth, day) = input;
         yield* yearMonth.shrink().map((yearMonth) {
-          final actualDay = day.value <= yearMonth.value.lengthInDays.value
+          final actualDay = day.value <= yearMonth.value.lengthInDays.inDays
               ? day
               : day.shrink().firstWhere(
-                    (it) => it.value <= yearMonth.value.lengthInDays.value,
+                    (it) => it.value <= yearMonth.value.lengthInDays.inDays,
                   );
           return (yearMonth, actualDay);
         });
@@ -84,16 +84,16 @@ extension ChronoAny on Any {
       generate: (random, size) {
         final year = this.year(random, size);
         final day =
-            intInRange(1, year.value.lengthInDays.value + 1)(random, size);
+            intInRange(1, year.value.lengthInDays.inDays + 1)(random, size);
         return (year, day);
       },
       shrink: (input) sync* {
         final (year, day) = input;
         yield* year.shrink().map((year) {
-          final actualDay = day.value <= year.value.lengthInDays.value
+          final actualDay = day.value <= year.value.lengthInDays.inDays
               ? day
               : day.shrink().firstWhere(
-                    (it) => it.value <= year.value.lengthInDays.value,
+                    (it) => it.value <= year.value.lengthInDays.inDays,
                   );
           return (year, actualDay);
         });

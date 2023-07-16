@@ -123,7 +123,7 @@ abstract class NanosecondsDuration extends TimeDuration {
   Nanoseconds get asNanoseconds;
   @override
   FractionalSeconds get asFractionalSeconds =>
-      FractionalSeconds.millisecond * asNanoseconds.value;
+      FractionalSeconds.millisecond * asNanoseconds.inNanoseconds;
 
   @override
   NanosecondsDuration operator -();
@@ -138,7 +138,7 @@ abstract class NanosecondsDuration extends TimeDuration {
 }
 
 final class Nanoseconds extends NanosecondsDuration {
-  const Nanoseconds(this.value);
+  const Nanoseconds(this.inNanoseconds);
 
   static const perMicrosecond = 1000;
   static const perMillisecond = perMicrosecond * Microseconds.perMillisecond;
@@ -148,36 +148,38 @@ final class Nanoseconds extends NanosecondsDuration {
   static const perNormalDay = perMicrosecond * Microseconds.perNormalDay;
   static const perNormalWeek = perMicrosecond * Microseconds.perNormalWeek;
 
-  final int value;
+  final int inNanoseconds;
 
   @override
   Nanoseconds get asNanoseconds => this;
   (Microseconds, Nanoseconds) get asMicrosecondsAndNanoseconds {
     final asNanoseconds = this.asNanoseconds;
     final microseconds =
-        Microseconds(asNanoseconds.value ~/ Nanoseconds.perSecond);
+        Microseconds(asNanoseconds.inNanoseconds ~/ Nanoseconds.perSecond);
     final nanoseconds = asNanoseconds.remainder(Nanoseconds.perSecond);
     return (microseconds, nanoseconds);
   }
 
   Nanoseconds operator +(NanosecondsDuration duration) =>
-      Nanoseconds(value + duration.asNanoseconds.value);
+      Nanoseconds(inNanoseconds + duration.asNanoseconds.inNanoseconds);
   Nanoseconds operator -(NanosecondsDuration duration) =>
-      Nanoseconds(value - duration.asNanoseconds.value);
+      Nanoseconds(inNanoseconds - duration.asNanoseconds.inNanoseconds);
   @override
-  Nanoseconds operator -() => Nanoseconds(-value);
+  Nanoseconds operator -() => Nanoseconds(-inNanoseconds);
   @override
-  Nanoseconds operator *(int factor) => Nanoseconds(value * factor);
+  Nanoseconds operator *(int factor) => Nanoseconds(inNanoseconds * factor);
   @override
-  Nanoseconds operator ~/(int divisor) => Nanoseconds(value ~/ divisor);
+  Nanoseconds operator ~/(int divisor) => Nanoseconds(inNanoseconds ~/ divisor);
   @override
-  Nanoseconds operator %(int divisor) => Nanoseconds(value % divisor);
+  Nanoseconds operator %(int divisor) => Nanoseconds(inNanoseconds % divisor);
   @override
-  Nanoseconds remainder(int divisor) => Nanoseconds(value.remainder(divisor));
+  Nanoseconds remainder(int divisor) =>
+      Nanoseconds(inNanoseconds.remainder(divisor));
 
   @override
-  String toString() =>
-      value.abs() == 1 ? '$value nanosecond' : '$value nanoseconds';
+  String toString() => inNanoseconds.abs() == 1
+      ? '$inNanoseconds nanosecond'
+      : '$inNanoseconds nanoseconds';
 }
 
 abstract class MicrosecondsDuration extends NanosecondsDuration {
@@ -186,10 +188,10 @@ abstract class MicrosecondsDuration extends NanosecondsDuration {
   Microseconds get asMicroseconds;
   @override
   Nanoseconds get asNanoseconds =>
-      Nanoseconds(asMicroseconds.value * Nanoseconds.perMicrosecond);
+      Nanoseconds(asMicroseconds.inMicroseconds * Nanoseconds.perMicrosecond);
   @override
   FractionalSeconds get asFractionalSeconds =>
-      FractionalSeconds.millisecond * asMicroseconds.value;
+      FractionalSeconds.millisecond * asMicroseconds.inMicroseconds;
 
   @override
   MicrosecondsDuration operator -();
@@ -204,7 +206,7 @@ abstract class MicrosecondsDuration extends NanosecondsDuration {
 }
 
 final class Microseconds extends MicrosecondsDuration {
-  const Microseconds(this.value);
+  const Microseconds(this.inMicroseconds);
 
   static const perMillisecond = 1000;
   static const perSecond = perMillisecond * Milliseconds.perSecond;
@@ -213,36 +215,40 @@ final class Microseconds extends MicrosecondsDuration {
   static const perNormalDay = perMillisecond * Milliseconds.perNormalDay;
   static const perNormalWeek = perMillisecond * Milliseconds.perNormalWeek;
 
-  final int value;
+  final int inMicroseconds;
 
   @override
   Microseconds get asMicroseconds => this;
   (Milliseconds, Microseconds) get asMillisecondsAndMicroseconds {
     final asMicroseconds = this.asMicroseconds;
     final milliseconds =
-        Milliseconds(asMicroseconds.value ~/ Microseconds.perSecond);
+        Milliseconds(asMicroseconds.inMicroseconds ~/ Microseconds.perSecond);
     final microseconds = asMicroseconds.remainder(Microseconds.perSecond);
     return (milliseconds, microseconds);
   }
 
   Microseconds operator +(MicrosecondsDuration duration) =>
-      Microseconds(value + duration.asMicroseconds.value);
+      Microseconds(inMicroseconds + duration.asMicroseconds.inMicroseconds);
   Microseconds operator -(MicrosecondsDuration duration) =>
-      Microseconds(value - duration.asMicroseconds.value);
+      Microseconds(inMicroseconds - duration.asMicroseconds.inMicroseconds);
   @override
-  Microseconds operator -() => Microseconds(-value);
+  Microseconds operator -() => Microseconds(-inMicroseconds);
   @override
-  Microseconds operator *(int factor) => Microseconds(value * factor);
+  Microseconds operator *(int factor) => Microseconds(inMicroseconds * factor);
   @override
-  Microseconds operator ~/(int divisor) => Microseconds(value ~/ divisor);
+  Microseconds operator ~/(int divisor) =>
+      Microseconds(inMicroseconds ~/ divisor);
   @override
-  Microseconds operator %(int divisor) => Microseconds(value % divisor);
+  Microseconds operator %(int divisor) =>
+      Microseconds(inMicroseconds % divisor);
   @override
-  Microseconds remainder(int divisor) => Microseconds(value.remainder(divisor));
+  Microseconds remainder(int divisor) =>
+      Microseconds(inMicroseconds.remainder(divisor));
 
   @override
-  String toString() =>
-      value.abs() == 1 ? '$value microsecond' : '$value microseconds';
+  String toString() => inMicroseconds.abs() == 1
+      ? '$inMicroseconds microsecond'
+      : '$inMicroseconds microseconds';
 }
 
 abstract class MillisecondsDuration extends MicrosecondsDuration {
@@ -251,10 +257,10 @@ abstract class MillisecondsDuration extends MicrosecondsDuration {
   Milliseconds get asMilliseconds;
   @override
   Microseconds get asMicroseconds =>
-      Microseconds(asMilliseconds.value * Microseconds.perMillisecond);
+      Microseconds(asMilliseconds.inMilliseconds * Microseconds.perMillisecond);
   @override
   FractionalSeconds get asFractionalSeconds =>
-      FractionalSeconds.millisecond * asMilliseconds.value;
+      FractionalSeconds.millisecond * asMilliseconds.inMilliseconds;
 
   @override
   MillisecondsDuration operator -();
@@ -269,7 +275,7 @@ abstract class MillisecondsDuration extends MicrosecondsDuration {
 }
 
 final class Milliseconds extends MillisecondsDuration {
-  const Milliseconds(this.value);
+  const Milliseconds(this.inMilliseconds);
 
   static const perSecond = 1000;
   static const perMinute = perSecond * Seconds.perMinute;
@@ -277,35 +283,40 @@ final class Milliseconds extends MillisecondsDuration {
   static const perNormalDay = perSecond * Seconds.perNormalDay;
   static const perNormalWeek = perSecond * Seconds.perNormalDay;
 
-  final int value;
+  final int inMilliseconds;
 
   @override
   Milliseconds get asMilliseconds => this;
   (Seconds, Milliseconds) get asSecondsAndMilliseconds {
     final asMilliseconds = this.asMilliseconds;
-    final seconds = Seconds(asMilliseconds.value ~/ Milliseconds.perSecond);
+    final seconds =
+        Seconds(asMilliseconds.inMilliseconds ~/ Milliseconds.perSecond);
     final milliseconds = asMilliseconds.remainder(Milliseconds.perSecond);
     return (seconds, milliseconds);
   }
 
   Milliseconds operator +(MillisecondsDuration duration) =>
-      Milliseconds(value + duration.asMilliseconds.value);
+      Milliseconds(inMilliseconds + duration.asMilliseconds.inMilliseconds);
   Milliseconds operator -(MillisecondsDuration duration) =>
-      Milliseconds(value - duration.asMilliseconds.value);
+      Milliseconds(inMilliseconds - duration.asMilliseconds.inMilliseconds);
   @override
-  Milliseconds operator -() => Milliseconds(-value);
+  Milliseconds operator -() => Milliseconds(-inMilliseconds);
   @override
-  Milliseconds operator *(int factor) => Milliseconds(value * factor);
+  Milliseconds operator *(int factor) => Milliseconds(inMilliseconds * factor);
   @override
-  Milliseconds operator ~/(int divisor) => Milliseconds(value ~/ divisor);
+  Milliseconds operator ~/(int divisor) =>
+      Milliseconds(inMilliseconds ~/ divisor);
   @override
-  Milliseconds operator %(int divisor) => Milliseconds(value % divisor);
+  Milliseconds operator %(int divisor) =>
+      Milliseconds(inMilliseconds % divisor);
   @override
-  Milliseconds remainder(int divisor) => Milliseconds(value.remainder(divisor));
+  Milliseconds remainder(int divisor) =>
+      Milliseconds(inMilliseconds.remainder(divisor));
 
   @override
-  String toString() =>
-      value.abs() == 1 ? '$value millisecond' : '$value milliseconds';
+  String toString() => inMilliseconds.abs() == 1
+      ? '$inMilliseconds millisecond'
+      : '$inMilliseconds milliseconds';
 }
 
 abstract class SecondsDuration extends MillisecondsDuration {
@@ -314,11 +325,11 @@ abstract class SecondsDuration extends MillisecondsDuration {
   Seconds get asSeconds;
   @override
   Milliseconds get asMilliseconds =>
-      Milliseconds(asSeconds.value * Milliseconds.perSecond);
+      Milliseconds(asSeconds.inSeconds * Milliseconds.perSecond);
 
   @override
   FractionalSeconds get asFractionalSeconds =>
-      FractionalSeconds.second * asSeconds.value;
+      FractionalSeconds.second * asSeconds.inSeconds;
 
   @override
   SecondsDuration operator -();
@@ -333,20 +344,20 @@ abstract class SecondsDuration extends MillisecondsDuration {
 }
 
 final class Seconds extends SecondsDuration {
-  const Seconds(this.value);
+  const Seconds(this.inSeconds);
 
   static const perMinute = 60;
   static const perHour = perMinute * Minutes.perHour;
   static const perNormalDay = perMinute * Minutes.perNormalDay;
   static const perNormalWeek = perMinute * Minutes.perNormalWeek;
 
-  final int value;
+  final int inSeconds;
 
   @override
   Seconds get asSeconds => this;
   (Minutes, Seconds) get asMinutesAndSeconds {
     final asSeconds = this.asSeconds;
-    final minutes = Minutes(asSeconds.value ~/ Seconds.perMinute);
+    final minutes = Minutes(asSeconds.inSeconds ~/ Seconds.perMinute);
     final seconds = asSeconds.remainder(Seconds.perMinute);
     return (minutes, seconds);
   }
@@ -358,22 +369,23 @@ final class Seconds extends SecondsDuration {
   }
 
   Seconds operator +(SecondsDuration duration) =>
-      Seconds(value + duration.asSeconds.value);
+      Seconds(inSeconds + duration.asSeconds.inSeconds);
   Seconds operator -(SecondsDuration duration) =>
-      Seconds(value - duration.asSeconds.value);
+      Seconds(inSeconds - duration.asSeconds.inSeconds);
   @override
-  Seconds operator -() => Seconds(-value);
+  Seconds operator -() => Seconds(-inSeconds);
   @override
-  Seconds operator *(int factor) => Seconds(value * factor);
+  Seconds operator *(int factor) => Seconds(inSeconds * factor);
   @override
-  Seconds operator ~/(int divisor) => Seconds(value ~/ divisor);
+  Seconds operator ~/(int divisor) => Seconds(inSeconds ~/ divisor);
   @override
-  Seconds operator %(int divisor) => Seconds(value % divisor);
+  Seconds operator %(int divisor) => Seconds(inSeconds % divisor);
   @override
-  Seconds remainder(int divisor) => Seconds(value.remainder(divisor));
+  Seconds remainder(int divisor) => Seconds(inSeconds.remainder(divisor));
 
   @override
-  String toString() => value.abs() == 1 ? '$value second' : '$value seconds';
+  String toString() =>
+      inSeconds.abs() == 1 ? '$inSeconds second' : '$inSeconds seconds';
 }
 
 abstract class MinutesDuration extends SecondsDuration {
@@ -381,7 +393,7 @@ abstract class MinutesDuration extends SecondsDuration {
 
   Minutes get asMinutes;
   @override
-  Seconds get asSeconds => Seconds(asMinutes.value * Seconds.perMinute);
+  Seconds get asSeconds => Seconds(asMinutes.inMinutes * Seconds.perMinute);
 
   @override
   MinutesDuration operator -();
@@ -394,66 +406,67 @@ abstract class MinutesDuration extends SecondsDuration {
 }
 
 final class Minutes extends MinutesDuration {
-  const Minutes(this.value);
+  const Minutes(this.inMinutes);
 
   static const perHour = 60;
   static const perNormalDay = perHour * Hours.perNormalDay;
   static const perNormalWeek = perHour * Hours.perNormalWeek;
 
-  final int value;
+  final int inMinutes;
 
   @override
   Minutes get asMinutes => this;
   (Hours, Minutes) get asHoursAndMinutes {
     final asMinutes = this.asMinutes;
-    final hours = Hours(asMinutes.value ~/ Minutes.perHour);
+    final hours = Hours(asMinutes.inMinutes ~/ Minutes.perHour);
     final minutes = asMinutes.remainder(Minutes.perHour);
     return (hours, minutes);
   }
 
   Minutes operator +(MinutesDuration duration) =>
-      Minutes(value + duration.asMinutes.value);
+      Minutes(inMinutes + duration.asMinutes.inMinutes);
   Minutes operator -(MinutesDuration duration) =>
-      Minutes(value - duration.asMinutes.value);
+      Minutes(inMinutes - duration.asMinutes.inMinutes);
   @override
-  Minutes operator -() => Minutes(-value);
+  Minutes operator -() => Minutes(-inMinutes);
   @override
-  Minutes operator *(int factor) => Minutes(value * factor);
+  Minutes operator *(int factor) => Minutes(inMinutes * factor);
   @override
-  Minutes operator ~/(int divisor) => Minutes(value ~/ divisor);
+  Minutes operator ~/(int divisor) => Minutes(inMinutes ~/ divisor);
   @override
-  Minutes operator %(int divisor) => Minutes(value % divisor);
+  Minutes operator %(int divisor) => Minutes(inMinutes % divisor);
   @override
-  Minutes remainder(int divisor) => Minutes(value.remainder(divisor));
+  Minutes remainder(int divisor) => Minutes(inMinutes.remainder(divisor));
 
   @override
-  String toString() => value.abs() == 1 ? '$value minute' : '$value minutes';
+  String toString() =>
+      inMinutes.abs() == 1 ? '$inMinutes minute' : '$inMinutes minutes';
 }
 
 final class Hours extends MinutesDuration {
-  const Hours(this.value);
+  const Hours(this.inHours);
 
   static const perNormalDay = 24;
   static const perNormalWeek = perNormalDay * Days.perWeek;
 
-  final int value;
+  final int inHours;
 
   @override
-  Minutes get asMinutes => Minutes(value * Minutes.perHour);
+  Minutes get asMinutes => Minutes(inHours * Minutes.perHour);
 
-  Hours operator +(Hours duration) => Hours(value + duration.value);
-  Hours operator -(Hours duration) => Hours(value - duration.value);
+  Hours operator +(Hours duration) => Hours(inHours + duration.inHours);
+  Hours operator -(Hours duration) => Hours(inHours - duration.inHours);
   @override
-  Hours operator -() => Hours(-value);
+  Hours operator -() => Hours(-inHours);
   @override
-  Hours operator *(int factor) => Hours(value * factor);
+  Hours operator *(int factor) => Hours(inHours * factor);
   @override
-  Hours operator ~/(int divisor) => Hours(value ~/ divisor);
+  Hours operator ~/(int divisor) => Hours(inHours ~/ divisor);
   @override
-  Hours operator %(int divisor) => Hours(value % divisor);
+  Hours operator %(int divisor) => Hours(inHours % divisor);
   @override
-  Hours remainder(int divisor) => Hours(value.remainder(divisor));
+  Hours remainder(int divisor) => Hours(inHours.remainder(divisor));
 
   @override
-  String toString() => value.abs() == 1 ? '$value hour' : '$value hours';
+  String toString() => inHours.abs() == 1 ? '$inHours hour' : '$inHours hours';
 }

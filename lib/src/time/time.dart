@@ -66,9 +66,9 @@ final class Time
     final (asSeconds, fraction) = time.asSecondsAndFraction;
     final (hours, minutes, seconds) = asSeconds.asHoursAndMinutesAndSeconds;
     return Time.fromUnchecked(
-      hours.value,
-      minutes.value,
-      seconds.value,
+      hours.inHours,
+      minutes.inMinutes,
+      seconds.inSeconds,
       fraction,
     );
   }

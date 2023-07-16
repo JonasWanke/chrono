@@ -84,7 +84,7 @@ abstract class FixedDaysDuration extends DaysDuration
   const FixedDaysDuration();
 
   Days get asDays;
-  Hours get asNormalHours => Hours(asDays.value * Hours.perNormalDay);
+  Hours get asNormalHours => Hours(asDays.inDays * Hours.perNormalDay);
   Minutes get asNormalMinutes => asNormalHours.asMinutes;
   Seconds get asNormalSeconds => asNormalHours.asSeconds;
   Milliseconds get asNormalMilliseconds => asNormalHours.asMilliseconds;
@@ -95,10 +95,10 @@ abstract class FixedDaysDuration extends DaysDuration
   CompoundDaysDuration get asCompoundDaysDuration =>
       CompoundDaysDuration(days: asDays);
 
-  bool get isPositive => asDays.value > 0;
-  bool get isNonPositive => asDays.value <= 0;
-  bool get isNegative => asDays.value < 0;
-  bool get isNonNegative => asDays.value >= 0;
+  bool get isPositive => asDays.inDays > 0;
+  bool get isNonPositive => asDays.inDays <= 0;
+  bool get isNegative => asDays.inDays < 0;
+  bool get isNonNegative => asDays.inDays >= 0;
 
   @override
   FixedDaysDuration operator -();
@@ -113,74 +113,74 @@ abstract class FixedDaysDuration extends DaysDuration
 
   @override
   int compareTo(FixedDaysDuration other) =>
-      asDays.value.compareTo(other.asDays.value);
+      asDays.inDays.compareTo(other.asDays.inDays);
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is FixedDaysDuration && asDays.value == other.asDays.value);
+      (other is FixedDaysDuration && asDays.inDays == other.asDays.inDays);
   @override
-  int get hashCode => asDays.value.hashCode;
+  int get hashCode => asDays.inDays.hashCode;
 }
 
 final class Days extends FixedDaysDuration {
-  const Days(this.value);
+  const Days(this.inDays);
   const Days.fromJson(int json) : this(json);
 
   static const perWeek = 7;
 
-  final int value;
+  final int inDays;
 
   @override
   Days get asDays => this;
 
   Days operator +(FixedDaysDuration duration) =>
-      Days(value + duration.asDays.value);
+      Days(inDays + duration.asDays.inDays);
   Days operator -(FixedDaysDuration duration) =>
-      Days(value - duration.asDays.value);
+      Days(inDays - duration.asDays.inDays);
   @override
-  Days operator -() => Days(-value);
+  Days operator -() => Days(-inDays);
   @override
-  Days operator *(int factor) => Days(value * factor);
+  Days operator *(int factor) => Days(inDays * factor);
   @override
-  Days operator ~/(int divisor) => Days(value ~/ divisor);
+  Days operator ~/(int divisor) => Days(inDays ~/ divisor);
   @override
-  Days operator %(int divisor) => Days(value % divisor);
+  Days operator %(int divisor) => Days(inDays % divisor);
   @override
-  Days remainder(int divisor) => Days(value.remainder(divisor));
+  Days remainder(int divisor) => Days(inDays.remainder(divisor));
 
   @override
-  String toString() => value.abs() == 1 ? '$value day' : '$value days';
+  String toString() => inDays.abs() == 1 ? '$inDays day' : '$inDays days';
 
-  int toJson() => value;
+  int toJson() => inDays;
 }
 
 final class Weeks extends FixedDaysDuration {
-  const Weeks(this.value);
+  const Weeks(this.inWeeks);
   const Weeks.fromJson(int json) : this(json);
 
-  final int value;
+  final int inWeeks;
 
   @override
-  Days get asDays => Days(value * Days.perWeek);
+  Days get asDays => Days(inWeeks * Days.perWeek);
 
-  Weeks operator +(Weeks duration) => Weeks(value + duration.value);
-  Weeks operator -(Weeks duration) => Weeks(value - duration.value);
+  Weeks operator +(Weeks duration) => Weeks(inWeeks + duration.inWeeks);
+  Weeks operator -(Weeks duration) => Weeks(inWeeks - duration.inWeeks);
   @override
-  Weeks operator -() => Weeks(-value);
+  Weeks operator -() => Weeks(-inWeeks);
   @override
-  Weeks operator *(int factor) => Weeks(value * factor);
+  Weeks operator *(int factor) => Weeks(inWeeks * factor);
   @override
-  Weeks operator ~/(int divisor) => Weeks(value ~/ divisor);
+  Weeks operator ~/(int divisor) => Weeks(inWeeks ~/ divisor);
   @override
-  Weeks operator %(int divisor) => Weeks(value % divisor);
+  Weeks operator %(int divisor) => Weeks(inWeeks % divisor);
   @override
-  Weeks remainder(int divisor) => Weeks(value.remainder(divisor));
+  Weeks remainder(int divisor) => Weeks(inWeeks.remainder(divisor));
 
   @override
-  String toString() => value.abs() == 1 ? '$value week' : '$value weeks';
+  String toString() => inWeeks.abs() == 1 ? '$inWeeks week' : '$inWeeks weeks';
 
-  int toJson() => value;
+  int toJson() => inWeeks;
 }
 
 abstract class MonthsDuration extends DaysDuration
@@ -191,7 +191,7 @@ abstract class MonthsDuration extends DaysDuration
   /// Both are `>= 0` or both are `<= 0`.
   (Years, Months) get asYearsAndMonths {
     final thisMonths = asMonths;
-    final years = Years(thisMonths.value ~/ Months.perYear);
+    final years = Years(thisMonths.inMonths ~/ Months.perYear);
     final months = thisMonths - years.asMonths;
     return (years, months);
   }
@@ -202,10 +202,10 @@ abstract class MonthsDuration extends DaysDuration
   CompoundDaysDuration get asCompoundDaysDuration =>
       CompoundDaysDuration(months: asMonths);
 
-  bool get isPositive => asMonths.value > 0;
-  bool get isNonPositive => asMonths.value <= 0;
-  bool get isNegative => asMonths.value < 0;
-  bool get isNonNegative => asMonths.value >= 0;
+  bool get isPositive => asMonths.inMonths > 0;
+  bool get isNonPositive => asMonths.inMonths <= 0;
+  bool get isNegative => asMonths.inMonths < 0;
+  bool get isNonNegative => asMonths.inMonths >= 0;
 
   @override
   MonthsDuration operator -();
@@ -220,74 +220,75 @@ abstract class MonthsDuration extends DaysDuration
 
   @override
   int compareTo(MonthsDuration other) =>
-      asMonths.value.compareTo(other.asMonths.value);
+      asMonths.inMonths.compareTo(other.asMonths.inMonths);
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is MonthsDuration && asMonths.value == other.asMonths.value);
+      (other is MonthsDuration && asMonths.inMonths == other.asMonths.inMonths);
   @override
-  int get hashCode => asMonths.value.hashCode;
+  int get hashCode => asMonths.inMonths.hashCode;
 }
 
 final class Months extends MonthsDuration {
-  const Months(this.value);
+  const Months(this.inMonths);
   const Months.fromJson(int json) : this(json);
 
   static const perYear = 12;
 
-  final int value;
+  final int inMonths;
 
   @override
   Months get asMonths => this;
 
   Months operator +(MonthsDuration duration) =>
-      Months(value + duration.asMonths.value);
+      Months(inMonths + duration.asMonths.inMonths);
   Months operator -(MonthsDuration duration) =>
-      Months(value - duration.asMonths.value);
+      Months(inMonths - duration.asMonths.inMonths);
   @override
-  Months operator -() => Months(-value);
+  Months operator -() => Months(-inMonths);
   @override
-  Months operator *(int factor) => Months(value * factor);
+  Months operator *(int factor) => Months(inMonths * factor);
   @override
-  Months operator ~/(int divisor) => Months(value ~/ divisor);
+  Months operator ~/(int divisor) => Months(inMonths ~/ divisor);
   @override
-  Months operator %(int divisor) => Months(value % divisor);
+  Months operator %(int divisor) => Months(inMonths % divisor);
   @override
-  Months remainder(int divisor) => Months(value.remainder(divisor));
+  Months remainder(int divisor) => Months(inMonths.remainder(divisor));
 
   @override
-  String toString() => value.abs() == 1 ? '$value month' : '$value months';
+  String toString() =>
+      inMonths.abs() == 1 ? '$inMonths month' : '$inMonths months';
 
-  int toJson() => value;
+  int toJson() => inMonths;
 }
 
 final class Years extends MonthsDuration {
-  const Years(this.value);
+  const Years(this.inYears);
   const Years.fromJson(int json) : this(json);
 
-  final int value;
+  final int inYears;
 
   @override
   (Years, Months) get asYearsAndMonths => (this, const Months(0));
   @override
-  Months get asMonths => Months(value * Months.perYear);
+  Months get asMonths => Months(inYears * Months.perYear);
 
-  Years operator +(Years duration) => Years(value + duration.value);
-  Years operator -(Years duration) => Years(value - duration.value);
+  Years operator +(Years duration) => Years(inYears + duration.inYears);
+  Years operator -(Years duration) => Years(inYears - duration.inYears);
   @override
-  Years operator -() => Years(-value);
+  Years operator -() => Years(-inYears);
   @override
-  Years operator *(int factor) => Years(value * factor);
+  Years operator *(int factor) => Years(inYears * factor);
   @override
-  Years operator ~/(int divisor) => Years(value ~/ divisor);
+  Years operator ~/(int divisor) => Years(inYears ~/ divisor);
   @override
-  Years operator %(int divisor) => Years(value % divisor);
+  Years operator %(int divisor) => Years(inYears % divisor);
   @override
-  Years remainder(int divisor) => Years(value.remainder(divisor));
+  Years remainder(int divisor) => Years(inYears.remainder(divisor));
 
   @override
-  String toString() => value.abs() == 1 ? '$value year' : '$value years';
+  String toString() => inYears.abs() == 1 ? '$inYears year' : '$inYears years';
 
-  int toJson() => value;
+  int toJson() => inYears;
 }
