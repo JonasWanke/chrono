@@ -107,7 +107,7 @@ final class Parser {
         minDigits: 3,
         maxDigits: 3,
         minValue: 1,
-        maxValue: year.lengthInDays.value,
+        maxValue: year.length.inDays,
       );
       return dayOfYear.map((it) => OrdinalDate.fromUnchecked(year, it));
     });
@@ -212,7 +212,7 @@ final class Parser {
       minDigits: 2,
       maxDigits: 2,
       minValue: 1,
-      maxValue: yearMonth.lengthInDays.value,
+      maxValue: yearMonth.length.inDays,
     );
     return value.andThen((it) =>
         Date.fromYearMonthAndDay(yearMonth, it).mapErr(FormatException.new));
