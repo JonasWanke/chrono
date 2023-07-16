@@ -95,5 +95,23 @@ enum Month
   @override
   int compareTo(Month other) => index.compareTo(other.index);
 
+  @override
+  String toString() {
+    return switch (this) {
+      Month.january => 'January',
+      Month.february => 'February',
+      Month.march => 'March',
+      Month.april => 'April',
+      Month.may => 'May',
+      Month.june => 'June',
+      Month.july => 'July',
+      Month.august => 'August',
+      Month.september => 'September',
+      Month.october => 'October',
+      Month.november => 'November',
+      Month.december => 'December',
+    };
+  }
+
   int toJson() => number;
 }

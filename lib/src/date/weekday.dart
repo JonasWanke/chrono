@@ -48,5 +48,18 @@ enum Weekday
   @override
   int compareTo(Weekday other) => index.compareTo(other.index);
 
+  @override
+  String toString() {
+    return switch (this) {
+      Weekday.monday => 'Monday',
+      Weekday.tuesday => 'Tuesday',
+      Weekday.wednesday => 'Wednesday',
+      Weekday.thursday => 'Thursday',
+      Weekday.friday => 'Friday',
+      Weekday.saturday => 'Saturday',
+      Weekday.sunday => 'Sunday',
+    };
+  }
+
   int toJson() => number;
 }
