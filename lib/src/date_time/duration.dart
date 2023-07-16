@@ -9,6 +9,13 @@ abstract class Duration {
 
   CompoundDuration get asCompoundDuration;
 
+  bool get isZero {
+    final compoundDuration = asCompoundDuration;
+    return compoundDuration.months.inMonths == 0 &&
+        compoundDuration.days.inDays == 0 &&
+        compoundDuration.seconds.value.isZero;
+  }
+
   Duration operator -();
   Duration operator *(int factor);
   Duration operator ~/(int divisor);
