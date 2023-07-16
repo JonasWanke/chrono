@@ -15,11 +15,11 @@ void main() {
     expect(Month.fromNumber(number), Ok<Month, String>(month));
   });
 
-  Glados<Month>().test('next and previous', (month) {
-    expect(month.next.previous, month);
-  });
   Glados2<Month, MonthsDuration>().test('+ and -', (month, duration) {
     expect(month + duration - duration, month);
+  });
+  Glados<Month>().test('next and previous', (month) {
+    expect(month.next.previous, month);
   });
 
   testAllPairs(

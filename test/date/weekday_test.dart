@@ -15,11 +15,11 @@ void main() {
     expect(Weekday.fromNumber(number), Ok<Weekday, String>(weekday));
   });
 
-  Glados<Weekday>().test('next and previous', (weekday) {
-    expect(weekday.next.previous, weekday);
-  });
   Glados2<Weekday, FixedDaysDuration>().test('+ and -', (weekday, duration) {
     expect(weekday + duration - duration, weekday);
+  });
+  Glados<Weekday>().test('next and previous', (weekday) {
+    expect(weekday.next.previous, weekday);
   });
 
   testAllPairs(

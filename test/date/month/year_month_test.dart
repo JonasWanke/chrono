@@ -12,10 +12,10 @@ void main() {
     expect(yearMonth.lengthInDays, inInclusiveRange(28, 31));
   });
 
-  Glados<YearMonth>().test('next and previous', (yearMonth) {
-    expect(yearMonth.next.previous, yearMonth);
-  });
   Glados2<YearMonth, MonthsDuration>().test('+ and -', (yearMonth, duration) {
     expect(yearMonth + duration - duration, yearMonth);
+  });
+  Glados<YearMonth>().test('next and previous', (yearMonth) {
+    expect(yearMonth.next.previous, yearMonth);
   });
 }
