@@ -60,13 +60,13 @@ final class YearWeek
 
   YearWeek operator -(Weeks duration) => this + (-duration);
 
-  YearWeek get nextWeek {
+  YearWeek get next {
     return week == weekBasedYear.numberOfWeeks
         ? YearWeek.fromUnchecked(weekBasedYear + const Years(1), 1)
         : YearWeek.fromUnchecked(weekBasedYear, week + 1);
   }
 
-  YearWeek get previousWeek {
+  YearWeek get previous {
     return week == 1
         ? YearWeek.fromUnchecked(weekBasedYear - const Years(1), 1)
         : YearWeek.fromUnchecked(weekBasedYear, week - 1);

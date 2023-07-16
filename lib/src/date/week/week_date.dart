@@ -74,13 +74,13 @@ final class WeekDate
       (asDate + duration).asWeekDate;
   WeekDate operator -(FixedDaysDuration duration) => this + (-duration);
 
-  WeekDate get nextDate {
+  WeekDate get next {
     return weekday == Weekday.values.last
         ? WeekDate(yearWeek + const Weeks(1), Weekday.values.first)
         : WeekDate(yearWeek, weekday.next);
   }
 
-  WeekDate get previousDate {
+  WeekDate get previous {
     return weekday == Weekday.values.first
         ? WeekDate(yearWeek - const Weeks(1), Weekday.values.last)
         : WeekDate(yearWeek, weekday.previous);
@@ -91,7 +91,7 @@ final class WeekDate
     if (weekday == this.weekday) return this;
 
     return WeekDate(
-      weekday < this.weekday ? yearWeek.nextWeek : yearWeek,
+      weekday < this.weekday ? yearWeek.next : yearWeek,
       weekday,
     );
   }
@@ -101,7 +101,7 @@ final class WeekDate
     if (weekday == this.weekday) return this;
 
     return WeekDate(
-      weekday > this.weekday ? yearWeek.previousWeek : yearWeek,
+      weekday > this.weekday ? yearWeek.previous : yearWeek,
       weekday,
     );
   }
