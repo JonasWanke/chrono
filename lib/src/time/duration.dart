@@ -103,14 +103,28 @@ final class FractionalSeconds extends TimeDuration {
   FractionalSeconds operator *(int factor) =>
       FractionalSeconds(value * Fixed.fromInt(factor, scale: 0));
   @override
-  FractionalSeconds operator ~/(int divisor) =>
-      FractionalSeconds(value ~/ Fixed.fromInt(divisor, scale: 0));
+  FractionalSeconds operator ~/(int divisor) {
+    return FractionalSeconds(Fixed.fromBigInt(
+      value.minorUnits ~/ BigInt.from(divisor),
+      scale: value.scale,
+    ));
+  }
+
   @override
-  FractionalSeconds operator %(int divisor) =>
-      FractionalSeconds(value % Fixed.fromInt(divisor, scale: 0));
+  FractionalSeconds operator %(int divisor) {
+    return FractionalSeconds(Fixed.fromBigInt(
+      value.minorUnits % BigInt.from(divisor),
+      scale: value.scale,
+    ));
+  }
+
   @override
-  FractionalSeconds remainder(int divisor) =>
-      FractionalSeconds(value.remainder(Fixed.fromInt(divisor, scale: 0)));
+  FractionalSeconds remainder(int divisor) {
+    return FractionalSeconds(Fixed.fromBigInt(
+      value.minorUnits.remainder(BigInt.from(divisor)),
+      scale: value.scale,
+    ));
+  }
 
   @override
   String toString() =>
