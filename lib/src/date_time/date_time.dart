@@ -42,7 +42,7 @@ final class DateTime
   core.DateTime get asCoreDateTimeInUtc => _getDartDateTime(isUtc: true);
   core.DateTime _getDartDateTime({required bool isUtc}) {
     return (isUtc ? core.DateTime.utc : core.DateTime.new)(
-      date.year.value,
+      date.year.number,
       date.month.number,
       date.day,
       time.hour,

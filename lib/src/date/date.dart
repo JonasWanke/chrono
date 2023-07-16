@@ -152,8 +152,8 @@ final class Date
   Days get daysSinceUnixEpoch {
     // https://howardhinnant.github.io/date_algorithms.html#days_from_civil
     final (year, month) = this.month <= Month.february
-        ? (this.year.value - 1, this.month.number + 9)
-        : (this.year.value, this.month.number - 3);
+        ? (this.year.number - 1, this.month.number + 9)
+        : (this.year.number, this.month.number - 3);
 
     final era = (year >= 0 ? year : year - 399) ~/ 400;
 

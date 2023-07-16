@@ -24,9 +24,9 @@ import 'weekday.dart';
 final class Year
     with ComparisonOperatorsFromComparable<Year>
     implements Comparable<Year> {
-  const Year(this.value);
+  const Year(this.number);
 
-  Year.fromCore(core.DateTime dateTime) : value = dateTime.year;
+  Year.fromCore(core.DateTime dateTime) : number = dateTime.year;
   Year.currentInLocalZone({Clock? clockOverride})
       : this.fromCore((clockOverride ?? clock).now().toLocal());
   Year.currentInUtc({Clock? clockOverride})
@@ -34,7 +34,7 @@ final class Year
 
   const Year.fromJson(int json) : this(json);
 
-  final int value;
+  final int number;
 
   bool isCurrentInLocalZone({Clock? clockOverride}) =>
       this == Year.currentInLocalZone(clockOverride: clockOverride);
@@ -47,7 +47,7 @@ final class Year
   /// Whether this year is a leap year.
   bool get isLeapYear {
     // https://howardhinnant.github.io/date_algorithms.html#is_leap
-    return value % 4 == 0 && (value % 100 != 0 || value % 400 == 0);
+    return number % 4 == 0 && (number % 100 != 0 || number % 400 == 0);
   }
 
   Days get lengthInDays => isLeapYear ? const Days(366) : const Days(365);
@@ -57,7 +57,7 @@ final class Year
         Date.fromUnchecked(year, Month.december, 31).weekday;
 
     final isLongWeek = weekdayOfDecember31(this) == Weekday.thursday ||
-        weekdayOfDecember31(previousYear) == Weekday.wednesday;
+        weekdayOfDecember31(previous) == Weekday.wednesday;
     return isLongWeek ? 53 : 52;
   }
 
@@ -79,30 +79,30 @@ final class Year
   Date get lastDay => lastMonth.lastDay;
   Iterable<Date> get days => months.expand((it) => it.days);
 
-  Year operator +(Years duration) => Year(value + duration.value);
-  Year operator -(Years duration) => Year(value - duration.value);
+  Year operator +(Years duration) => Year(number + duration.value);
+  Year operator -(Years duration) => Year(number - duration.value);
 
   Year get next => this + const Years(1);
 
   Year get previous => this - const Years(1);
 
   @override
-  int compareTo(Year other) => value.compareTo(other.value);
+  int compareTo(Year other) => number.compareTo(other.number);
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || (other is Year && value == other.value);
+      identical(this, other) || (other is Year && number == other.number);
   @override
-  int get hashCode => value.hashCode;
+  int get hashCode => number.hashCode;
 
   @override
   String toString() {
-    return switch (value) {
-      < 0 => '-${value.abs().toString().padLeft(4, '0')}',
-      >= 10000 => '+$value',
-      _ => value.toString().padLeft(4, '0'),
+    return switch (number) {
+      < 0 => '-${number.abs().toString().padLeft(4, '0')}',
+      >= 10000 => '+$number',
+      _ => number.toString().padLeft(4, '0'),
     };
   }
 
-  int toJson() => value;
+  int toJson() => number;
 }

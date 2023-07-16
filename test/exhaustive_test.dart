@@ -27,7 +27,7 @@ void main() {
     final startDate = startYear.firstDay;
     final startDateDaysSinceUnixEpoch = startDate.daysSinceUnixEpoch;
 
-    final endYear = Year(-startYear.value);
+    final endYear = Year(-startYear.number);
     final endDate = endYear.lastDay;
 
     final totalNumberOfDays = endDate.daysSinceUnixEpoch -
