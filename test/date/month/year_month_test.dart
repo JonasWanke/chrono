@@ -8,8 +8,13 @@ void main() {
 
   testDataClassBasics(YearMonth.fromJson);
 
+  // ignore: missing-test-assertion
   Glados<YearMonth>().test('lengthInDays', (yearMonth) {
-    expect(yearMonth.lengthInDays, inInclusiveRange(28, 31));
+    expectInRange<FixedDaysDuration>(
+      yearMonth.lengthInDays,
+      const Days(28),
+      const Days(31),
+    );
   });
 
   Glados2<YearMonth, MonthsDuration>().test('+ and -', (yearMonth, duration) {
