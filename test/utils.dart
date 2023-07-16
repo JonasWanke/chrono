@@ -49,3 +49,8 @@ void expectInRange<T extends Comparable<T>>(
   expect(actual, greaterThanOrEqualTo(lowerBound));
   expect(actual, lessThanOrEqualTo(upperBound));
 }
+
+extension AnyChronoTests on Any {
+  Generator<int> get intExcept0 =>
+      either(intInRange(null, -1), intInRange(1, null));
+}
