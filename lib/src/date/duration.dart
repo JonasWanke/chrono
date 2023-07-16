@@ -43,6 +43,7 @@ final class CompoundDaysDuration extends DaysDuration {
     );
   }
 
+  CompoundDaysDuration operator -(DaysDuration duration) => this + (-duration);
   @override
   CompoundDaysDuration operator -() =>
       CompoundDaysDuration(months: -months, days: -days);
