@@ -83,22 +83,22 @@ abstract class FixedDaysDuration extends DaysDuration
     implements Comparable<FixedDaysDuration> {
   const FixedDaysDuration();
 
-  Days get inDays;
-  Hours get inNormalHours => Hours(inDays.value * Hours.perNormalDay);
-  Minutes get inNormalMinutes => inNormalHours.inMinutes;
-  Seconds get inNormalSeconds => inNormalHours.inSeconds;
-  Milliseconds get inNormalMilliseconds => inNormalHours.inMilliseconds;
-  Microseconds get inNormalMicroseconds => inNormalHours.inMicroseconds;
-  Nanoseconds get inNormalNanoseconds => inNormalHours.inNanoseconds;
+  Days get asDays;
+  Hours get asNormalHours => Hours(asDays.value * Hours.perNormalDay);
+  Minutes get asNormalMinutes => asNormalHours.asMinutes;
+  Seconds get asNormalSeconds => asNormalHours.asSeconds;
+  Milliseconds get asNormalMilliseconds => asNormalHours.asMilliseconds;
+  Microseconds get asNormalMicroseconds => asNormalHours.asMicroseconds;
+  Nanoseconds get asNormalNanoseconds => asNormalHours.asNanoseconds;
 
   @override
   CompoundDaysDuration get asCompoundDaysDuration =>
-      CompoundDaysDuration(days: inDays);
+      CompoundDaysDuration(days: asDays);
 
-  bool get isPositive => inDays.value > 0;
-  bool get isNonPositive => inDays.value <= 0;
-  bool get isNegative => inDays.value < 0;
-  bool get isNonNegative => inDays.value >= 0;
+  bool get isPositive => asDays.value > 0;
+  bool get isNonPositive => asDays.value <= 0;
+  bool get isNegative => asDays.value < 0;
+  bool get isNonNegative => asDays.value >= 0;
 
   @override
   FixedDaysDuration operator -();
@@ -113,14 +113,14 @@ abstract class FixedDaysDuration extends DaysDuration
 
   @override
   int compareTo(FixedDaysDuration other) =>
-      inDays.value.compareTo(other.inDays.value);
+      asDays.value.compareTo(other.asDays.value);
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is FixedDaysDuration && inDays.value == other.inDays.value);
+      (other is FixedDaysDuration && asDays.value == other.asDays.value);
   @override
-  int get hashCode => inDays.value.hashCode;
+  int get hashCode => asDays.value.hashCode;
 }
 
 final class Days extends FixedDaysDuration {
@@ -132,12 +132,12 @@ final class Days extends FixedDaysDuration {
   final int value;
 
   @override
-  Days get inDays => this;
+  Days get asDays => this;
 
   Days operator +(FixedDaysDuration duration) =>
-      Days(value + duration.inDays.value);
+      Days(value + duration.asDays.value);
   Days operator -(FixedDaysDuration duration) =>
-      Days(value - duration.inDays.value);
+      Days(value - duration.asDays.value);
   @override
   Days operator -() => Days(-value);
   @override
@@ -162,7 +162,7 @@ final class Weeks extends FixedDaysDuration {
   final int value;
 
   @override
-  Days get inDays => Days(value * Days.perWeek);
+  Days get asDays => Days(value * Days.perWeek);
 
   Weeks operator +(Weeks duration) => Weeks(value + duration.value);
   Weeks operator -(Weeks duration) => Weeks(value - duration.value);
@@ -189,23 +189,23 @@ abstract class MonthsDuration extends DaysDuration
   const MonthsDuration();
 
   /// Both are `>= 0` or both are `<= 0`.
-  (Years, Months) get inYearsAndMonths {
-    final thisMonths = inMonths;
+  (Years, Months) get asYearsAndMonths {
+    final thisMonths = asMonths;
     final years = Years(thisMonths.value ~/ Months.perYear);
-    final months = thisMonths - years.inMonths;
+    final months = thisMonths - years.asMonths;
     return (years, months);
   }
 
-  Months get inMonths;
+  Months get asMonths;
 
   @override
   CompoundDaysDuration get asCompoundDaysDuration =>
-      CompoundDaysDuration(months: inMonths);
+      CompoundDaysDuration(months: asMonths);
 
-  bool get isPositive => inMonths.value > 0;
-  bool get isNonPositive => inMonths.value <= 0;
-  bool get isNegative => inMonths.value < 0;
-  bool get isNonNegative => inMonths.value >= 0;
+  bool get isPositive => asMonths.value > 0;
+  bool get isNonPositive => asMonths.value <= 0;
+  bool get isNegative => asMonths.value < 0;
+  bool get isNonNegative => asMonths.value >= 0;
 
   @override
   MonthsDuration operator -();
@@ -220,14 +220,14 @@ abstract class MonthsDuration extends DaysDuration
 
   @override
   int compareTo(MonthsDuration other) =>
-      inMonths.value.compareTo(other.inMonths.value);
+      asMonths.value.compareTo(other.asMonths.value);
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is MonthsDuration && inMonths.value == other.inMonths.value);
+      (other is MonthsDuration && asMonths.value == other.asMonths.value);
   @override
-  int get hashCode => inMonths.value.hashCode;
+  int get hashCode => asMonths.value.hashCode;
 }
 
 final class Months extends MonthsDuration {
@@ -239,12 +239,12 @@ final class Months extends MonthsDuration {
   final int value;
 
   @override
-  Months get inMonths => this;
+  Months get asMonths => this;
 
   Months operator +(MonthsDuration duration) =>
-      Months(value + duration.inMonths.value);
+      Months(value + duration.asMonths.value);
   Months operator -(MonthsDuration duration) =>
-      Months(value - duration.inMonths.value);
+      Months(value - duration.asMonths.value);
   @override
   Months operator -() => Months(-value);
   @override
@@ -269,9 +269,9 @@ final class Years extends MonthsDuration {
   final int value;
 
   @override
-  (Years, Months) get inYearsAndMonths => (this, const Months(0));
+  (Years, Months) get asYearsAndMonths => (this, const Months(0));
   @override
-  Months get inMonths => Months(value * Months.perYear);
+  Months get asMonths => Months(value * Months.perYear);
 
   Years operator +(Years duration) => Years(value + duration.value);
   Years operator -(Years duration) => Years(value - duration.value);

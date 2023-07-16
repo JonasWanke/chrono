@@ -62,7 +62,7 @@ final class DateTime
       time.minute,
       time.second,
       0,
-      time.fraction.inMicrosecondsRounded,
+      time.fraction.asMicrosecondsRounded,
     );
   }
 
@@ -73,7 +73,7 @@ final class DateTime
     final rawNewTimeSinceMidnight =
         time.fractionalSecondsSinceMidnight + compoundDuration.seconds;
     final (rawNewSecondsSinceMidnight, newFractionSinceMidnight) =
-        rawNewTimeSinceMidnight.inSecondsAndFraction;
+        rawNewTimeSinceMidnight.asSecondsAndFraction;
     newDate += Days(rawNewSecondsSinceMidnight.value ~/ Seconds.perNormalDay);
     final newTime = Time.fromTimeSinceMidnightUnchecked(
       newFractionSinceMidnight +

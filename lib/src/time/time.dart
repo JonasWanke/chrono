@@ -50,7 +50,7 @@ final class Time
     if (time.isNegative) {
       return Err('Time since midnight must not be negative, but was: $time');
     }
-    if (time.inFractionalSeconds.value >=
+    if (time.asFractionalSeconds.value >=
         FractionalSeconds.perNormalDay.value) {
       return Err(
         'Time since midnight must not be ≥ a day, but was: $time',
@@ -63,8 +63,8 @@ final class Time
   factory Time.fromTimeSinceMidnightThrowing(TimeDuration time) =>
       fromTimeSinceMidnight(time).unwrap();
   factory Time.fromTimeSinceMidnightUnchecked(TimeDuration time) {
-    final (inSeconds, fraction) = time.inSecondsAndFraction;
-    final (hours, minutes, seconds) = inSeconds.inHoursAndMinutesAndSeconds;
+    final (asSeconds, fraction) = time.asSecondsAndFraction;
+    final (hours, minutes, seconds) = asSeconds.asHoursAndMinutesAndSeconds;
     return Time.fromUnchecked(
       hours.value,
       minutes.value,
@@ -110,7 +110,7 @@ final class Time
   Time addUnchecked(TimeDuration duration) =>
       Time.fromTimeSinceMidnightUnchecked(_add(duration));
   FractionalSeconds _add(TimeDuration duration) =>
-      fractionalSecondsSinceMidnight + duration.inFractionalSeconds;
+      fractionalSecondsSinceMidnight + duration.asFractionalSeconds;
 
   Result<Time, String> subtract(TimeDuration duration) => add(-duration);
   Time subtractThrowing(TimeDuration duration) => addThrowing(-duration);

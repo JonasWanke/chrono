@@ -63,7 +63,7 @@ final class YearMonth
   }
 
   YearMonth operator +(MonthsDuration duration) {
-    final (years, months) = duration.inYearsAndMonths;
+    final (years, months) = duration.asYearsAndMonths;
 
     final rawNewMonth = this.month.number + months.value;
     final (yearAdjustment, month) = switch (rawNewMonth) {
