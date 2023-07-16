@@ -137,7 +137,7 @@ abstract class NanosecondsDuration extends TimeDuration {
   Nanoseconds get asNanoseconds;
   @override
   FractionalSeconds get asFractionalSeconds =>
-      FractionalSeconds.millisecond * asNanoseconds.inNanoseconds;
+      FractionalSeconds.nanosecond * asNanoseconds.inNanoseconds;
 
   @override
   NanosecondsDuration operator -();
@@ -205,7 +205,7 @@ abstract class MicrosecondsDuration extends NanosecondsDuration {
       Nanoseconds(asMicroseconds.inMicroseconds * Nanoseconds.perMicrosecond);
   @override
   FractionalSeconds get asFractionalSeconds =>
-      FractionalSeconds.millisecond * asMicroseconds.inMicroseconds;
+      FractionalSeconds.microsecond * asMicroseconds.inMicroseconds;
 
   @override
   MicrosecondsDuration operator -();
