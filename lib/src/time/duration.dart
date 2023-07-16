@@ -76,8 +76,10 @@ final class FractionalSeconds extends TimeDuration {
   static final second = FractionalSeconds(Fixed.fromInt(1, scale: 0));
   static final perMinute = const Seconds(Seconds.perMinute).inFractionalSeconds;
   static final perHour = const Seconds(Seconds.perHour).inFractionalSeconds;
-  static final perDay = const Seconds(Seconds.perDay).inFractionalSeconds;
-  static final perWeek = const Seconds(Seconds.perWeek).inFractionalSeconds;
+  static final perNormalDay =
+      const Seconds(Seconds.perNormalDay).inFractionalSeconds;
+  static final perNormalWeek =
+      const Seconds(Seconds.perNormalWeek).inFractionalSeconds;
 
   final Fixed value;
 
@@ -143,8 +145,8 @@ final class Nanoseconds extends NanosecondsDuration {
   static const perSecond = perMicrosecond * Microseconds.perSecond;
   static const perMinute = perMicrosecond * Microseconds.perMinute;
   static const perHour = perMicrosecond * Microseconds.perHour;
-  static const perDay = perMicrosecond * Microseconds.perDay;
-  static const perWeek = perMicrosecond * Microseconds.perWeek;
+  static const perNormalDay = perMicrosecond * Microseconds.perNormalDay;
+  static const perNormalWeek = perMicrosecond * Microseconds.perNormalWeek;
 
   final int value;
 
@@ -208,8 +210,8 @@ final class Microseconds extends MicrosecondsDuration {
   static const perSecond = perMillisecond * Milliseconds.perSecond;
   static const perMinute = perMillisecond * Milliseconds.perMinute;
   static const perHour = perMillisecond * Milliseconds.perHour;
-  static const perDay = perMillisecond * Milliseconds.perDay;
-  static const perWeek = perMillisecond * Milliseconds.perWeek;
+  static const perNormalDay = perMillisecond * Milliseconds.perNormalDay;
+  static const perNormalWeek = perMillisecond * Milliseconds.perNormalWeek;
 
   final int value;
 
@@ -272,8 +274,8 @@ final class Milliseconds extends MillisecondsDuration {
   static const perSecond = 1000;
   static const perMinute = perSecond * Seconds.perMinute;
   static const perHour = perSecond * Seconds.perHour;
-  static const perDay = perSecond * Seconds.perDay;
-  static const perWeek = perSecond * Seconds.perDay;
+  static const perNormalDay = perSecond * Seconds.perNormalDay;
+  static const perNormalWeek = perSecond * Seconds.perNormalDay;
 
   final int value;
 
@@ -335,8 +337,8 @@ final class Seconds extends SecondsDuration {
 
   static const perMinute = 60;
   static const perHour = perMinute * Minutes.perHour;
-  static const perDay = perMinute * Minutes.perDay;
-  static const perWeek = perMinute * Minutes.perWeek;
+  static const perNormalDay = perMinute * Minutes.perNormalDay;
+  static const perNormalWeek = perMinute * Minutes.perNormalWeek;
 
   final int value;
 
@@ -395,8 +397,8 @@ final class Minutes extends MinutesDuration {
   const Minutes(this.value);
 
   static const perHour = 60;
-  static const perDay = perHour * Hours.perDay;
-  static const perWeek = perHour * Hours.perWeek;
+  static const perNormalDay = perHour * Hours.perNormalDay;
+  static const perNormalWeek = perHour * Hours.perNormalWeek;
 
   final int value;
 
@@ -431,8 +433,8 @@ final class Minutes extends MinutesDuration {
 final class Hours extends MinutesDuration {
   const Hours(this.value);
 
-  static const perDay = 24;
-  static const perWeek = perDay * Days.perWeek;
+  static const perNormalDay = 24;
+  static const perNormalWeek = perNormalDay * Days.perWeek;
 
   final int value;
 

@@ -50,7 +50,8 @@ final class Time
     if (time.isNegative) {
       return Err('Time since midnight must not be negative, but was: $time');
     }
-    if (time.inFractionalSeconds.value >= FractionalSeconds.perDay.value) {
+    if (time.inFractionalSeconds.value >=
+        FractionalSeconds.perNormalDay.value) {
       return Err(
         'Time since midnight must not be ≥ a day, but was: $time',
       );

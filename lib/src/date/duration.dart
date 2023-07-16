@@ -1,4 +1,5 @@
 import '../date_time/duration.dart';
+import '../time/duration.dart';
 import '../utils.dart';
 
 abstract class DaysDuration extends Duration {
@@ -83,6 +84,12 @@ abstract class FixedDaysDuration extends DaysDuration
   const FixedDaysDuration();
 
   Days get inDays;
+  Hours get inNormalHours => Hours(inDays.value * Hours.perNormalDay);
+  Minutes get inNormalMinutes => inNormalHours.inMinutes;
+  Seconds get inNormalSeconds => inNormalHours.inSeconds;
+  Milliseconds get inNormalMilliseconds => inNormalHours.inMilliseconds;
+  Microseconds get inNormalMicroseconds => inNormalHours.inMicroseconds;
+  Nanoseconds get inNormalNanoseconds => inNormalHours.inNanoseconds;
 
   @override
   CompoundDaysDuration get asCompoundDaysDuration =>
