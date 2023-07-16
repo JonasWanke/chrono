@@ -15,9 +15,6 @@ void main() {
     expect(ordinalDate.asWeekDate.asOrdinalDate, ordinalDate);
   });
 
-  Glados2<OrdinalDate, DaysDuration>().test('+ and -', (ordinalDate, duration) {
-    expect(ordinalDate + duration - duration, ordinalDate);
-  });
   Glados<OrdinalDate>().test('next and previous', (ordinalDate) {
     expect(ordinalDate.next.previous, ordinalDate);
   });

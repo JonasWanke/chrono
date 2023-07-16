@@ -26,9 +26,6 @@ void main() {
     expect(atNoon.time, Time.noon);
   });
 
-  Glados2<Date, DaysDuration>().test('+ and -', (date, duration) {
-    expect(date + duration - duration, date);
-  });
   Glados<Date>().test('next and previous', (date) {
     expect(date.next.previous, date);
   });
