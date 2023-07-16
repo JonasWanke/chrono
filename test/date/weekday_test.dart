@@ -7,6 +7,8 @@ import '../utils.dart';
 void main() {
   setChronoGladosDefaults();
 
+  testDataClassBasics(Weekday.fromJson);
+
   testAll('`number` and `fromNumber(…)`', Weekday.values, (weekday) {
     final number = weekday.number;
     expect(number, inInclusiveRange(1, 7));
