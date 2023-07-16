@@ -67,7 +67,7 @@ final class CompoundDaysDuration extends DaysDuration {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is CompoundDuration &&
+        (other is CompoundDaysDuration &&
             months == other.months &&
             days == other.days);
   }
