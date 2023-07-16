@@ -3,6 +3,7 @@ import 'dart:core' as core;
 
 import 'package:fixed/fixed.dart';
 
+import '../date/duration.dart';
 import '../date_time/duration.dart';
 import '../utils.dart';
 
@@ -73,10 +74,10 @@ final class FractionalSeconds extends TimeDuration {
   static final microsecond = FractionalSeconds(Fixed.fromInt(1, scale: 6));
   static final millisecond = FractionalSeconds(Fixed.fromInt(1, scale: 3));
   static final second = FractionalSeconds(Fixed.fromInt(1, scale: 0));
-  static final perMinute = Seconds.perMinute.inFractionalSeconds;
-  static final perHour = Seconds.perHour.inFractionalSeconds;
-  static final perDay = Seconds.perDay.inFractionalSeconds;
-  static final perWeek = Seconds.perWeek.inFractionalSeconds;
+  static final perMinute = const Seconds(Seconds.perMinute).inFractionalSeconds;
+  static final perHour = const Seconds(Seconds.perHour).inFractionalSeconds;
+  static final perDay = const Seconds(Seconds.perDay).inFractionalSeconds;
+  static final perWeek = const Seconds(Seconds.perWeek).inFractionalSeconds;
 
   final Fixed value;
 
@@ -137,19 +138,13 @@ abstract class NanosecondsDuration extends TimeDuration {
 final class Nanoseconds extends NanosecondsDuration {
   const Nanoseconds(this.value);
 
-  static const perMicrosecond =
-      Nanoseconds(1000 * core.Duration.microsecondsPerSecond);
-  static const perMillisecond =
-      Nanoseconds(1000 * core.Duration.microsecondsPerSecond);
-  static const perSecond =
-      Nanoseconds(1000 * core.Duration.microsecondsPerSecond);
-  static const perMinute =
-      Nanoseconds(1000 * core.Duration.microsecondsPerMinute);
-  static const perHour = Nanoseconds(1000 * core.Duration.microsecondsPerHour);
-  static const perDay = Nanoseconds(1000 * core.Duration.microsecondsPerDay);
-  static const perWeek = Nanoseconds(
-    1000 * core.Duration.microsecondsPerDay * DateTime.daysPerWeek,
-  );
+  static const perMicrosecond = 1000;
+  static const perMillisecond = perMicrosecond * Microseconds.perMillisecond;
+  static const perSecond = perMicrosecond * Microseconds.perSecond;
+  static const perMinute = perMicrosecond * Microseconds.perMinute;
+  static const perHour = perMicrosecond * Microseconds.perHour;
+  static const perDay = perMicrosecond * Microseconds.perDay;
+  static const perWeek = perMicrosecond * Microseconds.perWeek;
 
   final int value;
 
@@ -158,8 +153,8 @@ final class Nanoseconds extends NanosecondsDuration {
   (Microseconds, Nanoseconds) get inMicrosecondsAndNanoseconds {
     final inNanoseconds = this.inNanoseconds;
     final microseconds =
-        Microseconds(inNanoseconds.value ~/ Nanoseconds.perSecond.value);
-    final nanoseconds = inNanoseconds.remainder(Nanoseconds.perSecond.value);
+        Microseconds(inNanoseconds.value ~/ Nanoseconds.perSecond);
+    final nanoseconds = inNanoseconds.remainder(Nanoseconds.perSecond);
     return (microseconds, nanoseconds);
   }
 
@@ -189,7 +184,7 @@ abstract class MicrosecondsDuration extends NanosecondsDuration {
   Microseconds get inMicroseconds;
   @override
   Nanoseconds get inNanoseconds =>
-      Nanoseconds.perMicrosecond * inMicroseconds.value;
+      Nanoseconds(inMicroseconds.value * Nanoseconds.perMicrosecond);
   @override
   FractionalSeconds get inFractionalSeconds =>
       FractionalSeconds.millisecond * inMicroseconds.value;
@@ -209,14 +204,12 @@ abstract class MicrosecondsDuration extends NanosecondsDuration {
 final class Microseconds extends MicrosecondsDuration {
   const Microseconds(this.value);
 
-  static const perMillisecond =
-      Microseconds(core.Duration.microsecondsPerMillisecond);
-  static const perSecond = Microseconds(core.Duration.microsecondsPerSecond);
-  static const perMinute = Microseconds(core.Duration.microsecondsPerMinute);
-  static const perHour = Microseconds(core.Duration.microsecondsPerHour);
-  static const perDay = Microseconds(core.Duration.microsecondsPerDay);
-  static const perWeek =
-      Microseconds(core.Duration.microsecondsPerDay * DateTime.daysPerWeek);
+  static const perMillisecond = 1000;
+  static const perSecond = perMillisecond * Milliseconds.perSecond;
+  static const perMinute = perMillisecond * Milliseconds.perMinute;
+  static const perHour = perMillisecond * Milliseconds.perHour;
+  static const perDay = perMillisecond * Milliseconds.perDay;
+  static const perWeek = perMillisecond * Milliseconds.perWeek;
 
   final int value;
 
@@ -225,8 +218,8 @@ final class Microseconds extends MicrosecondsDuration {
   (Milliseconds, Microseconds) get inMillisecondsAndMicroseconds {
     final inMicroseconds = this.inMicroseconds;
     final milliseconds =
-        Milliseconds(inMicroseconds.value ~/ Microseconds.perSecond.value);
-    final microseconds = inMicroseconds.remainder(Microseconds.perSecond.value);
+        Milliseconds(inMicroseconds.value ~/ Microseconds.perSecond);
+    final microseconds = inMicroseconds.remainder(Microseconds.perSecond);
     return (milliseconds, microseconds);
   }
 
@@ -256,7 +249,7 @@ abstract class MillisecondsDuration extends MicrosecondsDuration {
   Milliseconds get inMilliseconds;
   @override
   Microseconds get inMicroseconds =>
-      Microseconds.perMillisecond * inMilliseconds.value;
+      Microseconds(inMilliseconds.value * Microseconds.perMillisecond);
   @override
   FractionalSeconds get inFractionalSeconds =>
       FractionalSeconds.millisecond * inMilliseconds.value;
@@ -276,12 +269,11 @@ abstract class MillisecondsDuration extends MicrosecondsDuration {
 final class Milliseconds extends MillisecondsDuration {
   const Milliseconds(this.value);
 
-  static const perSecond = Milliseconds(core.Duration.millisecondsPerSecond);
-  static const perMinute = Milliseconds(core.Duration.millisecondsPerMinute);
-  static const perHour = Milliseconds(core.Duration.millisecondsPerHour);
-  static const perDay = Milliseconds(core.Duration.millisecondsPerDay);
-  static const perWeek =
-      Milliseconds(core.Duration.millisecondsPerDay * DateTime.daysPerWeek);
+  static const perSecond = 1000;
+  static const perMinute = perSecond * Seconds.perMinute;
+  static const perHour = perSecond * Seconds.perHour;
+  static const perDay = perSecond * Seconds.perDay;
+  static const perWeek = perSecond * Seconds.perDay;
 
   final int value;
 
@@ -289,9 +281,8 @@ final class Milliseconds extends MillisecondsDuration {
   Milliseconds get inMilliseconds => this;
   (Seconds, Milliseconds) get inSecondsAndMilliseconds {
     final inMilliseconds = this.inMilliseconds;
-    final seconds =
-        Seconds(inMilliseconds.value ~/ Milliseconds.perSecond.value);
-    final milliseconds = inMilliseconds.remainder(Milliseconds.perSecond.value);
+    final seconds = Seconds(inMilliseconds.value ~/ Milliseconds.perSecond);
+    final milliseconds = inMilliseconds.remainder(Milliseconds.perSecond);
     return (seconds, milliseconds);
   }
 
@@ -320,7 +311,8 @@ abstract class SecondsDuration extends MillisecondsDuration {
 
   Seconds get inSeconds;
   @override
-  Milliseconds get inMilliseconds => Milliseconds.perSecond * inSeconds.value;
+  Milliseconds get inMilliseconds =>
+      Milliseconds(inSeconds.value * Milliseconds.perSecond);
 
   @override
   FractionalSeconds get inFractionalSeconds =>
@@ -341,11 +333,10 @@ abstract class SecondsDuration extends MillisecondsDuration {
 final class Seconds extends SecondsDuration {
   const Seconds(this.value);
 
-  static const perMinute = Seconds(core.Duration.secondsPerMinute);
-  static const perHour = Seconds(core.Duration.secondsPerHour);
-  static const perDay = Seconds(core.Duration.secondsPerDay);
-  static const perWeek =
-      Seconds(core.Duration.secondsPerDay * DateTime.daysPerWeek);
+  static const perMinute = 60;
+  static const perHour = perMinute * Minutes.perHour;
+  static const perDay = perMinute * Minutes.perDay;
+  static const perWeek = perMinute * Minutes.perWeek;
 
   final int value;
 
@@ -353,8 +344,8 @@ final class Seconds extends SecondsDuration {
   Seconds get inSeconds => this;
   (Minutes, Seconds) get inMinutesAndSeconds {
     final inSeconds = this.inSeconds;
-    final minutes = Minutes(inSeconds.value ~/ Seconds.perMinute.value);
-    final seconds = inSeconds.remainder(Seconds.perMinute.value);
+    final minutes = Minutes(inSeconds.value ~/ Seconds.perMinute);
+    final seconds = inSeconds.remainder(Seconds.perMinute);
     return (minutes, seconds);
   }
 
@@ -388,7 +379,7 @@ abstract class MinutesDuration extends SecondsDuration {
 
   Minutes get inMinutes;
   @override
-  Seconds get inSeconds => Seconds.perMinute * inMinutes.value;
+  Seconds get inSeconds => Seconds(inMinutes.value * Seconds.perMinute);
 
   @override
   MinutesDuration operator -();
@@ -403,10 +394,9 @@ abstract class MinutesDuration extends SecondsDuration {
 final class Minutes extends MinutesDuration {
   const Minutes(this.value);
 
-  static const perHour = Minutes(core.Duration.minutesPerHour);
-  static const perDay = Minutes(core.Duration.minutesPerDay);
-  static const perWeek =
-      Minutes(core.Duration.minutesPerDay * DateTime.daysPerWeek);
+  static const perHour = 60;
+  static const perDay = perHour * Hours.perDay;
+  static const perWeek = perHour * Hours.perWeek;
 
   final int value;
 
@@ -414,8 +404,8 @@ final class Minutes extends MinutesDuration {
   Minutes get inMinutes => this;
   (Hours, Minutes) get inHoursAndMinutes {
     final inMinutes = this.inMinutes;
-    final hours = Hours(inMinutes.value ~/ Minutes.perHour.value);
-    final minutes = inMinutes.remainder(Minutes.perHour.value);
+    final hours = Hours(inMinutes.value ~/ Minutes.perHour);
+    final minutes = inMinutes.remainder(Minutes.perHour);
     return (hours, minutes);
   }
 
@@ -441,14 +431,13 @@ final class Minutes extends MinutesDuration {
 final class Hours extends MinutesDuration {
   const Hours(this.value);
 
-  static const perDay = Hours(core.Duration.hoursPerDay);
-  static const perWeek =
-      Hours(core.Duration.hoursPerDay * DateTime.daysPerWeek);
+  static const perDay = 24;
+  static const perWeek = perDay * Days.perWeek;
 
   final int value;
 
   @override
-  Minutes get inMinutes => Minutes.perHour * value;
+  Minutes get inMinutes => Minutes(value * Minutes.perHour);
 
   Hours operator +(Hours duration) => Hours(value + duration.value);
   Hours operator -(Hours duration) => Hours(value - duration.value);

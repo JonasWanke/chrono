@@ -61,10 +61,10 @@ final class DateTime
         time.fractionalSecondsSinceMidnight + compoundDuration.seconds;
     final (rawNewSecondsSinceMidnight, newFractionSinceMidnight) =
         rawNewTimeSinceMidnight.inSecondsAndFraction;
-    newDate += Days(rawNewSecondsSinceMidnight.value ~/ Seconds.perDay.value);
+    newDate += Days(rawNewSecondsSinceMidnight.value ~/ Seconds.perDay);
     final newTime = Time.fromTimeSinceMidnightUnchecked(
       newFractionSinceMidnight +
-          rawNewSecondsSinceMidnight.remainder(Seconds.perDay.value),
+          rawNewSecondsSinceMidnight.remainder(Seconds.perDay),
     );
     return DateTime(newDate, newTime);
   }

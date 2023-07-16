@@ -42,7 +42,7 @@ final class WeekDate
     final january4 =
         Date.fromUnchecked(yearWeek.weekBasedYear, Month.january, 4);
 
-    final rawDayOfYear = Days.perWeek.value * yearWeek.week +
+    final rawDayOfYear = Days.perWeek * yearWeek.week +
         weekday.number -
         (january4.weekday.number + 3);
     final Year year;

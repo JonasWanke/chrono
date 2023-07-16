@@ -61,13 +61,10 @@ final class YearMonth
   YearMonth operator +(MonthsDuration duration) {
     final (years, months) = duration.inYearsAndMonths;
 
-    final rawNewMonth = this.month.number + months.value % Months.perYear.value;
+    final rawNewMonth = this.month.number + months.value % Months.perYear;
     final (yearAdjustment, month) = switch (rawNewMonth) {
-      < Month.minNumber => (
-          -const Years(1),
-          rawNewMonth + Months.perYear.value
-        ),
-      > Month.maxNumber => (const Years(1), rawNewMonth - Months.perYear.value),
+      < Month.minNumber => (-const Years(1), rawNewMonth + Months.perYear),
+      > Month.maxNumber => (const Years(1), rawNewMonth - Months.perYear),
       _ => (const Years(0), rawNewMonth),
     };
 

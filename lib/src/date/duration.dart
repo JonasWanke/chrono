@@ -120,7 +120,7 @@ final class Days extends FixedDaysDuration {
   const Days(this.value);
   const Days.fromJson(int json) : this(json);
 
-  static const perWeek = Days(DateTime.daysPerWeek);
+  static const perWeek = 7;
 
   final int value;
 
@@ -155,7 +155,7 @@ final class Weeks extends FixedDaysDuration {
   final int value;
 
   @override
-  Days get inDays => Days.perWeek * value;
+  Days get inDays => Days(value * Days.perWeek);
 
   Weeks operator +(Weeks duration) => Weeks(value + duration.value);
   Weeks operator -(Weeks duration) => Weeks(value - duration.value);
@@ -184,7 +184,7 @@ abstract class MonthsDuration extends DaysDuration
   /// Both are `>= 0` or both are `<= 0`.
   (Years, Months) get inYearsAndMonths {
     final thisMonths = inMonths;
-    final years = Years(thisMonths.value ~/ Months.perYear.value);
+    final years = Years(thisMonths.value ~/ Months.perYear);
     final months = thisMonths - years.inMonths;
     return (years, months);
   }
@@ -227,7 +227,7 @@ final class Months extends MonthsDuration {
   const Months(this.value);
   const Months.fromJson(int json) : this(json);
 
-  static const perYear = Months(DateTime.monthsPerYear);
+  static const perYear = 12;
 
   final int value;
 
@@ -264,7 +264,7 @@ final class Years extends MonthsDuration {
   @override
   (Years, Months) get inYearsAndMonths => (this, const Months(0));
   @override
-  Months get inMonths => Months.perYear * value;
+  Months get inMonths => Months(value * Months.perYear);
 
   Years operator +(Years duration) => Years(value + duration.value);
   Years operator -(Years duration) => Years(value - duration.value);
