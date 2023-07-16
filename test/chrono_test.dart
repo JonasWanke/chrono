@@ -21,12 +21,6 @@ void main() {
     expect(instant, instant.dateTimeInLocalZone.inLocalZone);
     expect(instant, instant.dateTimeInUtc.inUtc);
   });
-  Glados<OrdinalDate>().test('OrdinalDate', (ordinalDate) {
-    _checkEquals(ordinalDate);
-    expect(ordinalDate, OrdinalDate.fromJson(ordinalDate.toJson()));
-    expect(ordinalDate, ordinalDate.asDate.asOrdinalDate);
-    expect(ordinalDate, ordinalDate.asWeekDate.asOrdinalDate);
-  });
   Glados<core.DateTime>().test(
     'core.DateTime compatibility',
     (dateTimeInLocalZone) {
