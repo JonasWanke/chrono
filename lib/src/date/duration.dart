@@ -227,9 +227,11 @@ abstract class FixedDaysDuration extends DaysDuration
       asDays.inDays.compareTo(other.asDays.inDays);
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is FixedDaysDuration && asDays.inDays == other.asDays.inDays);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is FixedDaysDuration && asDays.inDays == other.asDays.inDays);
+  }
+
   @override
   int get hashCode => asDays.inDays.hashCode;
 }
