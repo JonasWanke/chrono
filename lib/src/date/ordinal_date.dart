@@ -33,12 +33,10 @@ final class OrdinalDate
     if (dayOfYear < 1 || dayOfYear > year.length.inDays) {
       return Err('Invalid day of year for year $year: $dayOfYear');
     }
-    return Ok(OrdinalDate.fromUnchecked(year, dayOfYear));
+    return Ok(OrdinalDate._(year, dayOfYear));
   }
 
-  factory OrdinalDate.fromThrowing(Year year, int dayOfYear) =>
-      from(year, dayOfYear).unwrap();
-  OrdinalDate.fromUnchecked(this.year, this.dayOfYear);
+  const OrdinalDate._(this.year, this.dayOfYear);
 
   factory OrdinalDate.todayInLocalZone({Clock? clock}) =>
       DateTime.nowInLocalZone(clock: clock).date.asOrdinalDate;
@@ -65,14 +63,14 @@ final class OrdinalDate
 
     final rawMonth = YearMonth(
       year,
-      Month.fromNumberUnchecked((dayOfYear - 1) ~/ 31 + 1),
+      Month.fromNumber((dayOfYear - 1) ~/ 31 + 1).unwrap(),
     );
     final monthEnd =
         firstDayOfYear(rawMonth.month) + rawMonth.length.inDays - 1;
     final month = dayOfYear > monthEnd ? rawMonth.next : rawMonth;
 
     final dayOfMonth = dayOfYear - firstDayOfYear(month.month) + 1;
-    return Date.fromYearMonthAndDayUnchecked(month, dayOfMonth);
+    return Date.fromYearMonthAndDay(month, dayOfMonth).unwrap();
   }
 
   /// This date, represented as a [WeekDate].
@@ -91,31 +89,18 @@ final class OrdinalDate
   OrdinalDate get next {
     return dayOfYear == year.length.inDays
         ? (year + const Years(1)).firstOrdinalDate
-        : OrdinalDate.fromUnchecked(year, dayOfYear + 1);
+        : OrdinalDate.from(year, dayOfYear + 1).unwrap();
   }
 
   /// The date before this one.
   OrdinalDate get previous {
     return dayOfYear == 1
         ? (year - const Years(1)).lastOrdinalDate
-        : OrdinalDate.fromUnchecked(year, dayOfYear - 1);
+        : OrdinalDate.from(year, dayOfYear - 1).unwrap();
   }
 
   Result<OrdinalDate, String> copyWith({Year? year, int? dayOfYear}) =>
       OrdinalDate.from(year ?? this.year, dayOfYear ?? this.dayOfYear);
-  OrdinalDate copyWithThrowing({Year? year, int? dayOfYear}) {
-    return OrdinalDate.fromThrowing(
-      year ?? this.year,
-      dayOfYear ?? this.dayOfYear,
-    );
-  }
-
-  OrdinalDate copyWithUnchecked({Year? year, int? dayOfYear}) {
-    return OrdinalDate.fromUnchecked(
-      year ?? this.year,
-      dayOfYear ?? this.dayOfYear,
-    );
-  }
 
   @override
   int compareTo(OrdinalDate other) {

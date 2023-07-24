@@ -109,7 +109,7 @@ final class Parser {
         minValue: 1,
         maxValue: year.length.inDays,
       );
-      return dayOfYear.map((it) => OrdinalDate.fromUnchecked(year, it));
+      return dayOfYear.map((it) => OrdinalDate.from(year, it).unwrap());
     });
   }
 
@@ -191,7 +191,7 @@ final class Parser {
       minValue: Month.minNumber,
       maxValue: Month.maxNumber,
     );
-    return value.map(Month.fromNumberThrowing);
+    return value.map((it) => Month.fromNumber(it).unwrap());
   }
 
   Result<int, FormatException> _parseWeek(int numberOfWeeksInYear) {
@@ -225,7 +225,7 @@ final class Parser {
       maxDigits: 1,
       minValue: Weekday.minNumber,
       maxValue: Weekday.maxNumber,
-    ).map(Weekday.fromNumberUnchecked);
+    ).map((it) => Weekday.fromNumber(it).unwrap());
   }
 
   // Utils

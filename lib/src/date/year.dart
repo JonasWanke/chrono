@@ -60,11 +60,8 @@ final class Year
   Days get length => isLeapYear ? const Days(366) : const Days(365);
   int get numberOfWeeks {
     // https://en.wikipedia.org/wiki/ISO_week_date#Weeks_per_year
-    Weekday weekdayOfDecember31(Year year) =>
-        Date.fromUnchecked(year, Month.december, 31).weekday;
-
-    final isLongWeek = weekdayOfDecember31(this) == Weekday.thursday ||
-        weekdayOfDecember31(previous) == Weekday.wednesday;
+    final isLongWeek = lastDay.weekday == Weekday.thursday ||
+        previous.lastDay.weekday == Weekday.wednesday;
     return isLongWeek ? 53 : 52;
   }
 
@@ -79,16 +76,16 @@ final class Year
       Month.values.map((month) => YearMonth(this, month));
 
   /// The first week of this year.
-  YearWeek get firstWeek => YearWeek.fromUnchecked(this, 1);
+  YearWeek get firstWeek => YearWeek.from(this, 1).unwrap();
 
   /// The last week of this year.
-  YearWeek get lastWeek => YearWeek.fromUnchecked(this, numberOfWeeks);
+  YearWeek get lastWeek => YearWeek.from(this, numberOfWeeks).unwrap();
 
   /// An iterable of all weeks in this year.
   Iterable<YearWeek> get weeks {
     return Iterable.generate(
       numberOfWeeks,
-      (it) => YearWeek.fromUnchecked(this, it + 1),
+      (it) => YearWeek.from(this, it + 1).unwrap(),
     );
   }
 
@@ -99,11 +96,11 @@ final class Year
   Date get lastDay => lastMonth.lastDay;
 
   /// The first day of this year as an [OrdinalDate].
-  OrdinalDate get firstOrdinalDate => OrdinalDate.fromUnchecked(this, 1);
+  OrdinalDate get firstOrdinalDate => OrdinalDate.from(this, 1).unwrap();
 
   /// The last day of this year as an [OrdinalDate].
   OrdinalDate get lastOrdinalDate =>
-      OrdinalDate.fromUnchecked(this, length.inDays);
+      OrdinalDate.from(this, length.inDays).unwrap();
 
   /// An iterable of all days in this year.
   Iterable<Date> get days => months.expand((it) => it.days);

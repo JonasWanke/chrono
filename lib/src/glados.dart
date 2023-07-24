@@ -79,7 +79,7 @@ extension ChronoAny on Any {
         yield* day.shrink().map((it) => (yearMonth, it));
       },
     ).map(
-      (it) => Date.fromYearMonthAndDayUnchecked(it.$1.value, it.$2.value),
+      (it) => Date.fromYearMonthAndDay(it.$1.value, it.$2.value).unwrap(),
     );
   }
 
@@ -91,7 +91,8 @@ extension ChronoAny on Any {
       intInRange(0, 60),
       intInRange(0, 60),
       fractionalSeconds,
-      Time.fromUnchecked,
+      (hour, minute, second, fractionalSeconds) =>
+          Time.from(hour, minute, second, fractionalSeconds).unwrap(),
     );
   }
 
@@ -115,7 +116,7 @@ extension ChronoAny on Any {
         yield* day.shrink().map((it) => (year, it));
       },
     ).map(
-      (it) => OrdinalDate.fromUnchecked(it.$1.value, it.$2.value),
+      (it) => OrdinalDate.from(it.$1.value, it.$2.value).unwrap(),
     );
   }
 
@@ -142,7 +143,7 @@ extension ChronoAny on Any {
         });
         yield* week.shrink().map((it) => (weekBasedYear, it));
       },
-    ).map((it) => YearWeek.fromUnchecked(it.$1.value, it.$2.value));
+    ).map((it) => YearWeek.from(it.$1.value, it.$2.value).unwrap());
   }
 
   Generator<Weekday> get weekday => choose(Weekday.values);

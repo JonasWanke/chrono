@@ -24,18 +24,18 @@ final class DateTime
   const DateTime(this.date, this.time);
 
   DateTime.fromCore(core.DateTime dateTime)
-      : date = Date.fromUnchecked(
+      : date = Date.from(
           Year(dateTime.year),
-          Month.fromNumberUnchecked(dateTime.month),
+          Month.fromNumber(dateTime.month).unwrap(),
           dateTime.day,
-        ),
-        time = Time.fromUnchecked(
+        ).unwrap(),
+        time = Time.from(
           dateTime.hour,
           dateTime.minute,
           dateTime.second,
           FractionalSeconds.millisecond * dateTime.millisecond +
               FractionalSeconds.microsecond * dateTime.microsecond,
-        );
+        ).unwrap();
   DateTime.nowInLocalZone({Clock? clock})
       : this.fromCore((clock ?? cl.clock).now().toLocal());
   DateTime.nowInUtc({Clock? clock})
@@ -76,10 +76,10 @@ final class DateTime
         rawNewTimeSinceMidnight.asSecondsAndFraction;
     newDate +=
         Days(rawNewSecondsSinceMidnight.inSeconds ~/ Seconds.perNormalDay);
-    final newTime = Time.fromTimeSinceMidnightUnchecked(
+    final newTime = Time.fromTimeSinceMidnight(
       newFractionSinceMidnight +
           rawNewSecondsSinceMidnight.remainder(Seconds.perNormalDay),
-    );
+    ).unwrap();
     return DateTime(newDate, newTime);
   }
 

@@ -28,8 +28,8 @@ void main() {
 
   test('date plus month landing on non-existing February 29', () {
     expect(
-      Date.fromThrowing(const Year(2023), Month.january, 31) + const Months(1),
-      Date.fromThrowing(const Year(2023), Month.february, 28),
+      Date.from(const Year(2023), Month.january, 31).unwrap() + const Months(1),
+      Date.from(const Year(2023), Month.february, 28).unwrap(),
     );
   });
   Glados<Date>().test('next and previous', (date) {

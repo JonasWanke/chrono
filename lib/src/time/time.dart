@@ -34,43 +34,31 @@ final class Time
     if (fractionError != null) return Err(fractionError);
     fraction ??= FractionalSeconds.zero;
 
-    return Ok(Time.fromUnchecked(hour, minute, second, fraction));
+    return Ok(Time._(hour, minute, second, fraction));
   }
 
-  factory Time.fromThrowing(
-    int hour, [
-    int minute = 0,
-    int second = 0,
-    FractionalSeconds? fraction,
-  ]) =>
-      from(hour, minute, second, fraction).unwrap();
-  const Time.fromUnchecked(this.hour, this.minute, this.second, this.fraction);
+  const Time._(this.hour, this.minute, this.second, this.fraction);
 
-  static Result<Time, String> fromTimeSinceMidnight(TimeDuration time) {
-    if (time.isNegative) {
-      return Err('Time since midnight must not be negative, but was: $time');
+  static Result<Time, String> fromTimeSinceMidnight(
+    TimeDuration timeSinceMidnight,
+  ) {
+    if (timeSinceMidnight.isNegative) {
+      return Err(
+        'Time since midnight must not be negative, but was: $timeSinceMidnight',
+      );
     }
-    if (time.asFractionalSeconds.value >=
+    if (timeSinceMidnight.asFractionalSeconds.value >=
         FractionalSeconds.perNormalDay.value) {
       return Err(
-        'Time since midnight must not be ≥ a day, but was: $time',
+        'Time since midnight must not be ≥ a day, but was: $timeSinceMidnight',
       );
     }
 
-    return Ok(Time.fromTimeSinceMidnightUnchecked(time));
-  }
-
-  factory Time.fromTimeSinceMidnightThrowing(TimeDuration time) =>
-      fromTimeSinceMidnight(time).unwrap();
-  factory Time.fromTimeSinceMidnightUnchecked(TimeDuration time) {
-    final (asSeconds, fraction) = time.asSecondsAndFraction;
+    final (asSeconds, fraction) = timeSinceMidnight.asSecondsAndFraction;
     final (hours, minutes, seconds) = asSeconds.asHoursAndMinutesAndSeconds;
-    return Time.fromUnchecked(
-      hours.inHours,
-      minutes.inMinutes,
-      seconds.inSeconds,
-      fraction,
-    );
+    final time =
+        Time._(hours.inHours, minutes.inMinutes, seconds.inSeconds, fraction);
+    return Ok(time);
   }
 
   factory Time.nowInLocalZone({Clock? clock}) =>
@@ -89,8 +77,8 @@ final class Time
     return null;
   }
 
-  static final Time midnight = Time.fromThrowing(0);
-  static final Time noon = Time.fromThrowing(12);
+  static final Time midnight = Time.from(0).unwrap();
+  static final Time noon = Time.from(12).unwrap();
 
   final int hour;
   final int minute;
@@ -103,18 +91,13 @@ final class Time
   FractionalSeconds get fractionalSecondsSinceMidnight =>
       fraction + secondsSinceMidnight;
 
-  Result<Time, String> add(TimeDuration duration) =>
-      Time.fromTimeSinceMidnight(_add(duration));
-  Time addThrowing(TimeDuration duration) =>
-      Time.fromTimeSinceMidnightThrowing(_add(duration));
-  Time addUnchecked(TimeDuration duration) =>
-      Time.fromTimeSinceMidnightUnchecked(_add(duration));
-  FractionalSeconds _add(TimeDuration duration) =>
-      fractionalSecondsSinceMidnight + duration.asFractionalSeconds;
+  Result<Time, String> add(TimeDuration duration) {
+    return Time.fromTimeSinceMidnight(
+      fractionalSecondsSinceMidnight + duration.asFractionalSeconds,
+    );
+  }
 
   Result<Time, String> subtract(TimeDuration duration) => add(-duration);
-  Time subtractThrowing(TimeDuration duration) => addThrowing(-duration);
-  Time subtractUnchecked(TimeDuration duration) => addUnchecked(-duration);
 
   Result<Time, String> copyWith({
     int? hour,
@@ -123,34 +106,6 @@ final class Time
     FractionalSeconds? fraction,
   }) {
     return Time.from(
-      hour ?? this.hour,
-      minute ?? this.minute,
-      second ?? this.second,
-      fraction ?? this.fraction,
-    );
-  }
-
-  Time copyWithThrowing({
-    int? hour,
-    int? minute,
-    int? second,
-    FractionalSeconds? fraction,
-  }) {
-    return Time.fromThrowing(
-      hour ?? this.hour,
-      minute ?? this.minute,
-      second ?? this.second,
-      fraction ?? this.fraction,
-    );
-  }
-
-  Time copyWithUnchecked({
-    int? hour,
-    int? minute,
-    int? second,
-    FractionalSeconds? fraction,
-  }) {
-    return Time.fromUnchecked(
       hour ?? this.hour,
       minute ?? this.minute,
       second ?? this.second,

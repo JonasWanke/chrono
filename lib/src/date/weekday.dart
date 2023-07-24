@@ -25,12 +25,8 @@ enum Weekday
     if (number < minNumber || number > maxNumber) {
       return Err('Invalid weekday number: $number');
     }
-    return Ok(fromNumberUnchecked(number));
+    return Ok(values[number - Weekday.minNumber]);
   }
-
-  static Weekday fromNumberUnchecked(int number) => values[number - minNumber];
-  static Weekday fromNumberThrowing(int number) =>
-      Weekday.fromNumber(number).unwrap();
 
   static Weekday fromJson(int json) =>
       fromNumber(json).unwrapOrThrowAsFormatException();

@@ -52,7 +52,7 @@ final class WeekDate
   OrdinalDate get asOrdinalDate {
     // https://en.wikipedia.org/wiki/ISO_week_date#Calculating_an_ordinal_or_month_date_from_a_week_date
     final january4 =
-        Date.fromUnchecked(yearWeek.weekBasedYear, Month.january, 4);
+        Date.from(yearWeek.weekBasedYear, Month.january, 4).unwrap();
 
     final rawDayOfYear = Days.perWeek * yearWeek.week +
         weekday.number -
@@ -72,7 +72,7 @@ final class WeekDate
         dayOfYear = rawDayOfYear;
       }
     }
-    return OrdinalDate.fromUnchecked(year, dayOfYear);
+    return OrdinalDate.from(year, dayOfYear).unwrap();
   }
 
   bool isTodayInLocalZone({Clock? clock}) =>

@@ -21,12 +21,10 @@ final class YearWeek
     if (week < 0 || week > weekBasedYear.numberOfWeeks) {
       return Err('Invalid week for year $weekBasedYear: $week');
     }
-    return Ok(YearWeek.fromUnchecked(weekBasedYear, week));
+    return Ok(YearWeek._(weekBasedYear, week));
   }
 
-  const YearWeek.fromUnchecked(this.weekBasedYear, this.week);
-  factory YearWeek.fromThrowing(Year weekBasedYear, int week) =>
-      from(weekBasedYear, week).unwrap();
+  const YearWeek._(this.weekBasedYear, this.week);
 
   factory YearWeek.currentInLocalZone({Clock? clock}) =>
       DateTime.nowInLocalZone(clock: clock).date.yearWeek;
@@ -61,31 +59,17 @@ final class YearWeek
   YearWeek get next {
     return week == weekBasedYear.numberOfWeeks
         ? (weekBasedYear + const Years(1)).firstWeek
-        : YearWeek.fromUnchecked(weekBasedYear, week + 1);
+        : YearWeek._(weekBasedYear, week + 1);
   }
 
   YearWeek get previous {
     return week == 1
         ? (weekBasedYear - const Years(1)).lastWeek
-        : YearWeek.fromUnchecked(weekBasedYear, week - 1);
+        : YearWeek._(weekBasedYear, week - 1);
   }
 
   Result<YearWeek, String> copyWith({Year? weekBasedYear, int? week}) {
     return YearWeek.from(
-      weekBasedYear ?? this.weekBasedYear,
-      week ?? this.week,
-    );
-  }
-
-  YearWeek copyWithThrowing({Year? weekBasedYear, int? week}) {
-    return YearWeek.fromThrowing(
-      weekBasedYear ?? this.weekBasedYear,
-      week ?? this.week,
-    );
-  }
-
-  YearWeek copyWithUnchecked({Year? weekBasedYear, int? week}) {
-    return YearWeek.fromUnchecked(
       weekBasedYear ?? this.weekBasedYear,
       week ?? this.week,
     );

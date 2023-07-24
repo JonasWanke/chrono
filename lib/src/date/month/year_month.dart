@@ -48,16 +48,16 @@ final class YearMonth
   }
 
   /// The first day of this month.
-  Date get firstDay => Date.fromYearMonthAndDayUnchecked(this, 1);
+  Date get firstDay => Date.fromYearMonthAndDay(this, 1).unwrap();
 
   /// The last day of this month.
-  Date get lastDay => Date.fromYearMonthAndDayUnchecked(this, length.inDays);
+  Date get lastDay => Date.fromYearMonthAndDay(this, length.inDays).unwrap();
 
   /// An iterable of all days in this month.
   Iterable<Date> get days {
     return Iterable.generate(
       length.inDays,
-      (it) => Date.fromYearMonthAndDayUnchecked(this, it + 1),
+      (it) => Date.fromYearMonthAndDay(this, it + 1).unwrap(),
     );
   }
 
@@ -73,7 +73,7 @@ final class YearMonth
 
     return YearMonth(
       year + years + yearAdjustment,
-      Month.fromNumberUnchecked(month),
+      Month.fromNumber(month).unwrap(),
     );
   }
 

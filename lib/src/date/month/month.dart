@@ -33,12 +33,8 @@ enum Month
     if (number < minNumber || number > maxNumber) {
       return Err('Invalid month number: $number');
     }
-    return Ok(fromNumberUnchecked(number));
+    return Ok(values[number - minNumber]);
   }
-
-  static Month fromNumberThrowing(int number) =>
-      Month.fromNumber(number).unwrap();
-  static Month fromNumberUnchecked(int number) => values[number - minNumber];
 
   static Month currentInLocalZone({Clock? clock}) =>
       DateTime.nowInLocalZone(clock: clock).date.month;

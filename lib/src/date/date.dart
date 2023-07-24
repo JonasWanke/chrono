@@ -32,6 +32,13 @@ import 'year.dart';
 final class Date
     with ComparisonOperatorsFromComparable<Date>
     implements Comparable<Date> {
+  static Result<Date, String> from(
+    Year year, [
+    Month month = Month.january,
+    int day = 1,
+  ]) =>
+      fromYearMonthAndDay(YearMonth(year, month), day);
+
   static Result<Date, String> fromYearMonthAndDay(
     YearMonth yearMonth,
     int day,
@@ -39,38 +46,15 @@ final class Date
     if (day < 1 || day > yearMonth.length.inDays) {
       return Err('Invalid day for $yearMonth: $day');
     }
-    return Ok(Date.fromYearMonthAndDayUnchecked(yearMonth, day));
+    return Ok(Date._(yearMonth, day));
   }
 
-  factory Date.fromYearMonthAndDayThrowing(YearMonth yearMonth, int day) =>
-      fromYearMonthAndDay(yearMonth, day).unwrap();
-  const Date.fromYearMonthAndDayUnchecked(this.yearMonth, this.day);
-
-  static Result<Date, String> from(
-    Year year, [
-    Month month = Month.january,
-    int day = 1,
-  ]) =>
-      fromYearMonthAndDay(YearMonth(year, month), day);
-  factory Date.fromThrowing(
-    Year year, [
-    Month month = Month.january,
-    int day = 1,
-  ]) =>
-      from(year, month, day).unwrap();
-  Date.fromUnchecked(
-    Year year, [
-    Month month = Month.january,
-    int day = 1,
-  ]) : this.fromYearMonthAndDayUnchecked(YearMonth(year, month), day);
+  const Date._(this.yearMonth, this.day);
 
   /// The UNIX epoch: 1970-01-01.
   ///
   /// https://en.wikipedia.org/wiki/Unix_time
-  static const unixEpoch = Date.fromYearMonthAndDayUnchecked(
-    YearMonth(Year(1970), Month.january),
-    1,
-  );
+  static const unixEpoch = Date._(YearMonth(Year(1970), Month.january), 1);
 
   /// The date corresponding to the given number of days since the [unixEpoch].
   factory Date.fromDaysSinceUnixEpoch(Days sinceUnixEpoch) {
@@ -110,8 +94,8 @@ final class Date
         : (shiftedYear + 1, shiftedMonth - 9);
     assert(1 <= month && month <= 12);
 
-    return Date.fromYearMonthAndDayUnchecked(
-      YearMonth(Year(year), Month.fromNumberUnchecked(month)),
+    return Date._(
+      YearMonth(Year(year), Month.fromNumber(month).unwrap()),
       day,
     );
   }
@@ -145,7 +129,7 @@ final class Date
   }
 
   /// This date, represented as an [OrdinalDate].
-  OrdinalDate get asOrdinalDate => OrdinalDate.fromUnchecked(year, dayOfYear);
+  OrdinalDate get asOrdinalDate => OrdinalDate.from(year, dayOfYear).unwrap();
 
   YearWeek get yearWeek {
     // Algorithm from https://en.wikipedia.org/wiki/ISO_week_date#Algorithms
@@ -153,12 +137,12 @@ final class Date
     return switch (weekOfYear) {
       0 => year.previous.lastWeek,
       53 when year.numberOfWeeks == 52 => year.next.firstWeek,
-      _ => YearWeek.fromUnchecked(year, weekOfYear)
+      _ => YearWeek.from(year, weekOfYear).unwrap()
     };
   }
 
   Weekday get weekday =>
-      Weekday.fromNumberUnchecked((daysSinceUnixEpoch.inDays + 3) % 7 + 1);
+      Weekday.fromNumber((daysSinceUnixEpoch.inDays + 3) % 7 + 1).unwrap();
 
   /// This date, represented as a [WeekDate].
   WeekDate get asWeekDate => WeekDate(yearWeek, weekday);
@@ -216,7 +200,7 @@ final class Date
     final CompoundDaysDuration(:months, :days) =
         duration.asCompoundDaysDuration;
     final yearMonthWithMonths = yearMonth + months;
-    final dateWithMonths = Date.fromYearMonthAndDayUnchecked(
+    final dateWithMonths = Date._(
       yearMonthWithMonths,
       day.coerceAtMost(yearMonthWithMonths.length.inDays),
     );
@@ -255,34 +239,6 @@ final class Date
     assert(yearMonth == null || (year == null && month == null));
 
     return Date.fromYearMonthAndDay(
-      yearMonth ?? YearMonth(year ?? this.year, month ?? this.month),
-      day ?? this.day,
-    );
-  }
-
-  Date copyWithThrowing({
-    YearMonth? yearMonth,
-    Year? year,
-    Month? month,
-    int? day,
-  }) {
-    assert(yearMonth == null || (year == null && month == null));
-
-    return Date.fromYearMonthAndDayThrowing(
-      yearMonth ?? YearMonth(year ?? this.year, month ?? this.month),
-      day ?? this.day,
-    );
-  }
-
-  Date copyWithUnchecked({
-    YearMonth? yearMonth,
-    Year? year,
-    Month? month,
-    int? day,
-  }) {
-    assert(yearMonth == null || (year == null && month == null));
-
-    return Date.fromYearMonthAndDayUnchecked(
       yearMonth ?? YearMonth(year ?? this.year, month ?? this.month),
       day ?? this.day,
     );
