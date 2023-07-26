@@ -81,6 +81,12 @@ enum Month
     return days[index];
   }
 
+  /// The minimum number of days in this month.
+  Days get minLength => lengthInCommonYear;
+
+  /// The maximum number of days in this month.
+  Days get maxLength => lengthInLeapYear;
+
   Month operator +(MonthsDuration duration) =>
       values[(index + duration.asMonths.inMonths) % values.length];
   Month operator -(MonthsDuration duration) => this + (-duration);
