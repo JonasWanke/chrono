@@ -12,6 +12,7 @@ import '../time/time.dart';
 import '../utils.dart';
 import 'duration.dart';
 import 'month/month.dart';
+import 'month/month_day.dart';
 import 'month/year_month.dart';
 import 'ordinal_date.dart';
 import 'week/week_date.dart';
@@ -48,6 +49,12 @@ final class Date
     }
     return Ok(Date._(yearMonth, day));
   }
+
+  static Result<Date, String> fromYearAndMonthDay(
+    Year year,
+    MonthDay monthDay,
+  ) =>
+      from(year, monthDay.month, monthDay.day);
 
   const Date._(this.yearMonth, this.day);
 
@@ -127,6 +134,8 @@ final class Date
         ? marchBased - 306
         : marchBased + 59 + (year.isLeapYear ? 1 : 0);
   }
+
+  MonthDay get monthDay => MonthDay.from(month, day).unwrap();
 
   /// This date, represented as an [OrdinalDate].
   OrdinalDate get asOrdinalDate => OrdinalDate.from(year, dayOfYear).unwrap();

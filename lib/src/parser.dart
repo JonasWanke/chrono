@@ -4,6 +4,7 @@ import 'package:oxidized/oxidized.dart';
 
 import 'date/date.dart';
 import 'date/month/month.dart';
+import 'date/month/month_day.dart';
 import 'date/month/year_month.dart';
 import 'date/ordinal_date.dart';
 import 'date/week/week_date.dart';
@@ -36,6 +37,8 @@ final class Parser {
       _parse(value, (it) => it._parseYearMonth());
   static Result<YearWeek, FormatException> parseYearWeek(String value) =>
       _parse(value, (it) => it._parseYearWeek());
+  static Result<MonthDay, FormatException> parseMonthDay(String value) =>
+      _parse(value, (it) => it._parseMonthDay());
   static Result<Time, FormatException> parseTime(String value) =>
       _parse(value, (it) => it._parseTime());
 
@@ -86,7 +89,12 @@ final class Parser {
   Result<Date, FormatException> _parseDate() {
     return _parseYearMonth()
         .andAlso(() => _requireSeparator({'-'}, 'month', 'day'))
-        .andThen(_parseDay);
+        .andThen((yearMonth) {
+      return _parseDay(maxLength: yearMonth.length.inDays).andThen((day) {
+        return Date.fromYearMonthAndDay(yearMonth, day)
+            .mapErr(FormatException.new);
+      });
+    });
   }
 
   Result<WeekDate, FormatException> _parseWeekDate() {
@@ -127,6 +135,17 @@ final class Parser {
         .andThen(
           (year) => _parseWeek(year.numberOfWeeks).andThen(
             (it) => YearWeek.from(year, it).mapErr(FormatException.new),
+          ),
+        );
+  }
+
+  Result<MonthDay, FormatException> _parseMonthDay() {
+    return _requireDesignator('--', 'month')
+        .andThen((_) => _parseMonth())
+        .andAlso(() => _requireSeparator({'-'}, 'month', 'day'))
+        .andThen(
+          (month) => _parseDay(maxLength: month.maxLength.inDays).andThen(
+            (it) => MonthDay.from(month, it).mapErr(FormatException.new),
           ),
         );
   }
@@ -206,16 +225,14 @@ final class Parser {
     );
   }
 
-  Result<Date, FormatException> _parseDay(YearMonth yearMonth) {
-    final value = _parseInt(
+  Result<int, FormatException> _parseDay({required int maxLength}) {
+    return _parseInt(
       'day',
       minDigits: 2,
       maxDigits: 2,
       minValue: 1,
-      maxValue: yearMonth.length.inDays,
+      maxValue: maxLength,
     );
-    return value.andThen((it) =>
-        Date.fromYearMonthAndDay(yearMonth, it).mapErr(FormatException.new));
   }
 
   Result<Weekday, FormatException> _parseWeekday() {
@@ -316,20 +333,35 @@ final class Parser {
 
   @useResult
   Result<Unit, FormatException> _requireDesignator(
-    String character,
+    String designator,
     String label, {
     bool isCaseSensitive = true,
   }) {
-    assert(character.length == 1);
-
-    return _require(
-      isValid: (it) => isCaseSensitive
-          ? it == character
-          : it.toUpperCase() == character.toUpperCase(),
+    return _requireString(
+      designator,
+      isCaseSensitive: isCaseSensitive,
       messageStart: () {
-        return 'Expected the designator character “$character” to mark the '
-            'start of the $label, but';
+        final designatorString = isCaseSensitive
+            ? '“$designator”'
+            : '“${designator.toLowerCase()}” or “${designator.toUpperCase()}”';
+        return 'Expected the designator $designatorString to mark the start of '
+            'the $label, but';
       },
+    );
+  }
+
+  @useResult
+  Result<Unit, FormatException> _requireString(
+    String string, {
+    bool isCaseSensitive = true,
+    required String Function() messageStart,
+  }) {
+    return _require(
+      length: string.length,
+      isValid: (it) => isCaseSensitive
+          ? it == string
+          : it.toUpperCase() == string.toUpperCase(),
+      messageStart: messageStart,
     );
   }
 
@@ -356,7 +388,8 @@ final class Parser {
 
   @useResult
   Result<Unit, FormatException> _require({
-    required bool Function(String character) isValid,
+    int length = 1,
+    required bool Function(String string) isValid,
     required String Function() messageStart,
   }) {
     if (_offset >= _source.length) {
@@ -366,15 +399,15 @@ final class Parser {
       );
     }
 
-    final actual = _peek()!;
+    final actual = _peek(length: length)!;
     if (!isValid(actual)) {
       return _error(
-        '${messageStart()} found the following character: “$actual”.',
+        '${messageStart()} found the following string: “$actual”.',
         _offset,
       );
     }
 
-    _offset++;
+    _offset += length;
     return const Ok(unit);
   }
 
@@ -400,7 +433,11 @@ final class Parser {
     return true;
   }
 
-  String? _peek() => _offset < _source.length ? _source[_offset] : null;
+  String? _peek({int length = 1}) {
+    return _offset + length <= _source.length
+        ? _source.substring(_offset, _offset + length)
+        : null;
+  }
 
   @useResult
   Result<T, FormatException> _error<T extends Object>(

@@ -6,6 +6,7 @@ import 'package:glados/glados.dart';
 import 'date/date.dart';
 import 'date/duration.dart';
 import 'date/month/month.dart';
+import 'date/month/month_day.dart';
 import 'date/month/year_month.dart';
 import 'date/ordinal_date.dart';
 import 'date/week/week_date.dart';
@@ -29,6 +30,7 @@ void setChronoGladosDefaults() {
   Any.setDefault(any.year);
   Any.setDefault(any.yearMonth);
   Any.setDefault(any.yearWeek);
+  Any.setDefault(any.monthDay);
   Any.setDefault(any.weekday);
 
   Any.setDefault(any.durationChrono);
@@ -144,6 +146,29 @@ extension ChronoAny on Any {
         yield* week.shrink().map((it) => (weekBasedYear, it));
       },
     ).map((it) => YearWeek.from(it.$1.value, it.$2.value).unwrap());
+  }
+
+  Generator<MonthDay> get monthDay {
+    return simple(
+      generate: (random, size) {
+        final month = this.month(random, size);
+        final day =
+            intInRange(1, month.value.maxLength.inDays + 1)(random, size);
+        return (month, day);
+      },
+      shrink: (input) sync* {
+        final (month, day) = input;
+        yield* month.shrink().map((month) {
+          final actualWeek = day.value <= month.value.maxLength.inDays
+              ? day
+              : day
+                  .shrink()
+                  .firstWhere((it) => it.value <= month.value.maxLength.inDays);
+          return (month, actualWeek);
+        });
+        yield* day.shrink().map((it) => (month, it));
+      },
+    ).map((it) => MonthDay.from(it.$1.value, it.$2.value).unwrap());
   }
 
   Generator<Weekday> get weekday => choose(Weekday.values);
