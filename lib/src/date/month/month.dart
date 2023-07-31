@@ -7,6 +7,7 @@ import 'package:oxidized/oxidized.dart';
 import '../../date_time/date_time.dart';
 import '../../utils.dart';
 import '../duration.dart';
+import 'month_day.dart';
 
 /// A month in the ISO 8601 calendar.
 enum Month
@@ -86,6 +87,14 @@ enum Month
 
   /// The maximum number of days in this month.
   Days get maxLength => lengthInLeapYear;
+
+  MonthDay get firstDay => MonthDay.from(this, 1).unwrap();
+  MonthDay get lastDayInCommonYear =>
+      MonthDay.from(this, lengthInCommonYear.inDays).unwrap();
+  MonthDay get lastDayInLeapYear =>
+      MonthDay.from(this, lengthInLeapYear.inDays).unwrap();
+  MonthDay get minLastDay => lastDayInCommonYear;
+  MonthDay get maxLastDay => lastDayInLeapYear;
 
   Month operator +(MonthsDuration duration) =>
       values[(index + duration.asMonths.inMonths) % values.length];
