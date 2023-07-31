@@ -15,6 +15,10 @@ void main() {
     expect(weekDate.asOrdinalDate.asWeekDate, weekDate);
   });
 
+  // Arithmetic with `MonthsDuration` isn't always round-trippable.
+  Glados2<WeekDate, FixedDaysDuration>().test('+ and -', (date, duration) {
+    expect(date + duration - duration, date);
+  });
   Glados<WeekDate>().test('next and previous', (weekDate) {
     expect(weekDate.next.previous, weekDate);
   });
