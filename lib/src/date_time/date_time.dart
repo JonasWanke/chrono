@@ -23,6 +23,25 @@ final class DateTime
     implements Comparable<DateTime> {
   const DateTime(this.date, this.time);
 
+  /// The UNIX epoch: 1970-01-01 at 00:00.
+  ///
+  /// https://en.wikipedia.org/wiki/Unix_time
+  static final unixEpoch = Date.unixEpoch.at(Time.midnight);
+
+  /// The date corresponding to the given duration since the [unixEpoch].
+  factory DateTime.fromDurationSinceUnixEpoch(TimeDuration sinceUnixEpoch) {
+    final (seconds, fraction) = sinceUnixEpoch.asSecondsAndFraction;
+
+    final days = Days(seconds.inSeconds ~/ Seconds.perNormalDay);
+    final date = Date.fromDaysSinceUnixEpoch(days);
+
+    final secondsWithinDay = seconds.remainder(Seconds.perNormalDay);
+    final time =
+        Time.fromTimeSinceMidnight(fraction + secondsWithinDay).unwrap();
+
+    return DateTime(date, time);
+  }
+
   DateTime.fromCore(core.DateTime dateTime)
       : date = Date.from(
           Year(dateTime.year),
@@ -47,6 +66,12 @@ final class DateTime
 
   final Date date;
   final Time time;
+
+  /// The duration since the [unixEpoch].
+  FractionalSeconds get durationSinceUnixEpoch {
+    return time.fractionalSecondsSinceMidnight +
+        date.daysSinceUnixEpoch.asNormalHours;
+  }
 
   Instant get inLocalZone => Instant.fromCore(asCoreDateTimeInLocalZone);
   Instant get inUtc => Instant.fromCore(asCoreDateTimeInUtc);

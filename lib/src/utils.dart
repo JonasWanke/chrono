@@ -16,6 +16,18 @@ extension FixedChronoInternal on Fixed {
         Fixed.fromBigInt(minorUnits - integerPart * scaleFactor, scale: scale);
     return (integerPart, decimalPart);
   }
+
+  double toFixedScale(int fractionalDigits) {
+    assert(fractionalDigits >= 0);
+    if (scale > fractionalDigits) {
+      return minorUnits / BigInt.from(10).pow(scale - fractionalDigits);
+    }
+    if (scale < fractionalDigits) {
+      return (minorUnits * BigInt.from(10).pow(fractionalDigits - scale))
+          .toDouble();
+    }
+    return minorUnits.toDouble();
+  }
 }
 
 extension ResultWithStringErrorChronoInternal<T extends Object>
