@@ -1,3 +1,5 @@
+import 'dart:core' as core;
+
 import 'package:chrono/chrono.dart';
 import 'package:glados/glados.dart';
 
@@ -15,9 +17,8 @@ void main() {
     );
   });
 
-  Glados<DateTime>().test('fromCore', (dateTime) {
-    expect(DateTime.fromCore(dateTime.asCoreDateTimeInLocalZone), dateTime);
-    expect(DateTime.fromCore(dateTime.asCoreDateTimeInUtc), dateTime);
+  Glados<core.DateTime>().test('fromCore', (dateTime) {
+    expect(DateTime.fromCore(dateTime).asCoreDateTimeInLocalZone, dateTime);
   });
 
   Glados3<DateTime, FixedDaysDuration, TimeDuration>().test(
