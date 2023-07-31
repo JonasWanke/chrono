@@ -30,15 +30,8 @@ final class DateTime
 
   /// The date corresponding to the given duration since the [unixEpoch].
   factory DateTime.fromDurationSinceUnixEpoch(TimeDuration sinceUnixEpoch) {
-    final (seconds, fraction) = sinceUnixEpoch.asSecondsAndFraction;
-
-    final days = Days(seconds.inSeconds ~/ Seconds.perNormalDay);
+    final (days, time) = sinceUnixEpoch.toDaysAndTime();
     final date = Date.fromDaysSinceUnixEpoch(days);
-
-    final secondsWithinDay = seconds.remainder(Seconds.perNormalDay);
-    final time =
-        Time.fromTimeSinceMidnight(fraction + secondsWithinDay).unwrap();
-
     return DateTime(date, time);
   }
 
@@ -95,16 +88,10 @@ final class DateTime
     final compoundDuration = duration.asCompoundDuration;
     var newDate = date + compoundDuration.months + compoundDuration.days;
 
-    final rawNewTimeSinceMidnight =
-        time.fractionalSecondsSinceMidnight + compoundDuration.seconds;
-    final (rawNewSecondsSinceMidnight, newFractionSinceMidnight) =
-        rawNewTimeSinceMidnight.asSecondsAndFraction;
-    newDate +=
-        Days(rawNewSecondsSinceMidnight.inSeconds ~/ Seconds.perNormalDay);
-    final newTime = Time.fromTimeSinceMidnight(
-      newFractionSinceMidnight +
-          rawNewSecondsSinceMidnight.remainder(Seconds.perNormalDay),
-    ).unwrap();
+    final (days, newTime) =
+        (time.fractionalSecondsSinceMidnight + compoundDuration.seconds)
+            .toDaysAndTime();
+    newDate += days;
     return DateTime(newDate, newTime);
   }
 
@@ -134,4 +121,23 @@ final class DateTime
   String toString() => '${date}T$time';
 
   String toJson() => toString();
+}
+
+extension on TimeDuration {
+  (Days, Time) toDaysAndTime() {
+    final (seconds, fraction) = asSecondsAndFraction;
+
+    final days = Days(
+      seconds.isNegative
+          // Round towards negative infinity.
+          ? (seconds.inSeconds - Seconds.perNormalDay + 1) ~/
+              Seconds.perNormalDay
+          : seconds.inSeconds ~/ Seconds.perNormalDay,
+    );
+
+    final secondsWithinDay = seconds - days.asNormalSeconds;
+    final time =
+        Time.fromTimeSinceMidnight(fraction + secondsWithinDay).unwrap();
+    return (days, time);
+  }
 }
