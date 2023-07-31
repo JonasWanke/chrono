@@ -41,6 +41,23 @@ abstract class TimeDuration extends Duration
   @override
   TimeDuration remainder(int divisor);
 
+  Nanoseconds roundToNanoseconds() =>
+      Nanoseconds(asFractionalSeconds.value.toFixedScale(9).round());
+  Microseconds roundToMicroseconds() =>
+      Microseconds(asFractionalSeconds.value.toFixedScale(6).round());
+  Milliseconds roundToMilliseconds() =>
+      Milliseconds(asFractionalSeconds.value.toFixedScale(3).round());
+  Seconds roundToSeconds() =>
+      Seconds(asFractionalSeconds.value.toFixedScale(0).round());
+  Minutes roundToMinutes() =>
+      Minutes((roundToSeconds().inSeconds / Seconds.perMinute).round());
+  Hours roundToHours() =>
+      Hours((roundToSeconds().inSeconds / Seconds.perHour).round());
+  Days roundToNormalDays() =>
+      Days((roundToSeconds().inSeconds / Seconds.perNormalDay).round());
+  Weeks roundToNormalWeeks() =>
+      Weeks((roundToSeconds().inSeconds / Seconds.perNormalWeek).round());
+
   @override
   int compareTo(TimeDuration other) {
     var thisValue = asFractionalSeconds.value;
@@ -82,13 +99,6 @@ final class FractionalSeconds extends TimeDuration {
       const Seconds(Seconds.perNormalWeek).asFractionalSeconds;
 
   final Fixed value;
-
-  int get asNanosecondsRounded =>
-      Fixed.copyWith(value, scale: 9).minorUnits.toInt();
-  int get asMicrosecondsRounded =>
-      Fixed.copyWith(value, scale: 6).minorUnits.toInt();
-  int get asMillisecondsRounded =>
-      Fixed.copyWith(value, scale: 3).minorUnits.toInt();
 
   @override
   FractionalSeconds get asFractionalSeconds => this;

@@ -62,7 +62,7 @@ final class DateTime
       time.minute,
       time.second,
       0,
-      time.fraction.asMicrosecondsRounded,
+      time.fraction.roundToMicroseconds().inMicroseconds,
     );
   }
 

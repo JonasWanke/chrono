@@ -36,7 +36,7 @@ final class Instant
   core.DateTime get asCoreDateTimeInUtc => _getDateTime(isUtc: true);
   core.DateTime _getDateTime({required bool isUtc}) {
     return core.DateTime.fromMicrosecondsSinceEpoch(
-      secondsSinceUnixEpoch.asMicrosecondsRounded,
+      secondsSinceUnixEpoch.roundToMicroseconds().inMicroseconds,
       isUtc: isUtc,
     );
   }
