@@ -3,8 +3,9 @@ import 'package:supernova/supernova.dart' hide Weekday;
 
 @immutable
 class Field {
-  const Field(this.lineIndex, this.fieldIndex, this.value);
+  const Field(this.fileName, this.lineIndex, this.fieldIndex, this.value);
 
+  final String fileName;
   final int lineIndex;
   final int fieldIndex;
   final String value;
@@ -60,7 +61,7 @@ class Field {
   /// `h`, `-h`, `hh:mm`, `-hh:mm`, `hh:mm:ss`, `-hh:mm:ss`
   ///
   /// Original: `gethms`
-  SecondsDuration? parseHms({int? end, required String errorText}) {
+  SecondsDuration? parseHms({int? end, required String? errorText}) {
     if (value.isEmpty) return const Seconds(0);
 
     final regex = RegExp(
@@ -68,7 +69,7 @@ class Field {
     );
     final match = regex.firstMatch(value.substring(0, end));
     if (match == null) {
-      logError(errorText);
+      if (errorText != null) logError(errorText);
       return null;
     }
 
@@ -79,7 +80,7 @@ class Field {
     final minutes = match.namedGroup('minutes')?.let(int.parse) ?? 0;
     final seconds = match.namedGroup('seconds')?.let(int.parse) ?? 0;
     if (minutes >= Minutes.perHour || seconds >= Seconds.perMinute) {
-      logError(errorText);
+      if (errorText != null) logError(errorText);
       return null;
     }
 
@@ -161,20 +162,29 @@ class Field {
     return true;
   }
 
-  void logWarning(String message) =>
-      logger.warning('Line $lineIndex, field $fieldIndex: $message', value);
-  void logError(String message) =>
-      logger.error('Line $lineIndex, field $fieldIndex: $message', value);
+  void logWarning(String message) {
+    logger.warning(
+      '$fileName, line $lineIndex, field $fieldIndex: $message',
+      value,
+    );
+  }
+
+  void logError(String message) {
+    logger.error(
+      '$fileName, line $lineIndex, field $fieldIndex: $message',
+      value,
+    );
+  }
 
   Never throwFormatException(String message) {
     throw FormatException(
-      'Line $lineIndex, field $fieldIndex: $message',
+      '$fileName, line $lineIndex, field $fieldIndex: $message',
       value,
     );
   }
 
   @override
   String toString() {
-    return 'Line $lineIndex, field $fieldIndex: “$value”';
+    return '$fileName, line $lineIndex, field $fieldIndex: “$value”';
   }
 }

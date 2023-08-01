@@ -4,10 +4,10 @@ import 'field.dart';
 
 @immutable
 class Line {
-  const Line(this.lineIndex, this.fields);
+  const Line(this.fileName, this.lineIndex, this.fields);
 
   /// Original: `getfields`
-  static Line parse(int lineIndex, String line) {
+  static Line parse(String fileName, int lineIndex, String line) {
     var nextIndex = 0;
     int index() => nextIndex - 1;
     String? next() {
@@ -17,8 +17,11 @@ class Line {
     }
 
     final fields = <Field>[];
-    void addField(String field) =>
-        fields.add(Field(lineIndex, fields.length, field == '-' ? '' : field));
+    void addField(String value) {
+      final field =
+          Field(fileName, lineIndex, fields.length, value == '-' ? '' : value);
+      fields.add(field);
+    }
 
     loop:
     while (true) {
@@ -50,7 +53,7 @@ class Line {
           addField(line.substring(start, index()));
       }
     }
-    return Line(lineIndex, fields);
+    return Line(fileName, lineIndex, fields);
   }
 
   static bool _isSpace(String character) {
@@ -61,13 +64,16 @@ class Line {
     };
   }
 
+  final String fileName;
   final int lineIndex;
   final List<Field> fields;
 
   void logError(String message) =>
-      logger.error('Line $lineIndex: $message', fields);
+      logger.error('$fileName, line $lineIndex: $message', fields);
 
   @override
-  String toString() =>
-      'Line $lineIndex: ${fields.map((it) => '“${it.value}”').joinToString()}';
+  String toString() {
+    return '$fileName, line $lineIndex: '
+        '${fields.map((it) => '“${it.value}”').joinToString()}';
+  }
 }
