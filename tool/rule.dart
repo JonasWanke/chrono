@@ -26,8 +26,7 @@ final class RuleClause {
     required this.month,
     required this.dayCode,
     required this.time,
-    required this.isStd,
-    required this.isUt,
+    required this.timeReference,
     required this.isDst,
     required this.offset,
     required this.abbreviationVariable,
@@ -66,9 +65,8 @@ final class RuleClause {
       endYear: subFields.endYear,
       month: subFields.month,
       dayCode: subFields.dayCode,
-      time: subFields.time.time,
-      isStd: subFields.time.isStd,
-      isUt: subFields.time.isUt,
+      time: subFields.time.$1,
+      timeReference: subFields.time.$2,
       isDst: offsetAndDst.isDst,
       offset: offsetAndDst.$1,
       abbreviationVariable: line.fields[9].value,
@@ -104,7 +102,7 @@ final class RuleClause {
     RuleYear endYear,
     Month month,
     DayCode dayCode,
-    TimeWithZoneInfo time,
+    TimeWithReference time,
   })? _parseSubfields({
     required Field startYearField,
     required Field endYearField,
@@ -174,29 +172,24 @@ final class RuleClause {
     }
   }
 
-  static TimeWithZoneInfo? parseTime(Field timeField) {
-    // TODO: Convert to an enum `standard`, `wall`, `utc`?
+  static TimeWithReference? parseTime(Field timeField) {
     final timeString = timeField.value;
-    var isStd = false;
-    var isUt = false;
+    var reference = TimeReference.localTime;
     var end = timeString.length;
     if (timeString.isNotEmpty) {
       switch (timeString[timeString.length - 1].toLowerCase()) {
         case 's': // Standard
-          isStd = true;
-          isUt = false;
+          reference = TimeReference.localStandardTime;
           end = timeString.length - 1;
           break;
         case 'w': // Wall
-          isStd = false;
-          isUt = false;
+          reference = TimeReference.localTime;
           end = timeString.length - 1;
           break;
         case 'g': // Greenwich
         case 'u': // Universal
         case 'z': // Zulu
-          isStd = true;
-          isUt = true;
+          reference = TimeReference.universalTime;
           end = timeString.length - 1;
           break;
       }
@@ -205,7 +198,7 @@ final class RuleClause {
     final time = timeField.parseHms(end: end, errorText: 'Invalid time of day');
     if (time == null) return null;
 
-    return (time: time, isStd: isStd, isUt: isUt);
+    return (time, reference);
   }
 
   final RuleYear startYear;
@@ -219,8 +212,7 @@ final class RuleClause {
   ///
   /// Can exceed the range of [Time], e.g., be equal to 24 hours.
   final SecondsDuration time;
-  final bool isStd;
-  final bool isUt;
+  final TimeReference timeReference;
   final bool isDst;
   final SecondsDuration offset;
   final String abbreviationVariable;
@@ -233,8 +225,12 @@ final class RuleClause {
         startYear.toString(),
       _ => '$startYear – $endYear',
     };
-    return '$yearRange on $month $dayCode at $time '
-        '${isUt ? 'UTC' : isStd ? 'standard time' : 'wall time'}: '
+    final timeReferenceString = switch (timeReference) {
+      TimeReference.localTime => 'local time',
+      TimeReference.localStandardTime => 'local standard time',
+      TimeReference.universalTime => 'universal time',
+    };
+    return '$yearRange on $month $dayCode at $time $timeReferenceString: '
         'offset = $offset, abbreviation variable = “$abbreviationVariable”';
   }
 }
@@ -283,7 +279,7 @@ Seconds calculateRuleClauseEpochTime(
       .roundToSeconds();
 }
 
-typedef TimeWithZoneInfo = ({SecondsDuration time, bool isStd, bool isUt});
+typedef TimeWithReference = (SecondsDuration, TimeReference);
 
 @freezed
 sealed class RuleYear with _$RuleYear {
@@ -368,4 +364,17 @@ sealed class DayCode with _$DayCode {
         '$weekday>=$day',
     };
   }
+}
+
+enum TimeReference {
+  /// The local (wall clock) time.
+  localTime,
+
+  /// The local standard time.
+  ///
+  /// This differs from [localTime] when observing daylight saving time.
+  localStandardTime,
+
+  /// UT or UTC, whichever was official at the time.
+  universalTime,
 }
