@@ -6,6 +6,8 @@ import 'line.dart';
 import 'rule.dart';
 import 'zone_information_compiler.dart';
 
+part 'zone.freezed.dart';
+
 @immutable
 final class Zone {
   const Zone({
@@ -47,27 +49,24 @@ final class Zone {
   static (ZoneRule, Seconds?)? _parseHelper(List<Field> fields) {
     final standardOffsetField = fields.first;
     final ruleField = fields[1];
-    final formatField = fields[2];
+    final nameField = fields[2];
 
     final standardOffset =
         standardOffsetField.parseHms(errorText: 'Invalid UT offset');
     if (standardOffset == null) return null;
 
-    final formatSpecifierIndex = formatField.value.indexOfOrNull('%');
-    String? formatSpecifier;
-    if (formatSpecifierIndex != null) {
-      if (formatSpecifierIndex == formatField.value.length - 1 ||
-          formatField.value.contains('/')) {
-        formatField.logError('Invalid abbreviation format');
-        return null;
-      }
+    final type = ruleField.value.isEmpty
+        ? const ZoneRuleType.none()
+        : ruleField.parseHms(errorText: null)?.let(ZoneRuleType.offset) ??
+            ZoneRuleType.rule(ruleField.value);
 
-      formatSpecifier = formatField.value[formatSpecifierIndex + 1];
-      if ((formatSpecifier != 's' && formatSpecifier != 'z') ||
-          formatField.value.substring(formatSpecifierIndex + 1).contains('%')) {
-        formatField.logError('Invalid abbreviation format');
-        return null;
-      }
+    final name = ZoneRuleName.parse(nameField);
+    if (name == null) return null;
+
+    if (type is! RuleZoneRuleType &&
+        name is FormattedWithVariableZoneRuleName) {
+      nameField.logError('“%s” used in a zone without an associated rule');
+      return null;
     }
 
     Seconds? untilEpochTime;
@@ -99,9 +98,9 @@ final class Zone {
         untilDayCode = dayCode;
       }
 
-      final TimeWithZoneInfo untilTime;
+      final TimeWithReference untilTime;
       if (untilTimeField == null) {
-        untilTime = (time: const Seconds(0), isStd: false, isUt: false);
+        untilTime = (const Seconds(0), TimeReference.localTime);
       } else {
         final time = RuleClause.parseTime(untilTimeField);
         if (time == null) return null;
@@ -111,15 +110,17 @@ final class Zone {
       untilEpochTime = calculateRuleClauseEpochTime(
         untilMonth,
         untilDayCode,
-        untilTime.time,
+        untilTime.$1,
         untilYear,
       );
     }
 
     final rule = ZoneRule(
-      ruleName: ruleField.value.emptyToNull,
       standardOffset: standardOffset,
+      type: type,
+      name: name,
     );
+
     return (rule, untilEpochTime);
   }
 
@@ -127,6 +128,8 @@ final class Zone {
   // TODO: Can/should ends be a local `DateTime` instead?
   final List<(ZoneRule, Seconds)> rulesWithEnd;
   final ZoneRule lastRule;
+  Iterable<ZoneRule> get allRules =>
+      rulesWithEnd.map((it) => it.$1).followedBy([lastRule]);
 
   @override
   String toString() {
@@ -145,16 +148,111 @@ final class Zone {
   }
 }
 
-@immutable
-final class ZoneRule {
-  const ZoneRule({required this.ruleName, required this.standardOffset});
-
-  final String? ruleName;
-  final SecondsDuration standardOffset;
+@freezed
+sealed class ZoneRule with _$ZoneRule {
+  const factory ZoneRule({
+    /// Local standard time
+    required SecondsDuration standardOffset,
+    required ZoneRuleType type,
+    required ZoneRuleName name,
+  }) = _ZoneRule;
+  const ZoneRule._();
 
   @override
   String toString() {
-    if (ruleName == null) return 'Offset $standardOffset';
-    return 'Rule $ruleName with offset $standardOffset';
+    final typeString = switch (type) {
+      RuleZoneRuleType(:final ruleName) =>
+        'Standard offset $standardOffset and rule $ruleName',
+      OffsetZoneRuleType(:final offset) =>
+        'Standard offset $standardOffset plus offset $offset',
+      NoneZoneRuleType() => 'Standard offset $standardOffset',
+    };
+    return '$name: $typeString';
   }
+}
+
+@freezed
+sealed class ZoneRuleName with _$ZoneRuleName {
+  /// A name with defined strings for standard and DST time.
+  ///
+  /// E.g., `BMT/BST` becomes
+  /// `ZoneRuleName.either(standard: 'BMT', dst: 'CST')`.
+  const factory ZoneRuleName.either({
+    required String standard,
+    required String dst,
+  }) = EitherZoneRuleName;
+
+  /// A formatted name into which [RuleClause.abbreviationVariable] gets
+  /// inserted.
+  ///
+  /// E.g., `CE%sT` becomes `ZoneRuleName.formatted('CE', 'T')`.
+  const factory ZoneRuleName.formattedWithVariable(String start, String end) =
+      FormattedWithVariableZoneRuleName;
+
+  /// A name that shows the formatted offset.
+  const factory ZoneRuleName.formattedOffset() = FormattedOffsetZoneRuleName;
+
+  const factory ZoneRuleName.simple(String value) = SimpleZoneRuleName;
+
+  const ZoneRuleName._();
+
+  /// Original: `inzsub`, `doabbr`
+  static ZoneRuleName? parse(Field field) {
+    final percentIndex = field.value.indexOfOrNull('%');
+    final slashIndex = field.value.indexOfOrNull('/');
+    if (percentIndex != null) {
+      if (percentIndex == field.value.length - 1 ||
+          slashIndex != null ||
+          field.value.substring(percentIndex + 1).contains('%')) {
+        field.logError('Invalid abbreviation format');
+        return null;
+      }
+
+      switch (field.value[percentIndex + 1]) {
+        case 's':
+          return ZoneRuleName.formattedWithVariable(
+            field.value.substring(0, percentIndex),
+            field.value.substring(percentIndex + 2),
+          );
+        case 'z':
+          return const ZoneRuleName.formattedOffset();
+        default:
+          field.logError('Invalid abbreviation format');
+          return null;
+      }
+    }
+    if (slashIndex != null) {
+      return ZoneRuleName.either(
+        standard: field.value.substring(0, slashIndex),
+        dst: field.value.substring(slashIndex + 1),
+      );
+    }
+    return ZoneRuleName.simple(field.value);
+  }
+
+  @override
+  String toString() {
+    return switch (this) {
+      EitherZoneRuleName(:final standard, :final dst) => '$standard/$dst',
+      FormattedWithVariableZoneRuleName(:final start, :final end) =>
+        '$start%s$end',
+      FormattedOffsetZoneRuleName() => '%z',
+      SimpleZoneRuleName(:final value) => value,
+    };
+  }
+}
+
+@freezed
+sealed class ZoneRuleType with _$ZoneRuleType {
+  /// Local time is [ZoneRule.standardOffset] + the named rule.
+  const factory ZoneRuleType.rule(String ruleName) = RuleZoneRuleType;
+
+  /// Local time is [ZoneRule.standardOffset] + [offset].
+  const factory ZoneRuleType.offset(SecondsDuration offset) =
+      OffsetZoneRuleType;
+
+  /// Local time is to [ZoneRule.standardOffset].
+  const factory ZoneRuleType.none() = NoneZoneRuleType;
+
+  const ZoneRuleType._();
 }
