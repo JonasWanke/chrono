@@ -14,4 +14,15 @@ void main() {
       time,
     );
   });
+
+  Glados2<Time, TimeDuration>().test(
+    '+, -, and difference(…)',
+    (time, duration) {
+      final timePlusDuration = time.add(duration).unwrapOrNull();
+      if (timePlusDuration == null) return;
+
+      expect(timePlusDuration.subtract(duration).unwrap(), time);
+      expect(timePlusDuration.difference(time), duration);
+    },
+  );
 }

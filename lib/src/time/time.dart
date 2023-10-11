@@ -99,6 +99,10 @@ final class Time
 
   Result<Time, String> subtract(TimeDuration duration) => add(-duration);
 
+  /// Returns `this - other`.
+  FractionalSeconds difference(Time other) =>
+      fractionalSecondsSinceMidnight - other.fractionalSecondsSinceMidnight;
+
   Result<Time, String> copyWith({
     int? hour,
     int? minute,
