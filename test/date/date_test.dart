@@ -27,9 +27,13 @@ void main() {
   });
 
   // Arithmetic with `MonthsDuration` isn't always round-trippable.
-  Glados2<Date, FixedDaysDuration>().test('+ and -', (date, duration) {
-    expect(date + duration - duration, date);
-  });
+  Glados2<Date, FixedDaysDuration>().test(
+    '+, -, and difference(…)',
+    (date, duration) {
+      expect(date + duration - duration, date);
+      expect((date + duration).difference(date), duration);
+    },
+  );
   test('date plus month landing on non-existing February 29', () {
     expect(
       Date.from(const Year(2023), Month.january, 31).unwrap() + const Months(1),
