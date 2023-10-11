@@ -88,7 +88,7 @@ Dates can be represented by three different classes:
 
 An ISO 8601 time without timezone information, e.g., 18:24:20.123456.
 
-Since fractional seconds are represented using the fixed-point number [`Fixed`], there's basically no limit to the precision.
+Since fractional seconds are represented using the fixed-point number [`Fixed`] class of the package [<kbd>fixed</kbd>], there's basically no limit to the precision.
 
 TODO: document no leap second support
 
@@ -118,7 +118,7 @@ The `Duration` class from Dart Core corresponds to [`TimeDuration`]/[`Fractional
 Some duration classes also have a corresponding `…Duration` class, e.g., [`Minutes`] and [`MinutesDuration`].
 [`MinutesDuration`] is an abstract base class for all time-based durations consisting of a whole number of minutes.
 [`Minutes`] is a concrete class extending [`MinutesDuration`].
-When constructing or returning values, you should use [Minutes] directly.
+When constructing or returning values, you should use [`Minutes`] directly.
 However, in parameters, you should accept any [`MinutesDuration`].
 This way, callers can pass not only [`Minutes`], but also [`Hours`].
 To convert this to [`Minutes`], call `asMinutes`
@@ -135,6 +135,13 @@ For example, adding 1 month and -1 day to 2023-08-31 results in 2023-09-29:
 2. Then, 1 day is subtracted, resulting in 2023-09-29.
 
 (If the order of operations was reversed, the result would be 2023-09-30.)
+
+## Testing
+
+All functions that are based on the current time accept an optional [`Clock`] parameter.
+Please have a look at the [<kbd>clock</kbd>] package for how this can be used to overwrite the time during tests.
+
+Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 
 ## Comparison to other languages
 
@@ -197,7 +204,12 @@ For example, adding 1 month and -1 day to 2023-08-31 results in 2023-09-29:
 
 <!-- fixed -->
 
+[<kbd>fixed</kbd>]: https://pub.dev/packages/fixed
 [`Fixed`]: https://pub.dev/documentation/fixed/latest/fixed/Fixed-class.html
+
+<!-- glados -->
+
+[<kbd>glados</kbd>]: https://pub.dev/packages/glados
 
 <!-- external -->
 
