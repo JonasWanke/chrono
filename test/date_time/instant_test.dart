@@ -20,4 +20,12 @@ void main() {
   Glados<core.DateTime>().test('fromCore', (dateTime) {
     expect(Instant.fromCore(dateTime).asCoreDateTimeInLocalZone, dateTime);
   });
+
+  Glados2<Instant, TimeDuration>().test(
+    '+, -, and difference(…)',
+    (instant, duration) {
+      expect(instant + duration - duration, instant);
+      expect((instant + duration).difference(instant), duration);
+    },
+  );
 }
