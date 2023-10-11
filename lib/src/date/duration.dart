@@ -115,6 +115,8 @@ abstract class MonthsDuration extends DaysDuration
   @override
   MonthsDuration remainder(int divisor);
 
+  MonthsDuration get absolute => isNegative ? -this : this;
+
   @override
   int compareTo(MonthsDuration other) => inMonths.compareTo(other.inMonths);
 
@@ -154,6 +156,9 @@ final class Months extends MonthsDuration {
   Months remainder(int divisor) => Months(inMonths.remainder(divisor));
 
   @override
+  Months get absolute => isNegative ? -this : this;
+
+  @override
   String toString() =>
       inMonths.abs() == 1 ? '$inMonths month' : '$inMonths months';
 
@@ -183,6 +188,9 @@ final class Years extends MonthsDuration {
   Years operator %(int divisor) => Years(inYears % divisor);
   @override
   Years remainder(int divisor) => Years(inYears.remainder(divisor));
+
+  @override
+  Years get absolute => isNegative ? -this : this;
 
   @override
   String toString() => inYears.abs() == 1 ? '$inYears year' : '$inYears years';
@@ -223,6 +231,8 @@ abstract class FixedDaysDuration extends DaysDuration
   FixedDaysDuration operator %(int divisor);
   @override
   FixedDaysDuration remainder(int divisor);
+
+  FixedDaysDuration get absolute => isNegative ? -this : this;
 
   @override
   int compareTo(FixedDaysDuration other) => inDays.compareTo(other.inDays);
@@ -265,6 +275,9 @@ final class Days extends FixedDaysDuration {
   Days remainder(int divisor) => Days(inDays.remainder(divisor));
 
   @override
+  Days get absolute => isNegative ? -this : this;
+
+  @override
   String toString() => inDays.abs() == 1 ? '$inDays day' : '$inDays days';
 
   int toJson() => inDays;
@@ -291,6 +304,9 @@ final class Weeks extends FixedDaysDuration {
   Weeks operator %(int divisor) => Weeks(inWeeks % divisor);
   @override
   Weeks remainder(int divisor) => Weeks(inWeeks.remainder(divisor));
+
+  @override
+  Weeks get absolute => isNegative ? -this : this;
 
   @override
   String toString() => inWeeks.abs() == 1 ? '$inWeeks week' : '$inWeeks weeks';

@@ -41,6 +41,8 @@ abstract class TimeDuration extends Duration
   @override
   TimeDuration remainder(int divisor);
 
+  TimeDuration get absolute => isNegative ? -this : this;
+
   Nanoseconds roundToNanoseconds() =>
       Nanoseconds(inFractionalSeconds.toFixedScale(9).round());
   Microseconds roundToMicroseconds() =>
@@ -138,6 +140,9 @@ final class FractionalSeconds extends TimeDuration {
   }
 
   @override
+  FractionalSeconds get absolute => isNegative ? -this : this;
+
+  @override
   String toString() {
     return inFractionalSeconds.abs == Fixed.one
         ? '$inFractionalSeconds second'
@@ -172,6 +177,9 @@ abstract class NanosecondsDuration extends TimeDuration {
   NanosecondsDuration operator %(int divisor);
   @override
   NanosecondsDuration remainder(int divisor);
+
+  @override
+  NanosecondsDuration get absolute => isNegative ? -this : this;
 }
 
 final class Nanoseconds extends NanosecondsDuration {
@@ -206,6 +214,9 @@ final class Nanoseconds extends NanosecondsDuration {
   @override
   Nanoseconds remainder(int divisor) =>
       Nanoseconds(inNanoseconds.remainder(divisor));
+
+  @override
+  Nanoseconds get absolute => isNegative ? -this : this;
 
   @override
   String toString() {
@@ -245,6 +256,9 @@ abstract class MicrosecondsDuration extends NanosecondsDuration {
   MicrosecondsDuration operator %(int divisor);
   @override
   MicrosecondsDuration remainder(int divisor);
+
+  @override
+  MicrosecondsDuration get absolute => isNegative ? -this : this;
 }
 
 final class Microseconds extends MicrosecondsDuration {
@@ -280,6 +294,9 @@ final class Microseconds extends MicrosecondsDuration {
   @override
   Microseconds remainder(int divisor) =>
       Microseconds(inMicroseconds.remainder(divisor));
+
+  @override
+  Microseconds get absolute => isNegative ? -this : this;
 
   @override
   String toString() {
@@ -319,6 +336,9 @@ abstract class MillisecondsDuration extends MicrosecondsDuration {
   MillisecondsDuration operator %(int divisor);
   @override
   MillisecondsDuration remainder(int divisor);
+
+  @override
+  MillisecondsDuration get absolute => isNegative ? -this : this;
 }
 
 final class Milliseconds extends MillisecondsDuration {
@@ -353,6 +373,9 @@ final class Milliseconds extends MillisecondsDuration {
   @override
   Milliseconds remainder(int divisor) =>
       Milliseconds(inMilliseconds.remainder(divisor));
+
+  @override
+  Milliseconds get absolute => isNegative ? -this : this;
 
   @override
   String toString() {
@@ -391,6 +414,9 @@ abstract class SecondsDuration extends MillisecondsDuration {
   SecondsDuration operator %(int divisor);
   @override
   SecondsDuration remainder(int divisor);
+
+  @override
+  SecondsDuration get absolute => isNegative ? -this : this;
 }
 
 final class Seconds extends SecondsDuration {
@@ -428,6 +454,9 @@ final class Seconds extends SecondsDuration {
   Seconds remainder(int divisor) => Seconds(inSeconds.remainder(divisor));
 
   @override
+  Seconds get absolute => isNegative ? -this : this;
+
+  @override
   String toString() =>
       inSeconds.abs() == 1 ? '$inSeconds second' : '$inSeconds seconds';
 }
@@ -455,6 +484,9 @@ abstract class MinutesDuration extends SecondsDuration {
   MinutesDuration operator ~/(int divisor);
   @override
   MinutesDuration operator %(int divisor);
+
+  @override
+  MinutesDuration get absolute => isNegative ? -this : this;
 }
 
 final class Minutes extends MinutesDuration {
@@ -486,6 +518,9 @@ final class Minutes extends MinutesDuration {
   Minutes remainder(int divisor) => Minutes(inMinutes.remainder(divisor));
 
   @override
+  Minutes get absolute => isNegative ? -this : this;
+
+  @override
   String toString() =>
       inMinutes.abs() == 1 ? '$inMinutes minute' : '$inMinutes minutes';
 }
@@ -513,6 +548,9 @@ final class Hours extends MinutesDuration {
   Hours operator %(int divisor) => Hours(inHours % divisor);
   @override
   Hours remainder(int divisor) => Hours(inHours.remainder(divisor));
+
+  @override
+  Hours get absolute => isNegative ? -this : this;
 
   @override
   String toString() => inHours.abs() == 1 ? '$inHours hour' : '$inHours hours';

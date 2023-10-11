@@ -15,6 +15,11 @@ void main() {
     );
   });
 
+  group('MonthsDuration', () {
+    Glados<MonthsDuration>().test('absolute', (duration) {
+      expect(duration.absolute.isNonNegative, true);
+    });
+  });
   group('Months', () {
     _testDurationBasics<Months>();
     Glados2<Months, MonthsDuration>().test('+ and -', (first, second) {
@@ -28,6 +33,11 @@ void main() {
     });
   });
 
+  group('FixedDaysDuration', () {
+    Glados<FixedDaysDuration>().test('absolute', (duration) {
+      expect(duration.absolute.isNonNegative, true);
+    });
+  });
   group('Days', () {
     _testDurationBasics<Days>();
     Glados2<Days, FixedDaysDuration>().test('+ and -', (first, second) {

@@ -69,4 +69,8 @@ void _testDurationBasics<T extends TimeDuration>() {
       expect((duration * factor).remainder(factor).isZero, true);
     },
   );
+
+  Glados<T>().test('absolute', (duration) {
+    expect(duration.absolute.isNonNegative, true);
+  });
 }
