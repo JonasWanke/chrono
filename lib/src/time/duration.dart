@@ -246,6 +246,9 @@ abstract class MicrosecondsDuration extends NanosecondsDuration {
     return (milliseconds, microseconds);
   }
 
+  core.Duration get asCoreDuration =>
+      core.Duration(microseconds: inMicroseconds);
+
   @override
   MicrosecondsDuration operator -();
   @override
@@ -263,6 +266,9 @@ abstract class MicrosecondsDuration extends NanosecondsDuration {
 
 final class Microseconds extends MicrosecondsDuration {
   const Microseconds(this.inMicroseconds);
+
+  Microseconds.fromCore(core.Duration duration)
+      : inMicroseconds = duration.inMicroseconds;
 
   static const perMillisecond = 1000;
   static const perSecond = perMillisecond * Milliseconds.perSecond;
