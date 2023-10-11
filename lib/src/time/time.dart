@@ -47,8 +47,8 @@ final class Time
         'Time since midnight must not be negative, but was: $timeSinceMidnight',
       );
     }
-    if (timeSinceMidnight.asFractionalSeconds.value >=
-        FractionalSeconds.perNormalDay.value) {
+    if (timeSinceMidnight.inFractionalSeconds >=
+        FractionalSeconds.perNormalDay.inFractionalSeconds) {
       return Err(
         'Time since midnight must not be ≥ a day, but was: $timeSinceMidnight',
       );
@@ -141,7 +141,7 @@ final class Time
     final second = this.second.toString().padLeft(2, '0');
     final fraction = this.fraction == FractionalSeconds.zero
         ? ''
-        : this.fraction.value.toString().substring(1);
+        : this.fraction.inFractionalSeconds.toString().substring(1);
     return '$hour:$minute:$second$fraction';
   }
 

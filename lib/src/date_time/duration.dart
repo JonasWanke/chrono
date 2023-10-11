@@ -13,7 +13,7 @@ abstract class Duration {
     final compoundDuration = asCompoundDuration;
     return compoundDuration.months.inMonths == 0 &&
         compoundDuration.days.inDays == 0 &&
-        compoundDuration.seconds.value.isZero;
+        compoundDuration.seconds.inFractionalSeconds.isZero;
   }
 
   Duration operator -();
