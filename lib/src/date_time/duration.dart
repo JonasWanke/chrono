@@ -36,7 +36,7 @@ final class CompoundDuration extends Duration {
         monthsAndDays = monthsAndDays ??
             CompoundDaysDuration(
               months: months ?? const Months(0),
-              days: const Days(0),
+              days: days ?? const Days(0),
             ),
         seconds = seconds ?? FractionalSeconds.zero;
 
