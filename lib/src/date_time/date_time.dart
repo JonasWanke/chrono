@@ -17,6 +17,16 @@ import '../utils.dart';
 import 'duration.dart';
 import 'instant.dart';
 
+/// A date and time in the ISO 8601 calendar, represented using [Date] and
+/// [Time].
+///
+/// Leap years are taken into account. However, since this class doesn't care
+/// about timezones, each day is exactly 24 hours long.
+///
+/// See also:
+///
+/// - [Date], which represents the date part.
+/// - [Time], which represents the time part.
 @immutable
 final class DateTime
     with ComparisonOperatorsFromComparable<DateTime>
@@ -35,6 +45,11 @@ final class DateTime
     return DateTime(date, time);
   }
 
+  /// Creates a Chrono [DateTime] from a Dart Core [core.DateTime].
+  ///
+  /// This uses the [core.DateTime.year], [core.DateTime.month],
+  /// [core.DateTime.day], [core.DateTime.hour], etc. getters and ignores
+  /// whether that [core.ÐateTime] is in UTC or the local timezone.
   DateTime.fromCore(core.DateTime dateTime)
       : date = Date.from(
           Year(dateTime.year),

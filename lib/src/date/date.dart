@@ -227,7 +227,7 @@ final class Date
   /// The date before this one.
   Date get previous => this - const Days(1);
 
-  /// Returns `this - other`.
+  /// Returns `this - other` as a number of [Days].
   Days difference(Date other) => daysSinceUnixEpoch - other.daysSinceUnixEpoch;
 
   /// The next-closest date with the given [weekday].
