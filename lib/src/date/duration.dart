@@ -84,6 +84,9 @@ abstract class MonthsDuration extends DaysDuration
     implements Comparable<MonthsDuration> {
   const MonthsDuration();
 
+  Months get asMonths;
+  int get inMonths => asMonths.inMonths;
+
   /// Both are `>= 0` or both are `<= 0`.
   (Years, Months) get asYearsAndMonths {
     final thisMonths = asMonths;
@@ -91,9 +94,6 @@ abstract class MonthsDuration extends DaysDuration
     final months = thisMonths - years.asMonths;
     return (years, months);
   }
-
-  Months get asMonths;
-  int get inMonths => asMonths.inMonths;
 
   @override
   CompoundDaysDuration get asCompoundDaysDuration =>
@@ -211,6 +211,14 @@ abstract class FixedDaysDuration extends DaysDuration
   Milliseconds get asNormalMilliseconds => asNormalHours.asMilliseconds;
   Microseconds get asNormalMicroseconds => asNormalHours.asMicroseconds;
   Nanoseconds get asNormalNanoseconds => asNormalHours.asNanoseconds;
+
+  /// Both are `>= 0` or both are `<= 0`.
+  (Weeks, Days) get asWeeksAndDays {
+    final thisDays = asDays;
+    final weeks = Weeks(thisDays.inDays ~/ Days.perWeek);
+    final days = thisDays - weeks.asDays;
+    return (weeks, days);
+  }
 
   @override
   CompoundDaysDuration get asCompoundDaysDuration =>

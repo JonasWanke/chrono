@@ -19,6 +19,15 @@ void main() {
     Glados<MonthsDuration>().test('absolute', (duration) {
       expect(duration.absolute.isNonNegative, true);
     });
+    Glados<MonthsDuration>().test('asYearsAndMonths', (duration) {
+      final (years, months) = duration.asYearsAndMonths;
+      expect(
+        years.isNonNegative && months.isNonNegative ||
+            years.isNonPositive && months.isNonPositive,
+        true,
+      );
+      expect(months + years, duration);
+    });
   });
   group('Months', () {
     _testDurationBasics<Months>();
@@ -36,6 +45,15 @@ void main() {
   group('FixedDaysDuration', () {
     Glados<FixedDaysDuration>().test('absolute', (duration) {
       expect(duration.absolute.isNonNegative, true);
+    });
+    Glados<FixedDaysDuration>().test('asWeeksAndDays', (duration) {
+      final (weeks, days) = duration.asWeeksAndDays;
+      expect(
+        weeks.isNonNegative && days.isNonNegative ||
+            weeks.isNonPositive && days.isNonPositive,
+        true,
+      );
+      expect(days + weeks, duration);
     });
   });
   group('Days', () {
