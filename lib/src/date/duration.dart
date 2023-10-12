@@ -23,10 +23,11 @@ abstract class DaysDuration extends Duration {
 }
 
 final class CompoundDaysDuration extends DaysDuration {
-  const CompoundDaysDuration({
-    this.months = const Months(0),
-    this.days = const Days(0),
-  });
+  CompoundDaysDuration({
+    MonthsDuration months = const Months(0),
+    FixedDaysDuration days = const Days(0),
+  })  : months = months.asMonths,
+        days = days.asDays;
 
   final Months months;
   final Days days;

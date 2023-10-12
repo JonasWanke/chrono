@@ -25,20 +25,20 @@ abstract class Duration {
 
 final class CompoundDuration extends Duration {
   CompoundDuration({
-    CompoundDaysDuration? monthsAndDays,
-    Months? months,
-    Days? days,
-    FractionalSeconds? seconds,
+    DaysDuration? monthsAndDays,
+    MonthsDuration? months,
+    FixedDaysDuration? days,
+    TimeDuration? seconds,
   })  : assert(
           monthsAndDays == null || (months == null && days == null),
           'Cannot specify both `monthsAndDays` and `months`/`days`.',
         ),
-        monthsAndDays = monthsAndDays ??
+        monthsAndDays = monthsAndDays?.asCompoundDaysDuration ??
             CompoundDaysDuration(
-              months: months ?? const Months(0),
-              days: days ?? const Days(0),
+              months: months?.asMonths ?? const Months(0),
+              days: days?.asDays ?? const Days(0),
             ),
-        seconds = seconds ?? FractionalSeconds.zero;
+        seconds = seconds?.asFractionalSeconds ?? FractionalSeconds.zero;
 
   final CompoundDaysDuration monthsAndDays;
   Months get months => monthsAndDays.months;
