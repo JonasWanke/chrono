@@ -97,6 +97,25 @@ final class DateTime
 
   DateTime operator -(Duration duration) => this + (-duration);
 
+  /// Returns `this - other`.
+  ///
+  /// The returned [CompoundDuration]'s days and seconds are both `>= 0` or both
+  /// `<= 0`. The months will always be zero.
+  CompoundDuration difference(DateTime other) {
+    if (this < other) return -other.difference(this);
+
+    var days = date.difference(other.date);
+    FractionalSeconds seconds;
+    if (time < other.time) {
+      days -= const Days(1);
+      seconds = time.difference(other.time) + const Days(1).asNormalHours;
+    } else {
+      seconds = time.difference(other.time);
+    }
+
+    return CompoundDuration(days: days, seconds: seconds);
+  }
+
   DateTime copyWith({Date? date, Time? time}) =>
       DateTime(date ?? this.date, time ?? this.time);
 
