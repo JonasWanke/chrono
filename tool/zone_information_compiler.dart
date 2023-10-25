@@ -10,6 +10,7 @@ import 'package:supernova/supernova_io.dart';
 
 import 'line.dart';
 import 'rule.dart';
+import 'tzif_encoder.dart';
 import 'zone.dart';
 
 // TODO: Rename `RuleClause` → `RuleLine`, `ZoneRule` → `ZoneLine`
@@ -19,7 +20,13 @@ Future<void> main(List<String> args) async {
 
   final files = await args.associateWith((it) => File(it).readAsLines()).wait;
   final (rules, zones) = parseZoneInformationFiles(files);
-  logger.info('Parsed all files', {'rules': rules, 'zones': zones});
+  // logger.info('Parsed all files', {'rules': rules, 'zones': zones});
+  logger.info(
+    'Parsed all files',
+    {'rule count': rules.length, 'zone count': zones.length},
+  );
+
+  await encodeTzif(zones.values.first, rules);
 
   // for (final entry in zones.entries) {
   //   final zone = entry.value;

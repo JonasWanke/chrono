@@ -149,7 +149,7 @@ Future<void> encodeTzif(Zone zone, Map<String, Rule> rules) async {
           // Mark which rules to do in the current year.
           // For those to do, calculate rpytime(rp, year).
           // The former TYPE field was also considered here.
-          final temps = <LimitOr<DateTime>>[];
+          final temps = <int, LimitOr<DateTime>>{};
           for (final (ruleClauseIndex, ruleClause)
               in currentRule.clauses.indexed) {
             final y2038Boundary =
@@ -159,7 +159,7 @@ Future<void> encodeTzif(Zone zone, Map<String, Rule> rules) async {
             }
 
             final temp = rpytime(ruleClause, year);
-            temps.add(temp);
+            temps[ruleClauseIndex] = temp;
             if (temp < y2038Boundary || year <= maxYear0) {
               rulesToDo.add((ruleName, ruleClauseIndex));
             }
@@ -177,14 +177,14 @@ Future<void> encodeTzif(Zone zone, Map<String, Rule> rules) async {
             // in the year.
             (int, DateTime)? ktime;
             late Seconds offset;
-            for (var j = 0; j < currentRule.clauses.length; ++j) {
+            for (var j = 0; j < currentRule.clauses.length; j++) {
               final r = currentRule.clauses[j];
               if (!rulesToDo.contains((ruleName, j))) continue;
 
               offset = r.timeReference.getAdjustment(stdoff, save);
 
               final DateTime jtime;
-              switch (temps[j]) {
+              switch (temps[j]!) {
                 case LimitOrMin():
                   continue;
                 case LimitOrValue(:final value):
@@ -430,7 +430,9 @@ Future<void> _writeZone(
     if (version == TzifVersion.v4) break;
   }
 
-  final fp = File(outname).openWrite();
+  final file = File(outname);
+  await file.directory.create(recursive: true);
+  final fp = file.openWrite();
 
   for (var pass = 1; pass <= 2; pass++) {
     // register ptrdiff_t thistimei, thistimecnt, thistimelim;
@@ -659,7 +661,8 @@ Future<void> _writeZone(
     // below the minimum representable value for this pass.
     final lo = pass == 1 && lo_time < ZIC32_MIN ? ZIC32_MIN : lo_time;
 
-    if (0 <= pretranstype) {
+    // write `timecnt` × transition time
+    if (pretranstype >= 0) {
       fp.puttzcodepass(lo.durationSinceUnixEpoch.inSeconds, pass);
     }
     for (var i = thistimei; i < thistimelim; ++i) {
@@ -668,12 +671,15 @@ Future<void> _writeZone(
     if (hicut) {
       fp.puttzcodepass(hi_time.durationSinceUnixEpoch.inSeconds + 1, pass);
     }
-    if (0 <= pretranstype) fp.addU8(typemap[pretranstype]);
+
+    // write `timecnt` × transition type
+    if (pretranstype >= 0) fp.addU8(typemap[pretranstype]);
     for (var i = thistimei; i < thistimelim; i++) {
       fp.addU8(typemap[types[i]]);
     }
     if (hicut) fp.addU8(typemap[unspecifiedtype]);
 
+    // write `typecnt` × local time type record
     for (var i = old0; i < typecnt; i++) {
       final h = (i == old0
           ? thisdefaulttype
@@ -681,15 +687,21 @@ Future<void> _writeZone(
               ? old0
               : i);
       if (!omittype[h]) {
-        fp.addU32(utoffs[h].inSeconds);
+        fp.addI32(utoffs[h].inSeconds);
+        // TODO(JonasWanke): convert `isdsts` to bools
+        assert(isdsts[h] == 0 || isdsts[h] == 1);
         fp.addU8(isdsts[h]);
         fp.addU8(indmap[desigidx[h]]);
       }
     }
+
+    // write time zone designations (`charcnt` characters)
     if (thischars.isNotEmpty) {
       assert(thischars.isAscii);
       fp.add(thischars.codeUnits);
     }
+
+    // write `leapcnt` × leap-second record
     final thisleaplim = thisleapi + thisleapcnt;
     for (var i = thisleapi; i < thisleaplim; ++i) {
       final UnixEpochSeconds todo;
@@ -716,7 +728,7 @@ Future<void> _writeZone(
         todo = leapSeconds[i].transition;
       }
       fp.puttzcodepass(todo.durationSinceUnixEpoch.inSeconds, pass);
-      fp.addU32(leapSeconds[i].correction.inSeconds);
+      fp.addI32(leapSeconds[i].correction.inSeconds);
     }
     if (thisleapexpiry) {
       // Append a no-op leap correction indicating when the leap second table
@@ -724,15 +736,19 @@ Future<void> _writeZone(
       // clients seem to accept this and the plan is to amend the RFC to allow
       // this in version 4 TZif files.
       fp.puttzcodepass(leapexpires.durationSinceUnixEpoch.inSeconds, pass);
-      fp.addU32(thisleaplim > 0
-          ? leapSeconds[thisleaplim - 1].correction.inSeconds
-          : 0);
+      fp.addI32(
+        thisleaplim > 0 ? leapSeconds[thisleaplim - 1].correction.inSeconds : 0,
+      );
     }
+
+    // write `isstdcnt` × standard/wall indicator
     if (stdcnt != 0) {
       for (var i = old0; i < typecnt; i++) {
         if (!omittype[i]) fp.addBool(ttisstds[i]);
       }
     }
+
+    // write `isutcnt` × UT/local indicators
     if (utcnt != 0) {
       for (var i = old0; i < typecnt; i++) {
         if (!omittype[i]) fp.addBool(ttisuts[i]);
@@ -1186,11 +1202,17 @@ extension on Sink<List<int>> {
     add(value.asU32BigEndianBytes);
   }
 
+  /// Original: `puttzcode`
+  void addI32(int value) {
+    assert(-(1 << 31) <= value && value < (1 << 31) - 1);
+    add(value.asI32BigEndianBytes);
+  }
+
   void puttzcodepass(int value, int pass) {
     if (pass == 1) {
-      addU32(value);
+      addI32(value);
     } else {
-      add(value.asU64BigEndianBytes);
+      add(value.asI64BigEndianBytes);
     }
   }
 }
@@ -1199,7 +1221,16 @@ extension on int {
   /// Original: `convert`
   List<int> get asU32BigEndianBytes {
     assert(0 <= this && this < 1 << 32);
+    return _as32BitBigEndianBytes;
+  }
 
+  /// Original: `convert`
+  List<int> get asI32BigEndianBytes {
+    assert(-(1 << 31) <= this && this < (1 << 31) - 1);
+    return _as32BitBigEndianBytes;
+  }
+
+  List<int> get _as32BitBigEndianBytes {
     return [
       (this >> 24) & 0xFF,
       (this >> 16) & 0xFF,
@@ -1209,7 +1240,7 @@ extension on int {
   }
 
   /// Original: `convert64`
-  List<int> get asU64BigEndianBytes {
+  List<int> get asI64BigEndianBytes {
     return [
       (this >> 56) & 0xFF,
       (this >> 48) & 0xFF,
