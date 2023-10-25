@@ -4,7 +4,7 @@ import 'field.dart';
 
 @immutable
 class Line {
-  const Line(this.fileName, this.lineIndex, this.fields);
+  const Line(this.fileName, this.lineIndex, this.fieldValues);
 
   /// Original: `getfields`
   static Line parse(String fileName, int lineIndex, String line) {
@@ -16,12 +16,8 @@ class Line {
       return line[index];
     }
 
-    final fields = <Field>[];
-    void addField(String value) {
-      final field =
-          Field(fileName, lineIndex, fields.length, value == '-' ? '' : value);
-      fields.add(field);
-    }
+    final fieldValues = <String>[];
+    void addField(String value) => fieldValues.add(value == '-' ? '' : value);
 
     loop:
     while (true) {
@@ -53,7 +49,7 @@ class Line {
           addField(line.substring(start, index()));
       }
     }
-    return Line(fileName, lineIndex, fields);
+    return Line(fileName, lineIndex, fieldValues);
   }
 
   static bool _isSpace(String character) {
@@ -66,7 +62,9 @@ class Line {
 
   final String fileName;
   final int lineIndex;
-  final List<Field> fields;
+  final List<String> fieldValues;
+  Iterable<Field> get fields =>
+      fieldValues.mapIndexed((index, it) => Field(this, index, it));
 
   void logError(String message) =>
       logger.error('$fileName, line $lineIndex: $message', fields);

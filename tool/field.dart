@@ -1,12 +1,14 @@
 import 'package:chrono/chrono.dart';
+import 'package:oxidized/oxidized.dart';
 import 'package:supernova/supernova.dart' hide Weekday;
+
+import 'line.dart';
 
 @immutable
 class Field {
-  const Field(this.fileName, this.lineIndex, this.fieldIndex, this.value);
+  const Field(this.line, this.fieldIndex, this.value);
 
-  final String fileName;
-  final int lineIndex;
+  final Line line;
   final int fieldIndex;
   final String value;
 
@@ -16,21 +18,23 @@ class Field {
     throwFormatException('Expected “$expectedValue”');
   }
 
-  Month? parseMonth() {
+  ParseResult<Month> parseMonth() {
     final month =
         getByWord(Month.values.associate((it) => MapEntry(it.name, it)));
-    if (month == null) logError('Invalid month name');
-    return month;
+    if (month == null) return Err(ParseException(this, 'Invalid month name'));
+    return Ok(month);
   }
 
-  Weekday? parseWeekday([int start = 0, int? end]) {
+  ParseResult<Weekday> parseWeekday([int start = 0, int? end]) {
     final weekday = getByWord(
       Weekday.values.associate((it) => MapEntry(it.name, it)),
       start: start,
       end: end,
     );
-    if (weekday == null) logError('Invalid weekday name');
-    return weekday;
+    if (weekday == null) {
+      return Err(ParseException(this, 'Invalid weekday name'));
+    }
+    return Ok(weekday);
   }
 
   /// Original: `byword`
@@ -61,16 +65,15 @@ class Field {
   /// `h`, `-h`, `hh:mm`, `-hh:mm`, `hh:mm:ss`, `-hh:mm:ss`
   ///
   /// Original: `gethms`
-  SecondsDuration? parseHms({int? end, required String? errorText}) {
-    if (value.isEmpty) return const Seconds(0);
+  Result<SecondsDuration, ParseException> parseHms({int? end}) {
+    if (value.isEmpty) return const Ok(Seconds(0));
 
     final regex = RegExp(
       r'^(?<sign>-?)(?<hours>\d{1,2})(:(?<minutes>\d{1,2}))?(:(?<seconds>\d{1,2}))?(?:\.\d+)?$',
     );
     final match = regex.firstMatch(value.substring(0, end));
     if (match == null) {
-      if (errorText != null) logError(errorText);
-      return null;
+      return Err(ParseException(this, "Couldn't parse pattern."));
     }
 
     final isNegative = match.namedGroup('sign')!.isNotEmpty;
@@ -79,19 +82,22 @@ class Field {
     final hours = int.parse(match.namedGroup('hours')!);
     final minutes = match.namedGroup('minutes')?.let(int.parse) ?? 0;
     final seconds = match.namedGroup('seconds')?.let(int.parse) ?? 0;
-    if (minutes >= Minutes.perHour || seconds >= Seconds.perMinute) {
-      if (errorText != null) logError(errorText);
-      return null;
+    if (minutes >= Minutes.perHour) {
+      return Err(ParseException(this, 'Minutes are too large: $minutes'));
+    }
+    if (seconds >= Seconds.perMinute) {
+      return Err(ParseException(this, 'Seconds are too large: $seconds'));
     }
 
     // TODO: handle fractionals or round them
 
     if (seconds == 0) {
-      if (minutes == 0) return Hours(hours) * signMultiplier;
-      return (Minutes(minutes) + Hours(hours)) * signMultiplier;
+      if (minutes == 0) return Ok(Hours(hours) * signMultiplier);
+      return Ok((Minutes(minutes) + Hours(hours)) * signMultiplier);
     }
-    return (Seconds(seconds) + Minutes(minutes) + Hours(hours)) *
-        signMultiplier;
+    return Ok(
+      (Seconds(seconds) + Minutes(minutes) + Hours(hours)) * signMultiplier,
+    );
   }
 
   /// OriginaL: `namecheck`
@@ -164,27 +170,46 @@ class Field {
 
   void logWarning(String message) {
     logger.warning(
-      '$fileName, line $lineIndex, field $fieldIndex: $message',
+      '${line.fileName}, line ${line.lineIndex}, field $fieldIndex: $message',
       value,
     );
   }
 
   void logError(String message) {
     logger.error(
-      '$fileName, line $lineIndex, field $fieldIndex: $message',
+      '${line.fileName}, line ${line.lineIndex}, field $fieldIndex: $message',
       value,
     );
   }
 
   Never throwFormatException(String message) {
     throw FormatException(
-      '$fileName, line $lineIndex, field $fieldIndex: $message',
+      '${line.fileName}, line ${line.lineIndex}, field $fieldIndex: $message',
       value,
     );
   }
 
   @override
   String toString() {
-    return '$fileName, line $lineIndex, field $fieldIndex: “$value”';
+    return '${line.fileName}, line ${line.lineIndex}, field $fieldIndex: “$value”';
   }
+}
+
+typedef ParseResult<T extends Object> = Result<T, ParseException>;
+
+@immutable
+final class ParseException {
+  ParseException(Field this.field, this.message) : line = field.line;
+  const ParseException.line(this.line, this.message) : field = null;
+  const ParseException._(this.line, this.field, this.message);
+
+  final Line line;
+  final Field? field;
+  final String message;
+
+  ParseException withContext(String context) =>
+      ParseException._(line, field, '$context:\n$message');
+
+  @override
+  String toString() => '$message\n${field ?? line}';
 }

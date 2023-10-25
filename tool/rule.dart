@@ -1,8 +1,10 @@
 import 'package:chrono/chrono.dart';
+import 'package:oxidized/oxidized.dart';
 import 'package:supernova/supernova.dart' hide Weekday;
 
 import 'field.dart';
 import 'line.dart';
+import 'utils.dart';
 import 'zone_information_compiler.dart';
 
 part 'rule.freezed.dart';
@@ -33,32 +35,43 @@ final class RuleClause {
   });
 
   /// Original: `inrule`
-  static (String, RuleClause)? parse(Line line) {
-    line.fields.first.require('Rule');
-    if (line.fields.length != 10) {
-      line.logError('Wrong number of fields on rule line');
-      return null;
+  static ParseResult<(String, RuleClause)> parse(Line line) {
+    final fields = line.fields.toList();
+    fields.first.require('Rule');
+    if (fields.length != 10) {
+      return Err(ParseException.line(
+        line,
+        'Wrong number of fields on rule line',
+      ));
     }
 
-    final nameField = line.fields.second;
+    final nameField = fields.second;
     switch (nameField.value) {
       case '\x00' || ' ' || '\f' || '\n' || '\r' || '\t' || '\v' || '+' || '-':
       case '0' || '1' || '2' || '3' || '4' || '5' || '6' || '7' || '8' || '9':
         nameField.throwFormatException('Invalid rule name');
     }
 
-    final offsetAndDst = _parseOffsetAndDst(line.fields[8]);
-    if (offsetAndDst == null) return null;
+    final offsetAndDstResult = parseOffsetAndDst(fields[8]);
+    if (offsetAndDstResult.isErr()) {
+      return offsetAndDstResult
+          .asErrorWithContext('Invalid offset or DST in rule line');
+    }
+    final offsetAndDst = offsetAndDstResult.unwrap();
 
-    final subFields = RuleClause._parseSubfields(
-      startYearField: line.fields[2],
-      endYearField: line.fields[3],
-      yearTypeField: line.fields[4],
-      monthField: line.fields[5],
-      dayField: line.fields[6],
-      timeField: line.fields[7],
+    final subFieldsResult = RuleClause._parseSubfields(
+      startYearField: fields[2],
+      endYearField: fields[3],
+      yearTypeField: fields[4],
+      monthField: fields[5],
+      dayField: fields[6],
+      timeField: fields[7],
     );
-    if (subFields == null) return null;
+    if (subFieldsResult.isErr()) {
+      return subFieldsResult
+          .asErrorWithContext('Invalid subfields in rule line');
+    }
+    final subFields = subFieldsResult.unwrap();
 
     final clause = RuleClause(
       startYear: subFields.startYear,
@@ -69,13 +82,15 @@ final class RuleClause {
       timeReference: subFields.time.$2,
       isDst: offsetAndDst.isDst,
       offset: offsetAndDst.$1,
-      abbreviationVariable: line.fields[9].value,
+      abbreviationVariable: fields[9].value,
     );
-    return (nameField.value, clause);
+    return Ok((nameField.value, clause));
   }
 
   /// Original: `getsave`
-  static (SecondsDuration, {bool isDst})? _parseOffsetAndDst(Field field) {
+  static ParseResult<(SecondsDuration, {bool isDst})> parseOffsetAndDst(
+    Field field,
+  ) {
     final isDst = switch (field.value[field.value.length - 1]) {
       'd' => true,
       's' => false,
@@ -84,11 +99,13 @@ final class RuleClause {
 
     final save = field.parseHms(
       end: isDst == null ? field.value.length : field.value.length - 1,
-      errorText: 'Invalid saved time',
     );
-    if (save == null) return null;
+    if (save.isErr()) return save.asErrorWithContext('Invalid saved time');
 
-    return (save, isDst: isDst ?? save != const Seconds(0));
+    return Ok((
+      save.unwrap(),
+      isDst: isDst ?? save.unwrap() != const Seconds(0),
+    ));
   }
 
   static final _startYearLookup =
@@ -97,13 +114,14 @@ final class RuleClause {
       ['minimum', 'maximum', 'only'].associateWith((it) => it);
 
   /// Original: `rulesub`
-  static ({
-    RuleYear startYear,
-    RuleYear endYear,
-    Month month,
-    DayCode dayCode,
-    TimeWithReference time,
-  })? _parseSubfields({
+  static ParseResult<
+      ({
+        LimitOr<Year> startYear,
+        LimitOr<Year> endYear,
+        Month month,
+        DayCode dayCode,
+        TimeWithReference time,
+      })> _parseSubfields({
     required Field startYearField,
     required Field endYearField,
     required Field yearTypeField,
@@ -111,30 +129,43 @@ final class RuleClause {
     required Field dayField,
     required Field timeField,
   }) {
-    final month = monthField.parseMonth();
-    if (month == null) return null;
+    final monthResult = monthField.parseMonth();
+    if (monthResult.isErr()) {
+      return monthResult.asErrorWithContext('Invalid month in rule subfields');
+    }
+    final month = monthResult.unwrap();
 
-    final time = parseTime(timeField);
-    if (time == null) return null;
+    final timeResult = parseTime(timeField);
+    if (timeResult.isErr()) {
+      return timeResult.asErrorWithContext('Invalid time in rule subfields');
+    }
+    final time = timeResult.unwrap();
 
     // Years
-    final startYear = parseStartYear(startYearField);
-    if (startYear == null) return null;
+    final startYearResult = parseStartYear(startYearField);
+    if (startYearResult.isErr()) {
+      return startYearResult
+          .asErrorWithContext('Invalid start year in zone line');
+    }
+    final startYear = startYearResult.unwrap();
 
     final endYear = switch (endYearField.getByWord(_endYearLookup)) {
-      'minimum' => const RuleYear.min(),
-      'maximum' => const RuleYear.max(),
+      'minimum' => const LimitOrMin<Year>(),
+      'maximum' => const LimitOrMax<Year>(),
       'only' => startYear,
-      _ => RuleYear(Year(
+      _ => LimitOrValue(Year(
           int.tryParse(endYearField.value) ??
               endYearField.throwFormatException('Invalid end year'),
         )),
     };
 
     switch ((startYear, endYear)) {
-      case (_RuleYear(), _MinRuleYear()) ||
-            (_MaxRuleYear(), _MinRuleYear() || _RuleYear()):
-      case (_RuleYear(year: final startYear), _RuleYear(year: final endYear))
+      case (LimitOrValue(), LimitOrMin()) ||
+            (LimitOrMax(), LimitOrMin() || LimitOrValue()):
+      case (
+            LimitOrValue(value: final startYear),
+            LimitOrValue(value: final endYear),
+          )
           when startYear > endYear:
         endYearField.throwFormatException(
           'Invalid year range: “$startYearField – $endYearField”',
@@ -145,34 +176,37 @@ final class RuleClause {
       yearTypeField.throwFormatException('Invalid year type, use “-” instead.');
     }
 
-    final dayCode = DayCode.parse(dayField, month);
-    if (dayCode == null) return null;
+    final dayCodeResult = DayCode.parse(dayField, month);
+    if (dayCodeResult.isErr()) {
+      return dayCodeResult
+          .asErrorWithContext('Invalid day code in rule subfields');
+    }
+    final dayCode = dayCodeResult.unwrap();
 
-    return (
+    return Ok((
       startYear: startYear,
       endYear: endYear,
       month: month,
       dayCode: dayCode,
       time: time,
-    );
+    ));
   }
 
-  static RuleYear? parseStartYear(Field yearField) {
+  static ParseResult<LimitOr<Year>> parseStartYear(Field yearField) {
     switch (yearField.getByWord(_startYearLookup)) {
       case 'minimum':
-        return const RuleYear.min();
+        return const Ok(LimitOrMin());
       case 'maximum':
-        return const RuleYear.max();
+        return const Ok(LimitOrMax());
       default:
         final value = int.tryParse(yearField.value);
-        if (value != null) return RuleYear(Year(value));
+        if (value != null) return Ok(LimitOrValue(Year(value)));
 
-        yearField.logError('Invalid starting year');
-        return null;
+        return Err(ParseException(yearField, 'Invalid starting year'));
     }
   }
 
-  static TimeWithReference? parseTime(Field timeField) {
+  static ParseResult<TimeWithReference> parseTime(Field timeField) {
     final timeString = timeField.value;
     var reference = TimeReference.localTime;
     var end = timeString.length;
@@ -195,14 +229,14 @@ final class RuleClause {
       }
     }
 
-    final time = timeField.parseHms(end: end, errorText: 'Invalid time of day');
-    if (time == null) return null;
+    final time = timeField.parseHms(end: end);
+    if (time.isErr()) return time.asErrorWithContext('Invalid time of day');
 
-    return (time, reference);
+    return Ok((time.unwrap(), reference));
   }
 
-  final RuleYear startYear;
-  final RuleYear endYear;
+  final LimitOr<Year> startYear;
+  final LimitOr<Year> endYear;
 
   final Month month;
 
@@ -214,13 +248,16 @@ final class RuleClause {
   final SecondsDuration time;
   final TimeReference timeReference;
   final bool isDst;
-  final SecondsDuration offset;
+  final SecondsDuration offset; // TODO(JonasWanke): Change to `Seconds`
   final String abbreviationVariable;
 
   @override
   String toString() {
     final yearRange = switch ((startYear, endYear)) {
-      (_RuleYear(year: final startYear), _RuleYear(year: final endYear))
+      (
+        LimitOrValue(value: final startYear),
+        LimitOrValue(value: final endYear),
+      )
           when startYear == endYear =>
         startYear.toString(),
       _ => '$startYear – $endYear',
@@ -244,16 +281,35 @@ Seconds calculateRuleClauseEpochTime(
   Month ruleClauseMonth,
   DayCode ruleClauseDayCode,
   SecondsDuration ruleClauseTime,
-  RuleYear targetRuleYear,
+  LimitOr<Year> targetRuleYear,
+) {
+  return calculateRuleClauseDateTime(
+    ruleClauseMonth,
+    ruleClauseDayCode,
+    ruleClauseTime,
+    targetRuleYear,
+  ).durationSinceUnixEpoch.roundToSeconds();
+}
+
+/// Given rule clause information and a year, compute the date (in seconds since
+/// January 1, 1970, 00:00 LOCAL time) in that year that the rule clause refers
+/// to.
+///
+/// Original: `rpytime`
+DateTime calculateRuleClauseDateTime(
+  Month ruleClauseMonth,
+  DayCode ruleClauseDayCode,
+  SecondsDuration ruleClauseTime,
+  LimitOr<Year> targetRuleYear,
 ) {
   final Year targetYear;
   switch (targetRuleYear) {
-    case _MinRuleYear():
-      return minTime;
-    case _MaxRuleYear():
-      return maxTime;
-    case _RuleYear(year: final year):
-      targetYear = year;
+    case LimitOrMin():
+      return minDateTime;
+    case LimitOrValue(:final value):
+      targetYear = value;
+    case LimitOrMax():
+      return maxDateTime;
   }
 
   // TODO: Confirm that this is correct
@@ -274,29 +330,27 @@ Seconds calculateRuleClauseEpochTime(
       date = Date.fromYearMonthAndDay(yearMonth, day).unwrap();
       date = date.nextOrSame(weekday);
   }
-  return (date.at(Time.midnight) + ruleClauseTime)
-      .durationSinceUnixEpoch
-      .roundToSeconds();
+  return date.at(Time.midnight) + ruleClauseTime;
 }
 
 typedef TimeWithReference = (SecondsDuration, TimeReference);
 
-@freezed
-sealed class RuleYear with _$RuleYear {
-  const factory RuleYear(Year year) = _RuleYear;
-  const factory RuleYear.min() = _MinRuleYear;
-  const factory RuleYear.max() = _MaxRuleYear;
-  const RuleYear._();
+// @freezed
+// sealed class RuleYear with _$RuleYear {
+//   const factory RuleYear(Year year) = LiteralRuleYear;
+//   const factory RuleYear.min() = MinRuleYear;
+//   const factory RuleYear.max() = MaxRuleYear;
+//   const RuleYear._();
 
-  @override
-  String toString() {
-    return switch (this) {
-      _RuleYear(:final year) => year.toString(),
-      _MinRuleYear() => 'min',
-      _MaxRuleYear() => 'max',
-    };
-  }
-}
+//   @override
+//   String toString() {
+//     return switch (this) {
+//       LiteralRuleYear(:final year) => year.toString(),
+//       MinRuleYear() => 'min',
+//       MaxRuleYear() => 'max',
+//     };
+//   }
+// }
 
 @freezed
 sealed class DayCode with _$DayCode {
@@ -314,11 +368,11 @@ sealed class DayCode with _$DayCode {
   /// - `last-Sunday` (undocumented)
   /// - `Sun<=20`
   /// - `Sun>=7`
-  static DayCode? parse(Field field, Month month) {
+  static ParseResult<DayCode> parse(Field field, Month month) {
     final lastWeekday = field.getByWord(_lastLookupWithoutHyphen) ??
         field.getByWord(_lastLookupWithHyphen);
     if (lastWeekday != null) {
-      return DayCode.lessThanOrEqualTo(lastWeekday, month.maxLastDay.day);
+      return Ok(DayCode.lessThanOrEqualTo(lastWeekday, month.maxLastDay.day));
     }
 
     final lessThanIndex = field.value.indexOfOrNull('<=');
@@ -326,27 +380,30 @@ sealed class DayCode with _$DayCode {
         lessThanIndex != null ? null : field.value.indexOfOrNull('>=');
     final index = lessThanIndex ?? greaterThanIndex;
     if (index != null) {
-      final weekday = field.parseWeekday(0, index);
-      if (weekday == null) return null;
+      final weekdayResult = field.parseWeekday(0, index);
+      if (weekdayResult.isErr()) {
+        return weekdayResult.asErrorWithContext('Invalid weekday in day code');
+      }
+      final weekday = weekdayResult.unwrap();
 
       final dayString = field.value.substring(index + 2);
       final day = int.tryParse(dayString);
       if (day == null) {
-        field.logError('Invalid day of month');
-        return null;
+        return Err(ParseException(field, 'Invalid day of month $month'));
       }
 
-      return lessThanIndex != null
-          ? DayCode.lessThanOrEqualTo(weekday, day)
-          : DayCode.greaterThanOrEqualTo(weekday, day);
+      return Ok(
+        lessThanIndex != null
+            ? DayCode.lessThanOrEqualTo(weekday, day)
+            : DayCode.greaterThanOrEqualTo(weekday, day),
+      );
     }
 
     final day = int.tryParse(field.value);
     if (day == null) {
-      field.logError('Invalid day of month');
-      return null;
+      return Err(ParseException(field, 'Invalid day of month $month'));
     }
-    return DayCode.dayOfMonth(day);
+    return Ok(DayCode.dayOfMonth(day));
   }
 
   static final _lastLookupWithoutHyphen =
@@ -368,13 +425,28 @@ sealed class DayCode with _$DayCode {
 
 enum TimeReference {
   /// The local (wall clock) time.
-  localTime,
+  localTime(isStd: false, isUt: false),
 
   /// The local standard time.
   ///
   /// This differs from [localTime] when observing daylight saving time.
-  localStandardTime,
+  localStandardTime(isStd: true, isUt: false),
 
   /// UT or UTC, whichever was official at the time.
-  universalTime,
+  universalTime(isStd: true, isUt: true);
+
+  const TimeReference({required this.isStd, required this.isUt});
+
+  final bool isStd;
+  final bool isUt;
+
+  static TimeReference from({required bool isStd, required bool isUt}) =>
+      values.firstWhere((it) => it.isStd == isStd && it.isUt == isUt);
+
+  Seconds getAdjustment(SecondsDuration standardOffset, SecondsDuration save) {
+    var result = const Seconds(0);
+    if (!isStd) result += save;
+    if (!isUt) result += standardOffset;
+    return result;
+  }
 }
