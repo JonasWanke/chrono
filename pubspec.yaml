@@ -8,25 +8,18 @@ environment:
 
 dependencies:
   clock: ^1.1.1
-  collection: ^1.15.0
   dartx: ^1.1.0
   fixed: '>=2.0.0 <5.0.0'
   glados: ^1.1.6
   meta: ^1.3.0
   oxidized: ^6.0.0
-  time: ^2.1.1
 
 dev_dependencies:
-  build_runner: ^2.4.6
-  freezed: ^2.4.1
-  freezed_annotation: ^2.4.1
-  matcher: ^0.12.16
   supernova:
     git:
       url: https://github.com/JonasWanke/supernova.git
       path: supernova
       ref: d66051f0f016cc42c3b5c6f0135a48875df5417e
-  test: ^1.24.2
 
 dependency_overrides:
   http: ^1.0.0
