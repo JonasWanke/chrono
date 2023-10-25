@@ -20,6 +20,25 @@ Future<void> main(List<String> args) async {
   final files = await args.associateWith((it) => File(it).readAsLines()).wait;
   final (rules, zones) = parseZoneInformationFiles(files);
   logger.info('Parsed all files', {'rules': rules, 'zones': zones});
+
+  // for (final entry in zones.entries) {
+  //   final zone = entry.value;
+  //   for (final zoneRule
+  //       in zone.rulesWithEnd.map((it) => it.$1).followedBy([zone.lastRule])) {
+  //     if (zoneRule.ruleName == null) {
+  //       logger.debug('Zone rule for zone ${zone.name} has no name');
+  //       continue;
+  //     }
+
+  //     if (!rules.containsKey(zoneRule.ruleName)) {
+  //       logger.debug(
+  //         'Zone rule for zone ${zone.name} references unknown rule '
+  //         '${zoneRule.ruleName}',
+  //       );
+  //       continue;
+  //     }
+  //   }
+  // }
 }
 
 // TODO: Support leap files
@@ -271,4 +290,56 @@ extension StringExtension on String {
     final index = indexOf(pattern);
     return index >= 0 ? index : null;
   }
+}
+
+/// https://en.wikipedia.org/wiki/Unix_time
+@immutable
+final class UnixEpochSeconds
+    with ComparisonOperatorsFromComparable<UnixEpochSeconds>
+    implements Comparable<UnixEpochSeconds> {
+  UnixEpochSeconds(SecondsDuration duration)
+      : durationSinceUnixEpoch = duration.asSeconds;
+
+  final Seconds durationSinceUnixEpoch;
+
+  DateTime get dateTimeInLocalZone =>
+      DateTime.fromCore(asCoreDateTimeInLocalZone);
+  DateTime get dateTimeInUtc => DateTime.fromCore(asCoreDateTimeInUtc);
+
+  core.DateTime get asCoreDateTimeInLocalZone => _getDateTime(isUtc: false);
+  core.DateTime get asCoreDateTimeInUtc => _getDateTime(isUtc: true);
+  core.DateTime _getDateTime({required bool isUtc}) {
+    return core.DateTime.fromMicrosecondsSinceEpoch(
+      durationSinceUnixEpoch.roundToMicroseconds().inMicroseconds,
+      isUtc: isUtc,
+    );
+  }
+
+  UnixEpochSeconds operator +(SecondsDuration duration) =>
+      UnixEpochSeconds(durationSinceUnixEpoch + duration);
+  UnixEpochSeconds operator -(SecondsDuration duration) =>
+      UnixEpochSeconds(durationSinceUnixEpoch - duration);
+
+  /// Returns `this - other`.
+  Seconds difference(UnixEpochSeconds other) =>
+      durationSinceUnixEpoch - other.durationSinceUnixEpoch;
+
+  @override
+  int compareTo(UnixEpochSeconds other) =>
+      durationSinceUnixEpoch.compareTo(other.durationSinceUnixEpoch);
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is UnixEpochSeconds &&
+            durationSinceUnixEpoch == other.durationSinceUnixEpoch);
+  }
+
+  @override
+  int get hashCode => durationSinceUnixEpoch.hashCode;
+
+  @override
+  String toString() => '${dateTimeInUtc}Z';
+
+  String toJson() => toString();
 }
