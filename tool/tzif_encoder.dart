@@ -1,5 +1,5 @@
 import 'package:chrono/chrono.dart';
-import 'package:supernova/supernova.dart' hide Instant;
+import 'package:supernova/supernova.dart' hide Instant, Weekday;
 import 'package:supernova/supernova_io.dart';
 
 import 'leap_seconds.dart';
@@ -10,6 +10,8 @@ import 'zone_information_compiler.dart';
 // ignore_for_file: binary-expression-operand-order
 
 var unspecifiedtype = 0;
+
+// Original: `YEARSPERREPEAT` → `Years.gregorianRepeat`
 
 /// Original: `outzone`
 Future<void> encodeTzif(Zone zone, Map<String, Rule> rules) async {
@@ -36,10 +38,15 @@ Future<void> encodeTzif(Zone zone, Map<String, Rule> rules) async {
   charcnt = 0;
   final zoneCount = zone.allRules.length;
   var prodstic = zoneCount == 1;
+
+  /// Original: `startttisstd`, `startttisut`
   var startTimeReference = TimeReference.localTime;
 
-  var minYear = Date.unixEpoch.year;
-  var maxYear = Date.unixEpoch.year;
+  /// Original: `min_year`
+  var minYear = Year.unixEpoch;
+
+  /// Original: `max_year`
+  var maxYear = Year.unixEpoch;
 
   /// Original: `updateminmax`
   void updateMinMaxYears(Year year) {
@@ -47,11 +54,11 @@ Future<void> encodeTzif(Zone zone, Map<String, Rule> rules) async {
     if (maxYear < year) maxYear = year;
   }
 
-  // TODO
-  // if (leapseen) {
-  //   updateminmax(leapminyear);
-  //   updateminmax(leapmaxyear + (leapmaxyear < ZIC_MAX));
-  // }
+  if (leapseen) {
+    // TODO(JonasWanke): handle leap second min and max years
+    // updateMinMaxYears(leapminyear!);
+    // updateMinMaxYears(leapmaxyear! + (leapmaxyear! < ZIC_MAX));
+  }
 
   for (final (zoneRule, end) in zone.allRules) {
     if (end != null) updateMinMaxYears(end.dateTime.date.year);
@@ -74,19 +81,66 @@ Future<void> encodeTzif(Zone zone, Map<String, Rule> rules) async {
   }
 
   // Generate lots of data if a rule can't cover all future times.
-  // TODO: Implement `stringzone` to fill [envVar]
-  // Original code determines compatibility to use here. We use:
-  // `compat = 2013`, `version = '3'`, `do_extend = false`
-  const version = TzifVersion.v3;
+  // FIXME: Implement `stringzone`
+  final stringzoneResult = stringzone(zone, rules);
+  final compat = stringzoneResult?.compat;
+  final envvar = stringzoneResult?.envvar;
+  final version =
+      compat == null || compat < 2013 ? TzifVersion.v2 : TzifVersion.v3;
 
-  // max_year = max(max_year,
-  //     (redundant_time / (SECSPERDAY * DAYSPERNYEAR) + EPOCH_YEAR + 1));
+  /// Original: `do_extend`
+  final doExtend = compat == null;
+  if (noise) {
+    if (envvar == null) {
+      logger.warning('No POSIX environment variable for zone ${zone.name}');
+    } else if (compat != 0) {
+      // Circa-COMPAT clients, and earlier clients, might not work for this zone
+      // when given dates before 1970 or after 2038.
+      logger.warning(
+        '${zone.name}: pre-$compat clients may mishandle distant timestamps',
+      );
+    }
+  }
+  if (doExtend) {
+    // Search through a couple of extra years past the obvious 400, to avoid
+    // edge cases. For example, suppose a non-POSIX rule applies from 2012
+    // onwards and has transitions in March and September, plus some one-off
+    // transitions in November 2013. If zic looked only at the last 400 years,
+    // it would set max_year=2413, with the intent that the 400 years 2014
+    // through 2413 will be repeated. The last transition listed in the tzfile
+    // would be in 2413-09, less than 400 years after the last one-off
+    // transition in 2013-11. Two years might be overkill, but with the kind of
+    // edge cases available we're not sure that one year would suffice.
+    /// Original: `years_of_observations`
+    final yearsOfObservations = Years.gregorianRepeat + const Years(2);
+
+    minYear =
+        (minYear - yearsOfObservations).coerceAtLeast(const Year(ZIC_MIN));
+    maxYear =
+        (maxYear + yearsOfObservations).coerceAtLeast(const Year(ZIC_MAX));
+    // Regardless of any of the above, for a "proDSTic" zone which specifies
+    // that its rules always have and always will be in effect, we only need one
+    // cycle to define the zone.
+    if (prodstic) {
+      minYear = const Year(1900);
+      maxYear = const Year(1900) + yearsOfObservations;
+    }
+  }
+
+  maxYear = maxYear.coerceAtLeast(
+    Year.unixEpoch +
+        Years(
+          redundant_time.durationSinceUnixEpoch.inSeconds ~/
+                  Seconds.perNormalYear +
+              1,
+        ),
+  );
   final maxYear0 = maxYear;
-
-  // `bloat = 0` → `want_bloat() = true`
-  // For the benefit of older systems, generate data from 1900 through 2038.
-  if (minYear > const Year(1900)) minYear = const Year(1900);
-  if (maxYear < const Year(2038)) maxYear = const Year(2038);
+  if (bloat.wantsBloat) {
+    // For the benefit of older systems, generate data from 1900 through 2038.
+    if (minYear > const Year(1900)) minYear = const Year(1900);
+    if (maxYear < const Year(2038)) maxYear = const Year(2038);
+  }
 
   if (min_time < lo_time || hi_time < max_time) {
     unspecifiedtype =
@@ -98,6 +152,8 @@ Future<void> encodeTzif(Zone zone, Map<String, Rule> rules) async {
   // Corresponds to `rule.r_todo` in the original code.
   final rulesToDo = <(String, int)>{};
 
+  RuleClause? prevrp;
+  (int, DateTime)? prevktime;
   for (final (i, (zoneRule, end)) in zone.allRules.indexed) {
     /// A guess that may well be corrected later.
     var save = const Seconds(0);
@@ -125,7 +181,7 @@ Future<void> encodeTzif(Zone zone, Map<String, Rule> rules) async {
         } else {
           defaulttype = type;
         }
-      case OffsetZoneRuleType(save: final zoneSave, :final isDst):
+      case OffsetZoneRuleType(offset: final zoneSave, :final isDst):
         save = zoneSave.asSeconds;
         assert(zoneRule.name is! FormattedWithVariableZoneRuleName);
         startBuffer = doabbr(zoneRule, '', save, isDst: isDst);
@@ -175,6 +231,8 @@ Future<void> encodeTzif(Zone zone, Map<String, Rule> rules) async {
 
             // Find the rule (of those to do, if any) that takes effect earliest
             // in the year.
+
+            /// Original: `k`, `ktime`
             (int, DateTime)? ktime;
             late Seconds offset;
             for (var j = 0; j < currentRule.clauses.length; j++) {
@@ -184,13 +242,10 @@ Future<void> encodeTzif(Zone zone, Map<String, Rule> rules) async {
               offset = r.timeReference.getAdjustment(stdoff, save);
 
               final DateTime jtime;
-              switch (temps[j]!) {
-                case LimitOrMin():
-                  continue;
-                case LimitOrValue(:final value):
-                  jtime = value - offset;
-                case LimitOrMax():
-                  continue;
+              if (temps[j]! case LimitOrValue(:final value)) {
+                jtime = value - offset;
+              } else {
+                continue;
               }
 
               if (ktime == null || jtime < ktime.$2) {
@@ -250,6 +305,16 @@ Future<void> encodeTzif(Zone zone, Map<String, Rule> rules) async {
               isDst: rp.isDst,
             );
             offset = oadd(zoneRule.standardOffset, rp.offset.asSeconds);
+            if (!bloat.wantsBloat &&
+                end == null &&
+                !doExtend &&
+                prevrp != null &&
+                lo_time.dateTimeInUtc <= prevktime!.$2 &&
+                redundant_time.dateTimeInUtc <= ktime.$2 &&
+                rp.endYear is LimitOrMax &&
+                prevrp.endYear is LimitOrMax) {
+              break;
+            }
             final type = addtype(offset, ab, rp.isDst, rp.timeReference);
             if (defaulttype < 0 && !rp.isDst) defaulttype = type;
             if (rp.endYear is LimitOrMax &&
@@ -257,6 +322,8 @@ Future<void> encodeTzif(Zone zone, Map<String, Rule> rules) async {
               lastatmax = timecnt;
             }
             addtt(ktime.$2, type);
+            prevrp = rp;
+            prevktime = ktime;
           }
         }
     }
@@ -294,9 +361,337 @@ Future<void> encodeTzif(Zone zone, Map<String, Rule> rules) async {
       type: attypes[lastatmax].type
     );
   }
+  if (doExtend) {
+    // If we're extending the explicitly listed observations for 400 years
+    // because we can't fill the POSIX-TZ field, check whether we actually ended
+    // up explicitly listing observations through that period. If there aren't
+    // any near the end of the 400-year period, add a redundant one at the end
+    // of the final year, to make it clear that we are claiming to have definite
+    // knowledge of the lack of transitions up to that point.
+    final lastat = attypes.maxBy((it) => it.at);
+    if (lastat == null ||
+        lastat.at <
+            calculateRuleClauseDateTime(
+              Month.january,
+              const DayCode.dayOfMonth(1),
+              const Seconds(0),
+              LimitOrValue(maxYear - const Years(1)),
+            )) {
+      addtt(
+        calculateRuleClauseDateTime(
+          Month.january,
+          const DayCode.dayOfMonth(1),
+          const Seconds(0),
+          LimitOrValue(maxYear + const Years(1)),
+        ),
+        lastat?.type ?? defaulttype,
+      );
+      attypes[timecnt - 1] = (
+        at: attypes[timecnt - 1].at,
+        dontMerge: true,
+        type: attypes[timecnt - 1].type
+      );
+    }
+  }
 
-  // TODO(JonasWanke): Generate `envvar`
-  await _writeZone(zone.name, 'envvar', version, defaulttype, bloat: bloat);
+  await _writeZone(zone.name, envvar ?? '', version, defaulttype, bloat: bloat);
+}
+
+({int compat, String envvar})? stringzone(Zone zone, Map<String, Rule> rules) {
+  // register const struct zone *zp;
+  // register struct rule *rp;
+  // register struct rule *stdrp;
+  // register struct rule *dstrp;
+  // register ptrdiff_t i;
+  // register int compat = 0;
+  // register int c;
+  // int offsetlen;
+  // struct rule stdr, dstr;
+  // ptrdiff_t len;
+  // int dstcmp;
+  // struct rule *lastrp[2] = {NULL, NULL};
+  // struct zone zstr[2];
+  // struct zone const *stdzp;
+  // struct zone const *dstzp;
+
+  // Internet [RFC 8536 section 5.1](https://www.rfc-editor.org/rfc/rfc8536.html#section-5.1)
+  // says to use an empty TZ string if future timestamps are truncated.
+  if (hi_time < max_time) return null;
+
+  final zp = zone.lastRule;
+  RuleClause? stdrp;
+  RuleClause? dstrp;
+  final int dstcmp;
+  switch (zp.type) {
+    case NoneZoneRuleType():
+      // TODO(JonasWanke): Verify that this is correct
+      // It corresponds to `zp->z_nrules == 0 && !zp_isdst`
+      dstcmp = -1;
+      break;
+    case OffsetZoneRuleType(:final isDst):
+      dstcmp = isDst ? 1 : -1;
+      break;
+    case RuleZoneRuleType(:final ruleName):
+      final rule = rules[ruleName]!;
+      for (final rp in rule.clauses) {
+        final last = rp.isDst ? dstrp : stdrp;
+        final cmp = _compareRuleClauses(last, rp);
+        if (cmp < 0) {
+          if (rp.isDst) {
+            dstrp = rp;
+          } else {
+            stdrp = rp;
+          }
+        } else if (cmp == 0) {
+          return null;
+        }
+      }
+      dstcmp = _compareRuleClauses(dstrp, stdrp);
+  }
+
+  var stdzp = zp;
+  var dstzp = zp;
+
+  if (dstcmp < 0) {
+    // Standard time all year.
+    dstrp = null;
+  } else if (dstcmp > 0) {
+    // DST all year. Use an abbreviation like "XXX3EDT4,0/0,J365/23" for EDT
+    // (-04) all year.
+    /// Original: `save`
+    final save = dstrp?.offset ??
+        zp.type.map<Seconds>(
+          rule: (_) => throw Exception('`dstrp` should not be `null` here.'),
+          offset: (it) => it.offset.asSeconds,
+          none: (_) => const Seconds(0),
+        );
+    if (save.isNonNegative) {
+      // Positive DST, the typical case for all-year DST. Fake a timezone with
+      // negative DST.
+      stdzp = ZoneRule(
+        standardOffset: zp.standardOffset.asSeconds + save * 2,
+        type: const ZoneRuleType.none(),
+        name: const ZoneRuleName.simple('XXX'), // Any 3 letters will do.
+      );
+      dstzp = ZoneRule(
+        standardOffset: zp.standardOffset.asSeconds + save * 2,
+        type: const ZoneRuleType.none(),
+        name: zp.name,
+      );
+    }
+
+    // TODO(JonasWanke): I think that `startYear` and `endYear` are not used afterwards since they aren't set in the original. Hence, I just used a default value.
+    dstrp = RuleClause(
+      startYear: const LimitOrMin(),
+      endYear: const LimitOrMax(),
+      month: Month.january,
+      dayCode: const DayCode.dayOfMonth(1),
+      time: const Seconds(0),
+      timeReference: TimeReference.localTime,
+      isDst: true,
+      offset: -save.absolute,
+      abbreviationVariable: dstrp?.abbreviationVariable,
+    );
+    stdrp = RuleClause(
+      startYear: const LimitOrMin(),
+      endYear: const LimitOrMax(),
+      month: Month.december,
+      dayCode: const DayCode.dayOfMonth(31),
+      time: Seconds.normalDay + dstrp.offset,
+      timeReference: TimeReference.localTime,
+      isDst: false,
+      offset: const Seconds(0),
+      abbreviationVariable:
+          save.isNegative ? stdrp?.abbreviationVariable : null,
+    );
+  }
+  var result = doabbr(
+    stdzp,
+    stdrp?.abbreviationVariable,
+    const Seconds(0),
+    isDst: false,
+    addQuotes: true,
+  );
+  final offsetString = stringoffset(-stdzp.standardOffset.asSeconds);
+  if (offsetString == null) return null;
+  result += offsetString;
+
+  if (dstrp == null) return (compat: 0, envvar: result);
+
+  result += doabbr(
+    dstzp,
+    dstrp.abbreviationVariable,
+    dstrp.offset.asSeconds,
+    isDst: dstrp.isDst,
+    addQuotes: true,
+  );
+
+  if (dstrp.offset != Seconds.hour) {
+    final offsetString =
+        stringoffset(dstzp.standardOffset.asSeconds + dstrp.offset);
+    if (offsetString == null) return null;
+    result += offsetString;
+  }
+
+  result += ',';
+
+  final dstRuleStringResult =
+      stringrule(dstrp, dstrp.offset.asSeconds, stdzp.standardOffset.asSeconds);
+  if (dstRuleStringResult == null) return null;
+  var compat = dstRuleStringResult.compat;
+  result += dstRuleStringResult.ruleString;
+
+  result += ',';
+
+  final stdRuleStringResult = stringrule(
+      stdrp!, dstrp.offset.asSeconds, stdzp.standardOffset.asSeconds);
+  if (stdRuleStringResult == null) return null;
+  if (compat < stdRuleStringResult.compat) compat = stdRuleStringResult.compat;
+  result += stdRuleStringResult.ruleString;
+  return (compat: compat, envvar: result);
+}
+
+/// Original: `stringoffset`
+String? stringoffset(Seconds offset) {
+  final buffer = StringBuffer(offset.isNegative ? '-' : '');
+  final (hours, minutes, seconds) = offset.absolute.asHoursAndMinutesAndSeconds;
+  if (hours >= Hours.normalWeek) return null;
+
+  buffer.write(hours.inHours.toString());
+  if (!minutes.isZero || !seconds.isZero) {
+    buffer.write(minutes.inMinutes.toString().padLeft(2, '0'));
+    if (!seconds.isZero) {
+      buffer.write(seconds.inSeconds.toString().padLeft(2, '0'));
+    }
+  }
+  return buffer.toString();
+}
+
+({int compat, String ruleString})? stringrule(
+  RuleClause rp,
+  Seconds save,
+  Seconds stdoff,
+) {
+  var tod = rp.time.asSeconds;
+  var compat = 0;
+  var result = '';
+
+  switch (rp.dayCode) {
+    case DayOfMonthDayCode(day: final day):
+      if (day == 29 && rp.month == Month.february) return null;
+      final total = Month.values
+          .takeWhile((it) => it < rp.month)
+          .map((it) => it.lengthInCommonYear)
+          .fold(const Days(0), (sum, it) => sum + it);
+      // Omit the "J" in Jan and Feb, as that's shorter.
+      if (rp.month <= Month.february) {
+        result += (total.inDays + day - 1).toString();
+      } else {
+        result += 'J${total.inDays + day}';
+      }
+
+    case LessThanOrEqualToDayCode(weekday: var weekday, day: final day):
+      final int week;
+      if (day == rp.month.lastDayInLeapYear.day) {
+        week = 5;
+      } else {
+        final weekdayoff = Days(day) % Days.perWeek;
+        if (!weekdayoff.isZero) compat = 2013;
+        weekday -= weekdayoff;
+        tod += weekdayoff.asNormalHours;
+        week = day ~/ Days.perWeek;
+      }
+      // Weekdays should be 0 for Sunday, 1 for Monday, etc.
+      // (See `TM_SUNDAY`, `TM_MONDAY`, etc. in the original.)
+      result +=
+          'M${rp.month.number}.$week.${weekday.number % Weekday.maxNumber}';
+    case GreaterThanOrEqualToDayCode(weekday: var weekday, day: final day):
+      final weekdayoff = Days(day - 1) % Days.perWeek;
+      if (!weekdayoff.isZero) compat = 2013;
+      weekday -= weekdayoff;
+      tod += weekdayoff.asNormalHours;
+      final week = 1 + (day - 1) ~/ Days.perWeek;
+      // Weekdays should be 0 for Sunday, 1 for Monday, etc.
+      // (See `TM_SUNDAY`, `TM_MONDAY`, etc. in the original.)
+      result +=
+          'M${rp.month.number}.$week.${weekday.number % Weekday.maxNumber}';
+  }
+
+  if (rp.timeReference.isUt) tod += stdoff;
+  if (rp.timeReference.isStd && !rp.isDst) tod += save;
+  if (tod != const Hours(2).asSeconds) {
+    result += '/';
+
+    final stringOffsetResult = stringoffset(tod);
+    if (stringOffsetResult == null) return null;
+    result += stringOffsetResult;
+
+    if (tod.isNegative) {
+      if (compat < 2013) compat = 2013;
+    } else if (tod >= Seconds.normalDay) {
+      if (compat < 1994) compat = 1994;
+    }
+  }
+  return (compat: compat, ruleString: result);
+}
+
+// static void adjleap(void) {
+//   register int i;
+//   register zic_t last = 0;
+//   register zic_t prevtrans = 0;
+
+//   /*
+//   ** propagate leap seconds forward
+//   */
+//   for (i = 0; i < leapcnt; ++i) {
+//     if (trans[i] - prevtrans < 28 * SECSPERDAY) {
+//       error(_("Leap seconds too close together"));
+//       exit(EXIT_FAILURE);
+//     }
+//     prevtrans = trans[i];
+//     trans[i] = tadd(trans[i], last);
+//     last = corr[i] += last;
+//   }
+
+//   if (0 <= leapexpires) {
+//     leapexpires = oadd(leapexpires, last);
+//     if (!(leapcnt == 0 || (trans[leapcnt - 1] < leapexpires))) {
+//       error(_("last Leap time does not precede Expires time"));
+//       exit(EXIT_FAILURE);
+//     }
+//   }
+// }
+
+/// Original: `rule_cmp`
+int _compareRuleClauses(RuleClause? a, RuleClause? b) {
+  return switch ((a, b)) {
+    (null, null) => 0,
+    (null, _) => -1,
+    (_, null) => 1,
+    (RuleClause(endYear: final aEndYear), RuleClause(endYear: final bEndYear))
+        when aEndYear != bEndYear =>
+      switch ((aEndYear, bEndYear)) {
+        (LimitOrMin(), LimitOrValue() || LimitOrMax()) => -1,
+        (LimitOrValue(), LimitOrMax()) => -1,
+        (
+          LimitOrValue(value: final aValue),
+          LimitOrValue(value: final bValue)
+        ) =>
+          aValue.compareTo(bValue),
+        (LimitOrValue() || LimitOrMax(), LimitOrMin()) => 1,
+        (LimitOrMax(), LimitOrValue()) => 1,
+        _ => throw Exception('All cases are handled above'),
+      },
+    (RuleClause(endYear: LimitOrMax()), _) => 0,
+    (RuleClause(month: final aMonth), RuleClause(month: final bMonth))
+        when aMonth != bMonth =>
+      aMonth.compareTo(bMonth),
+    (
+      RuleClause(dayCode: final aDayCode),
+      RuleClause(dayCode: final bDayCode)
+    ) =>
+      aDayCode.day.compareTo(bDayCode.day),
+  };
 }
 
 /// Original: `writezone`
@@ -400,11 +795,11 @@ Future<void> _writeZone(
   );
   final range64 = rangeall.limit(
     lo_time,
-    [hi_time, redundant_time - Seconds(ZIC_MIN < redundant_time ? 1 : 0)].max,
+    [hi_time, redundant_time - Seconds(min_time < redundant_time ? 1 : 0)].max,
     ats,
     types,
   );
-  final range32 = range64.limit(ZIC32_MIN, ZIC32_MAX, ats, types);
+  final range32 = range64.limit(minTime32, maxTime32, ats, types);
 
   // TZif version 4 is needed if a no-op transition is appended to indicate the
   // expiration of the leap second table, or if the first leap second transition
@@ -466,8 +861,8 @@ Future<void> _writeZone(
       thisleapi = range32.leapBase;
       thisleapcnt = range32.leapCount;
       thisleapexpiry = range32.leapExpiry;
-      thismin = ZIC32_MIN;
-      thismax = ZIC32_MAX;
+      thismin = minTime32;
+      thismax = maxTime32;
     } else {
       thisdefaulttype = range64.defaultType;
       thistimei = range64.base;
@@ -659,7 +1054,7 @@ Future<void> _writeZone(
 
     // Output a LO_TIME transition if needed; see `limitrange`. But do not go
     // below the minimum representable value for this pass.
-    final lo = pass == 1 && lo_time < ZIC32_MIN ? ZIC32_MIN : lo_time;
+    final lo = pass == 1 && lo_time < min_time ? min_time : lo_time;
 
     // write `timecnt` × transition time
     if (pretranstype >= 0) {
@@ -885,7 +1280,7 @@ LimitOr<DateTime> rpytime(RuleClause clause, Year wantedYear) {
 /// Original: `doabbr`
 String doabbr(
   ZoneRule zoneRule,
-  String abbreviationVariable,
+  String? abbreviationVariable,
   Seconds offset, {
   required bool isDst,
   bool addQuotes = false,
@@ -894,7 +1289,7 @@ String doabbr(
     EitherZoneRuleName(:final standard, :final dst) => isDst ? dst : standard,
     // TODO(JonasWanke): `disable_percent_s`
     FormattedWithVariableZoneRuleName(:final start, :final end) =>
-      '$start$abbreviationVariable$end',
+      '$start${abbreviationVariable!}$end',
     FormattedOffsetZoneRuleName() =>
       _formatOffset(zoneRule.standardOffset.asSeconds + offset),
     SimpleZoneRuleName(:final value) => value,
@@ -1208,6 +1603,7 @@ extension on Sink<List<int>> {
     add(value.asI32BigEndianBytes);
   }
 
+  // TODO(JonasWanke): Accept `UnixEpochSeconds value` instead of `int`
   void puttzcodepass(int value, int pass) {
     if (pass == 1) {
       addI32(value);
