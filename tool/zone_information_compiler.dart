@@ -258,10 +258,16 @@ sealed class LimitOr<T extends Comparable<T>>
     with ComparisonOperatorsFromComparable<T>
     implements Comparable<T> {
   const LimitOr();
+
+  LimitOr<R> map<R extends Comparable<R>>(Mapper<T, R> mapper);
 }
 
 final class LimitOrMin<T extends Comparable<T>> extends LimitOr<T> {
   const LimitOrMin();
+
+  @override
+  LimitOr<R> map<R extends Comparable<R>>(Mapper<T, R> mapper) =>
+      const LimitOrMin();
 
   @override
   int compareTo(T other) => -1;
@@ -276,6 +282,10 @@ final class LimitOrValue<T extends Comparable<T>> extends LimitOr<T> {
   final T value;
 
   @override
+  LimitOr<R> map<R extends Comparable<R>>(Mapper<T, R> mapper) =>
+      LimitOrValue(mapper(value));
+
+  @override
   int compareTo(T other) => value.compareTo(other);
 
   @override
@@ -284,6 +294,10 @@ final class LimitOrValue<T extends Comparable<T>> extends LimitOr<T> {
 
 final class LimitOrMax<T extends Comparable<T>> extends LimitOr<T> {
   const LimitOrMax();
+
+  @override
+  LimitOr<R> map<R extends Comparable<R>>(Mapper<T, R> mapper) =>
+      const LimitOrMax();
 
   @override
   int compareTo(T other) => 1;
