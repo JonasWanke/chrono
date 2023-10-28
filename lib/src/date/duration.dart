@@ -170,6 +170,10 @@ final class Years extends MonthsDuration {
   const Years(this.inYears);
   const Years.fromJson(int json) : this(json);
 
+  /// The number of years until the gregorian calendar cycles repeat: 400.
+  static const perGregorianRepeat = 400;
+  static const gregorianRepeat = Years(perGregorianRepeat);
+
   final int inYears;
 
   @override
@@ -261,6 +265,11 @@ final class Days extends FixedDaysDuration {
   const Days.fromJson(int json) : this(json);
 
   static const perWeek = 7;
+  static const week = Days(7);
+  static const perNormalYear = 365;
+  static const normalYear = Days(perNormalYear);
+  static const perLeapYear = 366;
+  static const leapYear = Days(perLeapYear);
 
   @override
   final int inDays;

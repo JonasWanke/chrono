@@ -62,7 +62,7 @@ final class Year
     return number % 4 == 0 && (number % 100 != 0 || number % 400 == 0);
   }
 
-  Days get length => isLeapYear ? const Days(366) : const Days(365);
+  Days get length => isLeapYear ? Days.leapYear : Days.normalYear;
   int get numberOfWeeks {
     // https://en.wikipedia.org/wiki/ISO_week_date#Weeks_per_year
     final isLongWeek = lastDay.weekday == Weekday.thursday ||
