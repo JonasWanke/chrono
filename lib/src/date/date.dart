@@ -61,7 +61,7 @@ final class Date
   /// The UNIX epoch: 1970-01-01.
   ///
   /// https://en.wikipedia.org/wiki/Unix_time
-  static const unixEpoch = Date._(YearMonth(Year(1970), Month.january), 1);
+  static const unixEpoch = Date._(YearMonth(Year.unixEpoch, Month.january), 1);
 
   /// The date corresponding to the given number of days since the [unixEpoch].
   factory Date.fromDaysSinceUnixEpoch(Days sinceUnixEpoch) {

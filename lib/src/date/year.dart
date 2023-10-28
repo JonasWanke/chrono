@@ -34,6 +34,11 @@ final class Year
     implements Comparable<Year> {
   const Year(this.number);
 
+  /// The UNIX epoch: 1970.
+  ///
+  /// https://en.wikipedia.org/wiki/Unix_time
+  static const unixEpoch = Year(1970);
+
   factory Year.currentInLocalZone({Clock? clock}) =>
       DateTime.nowInLocalZone(clock: clock).date.year;
   factory Year.currentInUtc({Clock? clock}) =>
