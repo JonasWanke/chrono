@@ -219,17 +219,20 @@ final redundant_time = min_time;
 // TODO(JonasWanke): Make this nullable
 final leapexpires = UnixEpochSeconds(const Seconds(-1));
 
-final ZIC_MIN = min_time;
-final ZIC_MAX = max_time;
-final ZIC32_MIN = UnixEpochSeconds(const Seconds(-1 - 0x7fffffff));
-final ZIC32_MAX = UnixEpochSeconds(const Seconds(0x7fffffff));
-
 // TODO(JonasWanke): Check these values
+const ZIC_MIN = 1 << 63;
+const ZIC_MAX = (1 << 63) - 1;
+const ZIC32_MIN = -1 - 0x7fffffff;
+const ZIC32_MAX = 0x7fffffff;
+
 /// The minimum value representable in a TZif file.
-final min_time = UnixEpochSeconds(const Seconds(1 << 63));
+final min_time = UnixEpochSeconds(const Seconds(ZIC_MIN));
 
 /// The maximum value representable in a TZif file.
-final max_time = UnixEpochSeconds(const Seconds(1 << 63 - 1));
+final max_time = UnixEpochSeconds(const Seconds(ZIC_MAX));
+
+final minTime32 = UnixEpochSeconds(const Seconds(ZIC32_MIN));
+final maxTime32 = UnixEpochSeconds(const Seconds(ZIC32_MAX));
 
 // TODO(JonasWanke): Make these configurable, see original `timerange_option`
 final lo_time = min_time;

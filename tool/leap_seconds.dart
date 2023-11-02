@@ -15,6 +15,10 @@ const TZ_MAX_LEAPS = 50;
 final leapSeconds = <LeapSecond>[];
 int get leapcnt => leapSeconds.length;
 
+bool leapseen = false;
+Year? leapminyear;
+Year? leapmaxyear;
+
 /// Original: `leapadd`
 void addLeapSecond(LeapSecond leapSecond) {
   if (leapcnt >= TZ_MAX_LEAPS) {

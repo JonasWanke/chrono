@@ -188,6 +188,7 @@ final class Zone {
   }
 }
 
+/// Original: `zone`
 @freezed
 sealed class ZoneRule with _$ZoneRule {
   const factory ZoneRule({
@@ -205,8 +206,8 @@ sealed class ZoneRule with _$ZoneRule {
     final typeString = switch (type) {
       RuleZoneRuleType(:final ruleName) =>
         'Standard offset $standardOffset and rule $ruleName',
-      OffsetZoneRuleType(:final save, :final isDst) =>
-        'Standard offset $standardOffset with save $save and isDst = $isDst',
+      OffsetZoneRuleType(:final offset, :final isDst) =>
+        'Standard offset $standardOffset with offset $offset and isDst = $isDst',
       NoneZoneRuleType() => 'Standard offset $standardOffset',
     };
     return '$name: $typeString';
@@ -220,6 +221,7 @@ sealed class ZoneRuleEnd with _$ZoneRuleEnd {
       _ZoneRuleEnd;
 }
 
+/// Original: `z_format`, `z_format_specifier`
 @freezed
 sealed class ZoneRuleName with _$ZoneRuleName {
   /// A name with defined strings for standard and DST time.
@@ -292,6 +294,7 @@ sealed class ZoneRuleName with _$ZoneRuleName {
 @freezed
 sealed class ZoneRuleType with _$ZoneRuleType {
   /// Local time is [ZoneRule.standardOffset] + the named rule.
+  // TODO(JonasWanke): Store rules here instead of a name
   const factory ZoneRuleType.rule(
     /// Original: `zone.z_rule`
     String ruleName,
@@ -300,7 +303,8 @@ sealed class ZoneRuleType with _$ZoneRuleType {
   /// Local time is [ZoneRule.standardOffset] + [offset].
   const factory ZoneRuleType.offset(
     /// Original: `zone.z_save`
-    SecondsDuration save, {
+    // TODO(JonasWanke): Change to `Seconds`
+    SecondsDuration offset, {
     /// Original: `zone.z_isdst`
     required bool isDst,
   }) = OffsetZoneRuleType;

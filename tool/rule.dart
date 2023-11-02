@@ -82,7 +82,7 @@ final class RuleClause {
       timeReference: subFields.time.$2,
       isDst: offsetAndDst.isDst,
       offset: offsetAndDst.$1,
-      abbreviationVariable: fields[9].value,
+      abbreviationVariable: fields[9].value.emptyToNull,
     );
     return Ok((nameField.value, clause));
   }
@@ -235,21 +235,38 @@ final class RuleClause {
     return Ok((time.unwrap(), reference));
   }
 
+  /// Original: `r_loyear`, `r_lowasnum`
   final LimitOr<Year> startYear;
+
+  /// Original: `r_hiyear`, `r_hiwasnum`
   final LimitOr<Year> endYear;
 
+  /// Original: `r_month`
   final Month month;
 
+  /// Original: `r_dycode`, `r_dayofmonth`, `r_wday`
   final DayCode dayCode;
 
   /// Time of day
   ///
   /// Can exceed the range of [Time], e.g., be equal to 24 hours.
+  ///
+  /// Original: `r_tod`
   final SecondsDuration time;
+
+  /// Original: `r_todisstd`, `r_todisut`
   final TimeReference timeReference;
+
+  /// Original: `r_isdst`
   final bool isDst;
+
+  /// Original: `r_save`
   final SecondsDuration offset; // TODO(JonasWanke): Change to `Seconds`
-  final String abbreviationVariable;
+  /// Original: `r_abbrvar`
+  final String? abbreviationVariable;
+
+  // `r_todo` and `r_temp` are only used when writing zones to TZif files, so
+  // they are represented there.
 
   @override
   String toString() {
@@ -296,6 +313,7 @@ Seconds calculateRuleClauseEpochTime(
 /// to.
 ///
 /// Original: `rpytime`
+// TODO(JonasWanke): Return `UnixEpochSeconds`
 DateTime calculateRuleClauseDateTime(
   Month ruleClauseMonth,
   DayCode ruleClauseDayCode,
@@ -316,17 +334,17 @@ DateTime calculateRuleClauseDateTime(
   final yearMonth = YearMonth(targetYear, ruleClauseMonth);
   Date date;
   switch (ruleClauseDayCode) {
-    case _DayOfMonthDayCode(day: final day):
+    case DayOfMonthDayCode(day: final day):
       if (yearMonth.month == Month.february &&
           day == 29 &&
           !yearMonth.year.isLeapYear) {
         throw ArgumentError('Use of February 29 in non-leap-year');
       }
       date = Date.fromYearMonthAndDay(yearMonth, day).unwrap();
-    case _LessThanOrEqualToDayCode(weekday: final weekday, day: final day):
+    case LessThanOrEqualToDayCode(weekday: final weekday, day: final day):
       date = Date.fromYearMonthAndDay(yearMonth, day).unwrap();
       date = date.previousOrSame(weekday);
-    case _GreaterThanOrEqualToDayCode(weekday: final weekday, day: final day):
+    case GreaterThanOrEqualToDayCode(weekday: final weekday, day: final day):
       date = Date.fromYearMonthAndDay(yearMonth, day).unwrap();
       date = date.nextOrSame(weekday);
   }
@@ -354,11 +372,29 @@ typedef TimeWithReference = (SecondsDuration, TimeReference);
 
 @freezed
 sealed class DayCode with _$DayCode {
-  const factory DayCode.dayOfMonth(int day) = _DayOfMonthDayCode;
-  const factory DayCode.lessThanOrEqualTo(Weekday weekday, int day) =
-      _LessThanOrEqualToDayCode;
-  const factory DayCode.greaterThanOrEqualTo(Weekday weekday, int day) =
-      _GreaterThanOrEqualToDayCode;
+  /// Original: `rule` with `r_dycode = DC_DOM`
+  const factory DayCode.dayOfMonth(
+    /// Original: `r_dayofmonth`
+    int day,
+  ) = DayOfMonthDayCode;
+
+  /// Original: `rule` with `r_dycode = DC_DOWLEQ`
+  const factory DayCode.lessThanOrEqualTo(
+    /// Original: `r_wday`
+    Weekday weekday,
+
+    /// Original: `r_dayofmonth`
+    int day,
+  ) = LessThanOrEqualToDayCode;
+
+  /// Original: `rule` with `r_dycode = DC_DOWGEQ`
+  const factory DayCode.greaterThanOrEqualTo(
+    /// Original: `r_wday`
+    Weekday weekday,
+
+    /// Original: `r_dayofmonth`
+    int day,
+  ) = GreaterThanOrEqualToDayCode;
   const DayCode._();
 
   /// Accept things such as:
@@ -414,10 +450,10 @@ sealed class DayCode with _$DayCode {
   @override
   String toString() {
     return switch (this) {
-      _DayOfMonthDayCode(:final day) => day.toString(),
-      _LessThanOrEqualToDayCode(weekday: final weekday, day: final day) =>
+      DayOfMonthDayCode(:final day) => day.toString(),
+      LessThanOrEqualToDayCode(weekday: final weekday, day: final day) =>
         '$weekday<=$day',
-      _GreaterThanOrEqualToDayCode(weekday: final weekday, day: final day) =>
+      GreaterThanOrEqualToDayCode(weekday: final weekday, day: final day) =>
         '$weekday>=$day',
     };
   }
