@@ -56,28 +56,16 @@ final class Parser {
   // Date and Time
 
   Result<Instant, FormatException> _parseInstant() {
-    return _parseDateTime().andAlso(() {
-      const messageStart =
-          'Expected “Z” or “z” to mark this date/time as UTC, but';
-
-      if (_offset >= _source.length) {
-        return _error(
-          '$messageStart reached the end of the input string.',
-          _offset,
-        );
-      }
-
-      final character = _peek()!;
-      if (character.toUpperCase() != 'Z') {
-        return _error(
-          '$messageStart found the following character: “$character”.',
-          _offset,
-        );
-      }
-
-      _offset++;
-      return const Ok(unit);
-    }).map((it) => it.inUtc);
+    return _parseDateTime()
+        .andAlso(
+          () => _requireString(
+            'Z',
+            isCaseSensitive: false,
+            messageStart: () =>
+                'Expected “Z” or “z” to mark this date/time as UTC, but',
+          ),
+        )
+        .map((it) => it.inUtc);
   }
 
   Result<DateTime, FormatException> _parseDateTime() {
