@@ -99,6 +99,10 @@ final class FractionalSeconds extends TimeDuration {
       const Seconds(Seconds.perNormalDay).asFractionalSeconds;
   static final perNormalWeek =
       const Seconds(Seconds.perNormalWeek).asFractionalSeconds;
+  static final perNormalYear =
+      const Seconds(Seconds.perNormalYear).asFractionalSeconds;
+  static final perNormalLeapYear =
+      const Seconds(Seconds.perNormalLeapYear).asFractionalSeconds;
 
   @override
   final Fixed inFractionalSeconds;
@@ -192,6 +196,9 @@ final class Nanoseconds extends NanosecondsDuration {
   static const perHour = perMicrosecond * Microseconds.perHour;
   static const perNormalDay = perMicrosecond * Microseconds.perNormalDay;
   static const perNormalWeek = perMicrosecond * Microseconds.perNormalWeek;
+  static const perNormalYear = perMicrosecond * Microseconds.perNormalYear;
+  static const perNormalLeapYear =
+      perMicrosecond * Microseconds.perNormalLeapYear;
 
   @override
   final int inNanoseconds;
@@ -276,6 +283,9 @@ final class Microseconds extends MicrosecondsDuration {
   static const perHour = perMillisecond * Milliseconds.perHour;
   static const perNormalDay = perMillisecond * Milliseconds.perNormalDay;
   static const perNormalWeek = perMillisecond * Milliseconds.perNormalWeek;
+  static const perNormalYear = perMillisecond * Milliseconds.perNormalYear;
+  static const perNormalLeapYear =
+      perMillisecond * Milliseconds.perNormalLeapYear;
 
   @override
   final int inMicroseconds;
@@ -355,6 +365,8 @@ final class Milliseconds extends MillisecondsDuration {
   static const perHour = perSecond * Seconds.perHour;
   static const perNormalDay = perSecond * Seconds.perNormalDay;
   static const perNormalWeek = perSecond * Seconds.perNormalDay;
+  static const perNormalYear = perSecond * Seconds.perNormalYear;
+  static const perNormalLeapYear = perSecond * Seconds.perNormalLeapYear;
 
   @override
   final int inMilliseconds;
@@ -429,9 +441,17 @@ final class Seconds extends SecondsDuration {
   const Seconds(this.inSeconds);
 
   static const perMinute = 60;
+  static const minute = Seconds(perMinute);
   static const perHour = perMinute * Minutes.perHour;
+  static const hour = Seconds(perHour);
   static const perNormalDay = perMinute * Minutes.perNormalDay;
+  static const normalDay = Seconds(perNormalDay);
   static const perNormalWeek = perMinute * Minutes.perNormalWeek;
+  static const normalWeek = Seconds(perNormalWeek);
+  static const perNormalYear = perMinute * Minutes.perNormalYear;
+  static const normalYear = Seconds(perNormalYear);
+  static const perNormalLeapYear = perMinute * Minutes.perNormalLeapYear;
+  static const normalLeapYear = Seconds(perNormalLeapYear);
 
   @override
   final int inSeconds;
@@ -501,6 +521,8 @@ final class Minutes extends MinutesDuration {
   static const perHour = 60;
   static const perNormalDay = perHour * Hours.perNormalDay;
   static const perNormalWeek = perHour * Hours.perNormalWeek;
+  static const perNormalYear = perHour * Hours.perNormalYear;
+  static const perNormalLeapYear = perHour * Hours.perNormalLeapYear;
 
   @override
   final int inMinutes;
@@ -535,7 +557,13 @@ final class Hours extends MinutesDuration {
   const Hours(this.inHours);
 
   static const perNormalDay = 24;
+  static const normalDay = Hours(perNormalDay);
   static const perNormalWeek = perNormalDay * Days.perWeek;
+  static const normalWeek = Hours(perNormalWeek);
+  static const perNormalYear = perNormalDay * Days.perNormalYear;
+  static const normalYear = Hours(perNormalYear);
+  static const perNormalLeapYear = perNormalDay * Days.perLeapYear;
+  static const normalLeapYear = Hours(perNormalLeapYear);
 
   final int inHours;
 
