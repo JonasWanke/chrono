@@ -1,0 +1,25 @@
+name: chrono_timezone_compiler
+version: 0.0.0
+homepage: https://github.com/JonasWanke/chrono
+publish_to: none
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  chrono:
+    path: ../chrono
+  dartx: ^1.1.0
+  fixed: '>=2.0.0 <5.0.0'
+  meta: ^1.3.0
+  oxidized: ^6.0.0
+
+dev_dependencies:
+  supernova:
+    git:
+      url: https://github.com/JonasWanke/supernova.git
+      path: supernova
+      ref: d66051f0f016cc42c3b5c6f0135a48875df5417e
+
+dependency_overrides:
+  http: ^1.0.0
