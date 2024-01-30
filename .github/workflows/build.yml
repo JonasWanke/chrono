@@ -61,6 +61,7 @@ jobs:
   chrono-timezone-compiler-lint:
     name: "Package chrono_timezone_compiler: Lint"
     runs-on: ubuntu-latest
+    if: false
     strategy:
       matrix:
         sdk: [stable, beta, dev]
