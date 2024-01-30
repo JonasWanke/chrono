@@ -8,9 +8,12 @@ on:
     - cron: 0 4 * * 1
 
 jobs:
-  test:
-    name: Run tests
+  chrono-test:
+    name: "Package chrono: Run Tests"
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: chrono/
     strategy:
       matrix:
         sdk: [stable, beta, dev]
@@ -20,12 +23,14 @@ jobs:
         with:
           sdk: ${{ matrix.sdk }}
       - run: dart pub get
-
       - run: dart test
 
-  coverage:
-    name: Coverage
+  chrono-coverage:
+    name: "Package chrono: Coverage"
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: chrono/
     steps:
       - uses: actions/checkout@v3
       - uses: dart-lang/setup-dart@v1
@@ -36,17 +41,38 @@ jobs:
 
       - uses: codecov/codecov-action@v3
 
-  lint:
-    name: Lint
+  chrono-lint:
+    name: "Package chrono: Lint"
     runs-on: ubuntu-latest
     strategy:
       matrix:
         sdk: [stable, beta, dev]
+    defaults:
+      run:
+        working-directory: chrono/
     steps:
       - uses: actions/checkout@v3
       - uses: dart-lang/setup-dart@v1
         with:
           sdk: ${{ matrix.sdk }}
       - run: dart pub get
+
+      - run: dart analyze
+  chrono-timezone-compiler-lint:
+    name: "Package chrono_timezone_compiler: Lint"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sdk: [stable, beta, dev]
+    defaults:
+      run:
+        working-directory: chrono_timezone_compiler/
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ matrix.sdk }}
+      - run: dart pub get
+      - run: dart run build_runner build
 
       - run: dart analyze
