@@ -5,6 +5,7 @@ import 'package:fixed/fixed.dart';
 
 import '../date/duration.dart';
 import '../date_time/duration.dart';
+import '../rounding.dart';
 import '../utils.dart';
 
 // ignore_for_file: binary-expression-operand-order
@@ -43,28 +44,34 @@ abstract class TimeDuration extends Duration
 
   TimeDuration get absolute => isNegative ? -this : this;
 
-  Nanoseconds roundToNanoseconds() =>
-      Nanoseconds(inFractionalSeconds.toFixedScale(9).round());
-  Microseconds floorToMicroseconds() =>
-      Microseconds(inFractionalSeconds.toFixedScale(6).floor());
-  Microseconds roundToMicroseconds() =>
-      Microseconds(inFractionalSeconds.toFixedScale(6).round());
-  Milliseconds roundToMilliseconds() =>
-      Milliseconds(inFractionalSeconds.toFixedScale(3).round());
-  Seconds roundToSeconds() =>
-      Seconds(inFractionalSeconds.toFixedScale(0).round());
-  Minutes roundToMinutes() =>
-      Minutes((roundToSeconds().inSeconds / Seconds.perMinute).round());
-  Hours roundToHours() =>
-      Hours((roundToSeconds().inSeconds / Seconds.perHour).round());
-  Days roundToNormalDays() =>
-      Days((roundToSeconds().inSeconds / Seconds.perNormalDay).round());
-  Weeks roundToNormalWeeks() =>
-      Weeks((roundToSeconds().inSeconds / Seconds.perNormalWeek).round());
+  Nanoseconds roundToNanoseconds({
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) =>
+      Nanoseconds(rounding.round(inFractionalSeconds.toFixedScale(9)));
+  Microseconds roundToMicroseconds({
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) =>
+      Microseconds(rounding.round(inFractionalSeconds.toFixedScale(6)));
+  Milliseconds roundToMilliseconds({
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) =>
+      Milliseconds(rounding.round(inFractionalSeconds.toFixedScale(3)));
+  Seconds roundToSeconds({Rounding rounding = Rounding.nearestAwayFromZero}) =>
+      Seconds(rounding.round(inFractionalSeconds.toFixedScale(0)));
+  Minutes roundToMinutes({Rounding rounding = Rounding.nearestAwayFromZero}) =>
+      Minutes(rounding.round(roundToSeconds().inSeconds / Seconds.perMinute));
+  Hours roundToHours({Rounding rounding = Rounding.nearestAwayFromZero}) =>
+      Hours(rounding.round(roundToSeconds().inSeconds / Seconds.perHour));
+  Days roundToNormalDays({Rounding rounding = Rounding.nearestAwayFromZero}) =>
+      Days(rounding.round(roundToSeconds().inSeconds / Seconds.perNormalDay));
+  Weeks roundToNormalWeeks({
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) =>
+      Weeks(rounding.round(roundToSeconds().inSeconds / Seconds.perNormalWeek));
 
   Future<void> get wait {
     return Future<void>.delayed(
-      asFractionalSeconds.floorToMicroseconds().asCoreDuration,
+      asFractionalSeconds.roundToMicroseconds().asCoreDuration,
     );
   }
 

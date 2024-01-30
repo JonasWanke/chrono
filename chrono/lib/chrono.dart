@@ -12,5 +12,6 @@ export 'src/date_time/date_time.dart';
 export 'src/date_time/duration.dart';
 export 'src/date_time/instant.dart';
 export 'src/glados.dart';
+export 'src/rounding.dart';
 export 'src/time/duration.dart';
 export 'src/time/time.dart';
