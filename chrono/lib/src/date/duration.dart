@@ -1,4 +1,5 @@
 import '../date_time/duration.dart';
+import '../rounding.dart';
 import '../time/duration.dart';
 import '../utils.dart';
 
@@ -106,6 +107,11 @@ abstract class MonthsDuration extends DaysDuration
   MonthsDuration remainder(int divisor);
 
   MonthsDuration get absolute => isNegative ? -this : this;
+
+  Years roundToYears({
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) =>
+      Years(rounding.round(inMonths / Months.perYear));
 
   @override
   int compareTo(MonthsDuration other) => inMonths.compareTo(other.inMonths);
@@ -234,6 +240,11 @@ abstract class FixedDaysDuration extends DaysDuration
   FixedDaysDuration remainder(int divisor);
 
   FixedDaysDuration get absolute => isNegative ? -this : this;
+
+  Weeks roundToWeeks({
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) =>
+      Weeks(rounding.round(inDays / Days.perWeek));
 
   @override
   int compareTo(FixedDaysDuration other) => inDays.compareTo(other.inDays);
