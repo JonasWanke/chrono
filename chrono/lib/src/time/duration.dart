@@ -45,6 +45,8 @@ abstract class TimeDuration extends Duration
 
   Nanoseconds roundToNanoseconds() =>
       Nanoseconds(inFractionalSeconds.toFixedScale(9).round());
+  Microseconds floorToMicroseconds() =>
+      Microseconds(inFractionalSeconds.toFixedScale(6).floor());
   Microseconds roundToMicroseconds() =>
       Microseconds(inFractionalSeconds.toFixedScale(6).round());
   Milliseconds roundToMilliseconds() =>
@@ -59,6 +61,12 @@ abstract class TimeDuration extends Duration
       Days((roundToSeconds().inSeconds / Seconds.perNormalDay).round());
   Weeks roundToNormalWeeks() =>
       Weeks((roundToSeconds().inSeconds / Seconds.perNormalWeek).round());
+
+  Future<void> get wait {
+    return Future<void>.delayed(
+      asFractionalSeconds.floorToMicroseconds().asCoreDuration,
+    );
+  }
 
   @override
   int compareTo(TimeDuration other) {
