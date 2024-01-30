@@ -21,6 +21,29 @@ abstract class Duration {
   Duration operator ~/(int divisor);
   Duration operator %(int divisor);
   Duration remainder(int divisor);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! Duration) return false;
+
+    final thisCompound = asCompoundDuration;
+    final otherCompound = other.asCompoundDuration;
+    return thisCompound.months.inMonths == otherCompound.months.inMonths &&
+        thisCompound.days.inDays == otherCompound.days.inDays &&
+        thisCompound.seconds.inFractionalSeconds ==
+            otherCompound.seconds.inFractionalSeconds;
+  }
+
+  @override
+  int get hashCode {
+    final compound = asCompoundDuration;
+    return Object.hash(
+      compound.months.inMonths,
+      compound.days.inDays,
+      compound.seconds.inFractionalSeconds,
+    );
+  }
 }
 
 final class CompoundDuration extends Duration {
@@ -93,18 +116,6 @@ final class CompoundDuration extends Duration {
       seconds: seconds.remainder(divisor),
     );
   }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is CompoundDuration &&
-            months == other.months &&
-            days == other.days &&
-            seconds == other.seconds);
-  }
-
-  @override
-  int get hashCode => Object.hash(months, days, seconds);
 
   @override
   String toString() => '$months, $days, $seconds';

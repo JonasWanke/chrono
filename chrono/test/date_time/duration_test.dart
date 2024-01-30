@@ -1,7 +1,7 @@
 import 'package:chrono/chrono.dart';
 import 'package:glados/glados.dart';
 
-import 'utils.dart';
+import '../utils.dart';
 
 void main() {
   setChronoGladosDefaults();
@@ -26,5 +26,20 @@ void main() {
         expect((duration * factor).remainder(factor).isZero, true);
       },
     );
+  });
+
+  group('equality', () {
+    Glados<DaysDuration>().test('DaysDuration', (duration) {
+      expect(duration.asCompoundDuration, duration);
+    });
+    Glados<MonthsDuration>().test('MonthsDuration', (duration) {
+      expect(duration.asCompoundDuration, duration);
+    });
+    Glados<FixedDaysDuration>().test('FixedDaysDuration', (duration) {
+      expect(duration.asCompoundDuration, duration);
+    });
+    Glados<TimeDuration>().test('TimeDuration', (duration) {
+      expect(duration.asCompoundDuration, duration);
+    });
   });
 }

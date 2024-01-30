@@ -66,17 +66,6 @@ final class CompoundDaysDuration extends DaysDuration {
   }
 
   @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is CompoundDaysDuration &&
-            months == other.months &&
-            days == other.days);
-  }
-
-  @override
-  int get hashCode => Object.hash(months, days);
-
-  @override
   String toString() => '$months, $days';
 }
 
@@ -120,13 +109,6 @@ abstract class MonthsDuration extends DaysDuration
 
   @override
   int compareTo(MonthsDuration other) => inMonths.compareTo(other.inMonths);
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is MonthsDuration && inMonths == other.inMonths);
-  @override
-  int get hashCode => inMonths.hashCode;
 }
 
 final class Months extends MonthsDuration {
@@ -249,15 +231,6 @@ abstract class FixedDaysDuration extends DaysDuration
 
   @override
   int compareTo(FixedDaysDuration other) => inDays.compareTo(other.inDays);
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is FixedDaysDuration && inDays == other.inDays);
-  }
-
-  @override
-  int get hashCode => inDays.hashCode;
 }
 
 final class Days extends FixedDaysDuration {

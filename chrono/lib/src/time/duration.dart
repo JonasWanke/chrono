@@ -1,5 +1,5 @@
-import 'dart:core';
 import 'dart:core' as core;
+import 'dart:core';
 
 import 'package:fixed/fixed.dart';
 
@@ -71,16 +71,6 @@ abstract class TimeDuration extends Duration
     }
     return thisValue.minorUnits.compareTo(otherValue.minorUnits);
   }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is TimeDuration &&
-            inFractionalSeconds == other.inFractionalSeconds);
-  }
-
-  @override
-  int get hashCode => inFractionalSeconds.hashCode;
 }
 
 final class FractionalSeconds extends TimeDuration {
