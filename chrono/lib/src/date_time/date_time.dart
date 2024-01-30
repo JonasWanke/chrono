@@ -12,6 +12,7 @@ import '../date/month/month.dart';
 import '../date/year.dart';
 import '../json.dart';
 import '../parser.dart';
+import '../rounding.dart';
 import '../time/duration.dart';
 import '../time/time.dart';
 import '../utils.dart';
@@ -156,14 +157,7 @@ extension on TimeDuration {
   (Days, Time) toDaysAndTime() {
     final (seconds, fraction) = asSecondsAndFraction;
 
-    final days = Days(
-      seconds.isNegative
-          // Round towards negative infinity.
-          ? (seconds.inSeconds - Seconds.perNormalDay + 1) ~/
-              Seconds.perNormalDay
-          : seconds.inSeconds ~/ Seconds.perNormalDay,
-    );
-
+    final days = seconds.roundToNormalDays(rounding: Rounding.down);
     final secondsWithinDay = seconds - days.asNormalSeconds;
     final time =
         Time.fromTimeSinceMidnight(fraction + secondsWithinDay).unwrap();

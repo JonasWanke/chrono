@@ -130,8 +130,9 @@ Future<void> encodeTzif(Zone zone, Map<String, Rule> rules) async {
   maxYear = maxYear.coerceAtLeast(
     Year.unixEpoch +
         Years(
-          redundant_time.durationSinceUnixEpoch.inSeconds ~/
-                  Seconds.perNormalYear +
+          redundant_time.durationSinceUnixEpoch
+                  .roundToNormalYears(rounding: Rounding.towardsZero)
+                  .inYears +
               1,
         ),
   );
