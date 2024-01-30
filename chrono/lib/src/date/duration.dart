@@ -115,7 +115,11 @@ final class Months extends MonthsDuration {
   const Months(this.inMonths);
   const Months.fromJson(int json) : this(json);
 
+  /// The number of months in a year.
   static const perYear = 12;
+
+  /// The months in a year.
+  static const year = Months(perYear);
 
   @override
   final int inMonths;
@@ -152,8 +156,10 @@ final class Years extends MonthsDuration {
   const Years(this.inYears);
   const Years.fromJson(int json) : this(json);
 
-  /// The number of years until the gregorian calendar cycles repeat: 400.
+  /// The number of years until the Gregorian calendar cycles repeat: 400.
   static const perGregorianRepeat = 400;
+
+  /// The years until the Gregorian calendar cycles repeat: 400.
   static const gregorianRepeat = Years(perGregorianRepeat);
 
   final int inYears;
@@ -161,7 +167,7 @@ final class Years extends MonthsDuration {
   @override
   (Years, Months) get asYearsAndMonths => (this, const Months(0));
   @override
-  Months get asMonths => Months(inYears * Months.perYear);
+  Months get asMonths => Months.year * inYears;
 
   Years operator +(Years duration) => Years(inYears + duration.inYears);
   Years operator -(Years duration) => Years(inYears - duration.inYears);
@@ -192,7 +198,7 @@ abstract class FixedDaysDuration extends DaysDuration
 
   Days get asDays;
   int get inDays => asDays.inDays;
-  Hours get asNormalHours => Hours(inDays * Hours.perNormalDay);
+  Hours get asNormalHours => Hours.normalDay * inDays;
   Minutes get asNormalMinutes => asNormalHours.asMinutes;
   Seconds get asNormalSeconds => asNormalHours.asSeconds;
   Milliseconds get asNormalMilliseconds => asNormalHours.asMilliseconds;
@@ -237,11 +243,22 @@ final class Days extends FixedDaysDuration {
   const Days(this.inDays);
   const Days.fromJson(int json) : this(json);
 
+  /// The number of days in a week.
   static const perWeek = 7;
-  static const week = Days(7);
+
+  /// The days in a week.
+  static const week = Days(perWeek);
+
+  /// The number of days in a normal (non-leap) year.
   static const perNormalYear = 365;
+
+  /// The days in a normal (non-leap) year.
   static const normalYear = Days(perNormalYear);
+
+  /// The number of days in a leap year.
   static const perLeapYear = 366;
+
+  /// The days in a leap year.
   static const leapYear = Days(perLeapYear);
 
   @override
@@ -281,7 +298,7 @@ final class Weeks extends FixedDaysDuration {
   final int inWeeks;
 
   @override
-  Days get asDays => Days(inWeeks * Days.perWeek);
+  Days get asDays => Days.week * inWeeks;
 
   Weeks operator +(Weeks duration) => Weeks(inWeeks + duration.inWeeks);
   Weeks operator -(Weeks duration) => Weeks(inWeeks - duration.inWeeks);

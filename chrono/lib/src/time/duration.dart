@@ -68,6 +68,17 @@ abstract class TimeDuration extends Duration
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) =>
       Weeks(rounding.round(roundToSeconds().inSeconds / Seconds.perNormalWeek));
+  Years roundToNormalYears({
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) =>
+      Years(rounding.round(roundToSeconds().inSeconds / Seconds.perNormalYear));
+  Years roundToNormalLeapYears({
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    return Years(
+      rounding.round(roundToSeconds().inSeconds / Seconds.perNormalLeapYear),
+    );
+  }
 
   Future<void> get wait {
     return Future<void>.delayed(
@@ -94,20 +105,79 @@ final class FractionalSeconds extends TimeDuration {
   // `Fixed.zero` has a scale of 16, which we don't need.
   static final zero = FractionalSeconds(Fixed.fromInt(0, scale: 0));
 
-  static final nanosecond = FractionalSeconds(Fixed.fromInt(1, scale: 9));
-  static final microsecond = FractionalSeconds(Fixed.fromInt(1, scale: 6));
-  static final millisecond = FractionalSeconds(Fixed.fromInt(1, scale: 3));
-  static final second = FractionalSeconds(Fixed.fromInt(1, scale: 0));
-  static final perMinute = const Seconds(Seconds.perMinute).asFractionalSeconds;
-  static final perHour = const Seconds(Seconds.perHour).asFractionalSeconds;
-  static final perNormalDay =
-      const Seconds(Seconds.perNormalDay).asFractionalSeconds;
-  static final perNormalWeek =
-      const Seconds(Seconds.perNormalWeek).asFractionalSeconds;
-  static final perNormalYear =
-      const Seconds(Seconds.perNormalYear).asFractionalSeconds;
+  /// The number of seconds in a nanosecond.
+  static final perNanosecond = Fixed.fromInt(1, scale: 9);
+
+  /// The seconds in a nanosecond.
+  static final nanosecond = FractionalSeconds(perNanosecond);
+
+  /// The number of seconds in a microsecond.
+  static final perMicrosecond = Fixed.fromInt(1, scale: 6);
+
+  /// The seconds in a microsecond.
+  static final microsecond = FractionalSeconds(perMicrosecond);
+
+  /// The number of seconds in a millisecond.
+  static final perMillisecond = Fixed.fromInt(1, scale: 3);
+
+  /// The seconds in a millisecond.
+  static final millisecond = FractionalSeconds(perMillisecond);
+
+  /// The number of seconds in a second.
+  static final perSecond = Fixed.fromInt(1, scale: 0);
+
+  /// The seconds in a second.
+  static final second = FractionalSeconds(perSecond);
+
+  /// The number of seconds in a minute.
+  static final perMinute = Fixed.fromInt(Seconds.perMinute, scale: 0);
+
+  /// The seconds in a minute.
+  static final minute = FractionalSeconds(perMinute);
+
+  /// The number of seconds in an hour.
+  static final perHour = Fixed.fromInt(Seconds.perHour, scale: 0);
+
+  /// The seconds in an hour.
+  static final hour = FractionalSeconds(perHour);
+
+  /// The number of seconds in a normal day, i.e., a day with exactly 24 hours
+  /// (no daylight savings time changes and no leap seconds).
+  static final perNormalDay = Fixed.fromInt(Seconds.perNormalDay, scale: 0);
+
+  /// The seconds in a normal day, i.e., a day with exactly 24 hours (no
+  /// daylight savings time changes and no leap seconds).
+  static final normalDay = FractionalSeconds(perNormalDay);
+
+  /// The number of seconds in a normal week, i.e., a week where all days are
+  /// exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
+  static final perNormalWeek = Fixed.fromInt(Seconds.perNormalWeek, scale: 0);
+
+  /// The seconds in a normal week, i.e., a week where all days are exactly
+  /// 24 hours long (no daylight savings time changes and no leap seconds).
+  static final normalWeek = FractionalSeconds(perNormalWeek);
+
+  /// The number of seconds in a normal (non-leap) year (365 days), i.e., a year
+  /// where all days are exactly 24 hours long (no daylight savings time changes
+  /// and no leap seconds).
+  static final perNormalYear = Fixed.fromInt(Seconds.perNormalYear, scale: 0);
+
+  /// The seconds in a normal (non-leap) year (365 days), i.e., a year where all
+  /// days are exactly 24 hours long (no daylight savings time changes and no
+  /// leap seconds).
+  static final normalYear = FractionalSeconds(perNormalYear);
+
+  /// The number of seconds in a leap year (366 days), i.e., a year where all
+  /// days are exactly 24 hours long (no daylight savings time changes and no
+  /// leap seconds).
   static final perNormalLeapYear =
-      const Seconds(Seconds.perNormalLeapYear).asFractionalSeconds;
+      Fixed.fromInt(Seconds.perNormalLeapYear, scale: 0);
+
+  /// The seconds in a leap year (366 days), i.e., a year where all days are
+  /// exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
+  static final normalLeapYear = FractionalSeconds(perNormalLeapYear);
 
   @override
   final Fixed inFractionalSeconds;
@@ -194,16 +264,73 @@ abstract class NanosecondsDuration extends TimeDuration {
 final class Nanoseconds extends NanosecondsDuration {
   const Nanoseconds(this.inNanoseconds);
 
+  /// The number of nanoseconds in a microsecond.
   static const perMicrosecond = 1000;
+
+  /// The nanoseconds in a microsecond.
+  static const microsecond = Nanoseconds(perMicrosecond);
+
+  /// The number of nanoseconds in a millisecond.
   static const perMillisecond = perMicrosecond * Microseconds.perMillisecond;
+
+  /// The nanoseconds in a millisecond.
+  static const millisecond = Nanoseconds(perMillisecond);
+
+  /// The number of nanoseconds in a second.
   static const perSecond = perMicrosecond * Microseconds.perSecond;
+
+  /// The nanoseconds in a second.
+  static const second = Nanoseconds(perSecond);
+
+  /// The number of nanoseconds in a minute.
   static const perMinute = perMicrosecond * Microseconds.perMinute;
+
+  /// The nanoseconds in a minute.
+  static const minute = Nanoseconds(perMinute);
+
+  /// The number of nanoseconds in an hour.
   static const perHour = perMicrosecond * Microseconds.perHour;
+
+  /// The nanoseconds in an hour.
+  static const hour = Nanoseconds(perHour);
+
+  /// The number of nanoseconds in a normal day, i.e., a day with exactly
+  /// 24 hours (no daylight savings time changes and no leap seconds).
   static const perNormalDay = perMicrosecond * Microseconds.perNormalDay;
+
+  /// The nanoseconds in a normal day, i.e., a day with exactly 24 hours (no
+  /// daylight savings time changes and no leap seconds).
+  static const normalDay = Nanoseconds(perNormalDay);
+
+  /// The number of nanoseconds in a normal week, i.e., a week where all days
+  /// are exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
   static const perNormalWeek = perMicrosecond * Microseconds.perNormalWeek;
+
+  /// The nanoseconds in a normal week, i.e., a week where all days are exactly
+  /// 24 hours long (no daylight savings time changes and no leap seconds).
+  static const normalWeek = Nanoseconds(perNormalWeek);
+
+  /// The number of nanoseconds in a normal (non-leap) year (365 days), i.e., a
+  /// year where all days are exactly 24 hours long (no daylight savings time
+  /// changes and no leap seconds).
   static const perNormalYear = perMicrosecond * Microseconds.perNormalYear;
+
+  /// The nanoseconds in a normal (non-leap) year (365 days), i.e., a year where
+  /// all days are exactly 24 hours long (no daylight savings time changes and
+  /// no leap seconds).
+  static const normalYear = Nanoseconds(perNormalYear);
+
+  /// The number of nanoseconds in a leap year (366 days), i.e., a year where
+  /// all days are exactly 24 hours long (no daylight savings time changes and
+  /// no leap seconds).
   static const perNormalLeapYear =
       perMicrosecond * Microseconds.perNormalLeapYear;
+
+  /// The nanoseconds in a leap year (366 days), i.e., a year where all days are
+  /// exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
+  static const normalLeapYear = Nanoseconds(perNormalLeapYear);
 
   @override
   final int inNanoseconds;
@@ -244,8 +371,7 @@ abstract class MicrosecondsDuration extends NanosecondsDuration {
   Microseconds get asMicroseconds;
   int get inMicroseconds => asMicroseconds.inMicroseconds;
   @override
-  Nanoseconds get asNanoseconds =>
-      Nanoseconds(inMicroseconds * Nanoseconds.perMicrosecond);
+  Nanoseconds get asNanoseconds => Nanoseconds.microsecond * inMicroseconds;
   @override
   FractionalSeconds get asFractionalSeconds =>
       FractionalSeconds.microsecond * inMicroseconds;
@@ -282,15 +408,66 @@ final class Microseconds extends MicrosecondsDuration {
   Microseconds.fromCore(core.Duration duration)
       : inMicroseconds = duration.inMicroseconds;
 
+  /// The number of microseconds in a millisecond.
   static const perMillisecond = 1000;
+
+  /// The microseconds in a millisecond.
+  static const millisecond = Microseconds(perMillisecond);
+
+  /// The number of REPLACE in a second.
   static const perSecond = perMillisecond * Milliseconds.perSecond;
+
+  /// The microseconds in a second.
+  static const second = Microseconds(perSecond);
+
+  /// The number of REPLACE in a minute.
   static const perMinute = perMillisecond * Milliseconds.perMinute;
+
+  /// The microseconds in a minute.
+  static const minute = Microseconds(perMinute);
+
+  /// The number of REPLACE in an hour.
   static const perHour = perMillisecond * Milliseconds.perHour;
+
+  /// The microseconds in an hour.
+  static const hour = Microseconds(perHour);
+
+  /// The number of REPLACE in a normal day, i.e., a day with exactly 24 hours
+  /// (no daylight savings time changes and no leap seconds).
   static const perNormalDay = perMillisecond * Milliseconds.perNormalDay;
+
+  /// The microseconds in a normal day, i.e., a day with exactly 24 hours (no
+  /// daylight savings time changes and no leap seconds).
+  static const normalDay = Microseconds(perNormalDay);
+
+  /// The number of REPLACE in a normal week, i.e., a week where all days are
+  /// exactly 24 hours long (no daylight savings time changes and no leap seconds).
   static const perNormalWeek = perMillisecond * Milliseconds.perNormalWeek;
+
+  /// The microseconds in a normal week, i.e., a week where all days are exactly
+  /// 24 hours long (no daylight savings time changes and no leap seconds).
+  static const normalWeek = Microseconds(perNormalWeek);
+
+  /// The number of REPLACE in a normal (non-leap) year (365 days), i.e., a year
+  /// where all days are exactly 24 hours long (no daylight savings time changes
+  /// and no leap seconds).
   static const perNormalYear = perMillisecond * Milliseconds.perNormalYear;
+
+  /// The microseconds in a normal (non-leap) year (365 days), i.e., a year
+  /// where all days are exactly 24 hours long (no daylight savings time changes
+  /// and no leap seconds).
+  static const normalYear = Microseconds(perNormalYear);
+
+  /// The number of REPLACE in a leap year (366 days), i.e., a year where all
+  /// days are exactly 24 hours long (no daylight savings time changes and no
+  /// leap seconds).
   static const perNormalLeapYear =
       perMillisecond * Milliseconds.perNormalLeapYear;
+
+  /// The microseconds in a leap year (366 days), i.e., a year where all days
+  /// are exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
+  static const normalLeapYear = Microseconds(perNormalLeapYear);
 
   @override
   final int inMicroseconds;
@@ -333,8 +510,7 @@ abstract class MillisecondsDuration extends MicrosecondsDuration {
   Milliseconds get asMilliseconds;
   int get inMilliseconds => asMilliseconds.inMilliseconds;
   @override
-  Microseconds get asMicroseconds =>
-      Microseconds(inMilliseconds * Microseconds.perMillisecond);
+  Microseconds get asMicroseconds => Microseconds.millisecond * inMilliseconds;
   @override
   FractionalSeconds get asFractionalSeconds =>
       FractionalSeconds.millisecond * inMilliseconds;
@@ -365,13 +541,60 @@ abstract class MillisecondsDuration extends MicrosecondsDuration {
 final class Milliseconds extends MillisecondsDuration {
   const Milliseconds(this.inMilliseconds);
 
+  /// The number of milliseconds in a second.
   static const perSecond = 1000;
+
+  /// The milliseconds in a second.
+  static const second = Milliseconds(perSecond);
+
+  /// The number of milliseconds in a minute.
   static const perMinute = perSecond * Seconds.perMinute;
+
+  /// The milliseconds in a minute.
+  static const minute = Milliseconds(perMinute);
+
+  /// The number of milliseconds in an hour.
   static const perHour = perSecond * Seconds.perHour;
+
+  /// The milliseconds in an hour.
+  static const hour = Milliseconds(perHour);
+
+  /// The number of milliseconds in a normal day, i.e., a day with exactly
+  /// 24 hours (no daylight savings time changes and no leap seconds).
   static const perNormalDay = perSecond * Seconds.perNormalDay;
+
+  /// The milliseconds in a normal day, i.e., a day with exactly 24 hours (no
+  /// daylight savings time changes and no leap seconds).
+  static const normalDay = Milliseconds(perNormalDay);
+
+  /// The number of milliseconds in a normal week, i.e., a week where all days
+  /// are exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
   static const perNormalWeek = perSecond * Seconds.perNormalDay;
+
+  /// The milliseconds in a normal week, i.e., a week where all days are exactly
+  /// 24 hours long (no daylight savings time changes and no leap seconds).
+  static const normalWeek = Milliseconds(perNormalWeek);
+
+  /// The number of milliseconds in a normal (non-leap) year (365 days), i.e., a
+  /// year where all days are exactly 24 hours long (no daylight savings time
+  /// changes and no leap seconds).
   static const perNormalYear = perSecond * Seconds.perNormalYear;
+
+  /// The milliseconds in a normal (non-leap) year (365 days), i.e., a year
+  /// where all days are exactly 24 hours long (no daylight savings time changes
+  /// and no leap seconds).
+  static const normalYear = Milliseconds(perNormalYear);
+
+  /// The number of milliseconds in a leap year (366 days), i.e., a year where
+  /// all days are exactly 24 hours long (no daylight savings time changes and
+  /// no leap seconds).
   static const perNormalLeapYear = perSecond * Seconds.perNormalLeapYear;
+
+  /// The milliseconds in a leap year (366 days), i.e., a year where all days
+  /// are exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
+  static const normalLeapYear = Milliseconds(perNormalLeapYear);
 
   @override
   final int inMilliseconds;
@@ -414,8 +637,7 @@ abstract class SecondsDuration extends MillisecondsDuration {
   Seconds get asSeconds;
   int get inSeconds => asSeconds.inSeconds;
   @override
-  Milliseconds get asMilliseconds =>
-      Milliseconds(inSeconds * Milliseconds.perSecond);
+  Milliseconds get asMilliseconds => Milliseconds.second * inSeconds;
   @override
   FractionalSeconds get asFractionalSeconds =>
       FractionalSeconds.second * inSeconds;
@@ -445,17 +667,53 @@ abstract class SecondsDuration extends MillisecondsDuration {
 final class Seconds extends SecondsDuration {
   const Seconds(this.inSeconds);
 
+  /// The number of seconds in a minute.
   static const perMinute = 60;
+
+  /// The seconds in a minute.
   static const minute = Seconds(perMinute);
+
+  /// The number of seconds in an hour.
   static const perHour = perMinute * Minutes.perHour;
+
+  /// The seconds in an hour.
   static const hour = Seconds(perHour);
+
+  /// The number of seconds in a normal day, i.e., a day with exactly 24 hours
+  /// (no daylight savings time changes and no leap seconds).
   static const perNormalDay = perMinute * Minutes.perNormalDay;
+
+  /// The seconds in a normal day, i.e., a day with exactly 24 hours (no
+  /// daylight savings time changes and no leap seconds).
   static const normalDay = Seconds(perNormalDay);
+
+  /// The number of seconds in a normal week, i.e., a week where all days are
+  /// exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
   static const perNormalWeek = perMinute * Minutes.perNormalWeek;
+
+  /// The seconds in a normal week, i.e., a week where all days are exactly
+  /// 24 hours long (no daylight savings time changes and no leap seconds).
   static const normalWeek = Seconds(perNormalWeek);
+
+  /// The number of seconds in a normal (non-leap) year (365 days), i.e., a year
+  /// where all days are exactly 24 hours long (no daylight savings time changes
+  /// and no leap seconds).
   static const perNormalYear = perMinute * Minutes.perNormalYear;
+
+  /// The seconds in a normal (non-leap) year (365 days), i.e., a year where all
+  /// days are exactly 24 hours long (no daylight savings time changes and no
+  /// leap seconds).
   static const normalYear = Seconds(perNormalYear);
+
+  /// The number of seconds in a leap year (366 days), i.e., a year where all
+  /// days are exactly 24 hours long (no daylight savings time changes and no
+  /// leap seconds).
   static const perNormalLeapYear = perMinute * Minutes.perNormalLeapYear;
+
+  /// The seconds in a leap year (366 days), i.e., a year where all days are
+  /// exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
   static const normalLeapYear = Seconds(perNormalLeapYear);
 
   @override
@@ -498,7 +756,7 @@ abstract class MinutesDuration extends SecondsDuration {
   Minutes get asMinutes;
   int get inMinutes => asMinutes.inMinutes;
   @override
-  Seconds get asSeconds => Seconds(inMinutes * Seconds.perMinute);
+  Seconds get asSeconds => Seconds.minute * inMinutes;
 
   (Hours, Minutes) get asHoursAndMinutes {
     final asMinutes = this.asMinutes;
@@ -523,11 +781,48 @@ abstract class MinutesDuration extends SecondsDuration {
 final class Minutes extends MinutesDuration {
   const Minutes(this.inMinutes);
 
+  /// The number of minutes in an hour.
   static const perHour = 60;
+
+  /// The minutes in an hour.
+  static const hour = Minutes(perHour);
+
+  /// The number of minutes in a normal day, i.e., a day with exactly 24 hours
+  /// (no daylight savings time changes and no leap seconds).
   static const perNormalDay = perHour * Hours.perNormalDay;
+
+  /// The minutes in a normal day, i.e., a day with exactly 24 hours (no
+  /// daylight savings time changes and no leap seconds).
+  static const normalDay = Minutes(perNormalDay);
+
+  /// The number of minutes in a normal week, i.e., a week where all days are
+  /// exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
   static const perNormalWeek = perHour * Hours.perNormalWeek;
+
+  /// The minutes in a normal week, i.e., a week where all days are exactly
+  /// 24 hours long (no daylight savings time changes and no leap seconds).
+  static const normalWeek = Minutes(perNormalWeek);
+
+  /// The number of minutes in a normal (non-leap) year (365 days), i.e., a year
+  /// where all days are exactly 24 hours long (no daylight savings time changes
+  /// and no leap seconds).
   static const perNormalYear = perHour * Hours.perNormalYear;
+
+  /// The minutes in a normal (non-leap) year (365 days), i.e., a year where all
+  /// days are exactly 24 hours long (no daylight savings time changes and no
+  /// leap seconds).
+  static const normalYear = Minutes(perNormalYear);
+
+  /// The number of minutes in a leap year (366 days), i.e., a year where all
+  /// days are exactly 24 hours long (no daylight savings time changes and no
+  /// leap seconds).
   static const perNormalLeapYear = perHour * Hours.perNormalLeapYear;
+
+  /// The minutes in a leap year (366 days), i.e., a year where all days are
+  /// exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
+  static const normalLeapYear = Minutes(perNormalLeapYear);
 
   @override
   final int inMinutes;
@@ -561,19 +856,47 @@ final class Minutes extends MinutesDuration {
 final class Hours extends MinutesDuration {
   const Hours(this.inHours);
 
+  /// The number of hours in a normal day, i.e., a day with exactly 24 hours
+  /// no daylight savings time changes and no leap seconds).
   static const perNormalDay = 24;
+
+  /// The hours in a normal day, i.e., a day with exactly 24 hours (no daylight
+  /// savings time changes and no leap seconds).
   static const normalDay = Hours(perNormalDay);
+
+  /// The number of hours in a normal week, i.e., a week where all days are
+  /// exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
   static const perNormalWeek = perNormalDay * Days.perWeek;
+
+  /// The hours in a normal week, i.e., a week where all days are exactly
+  /// 24 hours long (no daylight savings time changes and no leap seconds).
   static const normalWeek = Hours(perNormalWeek);
+
+  /// The number of hours in a normal (non-leap) year (365 days), i.e., a year
+  /// where all days are exactly 24 hours long (no daylight savings time changes
+  /// and no leap seconds).
   static const perNormalYear = perNormalDay * Days.perNormalYear;
+
+  /// The hours in a normal (non-leap) year (365 days), i.e., a year where all
+  /// days are exactly 24 hours long (no daylight savings time changes and no
+  /// leap seconds).
   static const normalYear = Hours(perNormalYear);
+
+  /// The number of hours in a leap year (366 days), i.e., a year where all days
+  /// are exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
   static const perNormalLeapYear = perNormalDay * Days.perLeapYear;
+
+  /// The hours in a leap year (366 days), i.e., a year where all days are
+  /// exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
   static const normalLeapYear = Hours(perNormalLeapYear);
 
   final int inHours;
 
   @override
-  Minutes get asMinutes => Minutes(inHours * Minutes.perHour);
+  Minutes get asMinutes => Minutes.hour * inHours;
 
   Hours operator +(Hours duration) => Hours(inHours + duration.inHours);
   Hours operator -(Hours duration) => Hours(inHours - duration.inHours);
