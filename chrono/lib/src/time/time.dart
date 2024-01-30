@@ -1,11 +1,12 @@
-import 'dart:core';
 import 'dart:core' as core;
+import 'dart:core';
 
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../date_time/date_time.dart';
+import '../json.dart';
 import '../parser.dart';
 import '../utils.dart';
 import 'duration.dart';
@@ -64,10 +65,6 @@ final class Time
   factory Time.nowInLocalZone({Clock? clock}) =>
       DateTime.nowInLocalZone(clock: clock).time;
   factory Time.nowInUtc({Clock? clock}) => DateTime.nowInUtc(clock: clock).time;
-
-  factory Time.fromJson(String json) => unwrapParserResult(parse(json));
-  static Result<Time, FormatException> parse(String value) =>
-      Parser.parseTime(value);
 
   static String? _validateFraction(FractionalSeconds? fraction) {
     if (fraction != null &&
@@ -148,6 +145,15 @@ final class Time
         : this.fraction.inFractionalSeconds.toString().substring(1);
     return '$hour:$minute:$second$fraction';
   }
+}
 
-  String toJson() => toString();
+class TimeStringJsonConverter
+    extends JsonConverterWithParserResult<Time, String> {
+  const TimeStringJsonConverter();
+
+  @override
+  Result<Time, FormatException> resultFromJson(String json) =>
+      Parser.parseTime(json);
+  @override
+  String toJson(Time object) => object.toString();
 }

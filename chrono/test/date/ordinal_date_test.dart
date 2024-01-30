@@ -6,7 +6,7 @@ import '../utils.dart';
 void main() {
   setChronoGladosDefaults();
 
-  testDataClassBasics(OrdinalDate.fromJson);
+  testDataClassBasics(const OrdinalDateStringJsonConverter());
 
   Glados<OrdinalDate>().test('asDate', (ordinalDate) {
     expect(ordinalDate.asDate.asOrdinalDate, ordinalDate);

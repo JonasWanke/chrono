@@ -1,8 +1,8 @@
-import 'dart:core';
 import 'dart:core' as core;
+import 'dart:core';
 
-import 'package:clock/clock.dart';
 import 'package:clock/clock.dart' as cl;
+import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
@@ -10,6 +10,7 @@ import '../date/date.dart';
 import '../date/duration.dart';
 import '../date/month/month.dart';
 import '../date/year.dart';
+import '../json.dart';
 import '../parser.dart';
 import '../time/duration.dart';
 import '../time/time.dart';
@@ -67,10 +68,6 @@ final class DateTime
       : this.fromCore((clock ?? cl.clock).now().toLocal());
   DateTime.nowInUtc({Clock? clock})
       : this.fromCore((clock ?? cl.clock).now().toUtc());
-
-  factory DateTime.fromJson(String json) => unwrapParserResult(parse(json));
-  static Result<DateTime, FormatException> parse(String value) =>
-      Parser.parseDateTime(value);
 
   final Date date;
   final Time time;
@@ -153,8 +150,6 @@ final class DateTime
 
   @override
   String toString() => '${date}T$time';
-
-  String toJson() => toString();
 }
 
 extension on TimeDuration {
@@ -174,4 +169,15 @@ extension on TimeDuration {
         Time.fromTimeSinceMidnight(fraction + secondsWithinDay).unwrap();
     return (days, time);
   }
+}
+
+class DateTimeStringJsonConverter
+    extends JsonConverterWithParserResult<DateTime, String> {
+  const DateTimeStringJsonConverter();
+
+  @override
+  Result<DateTime, FormatException> resultFromJson(String json) =>
+      Parser.parseDateTime(json);
+  @override
+  String toJson(DateTime object) => object.toString();
 }

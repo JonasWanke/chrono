@@ -1,11 +1,12 @@
-import 'dart:core';
 import 'dart:core' as core;
+import 'dart:core';
 
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../../date_time/date_time.dart';
+import '../../json.dart';
 import '../../parser.dart';
 import '../../utils.dart';
 import '../date.dart';
@@ -24,10 +25,6 @@ final class YearMonth
       DateTime.nowInLocalZone(clock: clock).date.yearMonth;
   factory YearMonth.currentInUtc({Clock? clock}) =>
       DateTime.nowInUtc(clock: clock).date.yearMonth;
-
-  factory YearMonth.fromJson(String json) => unwrapParserResult(parse(json));
-  static Result<YearMonth, FormatException> parse(String value) =>
-      Parser.parseYearMonth(value);
 
   final Year year;
   final Month month;
@@ -110,6 +107,15 @@ final class YearMonth
     final month = this.month.number.toString().padLeft(2, '0');
     return '$year-$month';
   }
+}
 
-  String toJson() => toString();
+class YearMonthStringJsonConverter
+    extends JsonConverterWithParserResult<YearMonth, String> {
+  const YearMonthStringJsonConverter();
+
+  @override
+  Result<YearMonth, FormatException> resultFromJson(String json) =>
+      Parser.parseYearMonth(json);
+  @override
+  String toJson(YearMonth object) => object.toString();
 }

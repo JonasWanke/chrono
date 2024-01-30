@@ -1,5 +1,5 @@
-import 'dart:core';
 import 'dart:core' as core;
+import 'dart:core';
 
 import 'package:clock/clock.dart';
 import 'package:dartx/dartx.dart';
@@ -7,6 +7,7 @@ import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../date_time/date_time.dart';
+import '../json.dart';
 import '../parser.dart';
 import '../time/time.dart';
 import '../utils.dart';
@@ -111,10 +112,6 @@ final class Date
       DateTime.nowInLocalZone(clock: clock).date;
   factory Date.todayInUtc({Clock? clock}) =>
       DateTime.nowInUtc(clock: clock).date;
-
-  factory Date.fromJson(String json) => unwrapParserResult(parse(json));
-  static Result<Date, FormatException> parse(String value) =>
-      Parser.parseDate(value);
 
   final YearMonth yearMonth;
   Year get year => yearMonth.year;
@@ -278,6 +275,15 @@ final class Date
     final day = this.day.toString().padLeft(2, '0');
     return '$yearMonth-$day';
   }
+}
 
-  String toJson() => toString();
+class DateStringJsonConverter
+    extends JsonConverterWithParserResult<Date, String> {
+  const DateStringJsonConverter();
+
+  @override
+  Result<Date, FormatException> resultFromJson(String json) =>
+      Parser.parseDate(json);
+  @override
+  String toJson(Date object) => object.toString();
 }

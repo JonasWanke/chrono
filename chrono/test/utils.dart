@@ -1,10 +1,11 @@
 import 'package:glados/glados.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 
 // ignore_for_file: avoid-top-level-members-in-tests
 
 void testDataClassBasics<T extends Comparable<T>, J>(
-  T Function(J) fromJson,
+  JsonConverter<T, J> converter,
 ) {
   Glados<T>().test('equality', (value) {
     expect(value == value, true);
@@ -12,8 +13,7 @@ void testDataClassBasics<T extends Comparable<T>, J>(
   });
 
   Glados<T>().test('JSON', (value) {
-    final json = (value as dynamic).toJson() as J;
-    expect(fromJson(json), value);
+    expect(converter.fromJson(converter.toJson(value)), value);
   });
 }
 

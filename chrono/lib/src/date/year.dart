@@ -1,7 +1,8 @@
-import 'dart:core';
 import 'dart:core' as core;
+import 'dart:core';
 
 import 'package:clock/clock.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 
 import '../date_time/date_time.dart';
@@ -43,8 +44,6 @@ final class Year
       DateTime.nowInLocalZone(clock: clock).date.year;
   factory Year.currentInUtc({Clock? clock}) =>
       DateTime.nowInUtc(clock: clock).date.year;
-
-  const Year.fromJson(int json) : this(json);
 
   final int number;
 
@@ -136,6 +135,14 @@ final class Year
       _ => number.toString().padLeft(4, '0'),
     };
   }
+}
 
-  int toJson() => number;
+class YearNumberJsonConverter extends JsonConverter<Year, int> {
+  const YearNumberJsonConverter();
+
+  @override
+  Year fromJson(int json) => Year(json);
+
+  @override
+  int toJson(Year object) => object.number;
 }

@@ -1,10 +1,11 @@
-import 'dart:core';
 import 'dart:core' as core;
+import 'dart:core';
 
 import 'package:clock/clock.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../../date_time/date_time.dart';
+import '../../json.dart';
 import '../../utils.dart';
 import '../duration.dart';
 import 'month_day.dart';
@@ -41,9 +42,6 @@ enum Month
       DateTime.nowInLocalZone(clock: clock).date.month;
   static Month currentInUtc({Clock? clock}) =>
       DateTime.nowInUtc(clock: clock).date.month;
-
-  static Month fromJson(int json) =>
-      fromNumber(json).unwrapOrThrowAsFormatException();
 
   static const minNumber = 1; // Month.january.number
   static const maxNumber = 12; // Month.december.number
@@ -138,6 +136,15 @@ enum Month
       Month.december => 'December',
     };
   }
+}
 
-  int toJson() => number;
+class MonthNumberJsonConverter
+    extends JsonConverterWithStringResult<Month, int> {
+  const MonthNumberJsonConverter();
+
+  @override
+  Result<Month, String> resultFromJson(int json) => Month.fromNumber(json);
+
+  @override
+  int toJson(Month object) => object.number;
 }

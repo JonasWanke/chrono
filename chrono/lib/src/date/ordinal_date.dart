@@ -1,11 +1,12 @@
-import 'dart:core';
 import 'dart:core' as core;
+import 'dart:core';
 
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../date_time/date_time.dart';
+import '../json.dart';
 import '../parser.dart';
 import '../utils.dart';
 import 'date.dart';
@@ -42,10 +43,6 @@ final class OrdinalDate
       DateTime.nowInLocalZone(clock: clock).date.asOrdinalDate;
   factory OrdinalDate.todayInUtc({Clock? clock}) =>
       DateTime.nowInUtc(clock: clock).date.asOrdinalDate;
-
-  factory OrdinalDate.fromJson(String json) => unwrapParserResult(parse(json));
-  static Result<OrdinalDate, FormatException> parse(String value) =>
-      Parser.parseOrdinalDate(value);
 
   final Year year;
 
@@ -126,6 +123,15 @@ final class OrdinalDate
     final dayOfYear = this.dayOfYear.toString().padLeft(3, '0');
     return '$year-$dayOfYear';
   }
+}
 
-  String toJson() => toString();
+class OrdinalDateStringJsonConverter
+    extends JsonConverterWithParserResult<OrdinalDate, String> {
+  const OrdinalDateStringJsonConverter();
+
+  @override
+  Result<OrdinalDate, FormatException> resultFromJson(String json) =>
+      Parser.parseOrdinalDate(json);
+  @override
+  String toJson(OrdinalDate object) => object.toString();
 }

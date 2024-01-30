@@ -6,7 +6,7 @@ import '../utils.dart';
 void main() {
   setChronoGladosDefaults();
 
-  testDataClassBasics(Date.fromJson);
+  testDataClassBasics(const DateStringJsonConverter());
 
   Glados<Date>().test('daysSinceUnixEpoch', (date) {
     expect(Date.fromDaysSinceUnixEpoch(date.daysSinceUnixEpoch), date);

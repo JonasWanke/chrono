@@ -1,5 +1,6 @@
 import 'package:oxidized/oxidized.dart';
 
+import '../json.dart';
 import '../utils.dart';
 import 'duration.dart';
 
@@ -27,9 +28,6 @@ enum Weekday
     }
     return Ok(values[number - Weekday.minNumber]);
   }
-
-  static Weekday fromJson(int json) =>
-      fromNumber(json).unwrapOrThrowAsFormatException();
 
   static const minNumber = 1; // Weekday.monday.number
   static const maxNumber = 7; // Weekday.sunday.number
@@ -74,6 +72,15 @@ enum Weekday
       Weekday.sunday => 'Sunday',
     };
   }
+}
 
-  int toJson() => number;
+class WeekdayNumberJsonConverter
+    extends JsonConverterWithStringResult<Weekday, int> {
+  const WeekdayNumberJsonConverter();
+
+  @override
+  Result<Weekday, String> resultFromJson(int json) => Weekday.fromNumber(json);
+
+  @override
+  int toJson(Weekday object) => object.number;
 }

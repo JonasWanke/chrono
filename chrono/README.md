@@ -8,11 +8,10 @@ It offers strongly-typed data classes for timezone-independent (plain/local) dat
 - arithmetic operations and conversions
 - parsing and formatting for a subset of [ISO 8601], [RFC 3339], and [CC 18011:2018]
   - this is implemented for [`Instant`] and the date/time classes, but still missing for durations
-  - these classes also have `toJson()`/`fromJson()` functions
 
 The following features are _not_ implemented, but could be added in the future:
 
-- timezone support
+- timezone support (work in progress)
 - customizable parsing and formatting
 - internationalization
 
@@ -136,6 +135,62 @@ For example, adding 1 month and -1 day to 2023-08-31 results in 2023-09-29:
 
 (If the order of operations was reversed, the result would be 2023-09-30.)
 
+## Serialization
+
+[`Instant`] and all date and time classes support JSON serialization.
+(Support for durations will be added in the future.)
+
+Because there are often multiple possibilities of how to encode a value, Chono lets you choose the format:
+There are subclasses of [`JsonConverter`] for each class called `<Chrono type><JSON type>JsonConverter`, e.g., [`DateTimeStringJsonConverter`].
+
+TODO: add table with all converters and examples
+
+### [<kbd>json_serializable</kbd>]
+
+TODO: test this code
+
+If you use [<kbd>json_serializable</kbd>], you can either choose between the following approached:
+
+1. Annotate your field with the converter you want to use:
+
+   ```dart
+   @JsonSerializable()
+   class MyClass {
+     const MyClass(this.value);
+
+     factory MyClass.fromJson(Map<String, dynamic> json) =>
+         _$MyClassFromJson(json);
+
+     @DateTimeStringJsonConverter()
+     final DateTime value;
+
+     Map<String, dynamic> toJson() => _$MyClassToJson(this);
+   }
+   ```
+
+2. Specify the converter in the [`JsonSerializable`] annotation so it applies to all fields in that class:
+
+   ```dart
+   @JsonSerializable(converters: [DateTimeStringJsonConverter()])
+   class MyClass {
+     // ...
+   }
+   ```
+
+3. Create a customized instance of [`JsonSerializable`] that you can reuse for all your classes:
+
+   ```dart
+   const jsonSerializable = JsonSerializable(converters: [DateTimeStringJsonConverter()]);
+
+   @jsonSerializable
+   class MyClass {
+     // ...
+   }
+   ```
+
+You can also combine these approaches:
+For example, create a customized [`JsonSerializable`] instance with your defaults (approach 3) and overwrite the converter individual fields (approach 1).
+
 ## Testing
 
 All functions that are based on the current time accept an optional [`Clock`] parameter.
@@ -170,6 +225,7 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 [`Date`]: https://pub.dev/documentation/chrono/latest/chrono/Date-class.html
 [`DateDuration`]: https://pub.dev/documentation/chrono/latest/chrono/DateDuration-class.html
 [`DateTime`]: https://pub.dev/documentation/chrono/latest/chrono/DateTime-class.html
+[`DateTimeStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/DateTimeStringJsonConverter-class.html
 [`Days`]: https://pub.dev/documentation/chrono/latest/chrono/Days-class.html
 [`Duration`]: https://pub.dev/documentation/chrono/latest/chrono/Duration-class.html
 [`FixedDaysDuration`]: https://pub.dev/documentation/chrono/latest/chrono/FixedDaysDuration-class.html
@@ -210,6 +266,15 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 <!-- glados -->
 
 [<kbd>glados</kbd>]: https://pub.dev/packages/glados
+
+<!-- json_annotation -->
+
+[`JsonConverter`]: https://pub.dev/documentation/json_annotation/latest/json_annotation/JsonConverter-class.html
+
+<!-- json_serializable -->
+
+[<kbd>json_serializable</kbd>]: https://pub.dev/packages/json_serializable
+[`JsonSerializable`]: https://pub.dev/documentation/json_annotation/4.8.1/json_annotation/JsonSerializable-class.html
 
 <!-- external -->
 

@@ -1,11 +1,12 @@
-import 'dart:core';
 import 'dart:core' as core;
+import 'dart:core';
 
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../../date_time/date_time.dart';
+import '../../json.dart';
 import '../../parser.dart';
 import '../../utils.dart';
 import '../date.dart';
@@ -35,10 +36,6 @@ final class MonthDay
       DateTime.nowInLocalZone(clock: clock).date.monthDay;
   factory MonthDay.todayInUtc({Clock? clock}) =>
       DateTime.nowInUtc(clock: clock).date.monthDay;
-
-  factory MonthDay.fromJson(String json) => unwrapParserResult(parse(json));
-  static Result<MonthDay, FormatException> parse(String value) =>
-      Parser.parseMonthDay(value);
 
   final Month month;
 
@@ -76,6 +73,15 @@ final class MonthDay
     final day = this.day.toString().padLeft(2, '0');
     return '--$month-$day';
   }
+}
 
-  String toJson() => toString();
+class MonthDayStringJsonConverter
+    extends JsonConverterWithParserResult<MonthDay, String> {
+  const MonthDayStringJsonConverter();
+
+  @override
+  Result<MonthDay, FormatException> resultFromJson(String json) =>
+      Parser.parseMonthDay(json);
+  @override
+  String toJson(MonthDay object) => object.toString();
 }

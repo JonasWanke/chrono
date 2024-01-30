@@ -8,7 +8,7 @@ import '../utils.dart';
 void main() {
   setChronoGladosDefaults();
 
-  testDataClassBasics(Instant.fromJson);
+  testDataClassBasics(const InstantStringJsonConverter());
 
   Glados<Instant>().test('fromDurationSinceUnixEpoch', (instant) {
     expect(
@@ -19,6 +19,14 @@ void main() {
 
   Glados<core.DateTime>().test('fromCore', (dateTime) {
     expect(Instant.fromCore(dateTime).asCoreDateTimeInLocalZone, dateTime);
+
+    final dateTimeInUtc = dateTime.toUtc();
+    expect(dateTimeInUtc, Instant.fromCore(dateTimeInUtc).asCoreDateTimeInUtc);
+  });
+
+  Glados<Instant>().test('DateTime conversion', (instant) {
+    expect(instant, instant.dateTimeInLocalZone.inLocalZone);
+    expect(instant, instant.dateTimeInUtc.inUtc);
   });
 
   Glados2<Instant, TimeDuration>().test(

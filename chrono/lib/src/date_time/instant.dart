@@ -1,10 +1,11 @@
-import 'dart:core';
 import 'dart:core' as core;
+import 'dart:core';
 
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
+import '../json.dart';
 import '../parser.dart';
 import '../time/duration.dart';
 import '../utils.dart';
@@ -23,10 +24,6 @@ final class Instant
             FractionalSeconds.microsecond * dateTime.microsecondsSinceEpoch;
   Instant.now({Clock? clockOverride})
       : this.fromCore((clockOverride ?? clock).now());
-
-  factory Instant.fromJson(String json) => unwrapParserResult(parse(json));
-  static Result<Instant, FormatException> parse(String value) =>
-      Parser.parseInstant(value);
 
   final FractionalSeconds durationSinceUnixEpoch;
 
@@ -68,6 +65,15 @@ final class Instant
 
   @override
   String toString() => '${dateTimeInUtc}Z';
+}
 
-  String toJson() => toString();
+class InstantStringJsonConverter
+    extends JsonConverterWithParserResult<Instant, String> {
+  const InstantStringJsonConverter();
+
+  @override
+  Result<Instant, FormatException> resultFromJson(String json) =>
+      Parser.parseInstant(json);
+  @override
+  String toJson(Instant object) => object.toString();
 }

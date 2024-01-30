@@ -1,11 +1,12 @@
-import 'dart:core';
 import 'dart:core' as core;
+import 'dart:core';
 
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../../date_time/date_time.dart';
+import '../../json.dart';
 import '../../parser.dart';
 import '../../utils.dart';
 import '../duration.dart';
@@ -30,10 +31,6 @@ final class YearWeek
       DateTime.nowInLocalZone(clock: clock).date.yearWeek;
   factory YearWeek.currentInUtc({Clock? clock}) =>
       DateTime.nowInUtc(clock: clock).date.yearWeek;
-
-  factory YearWeek.fromJson(String json) => unwrapParserResult(parse(json));
-  static Result<YearWeek, FormatException> parse(String value) =>
-      Parser.parseYearWeek(value);
 
   final Year weekBasedYear;
   final int week;
@@ -99,6 +96,15 @@ final class YearWeek
     final week = this.week.toString().padLeft(2, '0');
     return '$weekBasedYear-W$week';
   }
+}
 
-  String toJson() => toString();
+class YearWeekStringJsonConverter
+    extends JsonConverterWithParserResult<YearWeek, String> {
+  const YearWeekStringJsonConverter();
+
+  @override
+  Result<YearWeek, FormatException> resultFromJson(String json) =>
+      Parser.parseYearWeek(json);
+  @override
+  String toJson(YearWeek object) => object.toString();
 }

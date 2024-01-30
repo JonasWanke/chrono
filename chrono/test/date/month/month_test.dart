@@ -7,7 +7,7 @@ import '../../utils.dart';
 void main() {
   setChronoGladosDefaults();
 
-  testDataClassBasics(Month.fromJson);
+  testDataClassBasics(const MonthNumberJsonConverter());
 
   testAll('`number` and `fromNumber(…)`', Month.values, (month) {
     final number = month.number;

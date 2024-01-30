@@ -1,11 +1,12 @@
-import 'dart:core';
 import 'dart:core' as core;
+import 'dart:core';
 
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../../date_time/date_time.dart';
+import '../../json.dart';
 import '../../parser.dart';
 import '../../utils.dart';
 import '../date.dart';
@@ -37,10 +38,6 @@ final class WeekDate
       DateTime.nowInLocalZone(clock: clock).date.asWeekDate;
   factory WeekDate.todayInUtc({Clock? clock}) =>
       DateTime.nowInUtc(clock: clock).date.asWeekDate;
-
-  factory WeekDate.fromJson(String json) => unwrapParserResult(parse(json));
-  static Result<WeekDate, FormatException> parse(String value) =>
-      Parser.parseWeekDate(value);
 
   final YearWeek yearWeek;
   final Weekday weekday;
@@ -133,6 +130,15 @@ final class WeekDate
 
   @override
   String toString() => '$yearWeek-${weekday.number}';
+}
 
-  String toJson() => toString();
+class WeekDateStringJsonConverter
+    extends JsonConverterWithParserResult<WeekDate, String> {
+  const WeekDateStringJsonConverter();
+
+  @override
+  Result<WeekDate, FormatException> resultFromJson(String json) =>
+      Parser.parseWeekDate(json);
+  @override
+  String toJson(WeekDate object) => object.toString();
 }
