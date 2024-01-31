@@ -109,9 +109,9 @@ final class YearMonth
   }
 }
 
-class YearMonthStringJsonConverter
+class YearMonthAsIsoStringJsonConverter
     extends JsonConverterWithParserResult<YearMonth, String> {
-  const YearMonthStringJsonConverter();
+  const YearMonthAsIsoStringJsonConverter();
 
   @override
   Result<YearMonth, FormatException> resultFromJson(String json) =>

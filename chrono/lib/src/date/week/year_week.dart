@@ -98,9 +98,9 @@ final class YearWeek
   }
 }
 
-class YearWeekStringJsonConverter
+class YearWeekAsIsoStringJsonConverter
     extends JsonConverterWithParserResult<YearWeek, String> {
-  const YearWeekStringJsonConverter();
+  const YearWeekAsIsoStringJsonConverter();
 
   @override
   Result<YearWeek, FormatException> resultFromJson(String json) =>

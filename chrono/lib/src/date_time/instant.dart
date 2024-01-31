@@ -67,9 +67,9 @@ final class Instant
   String toString() => '${dateTimeInUtc}Z';
 }
 
-class InstantStringJsonConverter
+class InstantAsIsoStringJsonConverter
     extends JsonConverterWithParserResult<Instant, String> {
-  const InstantStringJsonConverter();
+  const InstantAsIsoStringJsonConverter();
 
   @override
   Result<Instant, FormatException> resultFromJson(String json) =>

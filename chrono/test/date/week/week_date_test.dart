@@ -6,7 +6,7 @@ import '../../utils.dart';
 void main() {
   setChronoGladosDefaults();
 
-  testDataClassBasics(const WeekDateStringJsonConverter());
+  testDataClassBasics(const WeekDateAsIsoStringJsonConverter());
 
   Glados<WeekDate>().test('asDate', (weekDate) {
     expect(weekDate.asDate.asWeekDate, weekDate);

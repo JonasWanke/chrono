@@ -125,9 +125,9 @@ final class OrdinalDate
   }
 }
 
-class OrdinalDateStringJsonConverter
+class OrdinalDateAsIsoStringJsonConverter
     extends JsonConverterWithParserResult<OrdinalDate, String> {
-  const OrdinalDateStringJsonConverter();
+  const OrdinalDateAsIsoStringJsonConverter();
 
   @override
   Result<OrdinalDate, FormatException> resultFromJson(String json) =>

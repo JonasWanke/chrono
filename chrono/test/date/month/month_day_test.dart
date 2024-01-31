@@ -6,7 +6,7 @@ import '../../utils.dart';
 void main() {
   setChronoGladosDefaults();
 
-  testDataClassBasics(const MonthDayStringJsonConverter());
+  testDataClassBasics(const MonthDayAsIsoStringJsonConverter());
 
   // ignore: missing-test-assertion
   test('known values', () {

@@ -141,9 +141,22 @@ For example, adding 1 month and -1 day to 2023-08-31 results in 2023-09-29:
 (Support for durations will be added in the future.)
 
 Because there are often multiple possibilities of how to encode a value, Chono lets you choose the format:
-There are subclasses of [`JsonConverter`] for each class called `<Chrono type><JSON type>JsonConverter`, e.g., [`DateTimeStringJsonConverter`].
+There are subclasses of [`JsonConverter`] for each class called `<Chrono type>As<JSON type>JsonConverter`, e.g., [`DateTimeAsIsoStringJsonConverter`].
 
-TODO: add table with all converters and examples
+|                       Converter class | Encoding example         |
+| ------------------------------------: | :----------------------- |
+|     `InstantAsIsoStringJsonConverter` | `"2023-04-23T18:24:20Z"` |
+|    `DateTimeAsIsoStringJsonConverter` | `"2023-04-23T18:24:20"`  |
+|        `DateAsIsoStringJsonConverter` | `"2023-04-23"`           |
+|              `YearAsIntJsonConverter` | `2023`                   |
+|             `MonthAsIntJsonConverter` | `4`                      |
+|   `YearMonthAsIsoStringJsonConverter` | `"2023-04"`              |
+|    `MonthDayAsIsoStringJsonConverter` | `"--04-23"`              |
+| `OrdinalDateAsIsoStringJsonConverter` | `"2023-113"`             |
+|    `WeekDateAsIsoStringJsonConverter` | `"2023-W16-7"`           |
+|    `YearWeekAsIsoStringJsonConverter` | `"2023-W16"`             |
+|           `WeekdayAsIntJsonConverter` | `7`                      |
+|        `TimeAsIsoStringJsonConverter` | `"18:24:20"`             |
 
 ### [<kbd>json_serializable</kbd>]
 
@@ -161,7 +174,7 @@ If you use [<kbd>json_serializable</kbd>], you can either choose between the fol
      factory MyClass.fromJson(Map<String, dynamic> json) =>
          _$MyClassFromJson(json);
 
-     @DateTimeStringJsonConverter()
+     @DateTimeAsIsoStringJsonConverter()
      final DateTime value;
 
      Map<String, dynamic> toJson() => _$MyClassToJson(this);
@@ -171,7 +184,7 @@ If you use [<kbd>json_serializable</kbd>], you can either choose between the fol
 2. Specify the converter in the [`JsonSerializable`] annotation so it applies to all fields in that class:
 
    ```dart
-   @JsonSerializable(converters: [DateTimeStringJsonConverter()])
+   @JsonSerializable(converters: [DateTimeAsIsoStringJsonConverter()])
    class MyClass {
      // ...
    }
@@ -180,7 +193,7 @@ If you use [<kbd>json_serializable</kbd>], you can either choose between the fol
 3. Create a customized instance of [`JsonSerializable`] that you can reuse for all your classes:
 
    ```dart
-   const jsonSerializable = JsonSerializable(converters: [DateTimeStringJsonConverter()]);
+   const jsonSerializable = JsonSerializable(converters: [DateTimeAsIsoStringJsonConverter()]);
 
    @jsonSerializable
    class MyClass {
@@ -225,7 +238,7 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 [`Date`]: https://pub.dev/documentation/chrono/latest/chrono/Date-class.html
 [`DateDuration`]: https://pub.dev/documentation/chrono/latest/chrono/DateDuration-class.html
 [`DateTime`]: https://pub.dev/documentation/chrono/latest/chrono/DateTime-class.html
-[`DateTimeStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/DateTimeStringJsonConverter-class.html
+[`DateTimeAsIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/DateTimeAsIsoStringJsonConverter-class.html
 [`Days`]: https://pub.dev/documentation/chrono/latest/chrono/Days-class.html
 [`Duration`]: https://pub.dev/documentation/chrono/latest/chrono/Duration-class.html
 [`FixedDaysDuration`]: https://pub.dev/documentation/chrono/latest/chrono/FixedDaysDuration-class.html

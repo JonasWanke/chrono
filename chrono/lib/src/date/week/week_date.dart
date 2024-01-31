@@ -132,9 +132,9 @@ final class WeekDate
   String toString() => '$yearWeek-${weekday.number}';
 }
 
-class WeekDateStringJsonConverter
+class WeekDateAsIsoStringJsonConverter
     extends JsonConverterWithParserResult<WeekDate, String> {
-  const WeekDateStringJsonConverter();
+  const WeekDateAsIsoStringJsonConverter();
 
   @override
   Result<WeekDate, FormatException> resultFromJson(String json) =>

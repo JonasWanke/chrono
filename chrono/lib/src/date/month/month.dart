@@ -138,9 +138,10 @@ enum Month
   }
 }
 
-class MonthNumberJsonConverter
+/// Encodes a [Month] as an int: 1 for January, …, 12 for December.
+class MonthAsIntJsonConverter
     extends JsonConverterWithStringResult<Month, int> {
-  const MonthNumberJsonConverter();
+  const MonthAsIntJsonConverter();
 
   @override
   Result<Month, String> resultFromJson(int json) => Month.fromNumber(json);

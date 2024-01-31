@@ -137,8 +137,8 @@ final class Year
   }
 }
 
-class YearNumberJsonConverter extends JsonConverter<Year, int> {
-  const YearNumberJsonConverter();
+class YearAsIntJsonConverter extends JsonConverter<Year, int> {
+  const YearAsIntJsonConverter();
 
   @override
   Year fromJson(int json) => Year(json);

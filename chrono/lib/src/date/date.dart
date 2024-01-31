@@ -277,9 +277,9 @@ final class Date
   }
 }
 
-class DateStringJsonConverter
+class DateAsIsoStringJsonConverter
     extends JsonConverterWithParserResult<Date, String> {
-  const DateStringJsonConverter();
+  const DateAsIsoStringJsonConverter();
 
   @override
   Result<Date, FormatException> resultFromJson(String json) =>

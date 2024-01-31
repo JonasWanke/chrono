@@ -75,9 +75,9 @@ final class MonthDay
   }
 }
 
-class MonthDayStringJsonConverter
+class MonthDayAsIsoStringJsonConverter
     extends JsonConverterWithParserResult<MonthDay, String> {
-  const MonthDayStringJsonConverter();
+  const MonthDayAsIsoStringJsonConverter();
 
   @override
   Result<MonthDay, FormatException> resultFromJson(String json) =>

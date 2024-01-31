@@ -165,9 +165,9 @@ extension on TimeDuration {
   }
 }
 
-class DateTimeStringJsonConverter
+class DateTimeAsIsoStringJsonConverter
     extends JsonConverterWithParserResult<DateTime, String> {
-  const DateTimeStringJsonConverter();
+  const DateTimeAsIsoStringJsonConverter();
 
   @override
   Result<DateTime, FormatException> resultFromJson(String json) =>

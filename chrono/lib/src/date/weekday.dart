@@ -74,9 +74,11 @@ enum Weekday
   }
 }
 
-class WeekdayNumberJsonConverter
+/// Encodes a [Weekday] as an ISO 8601 weekday number: 1 for Monday, …, 7 for
+/// Sunday.
+class WeekdayAsIntJsonConverter
     extends JsonConverterWithStringResult<Weekday, int> {
-  const WeekdayNumberJsonConverter();
+  const WeekdayAsIntJsonConverter();
 
   @override
   Result<Weekday, String> resultFromJson(int json) => Weekday.fromNumber(json);

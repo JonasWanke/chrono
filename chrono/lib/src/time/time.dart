@@ -146,9 +146,9 @@ final class Time
   }
 }
 
-class TimeStringJsonConverter
+class TimeAsIsoStringJsonConverter
     extends JsonConverterWithParserResult<Time, String> {
-  const TimeStringJsonConverter();
+  const TimeAsIsoStringJsonConverter();
 
   @override
   Result<Time, FormatException> resultFromJson(String json) =>
