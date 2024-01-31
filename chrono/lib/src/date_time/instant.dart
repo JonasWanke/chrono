@@ -2,11 +2,13 @@ import 'dart:core' as core;
 import 'dart:core';
 
 import 'package:clock/clock.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../json.dart';
 import '../parser.dart';
+import '../rounding.dart';
 import '../time/duration.dart';
 import '../utils.dart';
 import 'date_time.dart';
@@ -16,6 +18,12 @@ import 'date_time.dart';
 final class Instant
     with ComparisonOperatorsFromComparable<Instant>
     implements Comparable<Instant> {
+  /// The UNIX epoch: 1970-01-01 at 00:00:00 in UTC.
+  ///
+  /// https://en.wikipedia.org/wiki/Unix_time
+  static final unixEpoch =
+      Instant.fromDurationSinceUnixEpoch(FractionalSeconds.zero);
+
   Instant.fromDurationSinceUnixEpoch(TimeDuration duration)
       : durationSinceUnixEpoch = duration.asFractionalSeconds;
 
@@ -76,4 +84,59 @@ class InstantAsIsoStringJsonConverter
       Parser.parseInstant(json);
   @override
   String toJson(Instant object) => object.toString();
+}
+
+/// Encodes an [Instant] as an integer representing the number of milliseconds
+/// that passed since the Unix epoch.
+///
+/// See also:
+/// - [Instant.unixEpoch], which is the Unix epoch.
+/// - [InstantAsEpochSecondsIntJsonConverter], which has a lower precision.
+/// - [InstantAsIsoStringJsonConverter], which has a higher precision and is
+///   human-readable.
+class InstantAsEpochMillisecondsIntJsonConverter
+    extends JsonConverter<Instant, int> {
+  const InstantAsEpochMillisecondsIntJsonConverter({
+    this.rounding = Rounding.nearestAwayFromZero,
+  });
+
+  final Rounding rounding;
+
+  @override
+  Instant fromJson(int json) =>
+      Instant.fromDurationSinceUnixEpoch(Milliseconds(json));
+  @override
+  int toJson(Instant object) {
+    return object.durationSinceUnixEpoch
+        .roundToMilliseconds(rounding: rounding)
+        .inMilliseconds;
+  }
+}
+
+/// Encodes an [Instant] as an integer representing the number of seconds that
+/// passed since the Unix epoch.
+///
+/// See also:
+/// - [Instant.unixEpoch], which is the Unix epoch.
+/// - [InstantAsEpochMillisecondsIntJsonConverter], which has a higher
+///   precision.
+/// - [InstantAsIsoStringJsonConverter], which has a higher precision and is
+///   human-readable.
+class InstantAsEpochSecondsIntJsonConverter
+    extends JsonConverter<Instant, int> {
+  const InstantAsEpochSecondsIntJsonConverter({
+    this.rounding = Rounding.nearestAwayFromZero,
+  });
+
+  final Rounding rounding;
+
+  @override
+  Instant fromJson(int json) =>
+      Instant.fromDurationSinceUnixEpoch(Seconds(json));
+  @override
+  int toJson(Instant object) {
+    return object.durationSinceUnixEpoch
+        .roundToSeconds(rounding: rounding)
+        .inSeconds;
+  }
 }

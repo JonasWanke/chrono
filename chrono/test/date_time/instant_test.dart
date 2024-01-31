@@ -9,6 +9,8 @@ void main() {
   setChronoGladosDefaults();
 
   testDataClassBasics(const InstantAsIsoStringJsonConverter());
+  // [InstantAsEpochMillisecondsIntJsonConverter] and
+  // [InstantAsEpochSecondsIntJsonConverter] are lossy.
 
   Glados<Instant>().test('fromDurationSinceUnixEpoch', (instant) {
     expect(

@@ -142,21 +142,24 @@ For example, adding 1 month and -1 day to 2023-08-31 results in 2023-09-29:
 
 Because there are often multiple possibilities of how to encode a value, Chono lets you choose the format:
 There are subclasses of [`JsonConverter`] for each class called `<Chrono type>As<JSON type>JsonConverter`, e.g., [`DateTimeAsIsoStringJsonConverter`].
+These are all converters and how they encode February 3, 2001 at 4:05:06.007 UTC:
 
-|                       Converter class | Encoding example         |
-| ------------------------------------: | :----------------------- |
-|     `InstantAsIsoStringJsonConverter` | `"2023-04-23T18:24:20Z"` |
-|    `DateTimeAsIsoStringJsonConverter` | `"2023-04-23T18:24:20"`  |
-|        `DateAsIsoStringJsonConverter` | `"2023-04-23"`           |
-|              `YearAsIntJsonConverter` | `2023`                   |
-|             `MonthAsIntJsonConverter` | `4`                      |
-|   `YearMonthAsIsoStringJsonConverter` | `"2023-04"`              |
-|    `MonthDayAsIsoStringJsonConverter` | `"--04-23"`              |
-| `OrdinalDateAsIsoStringJsonConverter` | `"2023-113"`             |
-|    `WeekDateAsIsoStringJsonConverter` | `"2023-W16-7"`           |
-|    `YearWeekAsIsoStringJsonConverter` | `"2023-W16"`             |
-|           `WeekdayAsIntJsonConverter` | `7`                      |
-|        `TimeAsIsoStringJsonConverter` | `"18:24:20"`             |
+|                              Converter class | Encoding example                |
+| -------------------------------------------: | :------------------------------ |
+|            `InstantAsIsoStringJsonConverter` | `"2001-02-03T04:05:06.007000Z"` |
+| `InstantAsEpochMillisecondsIntJsonConverter` | `981173106007`                  |
+|      `InstantAsEpochSecondsIntJsonConverter` | `981173106`                     |
+|           `DateTimeAsIsoStringJsonConverter` | `"2001-02-03T04:05:06.007"`     |
+|               `DateAsIsoStringJsonConverter` | `"2001-02-03"`                  |
+|                     `YearAsIntJsonConverter` | `2001`                          |
+|                    `MonthAsIntJsonConverter` | `2`                             |
+|          `YearMonthAsIsoStringJsonConverter` | `"2001-02"`                     |
+|           `MonthDayAsIsoStringJsonConverter` | `"--02-03"`                     |
+|        `OrdinalDateAsIsoStringJsonConverter` | `"2001-034"`                    |
+|           `WeekDateAsIsoStringJsonConverter` | `"2001-W05-6"`                  |
+|           `YearWeekAsIsoStringJsonConverter` | `"2001-W05"`                    |
+|                  `WeekdayAsIntJsonConverter` | `6`                             |
+|               `TimeAsIsoStringJsonConverter` | `"04:05:06.007"`                |
 
 ### [<kbd>json_serializable</kbd>]
 
