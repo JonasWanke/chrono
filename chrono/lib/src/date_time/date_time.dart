@@ -80,7 +80,8 @@ final class DateTime
   }
 
   Instant get inLocalZone => Instant.fromCore(asCoreDateTimeInLocalZone);
-  Instant get inUtc => Instant.fromCore(asCoreDateTimeInUtc);
+  Instant get inUtc =>
+      Instant.fromDurationSinceUnixEpoch(durationSinceUnixEpoch);
 
   core.DateTime get asCoreDateTimeInLocalZone => _getDartDateTime(isUtc: false);
   core.DateTime get asCoreDateTimeInUtc => _getDartDateTime(isUtc: true);

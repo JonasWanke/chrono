@@ -37,7 +37,8 @@ final class Instant
 
   DateTime get dateTimeInLocalZone =>
       DateTime.fromCore(asCoreDateTimeInLocalZone);
-  DateTime get dateTimeInUtc => DateTime.fromCore(asCoreDateTimeInUtc);
+  DateTime get dateTimeInUtc =>
+      DateTime.fromDurationSinceUnixEpoch(durationSinceUnixEpoch);
 
   core.DateTime get asCoreDateTimeInLocalZone => _getDateTime(isUtc: false);
   core.DateTime get asCoreDateTimeInUtc => _getDateTime(isUtc: true);
