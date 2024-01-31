@@ -151,6 +151,7 @@ These are all converters and how they encode February 3, 2001 at 4:05:06.007 U
 |      `InstantAsEpochSecondsIntJsonConverter` | `981173106`                     |
 |           `DateTimeAsIsoStringJsonConverter` | `"2001-02-03T04:05:06.007"`     |
 |               `DateAsIsoStringJsonConverter` | `"2001-02-03"`                  |
+|               `YearAsIsoStringJsonConverter` | `"2001"`                        |
 |                     `YearAsIntJsonConverter` | `2001`                          |
 |                    `MonthAsIntJsonConverter` | `2`                             |
 |          `YearMonthAsIsoStringJsonConverter` | `"2001-02"`                     |

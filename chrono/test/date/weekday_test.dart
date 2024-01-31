@@ -7,7 +7,7 @@ import '../utils.dart';
 void main() {
   setChronoGladosDefaults();
 
-  testDataClassBasics(const WeekdayAsIntJsonConverter());
+  testDataClassBasics(jsonConverters: [const WeekdayAsIntJsonConverter()]);
 
   testAll('`number` and `fromNumber(…)`', Weekday.values, (weekday) {
     final number = weekday.number;

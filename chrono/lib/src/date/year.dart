@@ -4,8 +4,11 @@ import 'dart:core';
 import 'package:clock/clock.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
+import 'package:oxidized/oxidized.dart';
 
 import '../date_time/date_time.dart';
+import '../json.dart';
+import '../parser.dart';
 import '../utils.dart';
 import 'date.dart';
 import 'duration.dart';
@@ -137,6 +140,43 @@ final class Year
   }
 }
 
+/// Encodes a year as an ISO 8601 string: `YYYY`, `-YYYY`, or `+YYYYY`.
+///
+/// The year number is zero-padded to at least four digits. Negative years are
+/// prefixed with a minus sign, years with five or more digits are prefixed
+/// with a plus sign.
+///
+/// Examples:
+///
+/// |  Value |    Meaning   | Encoded |
+/// |-------:|-------------:|-----------:|
+/// |  12023 | 12023  CE/AD | `"+12023"` |
+/// |   2023 |  2023  CE/AD |   `"2023"` |
+/// |      1 |     1  CE/AD |   `"0001"` |
+/// |      0 |     1 BCE/BC |   `"0000"` |
+/// |     -1 |     2 BCE/BC |  `"-0001"` |
+/// |  -1234 |  1235 BCE/AD |  `"-1234"` |
+/// | -12345 | 12346 BCE/AD | `"-12345"` |
+///
+/// https://en.wikipedia.org/wiki/ISO_8601#Years
+///
+/// See also:
+/// - [YearAsIntJsonConverter], which encodes a year as an integer.
+class YearAsIsoStringJsonConverter
+    extends JsonConverterWithParserResult<Year, String> {
+  const YearAsIsoStringJsonConverter();
+
+  @override
+  Result<Year, FormatException> resultFromJson(String json) =>
+      Parser.parseYear(json);
+  @override
+  String toJson(Year object) => object.toString();
+}
+
+/// Encodes a [Year] as an integer.
+///
+/// See also:
+/// - [YearAsIsoStringJsonConverter], which encodes a year as a string.
 class YearAsIntJsonConverter extends JsonConverter<Year, int> {
   const YearAsIntJsonConverter();
 

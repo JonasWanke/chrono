@@ -6,7 +6,7 @@ import '../utils.dart';
 void main() {
   setChronoGladosDefaults();
 
-  testDataClassBasics(const TimeAsIsoStringJsonConverter());
+  testDataClassBasics(jsonConverters: [const TimeAsIsoStringJsonConverter()]);
 
   Glados<Time>().test('fromTimeSinceMidnight', (time) {
     expect(

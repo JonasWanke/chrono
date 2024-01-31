@@ -33,6 +33,8 @@ final class Parser {
     String value,
   ) =>
       _parse(value, (it) => it._parseOrdinalDate());
+  static Result<Year, FormatException> parseYear(String value) =>
+      _parse(value, (it) => it._parseYear());
   static Result<YearMonth, FormatException> parseYearMonth(String value) =>
       _parse(value, (it) => it._parseYearMonth());
   static Result<YearWeek, FormatException> parseYearWeek(String value) =>

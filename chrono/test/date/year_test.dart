@@ -1,8 +1,17 @@
 import 'package:chrono/chrono.dart';
 import 'package:glados/glados.dart';
 
+import '../utils.dart';
+
 void main() {
   setChronoGladosDefaults();
+
+  testDataClassBasics<Year>(
+    jsonConverters: [
+      const YearAsIsoStringJsonConverter(),
+      const YearAsIntJsonConverter(),
+    ],
+  );
 
   Glados<Year>().test('isLeapYear and isCommonYear', (year) {
     expect(year.isCommonYear, !year.isLeapYear);

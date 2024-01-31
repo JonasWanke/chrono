@@ -8,7 +8,9 @@ import '../utils.dart';
 void main() {
   setChronoGladosDefaults();
 
-  testDataClassBasics(const InstantAsIsoStringJsonConverter());
+  testDataClassBasics(
+    jsonConverters: [const InstantAsIsoStringJsonConverter()],
+  );
   // [InstantAsEpochMillisecondsIntJsonConverter] and
   // [InstantAsEpochSecondsIntJsonConverter] are lossy.
 

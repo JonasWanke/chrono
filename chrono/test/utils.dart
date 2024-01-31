@@ -4,16 +4,20 @@ import 'package:meta/meta.dart';
 
 // ignore_for_file: avoid-top-level-members-in-tests
 
-void testDataClassBasics<T extends Comparable<T>, J>(
-  JsonConverter<T, J> converter,
-) {
+void testDataClassBasics<T extends Comparable<T>>({
+  required List<JsonConverter<T, dynamic>> jsonConverters,
+}) {
   Glados<T>().test('equality', (value) {
     expect(value == value, true);
     expect(value.compareTo(value), 0);
   });
 
-  Glados<T>().test('JSON', (value) {
-    expect(converter.fromJson(converter.toJson(value)), value);
+  group('JSON converters', () {
+    for (final jsonConverter in jsonConverters) {
+      Glados<T>().test(jsonConverter.runtimeType.toString(), (value) {
+        expect(jsonConverter.fromJson(jsonConverter.toJson(value)), value);
+      });
+    }
   });
 }
 
