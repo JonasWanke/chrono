@@ -18,7 +18,7 @@ jobs:
       matrix:
         sdk: [stable, beta, dev]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
         with:
           sdk: ${{ matrix.sdk }}
@@ -32,7 +32,7 @@ jobs:
       run:
         working-directory: chrono/
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
       - run: dart pub get
 
@@ -51,7 +51,7 @@ jobs:
       run:
         working-directory: chrono/
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
         with:
           sdk: ${{ matrix.sdk }}
@@ -69,7 +69,7 @@ jobs:
       run:
         working-directory: chrono_timezone_compiler/
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dart-lang/setup-dart@v1
         with:
           sdk: ${{ matrix.sdk }}
