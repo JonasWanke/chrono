@@ -1,7 +1,9 @@
+import 'package:clock/clock.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../json.dart';
 import '../utils.dart';
+import 'date.dart';
 import 'duration.dart';
 
 /// A weekday in the ISO 8601 calendar.
@@ -29,11 +31,21 @@ enum Weekday
     return Ok(values[number - Weekday.minNumber]);
   }
 
+  factory Weekday.currentInLocalZone({Clock? clock}) =>
+      Date.todayInLocalZone(clock: clock).weekday;
+  factory Weekday.currentInUtc({Clock? clock}) =>
+      Date.todayInUtc(clock: clock).weekday;
+
   static const minNumber = 1; // Weekday.monday.number
   static const maxNumber = 7; // Weekday.sunday.number
 
   /// The number of this weekday (1 for Monday, …, 7 for Sunday).
   int get number => index + 1;
+
+  bool isCurrentInLocalZone({Clock? clock}) =>
+      this == Weekday.currentInLocalZone(clock: clock);
+  bool isCurrentInUtc({Clock? clock}) =>
+      this == Weekday.currentInUtc(clock: clock);
 
   Weekday operator +(FixedDaysDuration duration) =>
       values[(index + duration.asDays.inDays) % values.length];
