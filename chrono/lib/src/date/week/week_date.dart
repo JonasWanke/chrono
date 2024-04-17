@@ -5,7 +5,6 @@ import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
-import '../../date_time/date_time.dart';
 import '../../json.dart';
 import '../../parser.dart';
 import '../../utils.dart';
@@ -35,9 +34,9 @@ final class WeekDate
   const WeekDate(this.yearWeek, this.weekday);
 
   factory WeekDate.todayInLocalZone({Clock? clock}) =>
-      DateTime.nowInLocalZone(clock: clock).date.asWeekDate;
+      Date.todayInLocalZone(clock: clock).asWeekDate;
   factory WeekDate.todayInUtc({Clock? clock}) =>
-      DateTime.nowInUtc(clock: clock).date.asWeekDate;
+      Date.todayInUtc(clock: clock).asWeekDate;
 
   final YearWeek yearWeek;
   final Weekday weekday;

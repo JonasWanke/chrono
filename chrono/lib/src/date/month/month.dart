@@ -4,9 +4,9 @@ import 'dart:core';
 import 'package:clock/clock.dart';
 import 'package:oxidized/oxidized.dart';
 
-import '../../date_time/date_time.dart';
 import '../../json.dart';
 import '../../utils.dart';
+import '../date.dart';
 import '../duration.dart';
 import 'month_day.dart';
 
@@ -39,9 +39,9 @@ enum Month
   }
 
   static Month currentInLocalZone({Clock? clock}) =>
-      DateTime.nowInLocalZone(clock: clock).date.month;
+      Date.todayInLocalZone(clock: clock).month;
   static Month currentInUtc({Clock? clock}) =>
-      DateTime.nowInUtc(clock: clock).date.month;
+      Date.todayInUtc(clock: clock).month;
 
   static const minNumber = 1; // Month.january.number
   static const maxNumber = 12; // Month.december.number

@@ -5,7 +5,6 @@ import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
-import '../../date_time/date_time.dart';
 import '../../json.dart';
 import '../../parser.dart';
 import '../../utils.dart';
@@ -22,9 +21,9 @@ final class YearMonth
   const YearMonth(this.year, [this.month = Month.january]);
 
   factory YearMonth.currentInLocalZone({Clock? clock}) =>
-      DateTime.nowInLocalZone(clock: clock).date.yearMonth;
+      Date.todayInLocalZone(clock: clock).yearMonth;
   factory YearMonth.currentInUtc({Clock? clock}) =>
-      DateTime.nowInUtc(clock: clock).date.yearMonth;
+      Date.todayInUtc(clock: clock).yearMonth;
 
   final Year year;
   final Month month;

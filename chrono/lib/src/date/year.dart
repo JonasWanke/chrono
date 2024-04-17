@@ -6,7 +6,6 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
-import '../date_time/date_time.dart';
 import '../json.dart';
 import '../parser.dart';
 import '../utils.dart';
@@ -44,9 +43,9 @@ final class Year
   static const unixEpoch = Year(1970);
 
   factory Year.currentInLocalZone({Clock? clock}) =>
-      DateTime.nowInLocalZone(clock: clock).date.year;
+      Date.todayInLocalZone(clock: clock).year;
   factory Year.currentInUtc({Clock? clock}) =>
-      DateTime.nowInUtc(clock: clock).date.year;
+      Date.todayInUtc(clock: clock).year;
 
   final int number;
 

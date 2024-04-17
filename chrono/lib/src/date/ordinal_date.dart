@@ -5,7 +5,6 @@ import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
-import '../date_time/date_time.dart';
 import '../json.dart';
 import '../parser.dart';
 import '../utils.dart';
@@ -40,9 +39,9 @@ final class OrdinalDate
   const OrdinalDate._(this.year, this.dayOfYear);
 
   factory OrdinalDate.todayInLocalZone({Clock? clock}) =>
-      DateTime.nowInLocalZone(clock: clock).date.asOrdinalDate;
+      Date.todayInLocalZone(clock: clock).asOrdinalDate;
   factory OrdinalDate.todayInUtc({Clock? clock}) =>
-      DateTime.nowInUtc(clock: clock).date.asOrdinalDate;
+      Date.todayInUtc(clock: clock).asOrdinalDate;
 
   final Year year;
 

@@ -5,7 +5,6 @@ import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
-import '../../date_time/date_time.dart';
 import '../../json.dart';
 import '../../parser.dart';
 import '../../utils.dart';
@@ -33,9 +32,9 @@ final class MonthDay
   const MonthDay._(this.month, this.day);
 
   factory MonthDay.todayInLocalZone({Clock? clock}) =>
-      DateTime.nowInLocalZone(clock: clock).date.monthDay;
+      Date.todayInLocalZone(clock: clock).monthDay;
   factory MonthDay.todayInUtc({Clock? clock}) =>
-      DateTime.nowInUtc(clock: clock).date.monthDay;
+      Date.todayInUtc(clock: clock).monthDay;
 
   final Month month;
 

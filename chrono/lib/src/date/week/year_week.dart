@@ -5,10 +5,10 @@ import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
-import '../../date_time/date_time.dart';
 import '../../json.dart';
 import '../../parser.dart';
 import '../../utils.dart';
+import '../date.dart';
 import '../duration.dart';
 import '../weekday.dart';
 import '../year.dart';
@@ -28,9 +28,9 @@ final class YearWeek
   const YearWeek._(this.weekBasedYear, this.week);
 
   factory YearWeek.currentInLocalZone({Clock? clock}) =>
-      DateTime.nowInLocalZone(clock: clock).date.yearWeek;
+      Date.todayInLocalZone(clock: clock).yearWeek;
   factory YearWeek.currentInUtc({Clock? clock}) =>
-      DateTime.nowInUtc(clock: clock).date.yearWeek;
+      Date.todayInUtc(clock: clock).yearWeek;
 
   final Year weekBasedYear;
   final int week;
