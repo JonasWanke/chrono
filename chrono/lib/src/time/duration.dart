@@ -213,29 +213,91 @@ final class FractionalSeconds extends TimeDuration {
   @override
   FractionalSeconds operator *(int factor) =>
       FractionalSeconds(inFractionalSeconds * Fixed.fromInt(factor, scale: 0));
+  FractionalSeconds timesNum(
+    num factor, {
+    int factorPrecisionAfterComma = 8,
+  }) {
+    return FractionalSeconds(
+      inFractionalSeconds *
+          Fixed.fromNum(factor, scale: factorPrecisionAfterComma),
+    );
+  }
+
   @override
   FractionalSeconds operator ~/(int divisor) {
-    return FractionalSeconds(Fixed.fromBigInt(
-      inFractionalSeconds.minorUnits ~/ BigInt.from(divisor),
-      scale: inFractionalSeconds.scale,
-    ));
+    return FractionalSeconds(
+      Fixed.fromBigInt(
+        inFractionalSeconds.minorUnits ~/ BigInt.from(divisor),
+        scale: inFractionalSeconds.scale,
+      ),
+    );
   }
+
+  FractionalSeconds dividedByNum(
+    num divisor, {
+    int divisorPrecisionAfterComma = 8,
+  }) {
+    return FractionalSeconds(
+      // TODO(JonasWanke): Is this division precise enough?
+      inFractionalSeconds /
+          Fixed.fromNum(divisor, scale: divisorPrecisionAfterComma),
+    );
+  }
+
+  // TODO(JonasWanke): Is this division precise enough?
+  Fixed dividedByTimeDuration(TimeDuration divisor) =>
+      inFractionalSeconds / divisor.inFractionalSeconds;
 
   @override
   FractionalSeconds operator %(int divisor) {
-    return FractionalSeconds(Fixed.fromBigInt(
-      inFractionalSeconds.minorUnits % BigInt.from(divisor),
-      scale: inFractionalSeconds.scale,
-    ));
+    return FractionalSeconds(
+      Fixed.fromBigInt(
+        inFractionalSeconds.minorUnits % BigInt.from(divisor),
+        scale: inFractionalSeconds.scale,
+      ),
+    );
   }
+
+  FractionalSeconds moduloNum(
+    num divisor, {
+    int divisorPrecisionAfterComma = 8,
+  }) {
+    return FractionalSeconds(
+      // TODO(JonasWanke): Is this modulo precise enough?
+      inFractionalSeconds %
+          Fixed.fromNum(divisor, scale: divisorPrecisionAfterComma),
+    );
+  }
+
+  // TODO(JonasWanke): Is this modulo precise enough?
+  Fixed moduloTimeDuration(TimeDuration divisor) =>
+      inFractionalSeconds % divisor.inFractionalSeconds;
 
   @override
   FractionalSeconds remainder(int divisor) {
-    return FractionalSeconds(Fixed.fromBigInt(
-      inFractionalSeconds.minorUnits.remainder(BigInt.from(divisor)),
-      scale: inFractionalSeconds.scale,
-    ));
+    return FractionalSeconds(
+      Fixed.fromBigInt(
+        inFractionalSeconds.minorUnits.remainder(BigInt.from(divisor)),
+        scale: inFractionalSeconds.scale,
+      ),
+    );
   }
+
+  FractionalSeconds remainderNum(
+    num divisor, {
+    int divisorPrecisionAfterComma = 8,
+  }) {
+    return FractionalSeconds(
+      // TODO(JonasWanke): Is this remainder precise enough?
+      inFractionalSeconds.remainder(
+        Fixed.fromNum(divisor, scale: divisorPrecisionAfterComma),
+      ),
+    );
+  }
+
+  // TODO(JonasWanke): Is this remainder precise enough?
+  Fixed remainderTimeDuration(TimeDuration divisor) =>
+      inFractionalSeconds.remainder(divisor.inFractionalSeconds);
 
   @override
   FractionalSeconds get absolute => isNegative ? -this : this;
