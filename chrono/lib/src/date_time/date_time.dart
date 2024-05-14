@@ -140,6 +140,12 @@ final class DateTime
     return difference.seconds + difference.days.asNormalHours;
   }
 
+  DateTime roundTimeToMultipleOf(
+    TimeDuration duration, {
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) =>
+      date.at(time.roundToMultipleOf(duration, rounding: rounding));
+
   DateTime copyWith({Date? date, Time? time}) =>
       DateTime(date ?? this.date, time ?? this.time);
 

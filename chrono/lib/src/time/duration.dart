@@ -80,6 +80,17 @@ abstract class TimeDuration extends Duration
     );
   }
 
+  // TODO(JonasWanke): overloads?
+  TimeDuration roundToMultipleOf(
+    TimeDuration duration, {
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    return duration *
+        rounding.round(
+          (inFractionalSeconds / duration.inFractionalSeconds).toFixedScale(0),
+        );
+  }
+
   Future<void> get wait {
     return Future<void>.delayed(
       asFractionalSeconds.roundToMicroseconds().asCoreDuration,

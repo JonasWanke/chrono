@@ -8,6 +8,7 @@ import 'package:oxidized/oxidized.dart';
 import '../date_time/date_time.dart';
 import '../json.dart';
 import '../parser.dart';
+import '../rounding.dart';
 import '../utils.dart';
 import 'duration.dart';
 
@@ -98,6 +99,27 @@ final class Time
   /// Returns `this - other`.
   FractionalSeconds difference(Time other) =>
       fractionalSecondsSinceMidnight - other.fractionalSecondsSinceMidnight;
+
+  Time roundToMultipleOf(
+    TimeDuration duration, {
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    return Time.fromTimeSinceMidnight(
+      fractionalSecondsSinceMidnight.roundToMultipleOf(
+        duration,
+        rounding: rounding,
+      ),
+    ).unwrapOrElse((_) {
+      // Rounding could round up the value to, e.g., 24 hours. In that case, we
+      // floor the value to return the closest value in our range.
+      return Time.fromTimeSinceMidnight(
+        fractionalSecondsSinceMidnight.roundToMultipleOf(
+          duration,
+          rounding: Rounding.down,
+        ),
+      ).unwrap();
+    });
+  }
 
   Result<Time, String> copyWith({
     int? hour,
