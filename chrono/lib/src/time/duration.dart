@@ -15,6 +15,39 @@ abstract class TimeDuration extends Duration
     implements Comparable<TimeDuration> {
   const TimeDuration();
 
+  // TODO(JonasWanke): add `lerp(…)`, `lerpNullable(…)` in other classes
+  // TODO(JonasWanke): comments
+  static FractionalSeconds? lerpNullable(
+    TimeDuration? a,
+    TimeDuration? b,
+    double t, {
+    int factorPrecisionAfterComma = 8,
+  }) {
+    return switch ((a?.asFractionalSeconds, b?.asFractionalSeconds)) {
+      (null, null) => null,
+      (null, final b?) =>
+        b.timesNum(t, factorPrecisionAfterComma: factorPrecisionAfterComma),
+      (final a?, null) =>
+        a.timesNum(1 - t, factorPrecisionAfterComma: factorPrecisionAfterComma),
+      (final a?, final b?) =>
+        lerp(a, b, t, factorPrecisionAfterComma: factorPrecisionAfterComma),
+    };
+  }
+
+  static FractionalSeconds lerp(
+    TimeDuration a,
+    TimeDuration b,
+    double t, {
+    int factorPrecisionAfterComma = 8,
+  }) {
+    return a.asFractionalSeconds.timesNum(
+          1 - t,
+          factorPrecisionAfterComma: factorPrecisionAfterComma,
+        ) +
+        b.asFractionalSeconds
+            .timesNum(t, factorPrecisionAfterComma: factorPrecisionAfterComma);
+  }
+
   FractionalSeconds get asFractionalSeconds;
   Fixed get inFractionalSeconds => asFractionalSeconds.inFractionalSeconds;
   (Seconds, FractionalSeconds) get asSecondsAndFraction {

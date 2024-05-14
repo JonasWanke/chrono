@@ -66,6 +66,40 @@ final class Time
       DateTime.nowInLocalZone(clock: clock).time;
   factory Time.nowInUtc({Clock? clock}) => DateTime.nowInUtc(clock: clock).time;
 
+  // TODO(JonasWanke): comments
+  static Result<Time, String>? lerpNullable(
+    Time? a,
+    Time? b,
+    double t, {
+    int factorPrecisionAfterComma = 8,
+  }) {
+    final duration = TimeDuration.lerpNullable(
+      a?.fractionalSecondsSinceMidnight,
+      b?.fractionalSecondsSinceMidnight,
+      t,
+      factorPrecisionAfterComma: factorPrecisionAfterComma,
+    );
+    if (duration == null) return null;
+
+    return Time.fromTimeSinceMidnight(duration);
+  }
+
+  static Result<Time, String> lerp(
+    Time a,
+    Time b,
+    double t, {
+    int factorPrecisionAfterComma = 8,
+  }) {
+    return Time.fromTimeSinceMidnight(
+      TimeDuration.lerp(
+        a.fractionalSecondsSinceMidnight,
+        b.fractionalSecondsSinceMidnight,
+        t,
+        factorPrecisionAfterComma: factorPrecisionAfterComma,
+      ),
+    );
+  }
+
   static String? _validateFraction(FractionalSeconds? fraction) {
     if (fraction != null &&
         (fraction.isNegative || fraction >= FractionalSeconds.second)) {
