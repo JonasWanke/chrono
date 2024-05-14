@@ -27,6 +27,17 @@ enum Month
   november,
   december;
 
+  /// Returns the month with the given [index].
+  ///
+  /// The index must be in the range 0 for January, …, 11 for December. For any
+  /// other number, an error is returned.
+  static Result<Month, String> fromIndex(int index) {
+    if (index < minIndex || index > maxIndex) {
+      return Err('Invalid month index: $index');
+    }
+    return Ok(values[index - minIndex]);
+  }
+
   /// Returns the month with the given [number].
   ///
   /// The number must be in the range 1 for January, …, 12 for December. For any
@@ -43,6 +54,8 @@ enum Month
   static Month currentInUtc({Clock? clock}) =>
       Date.todayInUtc(clock: clock).month;
 
+  static const minIndex = 1; // Month.january.index
+  static const maxIndex = 12; // Month.december.index
   static const minNumber = 1; // Month.january.number
   static const maxNumber = 12; // Month.december.number
 

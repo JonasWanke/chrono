@@ -20,6 +20,17 @@ enum Weekday
   saturday,
   sunday;
 
+  /// Returns the weekday with the given [index].
+  ///
+  /// The index must be in the range 0 for Monday, …, 6 for Sunday. For any
+  /// other number, an error is returned.
+  static Result<Weekday, String> fromIndex(int index) {
+    if (index < minIndex || index > maxIndex) {
+      return Err('Invalid weekday index: $index');
+    }
+    return Ok(values[index - Weekday.minIndex]);
+  }
+
   /// Returns the weekday with the given [number].
   ///
   /// The number must be in the range 1 for Monday, …, 7 for Sunday. For any
@@ -36,6 +47,8 @@ enum Weekday
   factory Weekday.currentInUtc({Clock? clock}) =>
       Date.todayInUtc(clock: clock).weekday;
 
+  static const minIndex = 0; // Weekday.monday.index
+  static const maxIndex = 6; // Weekday.sunday.index
   static const minNumber = 1; // Weekday.monday.number
   static const maxNumber = 7; // Weekday.sunday.number
 
