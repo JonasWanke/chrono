@@ -111,7 +111,7 @@ final class DateTime
 
   DateTime operator -(Duration duration) => this + (-duration);
 
-  /// Returns `this - other`.
+  /// Returns `this - other` as days and fractional seconds.
   ///
   /// The returned [CompoundDuration]'s days and seconds are both `>= 0` or both
   /// `<= 0`. The months will always be zero.
@@ -128,6 +128,16 @@ final class DateTime
     }
 
     return CompoundDuration(days: days, seconds: seconds);
+  }
+
+  /// Returns `this - other` as fractional seconds.
+  ///
+  /// The returned [CompoundDuration]'s days and seconds are both `>= 0` or both
+  /// `<= 0`. The months will always be zero.
+  FractionalSeconds timeDifference(DateTime other) {
+    final difference = this.difference(other);
+    assert(difference.months.isZero);
+    return difference.seconds + difference.days.asNormalHours;
   }
 
   DateTime copyWith({Date? date, Time? time}) =>
