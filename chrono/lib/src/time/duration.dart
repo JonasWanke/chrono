@@ -80,6 +80,14 @@ abstract class TimeDuration extends Duration
     );
   }
 
+  core.Duration roundToCoreDuration({
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    return core.Duration(
+      microseconds: roundToMicroseconds(rounding: rounding).inMicroseconds,
+    );
+  }
+
   // TODO(JonasWanke): overloads?
   TimeDuration roundToMultipleOf(
     TimeDuration duration, {
