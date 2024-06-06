@@ -178,8 +178,6 @@ These are all converters and how they encode February 3, 2001 at 4:05:06.007008
 
 ### [<kbd>json_serializable</kbd>]
 
-TODO: test this code
-
 If you use [<kbd>json_serializable</kbd>], you can choose between the following approaches:
 
 1. Annotate your field with the converter you want to use:
