@@ -101,6 +101,7 @@ final class YearWeek
   }
 }
 
+/// Encodes a [YearWeek] as an ISO 8601 string, e.g., “2023-W16”.
 class YearWeekAsIsoStringJsonConverter
     extends JsonConverterWithParserResult<YearWeek, String> {
   const YearWeekAsIsoStringJsonConverter();

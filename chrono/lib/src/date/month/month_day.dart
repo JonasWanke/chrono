@@ -74,6 +74,7 @@ final class MonthDay
   }
 }
 
+/// Encodes a [MonthDay] as an ISO 8601 string, e.g., --04-23”.
 class MonthDayAsIsoStringJsonConverter
     extends JsonConverterWithParserResult<MonthDay, String> {
   const MonthDayAsIsoStringJsonConverter();

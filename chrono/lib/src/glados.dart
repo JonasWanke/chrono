@@ -19,6 +19,11 @@ import 'time/duration.dart';
 import 'time/time.dart';
 import 'unix_epoch_timestamp.dart';
 
+/// Sets all Glados generators for Chrono classes as defaults.
+///
+/// See also:
+///
+/// - [ChronoAny], which defines all these generators.
 void setChronoGladosDefaults() {
   Any.setDefault(any.unixEpochTimestamp);
   Any.setDefault(any.instant);
@@ -64,6 +69,12 @@ void setChronoGladosDefaults() {
   Any.setDefault(any.hours);
 }
 
+/// Glados generators for Chrono classes.
+///
+/// See also:
+///
+/// - [setChronoGladosDefaults], which registers all these generators as
+///   default.
 extension ChronoAny on Any {
   Generator<UnixEpochTimestamp> get unixEpochTimestamp {
     return either(

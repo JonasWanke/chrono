@@ -273,6 +273,7 @@ final class Date
   }
 }
 
+/// Encodes a [Date] as an ISO 8601 string, e.g., “2023-04-23”.
 class DateAsIsoStringJsonConverter
     extends JsonConverterWithParserResult<Date, String> {
   const DateAsIsoStringJsonConverter();

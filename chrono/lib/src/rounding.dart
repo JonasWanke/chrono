@@ -2,6 +2,7 @@ import 'package:fixed/fixed.dart';
 
 import 'utils.dart';
 
+/// Different ways to round numbers.
 enum Rounding {
   /// Round down to the nearest integer (towards negative infinity).
   ///

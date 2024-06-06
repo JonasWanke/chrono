@@ -186,6 +186,7 @@ extension on TimeDuration {
   }
 }
 
+/// Encodes a [DateTime] as an ISO 8601 string, e.g., “2023-04-23T18:24:20.12”.
 class DateTimeAsIsoStringJsonConverter
     extends JsonConverterWithParserResult<DateTime, String> {
   const DateTimeAsIsoStringJsonConverter();

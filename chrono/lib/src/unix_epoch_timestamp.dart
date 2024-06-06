@@ -136,7 +136,7 @@ final class Instant extends UnixEpochTimestamp<FractionalSeconds> {
       durationSinceUnixEpoch - other.durationSinceUnixEpoch;
 }
 
-/// Encodes an [Instant] as an ISO 8601 string, e.g., “2023-04-23T18:24:20.12”.
+/// Encodes an [Instant] as an ISO 8601 string, e.g., “2023-04-23T18:24:20.12Z”.
 class InstantAsIsoStringJsonConverter
     extends JsonConverterWithParserResult<Instant, String> {
   const InstantAsIsoStringJsonConverter();
@@ -186,7 +186,7 @@ final class UnixEpochNanoseconds extends UnixEpochTimestamp<Nanoseconds> {
 }
 
 /// Encodes [UnixEpochNanoseconds] as an ISO 8601 string, e.g.,
-/// “2023-04-23T18:24:20.123456789”.
+/// “2023-04-23T18:24:20.123456789Z”.
 ///
 /// See also:
 ///
@@ -262,7 +262,7 @@ final class UnixEpochMicroseconds extends UnixEpochTimestamp<Microseconds> {
 }
 
 /// Encodes [UnixEpochMicroseconds] as an ISO 8601 string, e.g.,
-/// “2023-04-23T18:24:20.123456”.
+/// “2023-04-23T18:24:20.123456Z”.
 ///
 /// See also:
 ///
@@ -343,7 +343,7 @@ final class UnixEpochMilliseconds extends UnixEpochTimestamp<Milliseconds> {
 }
 
 /// Encodes [UnixEpochMilliseconds] as an ISO 8601 string, e.g.,
-/// “2023-04-23T18:24:20.123”.
+/// “2023-04-23T18:24:20.123Z”.
 ///
 /// See also:
 ///
@@ -423,7 +423,7 @@ final class UnixEpochSeconds extends UnixEpochTimestamp<Seconds> {
 }
 
 /// Encodes [UnixEpochSeconds] as an ISO 8601 string, e.g.,
-/// “2023-04-23T18:24:20”.
+/// “2023-04-23T18:24:20Z”.
 ///
 /// See also:
 ///

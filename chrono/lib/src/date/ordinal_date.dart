@@ -124,6 +124,7 @@ final class OrdinalDate
   }
 }
 
+/// Encodes a [WeekDate] as an ISO 8601 string, e.g., “2023-113”.
 class OrdinalDateAsIsoStringJsonConverter
     extends JsonConverterWithParserResult<OrdinalDate, String> {
   const OrdinalDateAsIsoStringJsonConverter();

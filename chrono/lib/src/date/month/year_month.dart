@@ -108,6 +108,7 @@ final class YearMonth
   }
 }
 
+/// Encodes a [YearMonth] as an ISO 8601 string, e.g., “2023-04”.
 class YearMonthAsIsoStringJsonConverter
     extends JsonConverterWithParserResult<YearMonth, String> {
   const YearMonthAsIsoStringJsonConverter();

@@ -132,6 +132,7 @@ final class WeekDate
   String toString() => '$yearWeek-${weekday.number}';
 }
 
+/// Encodes a [WeekDate] as an ISO 8601 string, e.g., “2023-W16-7”.
 class WeekDateAsIsoStringJsonConverter
     extends JsonConverterWithParserResult<WeekDate, String> {
   const WeekDateAsIsoStringJsonConverter();

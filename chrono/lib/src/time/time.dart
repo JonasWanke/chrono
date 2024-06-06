@@ -203,6 +203,7 @@ final class Time
   }
 }
 
+/// Encodes a [Time] as an ISO 8601 string, e.g., “18:24:20.12”.
 class TimeAsIsoStringJsonConverter
     extends JsonConverterWithParserResult<Time, String> {
   const TimeAsIsoStringJsonConverter();
