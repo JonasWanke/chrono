@@ -10,6 +10,15 @@ import '../utils.dart';
 
 // ignore_for_file: binary-expression-operand-order
 
+/// A [Duration] that is of a fixed length.
+///
+/// See also:
+///
+/// - [DaysDuration], which covers durations based on an integer number of days
+///   or months.
+/// - [Duration], which is the base class for all durations.
+/// - [FractionalSeconds], which is a subclass storing the duration with
+///   arbitrary precision.
 abstract class TimeDuration extends Duration
     with ComparisonOperatorsFromComparable<TimeDuration>
     implements Comparable<TimeDuration> {
@@ -257,6 +266,7 @@ abstract class TimeDuration extends Duration
   }
 }
 
+/// A [TimeDuration] with arbitrary precision.
 final class FractionalSeconds extends TimeDuration {
   const FractionalSeconds(this.inFractionalSeconds);
 
@@ -445,6 +455,7 @@ final class FractionalSeconds extends TimeDuration {
   }
 }
 
+/// Base class for [Nanoseconds] and larger durations like [Microseconds].
 abstract class NanosecondsDuration extends TimeDuration {
   const NanosecondsDuration();
 
@@ -477,6 +488,7 @@ abstract class NanosecondsDuration extends TimeDuration {
   NanosecondsDuration get absolute => isNegative ? -this : this;
 }
 
+/// An integer number of nanoseconds.
 final class Nanoseconds extends NanosecondsDuration {
   const Nanoseconds(this.inNanoseconds);
 
@@ -582,6 +594,7 @@ final class Nanoseconds extends NanosecondsDuration {
   }
 }
 
+/// Base class for [Microseconds] and larger durations like [Milliseconds].
 abstract class MicrosecondsDuration extends NanosecondsDuration {
   const MicrosecondsDuration();
 
@@ -619,6 +632,7 @@ abstract class MicrosecondsDuration extends NanosecondsDuration {
   MicrosecondsDuration get absolute => isNegative ? -this : this;
 }
 
+/// An integer number of microseconds.
 final class Microseconds extends MicrosecondsDuration {
   const Microseconds(this.inMicroseconds);
 
@@ -722,6 +736,7 @@ final class Microseconds extends MicrosecondsDuration {
   }
 }
 
+/// Base class for [Milliseconds] and larger durations like [Seconds].
 abstract class MillisecondsDuration extends MicrosecondsDuration {
   const MillisecondsDuration();
 
@@ -756,6 +771,7 @@ abstract class MillisecondsDuration extends MicrosecondsDuration {
   MillisecondsDuration get absolute => isNegative ? -this : this;
 }
 
+/// An integer number of milliseconds.
 final class Milliseconds extends MillisecondsDuration {
   const Milliseconds(this.inMilliseconds);
 
@@ -849,6 +865,7 @@ final class Milliseconds extends MillisecondsDuration {
   }
 }
 
+/// Base class for [Seconds] and larger durations like [Minutes].
 abstract class SecondsDuration extends MillisecondsDuration {
   const SecondsDuration();
 
@@ -882,6 +899,7 @@ abstract class SecondsDuration extends MillisecondsDuration {
   SecondsDuration get absolute => isNegative ? -this : this;
 }
 
+/// An integer number of seconds.
 final class Seconds extends SecondsDuration {
   const Seconds(this.inSeconds);
 
@@ -968,6 +986,7 @@ final class Seconds extends SecondsDuration {
       inSeconds.abs() == 1 ? '$inSeconds second' : '$inSeconds seconds';
 }
 
+/// Base class for [Minutes] and [Hours].
 abstract class MinutesDuration extends SecondsDuration {
   const MinutesDuration();
 
@@ -996,6 +1015,7 @@ abstract class MinutesDuration extends SecondsDuration {
   MinutesDuration get absolute => isNegative ? -this : this;
 }
 
+/// An integer number of minutes.
 final class Minutes extends MinutesDuration {
   const Minutes(this.inMinutes);
 
@@ -1071,6 +1091,7 @@ final class Minutes extends MinutesDuration {
       inMinutes.abs() == 1 ? '$inMinutes minute' : '$inMinutes minutes';
 }
 
+/// An integer number of hours.
 final class Hours extends MinutesDuration {
   const Hours(this.inHours);
 

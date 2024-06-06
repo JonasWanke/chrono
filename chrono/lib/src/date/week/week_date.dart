@@ -17,7 +17,8 @@ import '../weekday.dart';
 import '../year.dart';
 import 'year_week.dart';
 
-/// A date in the ISO 8601 week-based calendar.
+/// A date in the ISO 8601 week-based calendar, e.g., Sunday in the 16th week of
+/// 2023.
 ///
 /// https://en.wikipedia.org/wiki/ISO_week_date
 ///

@@ -13,7 +13,7 @@ import '../duration.dart';
 import '../year.dart';
 import 'month.dart';
 
-/// The combination of a [Year] and a [Month].
+/// The combination of a [Year] and a [Month], e.g., April 2023.
 @immutable
 final class YearMonth
     with ComparisonOperatorsFromComparable<YearMonth>

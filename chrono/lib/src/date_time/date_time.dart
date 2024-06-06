@@ -19,8 +19,8 @@ import '../unix_epoch_timestamp.dart';
 import '../utils.dart';
 import 'duration.dart';
 
-/// A date and time in the ISO 8601 calendar, represented using [Date] and
-/// [Time].
+/// A date and time in the ISO 8601 calendar represented using [Date] and
+/// [Time], e.g., April 23, 2023, at 18:24:20.
 ///
 /// Leap years are taken into account. However, since this class doesn't care
 /// about timezones, each day is exactly 24 hours long.

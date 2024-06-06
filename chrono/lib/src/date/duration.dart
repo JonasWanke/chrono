@@ -3,6 +3,22 @@ import '../rounding.dart';
 import '../time/duration.dart';
 import '../utils.dart';
 
+/// A [Duration] based on an integer number of days or months.
+///
+/// This is different to [TimeDuration] because days can be shorter or longer
+/// than 24 hours and months have a varying of days.
+///
+/// See also:
+///
+/// - [MonthsDuration], which represents an integer number of months or years.
+///   - [Months], which represents an integer number of months.
+///   - [Years], which represents an integer number of years.
+/// - [FixedDaysDuration], which represents an integer number of weeks or days.
+///   - [Weeks], which represents an integer number of weeks.
+///   - [Days], which represents an integer number of days.
+/// - [CompoundDaysDuration], which combines [Months] and [Days].
+/// - [TimeDuration], which covers durations based on a fixed time like seconds.
+/// - [Duration], which is the base class for date and time durations.
 abstract class DaysDuration extends Duration {
   const DaysDuration();
 
@@ -23,6 +39,8 @@ abstract class DaysDuration extends Duration {
   DaysDuration remainder(int divisor);
 }
 
+/// [DaysDuration] subclass that can represent any days-based duration by
+/// combining [Months] and [Days].
 final class CompoundDaysDuration extends DaysDuration {
   CompoundDaysDuration({
     MonthsDuration months = const Months(0),
@@ -70,6 +88,7 @@ final class CompoundDaysDuration extends DaysDuration {
   String toString() => '$months, $days';
 }
 
+/// Base class for [Months] and [Years].
 abstract class MonthsDuration extends DaysDuration
     with ComparisonOperatorsFromComparable<MonthsDuration>
     implements Comparable<MonthsDuration> {
@@ -119,6 +138,7 @@ abstract class MonthsDuration extends DaysDuration
   int compareTo(MonthsDuration other) => inMonths.compareTo(other.inMonths);
 }
 
+/// An integer number of months.
 final class Months extends MonthsDuration {
   const Months(this.inMonths);
   const Months.fromJson(int json) : this(json);
@@ -160,6 +180,7 @@ final class Months extends MonthsDuration {
   int toJson() => inMonths;
 }
 
+/// An integer number of years.
 final class Years extends MonthsDuration {
   const Years(this.inYears);
   const Years.fromJson(int json) : this(json);
@@ -200,6 +221,7 @@ final class Years extends MonthsDuration {
   int toJson() => inYears;
 }
 
+/// Base class for [Days] and [Weeks].
 abstract class FixedDaysDuration extends DaysDuration
     with ComparisonOperatorsFromComparable<FixedDaysDuration>
     implements Comparable<FixedDaysDuration> {
@@ -255,6 +277,7 @@ abstract class FixedDaysDuration extends DaysDuration
   int compareTo(FixedDaysDuration other) => inDays.compareTo(other.inDays);
 }
 
+/// An integer number of days.
 final class Days extends FixedDaysDuration {
   const Days(this.inDays);
   const Days.fromJson(int json) : this(json);
@@ -307,6 +330,7 @@ final class Days extends FixedDaysDuration {
   int toJson() => inDays;
 }
 
+/// An integer number of weeks.
 final class Weeks extends FixedDaysDuration {
   const Weeks(this.inWeeks);
   const Weeks.fromJson(int json) : this(json);

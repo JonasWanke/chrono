@@ -17,7 +17,7 @@ import 'ordinal_date.dart';
 import 'week/year_week.dart';
 import 'weekday.dart';
 
-/// A year in the ISO 8601 calendar.
+/// A year in the ISO 8601 calendar, e.g., 2023.
 ///
 /// The [number] corresponds to these years, according to ISO 8601:
 ///

@@ -21,7 +21,7 @@ import 'week/year_week.dart';
 import 'weekday.dart';
 import 'year.dart';
 
-/// A date in the ISO 8601 calendar.
+/// A date in the ISO 8601 calendar, e.g., April 23, 2023.
 ///
 /// The date is represented by a [YearMonth] (= [Year] + [Month]) and a [day]
 /// of the month.

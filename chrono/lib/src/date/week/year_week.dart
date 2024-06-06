@@ -14,6 +14,9 @@ import '../weekday.dart';
 import '../year.dart';
 import 'week_date.dart';
 
+/// A specific week of a year, e.g., the 16th week of 2023.
+///
+/// https://en.wikipedia.org/wiki/ISO_week_date
 @immutable
 final class YearWeek
     with ComparisonOperatorsFromComparable<YearWeek>

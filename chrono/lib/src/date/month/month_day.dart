@@ -11,7 +11,7 @@ import '../../utils.dart';
 import '../date.dart';
 import 'month.dart';
 
-/// The combination of a [Month] and a day of the month.
+/// The combination of a [Month] and a day of the month, e.g., April 23.
 ///
 /// Since [MonthDay] does not include a year, February 29 is considered valid.
 ///

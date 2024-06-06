@@ -12,6 +12,7 @@ import '../rounding.dart';
 import '../utils.dart';
 import 'duration.dart';
 
+/// A specific time of a day, e.g., 18:24:20.
 @immutable
 final class Time
     with ComparisonOperatorsFromComparable<Time>

@@ -6,7 +6,7 @@ import '../utils.dart';
 import 'date.dart';
 import 'duration.dart';
 
-/// A weekday in the ISO 8601 calendar.
+/// A weekday in the ISO 8601 calendar, e.g., Sunday.
 ///
 /// In this calendar, the week starts on Monday and ends on Sunday.
 enum Weekday

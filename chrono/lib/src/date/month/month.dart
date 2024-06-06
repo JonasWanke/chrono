@@ -10,7 +10,7 @@ import '../date.dart';
 import '../duration.dart';
 import 'month_day.dart';
 
-/// A month in the ISO 8601 calendar.
+/// A month in the ISO 8601 calendar, e.g., April.
 enum Month
     with ComparisonOperatorsFromComparable<Month>
     implements Comparable<Month> {

@@ -3,6 +3,14 @@ import 'package:meta/meta.dart';
 import '../date/duration.dart';
 import '../time/duration.dart';
 
+/// Base class for date and time durations.
+///
+/// See also:
+///
+/// - [DaysDuration], which covers durations based on an integer number of days
+///   or months.
+/// - [TimeDuration], which covers durations based on a fixed time like seconds.
+/// - [CompoundDuration], which combines [DaysDuration] and [TimeDuration].
 @immutable
 abstract class Duration {
   const Duration();
@@ -46,6 +54,8 @@ abstract class Duration {
   }
 }
 
+/// [Duration] subclass that can represent any duration by combining [Months],
+/// [Days], and [FractionalSeconds].
 final class CompoundDuration extends Duration {
   CompoundDuration({
     DaysDuration? monthsAndDays,
