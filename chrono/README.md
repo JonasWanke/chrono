@@ -3,7 +3,7 @@
 **⚠️ Work in Progress ⚠️**
 
 Chrono is a date and time package for Dart supporting all platforms.
-It offers strongly-typed data classes for timezone-independent (plain/local) date, time, and different durations based on the [proleptic Gregorian calendar], including:
+It offers strongly-typed data classes for timestamps, timezone-independent (plain/local) date and time, as well as different durations based on the [proleptic Gregorian calendar], including:
 
 - arithmetic operations and conversions
 - parsing and formatting for a subset of [ISO 8601], [RFC 3339], and [CC 18011:2018]
@@ -14,6 +14,7 @@ The following features are _not_ implemented, but could be added in the future:
 - timezone support (work in progress)
 - customizable parsing and formatting
 - internationalization
+- leap second support
 
 ## Usage
 
@@ -30,9 +31,9 @@ void main() {
 }
 ```
 
-## Unix Epoch Timestamps
+## Timestamps
 
-A Unix epoch timestamp is a unique point on the UTC timeline, stored as the duration since the [Unix epoch].
+A timestamp is a unique point on the UTC timeline, stored as the duration since the [Unix epoch].
 Chrono provides these classes:
 
 - [`UnixEpochTimestamp<D>`], generic over a [`TimeDuration`] type
@@ -97,7 +98,8 @@ An ISO 8601 time without timezone information, e.g., 18:24:20.123456.
 
 Since fractional seconds are represented using the fixed-point number [`Fixed`] class of the package [<kbd>fixed</kbd>], there's basically no limit to the precision.
 
-TODO: document no leap second support
+Chrono does not support leap seconds:
+It assumes that all minutes are 60 seconds long.
 
 ## Durations
 
