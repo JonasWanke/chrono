@@ -176,6 +176,7 @@ class YearAsIsoStringJsonConverter
 ///
 /// See also:
 /// - [YearAsIsoStringJsonConverter], which encodes a year as a string.
+@immutable
 class YearAsIntJsonConverter extends JsonConverter<Year, int> {
   const YearAsIntJsonConverter();
 
