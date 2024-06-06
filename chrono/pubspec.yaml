@@ -1,6 +1,6 @@
 name: chrono
 description: Strongly-typed date and time arithmetic
-version: 0.0.0
+version: 0.1.0
 repository: https://github.com/JonasWanke/chrono
 
 environment:
