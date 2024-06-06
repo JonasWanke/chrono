@@ -1,5 +1,5 @@
 name: chrono
-description: Strongly-typed date and time arithmetic
+description: Strongly-typed timestamps, timezone-independent date/time, and durations for Dart
 version: 0.1.0
 repository: https://github.com/JonasWanke/chrono
 
