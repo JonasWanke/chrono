@@ -1,7 +1,7 @@
 name: chrono
 description: Strongly-typed date and time arithmetic
 version: 0.0.0
-homepage: https://github.com/JonasWanke/chrono
+repository: https://github.com/JonasWanke/chrono
 
 environment:
   sdk: ^3.0.0
