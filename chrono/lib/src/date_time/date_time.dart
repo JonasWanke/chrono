@@ -15,9 +15,9 @@ import '../parser.dart';
 import '../rounding.dart';
 import '../time/duration.dart';
 import '../time/time.dart';
+import '../unix_epoch_timestamp.dart';
 import '../utils.dart';
 import 'duration.dart';
-import 'instant.dart';
 
 /// A date and time in the ISO 8601 calendar, represented using [Date] and
 /// [Time].

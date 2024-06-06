@@ -62,6 +62,11 @@ void main() {
 
 @isTest
 void _testDurationBasics<T extends TimeDuration>() {
+  Glados<T>().test('equality', (value) {
+    expect(value == value, true);
+    expect(value.compareTo(value), 0);
+  });
+
   Glados<T>().test('unary -', (duration) {
     expect(-(-duration), duration);
   });

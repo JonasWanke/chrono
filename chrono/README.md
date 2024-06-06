@@ -30,12 +30,20 @@ void main() {
 }
 ```
 
-## [`Instant`]
+## Unix Epoch Timestamps
 
-An [`Instant`] is a unique point on the UTC timeline with unlimited precision.
+A Unix epoch timestamp is a unique point on the UTC timeline, stored as the duration since the [Unix epoch].
+Chrono provides these classes:
 
-If you want to store the exact point in time when something happened, this is usually the best choice.
-For example, the timestamp of a message in a chat app should be stored as an [`Instant`].
+- [`UnixEpochTimestamp<D>`], generic over a [`TimeDuration`] type
+  - [`Instant`]: a subclass with arbitrary precision
+  - [`UnixEpochNanoseconds`]: a subclass with nanosecond precision
+  - [`UnixEpochMicroseconds`]: a subclass with microsecond precision
+  - [`UnixEpochMilliseconds`]: a subclass with millisecond precision
+  - [`UnixEpochSeconds`]: a subclass with second precision
+
+If you want to store the exact point in time when something happened, e.g., when a message in a chat app was sent, one of these classes is usually the best choice.
+The specific one is up to you, based on how precise you want to be.
 
 Past dates (e.g., birthdays) should rather be represented as a [`Date`].
 Future timestamps, e.g., for scheduling a meeting, should rather be represented as a [`DateTime`] and the corresponding timezone.
@@ -137,30 +145,36 @@ For example, adding 1 month and -1 day to 2023-08-31 results in 2023-09-29:
 
 ## Serialization
 
-[`Instant`] and all date and time classes support JSON serialization.
+All timestamp, date, and time classes support JSON serialization.
 (Support for durations will be added in the future.)
 
 Because there are often multiple possibilities of how to encode a value, Chono lets you choose the format:
 There are subclasses of [`JsonConverter`] for each class called `<Chrono type>As<JSON type>JsonConverter`, e.g., [`DateTimeAsIsoStringJsonConverter`].
-These are all converters and how they encode February 3, 2001 at 4:05:06.007 UTC:
+These are all converters and how they encode February 3, 2001 at 4:05:06.007008009 UTC:
 
-|                              Converter class | Encoding example                |
-| -------------------------------------------: | :------------------------------ |
-|            `InstantAsIsoStringJsonConverter` | `"2001-02-03T04:05:06.007000Z"` |
-| `InstantAsEpochMillisecondsIntJsonConverter` | `981173106007`                  |
-|      `InstantAsEpochSecondsIntJsonConverter` | `981173106`                     |
-|           `DateTimeAsIsoStringJsonConverter` | `"2001-02-03T04:05:06.007"`     |
-|               `DateAsIsoStringJsonConverter` | `"2001-02-03"`                  |
-|               `YearAsIsoStringJsonConverter` | `"2001"`                        |
-|                     `YearAsIntJsonConverter` | `2001`                          |
-|                    `MonthAsIntJsonConverter` | `2`                             |
-|          `YearMonthAsIsoStringJsonConverter` | `"2001-02"`                     |
-|           `MonthDayAsIsoStringJsonConverter` | `"--02-03"`                     |
-|        `OrdinalDateAsIsoStringJsonConverter` | `"2001-034"`                    |
-|           `WeekDateAsIsoStringJsonConverter` | `"2001-W05-6"`                  |
-|           `YearWeekAsIsoStringJsonConverter` | `"2001-W05"`                    |
-|                  `WeekdayAsIntJsonConverter` | `6`                             |
-|               `TimeAsIsoStringJsonConverter` | `"04:05:06.007"`                |
+|                                 Converter class | Encoding example                   |
+| ----------------------------------------------: | :--------------------------------- |
+|               `InstantAsIsoStringJsonConverter` | `"2001-02-03T04:05:06.007008009Z"` |
+|  `UnixEpochNanosecondsAsIsoStringJsonConverter` | `"2001-02-03T04:05:06.007008009Z"` |
+|        `UnixEpochNanosecondsAsIntJsonConverter` | `981173106007008009`               |
+| `UnixEpochMicrosecondsAsIsoStringJsonConverter` | `"2001-02-03T04:05:06.007008Z"`    |
+|       `UnixEpochMicrosecondsAsIntJsonConverter` | `981173106007008`                  |
+| `UnixEpochMillisecondsAsIsoStringJsonConverter` | `"2001-02-03T04:05:06.007Z"`       |
+|       `UnixEpochMillisecondsAsIntJsonConverter` | `981173106007`                     |
+|      `UnixEpochSecondsAsIsoStringJsonConverter` | `"2001-02-03T04:05:06Z"`           |
+|            `UnixEpochSecondsAsIntJsonConverter` | `981173106`                        |
+|              `DateTimeAsIsoStringJsonConverter` | `"2001-02-03T04:05:06.007"`        |
+|                  `DateAsIsoStringJsonConverter` | `"2001-02-03"`                     |
+|                  `YearAsIsoStringJsonConverter` | `"2001"`                           |
+|                        `YearAsIntJsonConverter` | `2001`                             |
+|                       `MonthAsIntJsonConverter` | `2`                                |
+|             `YearMonthAsIsoStringJsonConverter` | `"2001-02"`                        |
+|              `MonthDayAsIsoStringJsonConverter` | `"--02-03"`                        |
+|           `OrdinalDateAsIsoStringJsonConverter` | `"2001-034"`                       |
+|              `WeekDateAsIsoStringJsonConverter` | `"2001-W05-6"`                     |
+|              `YearWeekAsIsoStringJsonConverter` | `"2001-W05"`                       |
+|                     `WeekdayAsIntJsonConverter` | `6`                                |
+|                  `TimeAsIsoStringJsonConverter` | `"04:05:06.007"`                   |
 
 ### [<kbd>json_serializable</kbd>]
 
@@ -219,7 +233,12 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 
 | Dart: `chrono`                             | Java/Kotlin     | Rust                               |
 | :----------------------------------------- | :-------------- | :--------------------------------- |
-| [`Instant`]                                | `Instant`       | `std::time::{Instant, SystemTime}` |
+| [`UnixEpochTimestamp<D>`]                  | —               | —                                  |
+| [`Instant`]                                | —               | —                                  |
+| [`UnixEpochNanoseconds`]                   | `Instant`       | `std::time::{Instant, SystemTime}` |
+| [`UnixEpochMicroseconds`]                  | —               | —                                  |
+| [`UnixEpochMilliseconds`]                  | —               | —                                  |
+| [`UnixEpochSeconds`]                       | —               | —                                  |
 | [`DateTime`]                               | `LocalDateTime` | `chrono::NaiveDateTime`            |
 | [`Date`]                                   | `LocalDate`     | `chrono::NaiveDate`                |
 | [`Year`]                                   | `Year`          | —                                  |
@@ -262,6 +281,11 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 [`Seconds`]: https://pub.dev/documentation/chrono/latest/chrono/Seconds-class.html
 [`Time`]: https://pub.dev/documentation/chrono/latest/chrono/Time-class.html
 [`TimeDuration`]: https://pub.dev/documentation/chrono/latest/chrono/TimeDuration-class.html
+[`UnixEpochMicroseconds`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochMicroseconds-class.html
+[`UnixEpochMilliseconds`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochMilliseconds-class.html
+[`UnixEpochNanoseconds`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochNanoseconds-class.html
+[`UnixEpochSeconds`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochSeconds-class.html
+[`UnixEpochTimestamp<D>`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochTimestamp-class.html
 [`WeekDate`]: https://pub.dev/documentation/chrono/latest/chrono/WeekDate-class.html
 [`Weekday`]: https://pub.dev/documentation/chrono/latest/chrono/Weekday-class.html
 [`Weeks`]: https://pub.dev/documentation/chrono/latest/chrono/Weeks-class.html
@@ -300,3 +324,4 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 [ISO week]: https://en.wikipedia.org/wiki/ISO_week_date
 [Proleptic Gregorian calendar]: https://en.wikipedia.org/wiki/Proleptic_Gregorian_calendar
 [RFC 3339]: https://datatracker.ietf.org/doc/html/rfc3339
+[Unix epoch]: https://en.wikipedia.org/wiki/Unix_time

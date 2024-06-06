@@ -15,12 +15,18 @@ import 'date/weekday.dart';
 import 'date/year.dart';
 import 'date_time/date_time.dart';
 import 'date_time/duration.dart';
-import 'date_time/instant.dart';
 import 'time/duration.dart';
 import 'time/time.dart';
+import 'unix_epoch_timestamp.dart';
 
 void setChronoGladosDefaults() {
+  Any.setDefault(any.unixEpochTimestamp);
   Any.setDefault(any.instant);
+  Any.setDefault(any.unixEpochNanoseconds);
+  Any.setDefault(any.unixEpochMicroseconds);
+  Any.setDefault(any.unixEpochMilliseconds);
+  Any.setDefault(any.unixEpochSeconds);
+
   Any.setDefault(any.date);
   Any.setDefault(any.dateTimeChrono);
   Any.setDefault(any.month);
@@ -59,7 +65,27 @@ void setChronoGladosDefaults() {
 }
 
 extension ChronoAny on Any {
-  Generator<Instant> get instant => dateTimeChrono.map((it) => it.inUtc);
+  Generator<UnixEpochTimestamp> get unixEpochTimestamp {
+    return either(
+      timeDuration.map(UnixEpochTimestamp.new),
+      instant,
+      unixEpochNanoseconds,
+      unixEpochMicroseconds,
+      unixEpochMilliseconds,
+      unixEpochSeconds,
+    );
+  }
+
+  Generator<Instant> get instant =>
+      fractionalSeconds.map(Instant.fromDurationSinceUnixEpoch);
+  Generator<UnixEpochNanoseconds> get unixEpochNanoseconds =>
+      nanoseconds.map(UnixEpochNanoseconds.new);
+  Generator<UnixEpochMicroseconds> get unixEpochMicroseconds =>
+      microseconds.map(UnixEpochMicroseconds.new);
+  Generator<UnixEpochMilliseconds> get unixEpochMilliseconds =>
+      milliseconds.map(UnixEpochMilliseconds.new);
+  Generator<UnixEpochSeconds> get unixEpochSeconds =>
+      seconds.map(UnixEpochSeconds.new);
   Generator<Date> get date {
     return simple(
       generate: (random, size) {

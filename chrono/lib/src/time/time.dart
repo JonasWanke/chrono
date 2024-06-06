@@ -195,7 +195,7 @@ final class Time
     final hour = this.hour.toString().padLeft(2, '0');
     final minute = this.minute.toString().padLeft(2, '0');
     final second = this.second.toString().padLeft(2, '0');
-    final fraction = this.fraction == FractionalSeconds.zero
+    final fraction = this.fraction.inFractionalSeconds.scale == 0
         ? ''
         : this.fraction.inFractionalSeconds.toString().substring(1);
     return '$hour:$minute:$second$fraction';
