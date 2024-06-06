@@ -218,16 +218,20 @@ extension ChronoAny on Any {
       },
       shrink: (input) sync* {
         if (input.isPositive) {
-          yield FractionalSeconds(Fixed.fromBigInt(
-            input.inFractionalSeconds.minorUnits - BigInt.one,
-            scale: input.inFractionalSeconds.scale,
-          ));
+          yield FractionalSeconds(
+            Fixed.fromBigInt(
+              input.inFractionalSeconds.minorUnits - BigInt.one,
+              scale: input.inFractionalSeconds.scale,
+            ),
+          );
         }
         if (input.inFractionalSeconds.scale > 1) {
-          yield FractionalSeconds(Fixed.fromBigInt(
-            input.inFractionalSeconds.minorUnits ~/ BigInt.from(10),
-            scale: input.inFractionalSeconds.scale - 1,
-          ));
+          yield FractionalSeconds(
+            Fixed.fromBigInt(
+              input.inFractionalSeconds.minorUnits ~/ BigInt.from(10),
+              scale: input.inFractionalSeconds.scale - 1,
+            ),
+          );
         }
       },
     );

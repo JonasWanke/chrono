@@ -141,15 +141,8 @@ final class Parser {
   }
 
   Result<Time, FormatException> _parseTime() {
-    Result<int, FormatException> parse(String label, {required int maxValue}) {
-      return _parseInt(
-        label,
-        minDigits: 2,
-        maxDigits: 2,
-        minValue: 0,
-        maxValue: maxValue,
-      );
-    }
+    Result<int, FormatException> parse(String label, {required int maxValue}) =>
+        _parseInt(label, minDigits: 2, maxDigits: 2, maxValue: maxValue);
 
     return parse('hour', maxValue: 23)
         .andAlso(() => _requireSeparator({':'}, 'hour', 'minute'))
@@ -163,7 +156,7 @@ final class Parser {
         )
         .andThen((hourMinuteSecond) {
       return _maybeConsume('.')
-          ? _parseIntRaw('fractional second', minDigits: 1).map(
+          ? _parseIntRaw('fractional second').map(
               (it) => (
                 hourMinuteSecond,
                 FractionalSeconds(Fixed.fromInt(it.$1, scale: it.$2)),
@@ -228,7 +221,6 @@ final class Parser {
   Result<Weekday, FormatException> _parseWeekday() {
     return _parseInt(
       'weekday',
-      minDigits: 1,
       maxDigits: 1,
       minValue: Weekday.minNumber,
       maxValue: Weekday.maxNumber,
