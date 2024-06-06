@@ -18,7 +18,7 @@ import 'month.dart';
 final class YearMonth
     with ComparisonOperatorsFromComparable<YearMonth>
     implements Comparable<YearMonth> {
-  const YearMonth(this.year, [this.month = Month.january]);
+  const YearMonth(this.year, this.month);
 
   factory YearMonth.currentInLocalZone({Clock? clock}) =>
       Date.todayInLocalZone(clock: clock).yearMonth;

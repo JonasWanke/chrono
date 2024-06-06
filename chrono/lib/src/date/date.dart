@@ -34,11 +34,7 @@ import 'year.dart';
 final class Date
     with ComparisonOperatorsFromComparable<Date>
     implements Comparable<Date> {
-  static Result<Date, String> from(
-    Year year, [
-    Month month = Month.january,
-    int day = 1,
-  ]) =>
+  static Result<Date, String> from(Year year, Month month, int day) =>
       fromYearMonthAndDay(YearMonth(year, month), day);
 
   static Result<Date, String> fromYearMonthAndDay(
