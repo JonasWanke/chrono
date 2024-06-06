@@ -172,7 +172,11 @@ final class DateTime
 
 extension on TimeDuration {
   (Days, Time) toDaysAndTime() {
-    final (seconds, fraction) = asSecondsAndFraction;
+    var (seconds, fraction) = asSecondsAndFraction;
+    if (seconds.isZero && fraction.isNegative) {
+      seconds = -const Seconds(1);
+      fraction += FractionalSeconds.second;
+    }
 
     final days = seconds.roundToNormalDays(rounding: Rounding.down);
     final secondsWithinDay = seconds - days.asNormalSeconds;
