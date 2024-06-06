@@ -70,6 +70,9 @@ abstract class TimeDuration extends Duration
   TimeDuration operator *(int factor);
   @override
   TimeDuration operator ~/(int divisor);
+  // TODO(JonasWanke): Is this division precise enough?
+  Fixed dividedByTimeDuration(TimeDuration divisor) =>
+      inFractionalSeconds / divisor.inFractionalSeconds;
   @override
   TimeDuration operator %(int divisor);
   @override
@@ -121,14 +124,117 @@ abstract class TimeDuration extends Duration
     );
   }
 
-  // TODO(JonasWanke): overloads?
-  TimeDuration roundToMultipleOf(
+  FractionalSeconds roundToMultipleOf(
     TimeDuration duration, {
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    return duration.asFractionalSeconds *
+        rounding.round(
+          (inFractionalSeconds / duration.inFractionalSeconds).asDouble,
+        );
+  }
+
+  Nanoseconds roundToMultipleOfNanoseconds(
+    NanosecondsDuration duration, {
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    return duration.asNanoseconds *
+        rounding.roundFixed(
+          roundToNanoseconds(rounding: rounding)
+              .dividedByTimeDuration(duration),
+        );
+  }
+
+  Microseconds roundToMultipleOfMicroseconds(
+    MicrosecondsDuration duration, {
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    return duration.asMicroseconds *
+        rounding.roundFixed(
+          roundToMicroseconds(rounding: rounding)
+              .dividedByTimeDuration(duration),
+        );
+  }
+
+  Milliseconds roundToMultipleOfMilliseconds(
+    MillisecondsDuration duration, {
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    return duration.asMilliseconds *
+        rounding.roundFixed(
+          roundToMilliseconds(rounding: rounding)
+              .dividedByTimeDuration(duration),
+        );
+  }
+
+  Seconds roundToMultipleOfSeconds(
+    SecondsDuration duration, {
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    return duration.asSeconds *
+        rounding.roundFixed(
+          roundToSeconds(rounding: rounding).dividedByTimeDuration(duration),
+        );
+  }
+
+  Minutes roundToMultipleOfMinutes(
+    MinutesDuration duration, {
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    return duration.asMinutes *
+        rounding.roundFixed(
+          roundToMinutes(rounding: rounding).dividedByTimeDuration(duration),
+        );
+  }
+
+  Hours roundToMultipleOfHours(
+    Hours duration, {
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    return duration *
+        rounding.roundFixed(
+          roundToHours(rounding: rounding).dividedByTimeDuration(duration),
+        );
+  }
+
+  Days roundToMultipleOfNormalDays(
+    FixedDaysDuration duration, {
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    return duration.asDays *
+        rounding.round(
+          roundToNormalDays(rounding: rounding)
+              .dividedByFixedDaysDuration(duration),
+        );
+  }
+
+  Weeks roundToMultipleOfNormalWeeks(
+    Weeks duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
     return duration *
         rounding.round(
-          (inFractionalSeconds / duration.inFractionalSeconds).toFixedScale(0),
+          roundToNormalWeeks(rounding: rounding).dividedByWeeks(duration),
+        );
+  }
+
+  Years roundToMultipleOfNormalYears(
+    Years duration, {
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    return duration *
+        rounding.round(
+          roundToNormalYears(rounding: rounding).dividedByYears(duration),
+        );
+  }
+
+  Years roundToMultipleOfNormalLeapYears(
+    Years duration, {
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    return duration *
+        rounding.round(
+          roundToNormalLeapYears(rounding: rounding).dividedByYears(duration),
         );
   }
 
@@ -276,10 +382,6 @@ final class FractionalSeconds extends TimeDuration {
           Fixed.fromNum(divisor, scale: divisorPrecisionAfterComma),
     );
   }
-
-  // TODO(JonasWanke): Is this division precise enough?
-  Fixed dividedByTimeDuration(TimeDuration divisor) =>
-      inFractionalSeconds / divisor.inFractionalSeconds;
 
   @override
   FractionalSeconds operator %(int divisor) {
@@ -462,6 +564,7 @@ final class Nanoseconds extends NanosecondsDuration {
   Nanoseconds operator *(int factor) => Nanoseconds(inNanoseconds * factor);
   @override
   Nanoseconds operator ~/(int divisor) => Nanoseconds(inNanoseconds ~/ divisor);
+
   @override
   Nanoseconds operator %(int divisor) => Nanoseconds(inNanoseconds % divisor);
   @override

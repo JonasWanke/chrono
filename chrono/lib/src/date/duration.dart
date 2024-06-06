@@ -101,6 +101,8 @@ abstract class MonthsDuration extends DaysDuration
   MonthsDuration operator *(int factor);
   @override
   MonthsDuration operator ~/(int divisor);
+  double dividedByMonthsDuration(MonthsDuration divisor) =>
+      inMonths / divisor.inMonths;
   @override
   MonthsDuration operator %(int divisor);
   @override
@@ -183,6 +185,7 @@ final class Years extends MonthsDuration {
   Years operator *(int factor) => Years(inYears * factor);
   @override
   Years operator ~/(int divisor) => Years(inYears ~/ divisor);
+  double dividedByYears(Years divisor) => inYears / divisor.inYears;
   @override
   Years operator %(int divisor) => Years(inYears % divisor);
   @override
@@ -234,6 +237,8 @@ abstract class FixedDaysDuration extends DaysDuration
   FixedDaysDuration operator *(int factor);
   @override
   FixedDaysDuration operator ~/(int divisor);
+  double dividedByFixedDaysDuration(FixedDaysDuration divisor) =>
+      inDays / divisor.inDays;
   @override
   FixedDaysDuration operator %(int divisor);
   @override
@@ -319,6 +324,7 @@ final class Weeks extends FixedDaysDuration {
   Weeks operator *(int factor) => Weeks(inWeeks * factor);
   @override
   Weeks operator ~/(int divisor) => Weeks(inWeeks ~/ divisor);
+  double dividedByWeeks(Weeks divisor) => inWeeks / divisor.inWeeks;
   @override
   Weeks operator %(int divisor) => Weeks(inWeeks % divisor);
   @override

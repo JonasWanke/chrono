@@ -17,6 +17,7 @@ extension FixedChronoInternal on Fixed {
     return (integerPart, decimalPart);
   }
 
+  double get asDouble => toFixedScale(0);
   double toFixedScale(int fractionalDigits) {
     assert(fractionalDigits >= 0);
     if (scale > fractionalDigits) {
