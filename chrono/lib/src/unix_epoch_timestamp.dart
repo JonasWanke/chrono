@@ -155,7 +155,7 @@ class InstantAsIsoStringJsonConverter
 ///
 /// See also:
 ///
-/// - [UnixEpochTime], which is the superclass supporting arbitrary time
+/// - [UnixEpochTimestamp], which is the superclass supporting arbitrary time
 ///   duration types.
 /// - [Instant], which stores the passed time as [FractionalSeconds].
 /// - [UnixEpochMicroseconds], which stores the passed time as [Microseconds].
@@ -266,8 +266,8 @@ final class UnixEpochMicroseconds extends UnixEpochTimestamp<Microseconds> {
 ///
 /// See also:
 ///
-/// - [UnixEpochMicrosecondsAsIntJsonConverter], which encodes the nanoseconds as
-///   an integer.
+/// - [UnixEpochMicrosecondsAsIntJsonConverter], which encodes the nanoseconds
+///   as an integer.
 class UnixEpochMicrosecondsAsIsoStringJsonConverter
     extends JsonConverterWithParserResult<UnixEpochMicroseconds, String> {
   const UnixEpochMicrosecondsAsIsoStringJsonConverter();
@@ -347,8 +347,8 @@ final class UnixEpochMilliseconds extends UnixEpochTimestamp<Milliseconds> {
 ///
 /// See also:
 ///
-/// - [UnixEpochMillisecondsAsIntJsonConverter], which encodes the nanoseconds as
-///   an integer.
+/// - [UnixEpochMillisecondsAsIntJsonConverter], which encodes the nanoseconds
+///   as an integer.
 class UnixEpochMillisecondsAsIsoStringJsonConverter
     extends JsonConverterWithParserResult<UnixEpochMilliseconds, String> {
   const UnixEpochMillisecondsAsIsoStringJsonConverter();
