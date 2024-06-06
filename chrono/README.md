@@ -58,19 +58,19 @@ In Chrono's classes, it would be represented as:
 
 ![`DateTime` classes visualization](doc/DateTime%20classes%20visualization.svg)
 
-| Class         | Encoding              |
-| :------------ | :-------------------- |
-| `DateTime`    | `2023-04-23T18:24:20` |
-| `Date`        | `2023-04-23`          |
-| `Year`        | 2023                  |
-| `Month`       | 4                     |
-| `YearMonth`   | `2023-04`             |
-| `MonthDay`    | `--04-23`             |
-| `OrdinalDate` | `2023-113`            |
-| `WeekDate`    | `2023-W16-7`          |
-| `YearWeek`    | `2023-W16`            |
-| `Weekday`     | 7                     |
-| `Time`        | `18:24:20`            |
+| Class           | Encoding              |
+| :-------------- | :-------------------- |
+| [`DateTime`]    | `2023-04-23T18:24:20` |
+| [`Date`]        | `2023-04-23`          |
+| [`Year`]        | 2023                  |
+| [`Month`]       | 4                     |
+| [`YearMonth`]   | `2023-04`             |
+| [`MonthDay`]    | `--04-23`             |
+| [`OrdinalDate`] | `2023-113`            |
+| [`WeekDate`]    | `2023-W16-7`          |
+| [`YearWeek`]    | `2023-W16`            |
+| [`Weekday`]     | 7                     |
+| [`Time`]        | `18:24:20`            |
 
 ### 📅 [`Date`]
 
@@ -84,12 +84,12 @@ Dates can be represented by three different classes:
 |    [`WeekDate`] | [`YearWeek`] + [`Weekday`]          | `.asWeekDate`    | `2023-W16-7` |
 | [`OrdinalDate`] | [`Year`] + day of year              | `.asOrdinalDate` | `2023-113`   |
 
-- `Year`: year in the ISO 8601 calendar (see the class documentation for representation of BCE years)
-- `Month`: enum of months
-- `Weekday`: enum of weekdays
-- `YearMonth`: `Year` + `Month`, e.g., for getting the length of a month honoring leap years
-- `MonthDay`: `Month` + `Day`, e.g., for representing birthdays without a year (February 29 is allowed)
-- `YearWeek`: `Year` + [ISO week] from Monday to Sunday
+- [`Year`]: year in the ISO 8601 calendar (see the class documentation for representation of BCE years)
+- [`Month`]: enum of months
+- [`Weekday`]: enum of weekdays
+- [`YearMonth`]: [`Year`] + [`Month`], e.g., for getting the length of a month honoring leap years
+- [`MonthDay`]: [`Month`] + [`Day`], e.g., for representing birthdays without a year (February 29 is allowed)
+- [`YearWeek`]: [`Year`] + [ISO week] from Monday to Sunday
 
 ### ⌚ [`Time`]
 
@@ -120,7 +120,7 @@ Chrono offers different classes for each category (listed by inheritance):
     - [`CompoundDaysDuration`]: [`Months`] + [`Days`]
   - [`CompoundDuration`]: [`Months`] + [`Days`] + [`FractionalSeconds`]
 
-The `Duration` class from Dart Core corresponds to [`TimeDuration`]/[`FractionalSeconds`], but limited to microsecond precision.
+The [`Duration`] class from Dart Core corresponds to [`TimeDuration`]/[`FractionalSeconds`], but limited to microsecond precision.
 
 Some duration classes also have a corresponding `…Duration` class, e.g., [`Minutes`] and [`MinutesDuration`].
 [`MinutesDuration`] is an abstract base class for all time-based durations consisting of a whole number of minutes.
@@ -152,35 +152,35 @@ Because there are often multiple possibilities of how to encode a value, Chono l
 There are subclasses of [`JsonConverter`] for each class called `<Chrono type>As<JSON type>JsonConverter`, e.g., [`DateTimeAsIsoStringJsonConverter`].
 These are all converters and how they encode February 3, 2001 at 4:05:06.007008009 UTC:
 
-|                                 Converter class | Encoding example                   |
-| ----------------------------------------------: | :--------------------------------- |
-|               `InstantAsIsoStringJsonConverter` | `"2001-02-03T04:05:06.007008009Z"` |
-|  `UnixEpochNanosecondsAsIsoStringJsonConverter` | `"2001-02-03T04:05:06.007008009Z"` |
-|        `UnixEpochNanosecondsAsIntJsonConverter` | `981173106007008009`               |
-| `UnixEpochMicrosecondsAsIsoStringJsonConverter` | `"2001-02-03T04:05:06.007008Z"`    |
-|       `UnixEpochMicrosecondsAsIntJsonConverter` | `981173106007008`                  |
-| `UnixEpochMillisecondsAsIsoStringJsonConverter` | `"2001-02-03T04:05:06.007Z"`       |
-|       `UnixEpochMillisecondsAsIntJsonConverter` | `981173106007`                     |
-|      `UnixEpochSecondsAsIsoStringJsonConverter` | `"2001-02-03T04:05:06Z"`           |
-|            `UnixEpochSecondsAsIntJsonConverter` | `981173106`                        |
-|              `DateTimeAsIsoStringJsonConverter` | `"2001-02-03T04:05:06.007"`        |
-|                  `DateAsIsoStringJsonConverter` | `"2001-02-03"`                     |
-|                  `YearAsIsoStringJsonConverter` | `"2001"`                           |
-|                        `YearAsIntJsonConverter` | `2001`                             |
-|                       `MonthAsIntJsonConverter` | `2`                                |
-|             `YearMonthAsIsoStringJsonConverter` | `"2001-02"`                        |
-|              `MonthDayAsIsoStringJsonConverter` | `"--02-03"`                        |
-|           `OrdinalDateAsIsoStringJsonConverter` | `"2001-034"`                       |
-|              `WeekDateAsIsoStringJsonConverter` | `"2001-W05-6"`                     |
-|              `YearWeekAsIsoStringJsonConverter` | `"2001-W05"`                       |
-|                     `WeekdayAsIntJsonConverter` | `6`                                |
-|                  `TimeAsIsoStringJsonConverter` | `"04:05:06.007"`                   |
+|                                   Converter class | Encoding example                   |
+| ------------------------------------------------: | :--------------------------------- |
+|               [`InstantAsIsoStringJsonConverter`] | `"2001-02-03T04:05:06.007008009Z"` |
+|  [`UnixEpochNanosecondsAsIsoStringJsonConverter`] | `"2001-02-03T04:05:06.007008009Z"` |
+|        [`UnixEpochNanosecondsAsIntJsonConverter`] | `981173106007008009`               |
+| [`UnixEpochMicrosecondsAsIsoStringJsonConverter`] | `"2001-02-03T04:05:06.007008Z"`    |
+|       [`UnixEpochMicrosecondsAsIntJsonConverter`] | `981173106007008`                  |
+| [`UnixEpochMillisecondsAsIsoStringJsonConverter`] | `"2001-02-03T04:05:06.007Z"`       |
+|       [`UnixEpochMillisecondsAsIntJsonConverter`] | `981173106007`                     |
+|      [`UnixEpochSecondsAsIsoStringJsonConverter`] | `"2001-02-03T04:05:06Z"`           |
+|            [`UnixEpochSecondsAsIntJsonConverter`] | `981173106`                        |
+|              [`DateTimeAsIsoStringJsonConverter`] | `"2001-02-03T04:05:06.007"`        |
+|                  [`DateAsIsoStringJsonConverter`] | `"2001-02-03"`                     |
+|                  [`YearAsIsoStringJsonConverter`] | `"2001"`                           |
+|                        [`YearAsIntJsonConverter`] | `2001`                             |
+|                       [`MonthAsIntJsonConverter`] | `2`                                |
+|             [`YearMonthAsIsoStringJsonConverter`] | `"2001-02"`                        |
+|              [`MonthDayAsIsoStringJsonConverter`] | `"--02-03"`                        |
+|           [`OrdinalDateAsIsoStringJsonConverter`] | `"2001-034"`                       |
+|              [`WeekDateAsIsoStringJsonConverter`] | `"2001-W05-6"`                     |
+|              [`YearWeekAsIsoStringJsonConverter`] | `"2001-W05"`                       |
+|                     [`WeekdayAsIntJsonConverter`] | `6`                                |
+|                  [`TimeAsIsoStringJsonConverter`] | `"04:05:06.007"`                   |
 
 ### [<kbd>json_serializable</kbd>]
 
 TODO: test this code
 
-If you use [<kbd>json_serializable</kbd>], you can either choose between the following approached:
+If you use [<kbd>json_serializable</kbd>], you can choose between the following approaches:
 
 1. Annotate your field with the converter you want to use:
 
@@ -259,6 +259,7 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 [`CompoundDaysDuration`]: https://pub.dev/documentation/chrono/latest/chrono/CompoundDaysDuration-class.html
 [`CompoundDuration`]: https://pub.dev/documentation/chrono/latest/chrono/CompoundDuration-class.html
 [`Date`]: https://pub.dev/documentation/chrono/latest/chrono/Date-class.html
+[`DateAsIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/DateAsIsoStringJsonConverter-class.html
 [`DateDuration`]: https://pub.dev/documentation/chrono/latest/chrono/DateDuration-class.html
 [`DateTime`]: https://pub.dev/documentation/chrono/latest/chrono/DateTime-class.html
 [`DateTimeAsIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/DateTimeAsIsoStringJsonConverter-class.html
@@ -268,31 +269,50 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 [`FractionalSeconds`]: https://pub.dev/documentation/chrono/latest/chrono/FractionalSeconds-class.html
 [`Hours`]: https://pub.dev/documentation/chrono/latest/chrono/Hours-class.html
 [`Instant`]: https://pub.dev/documentation/chrono/latest/chrono/Instant-class.html
+[`InstantAsIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/InstantAsIsoStringJsonConverter-class.html
 [`Microseconds`]: https://pub.dev/documentation/chrono/latest/chrono/Microseconds-class.html
 [`Milliseconds`]: https://pub.dev/documentation/chrono/latest/chrono/Milliseconds-class.html
 [`Minutes`]: https://pub.dev/documentation/chrono/latest/chrono/Minutes-class.html
 [`MinutesDuration`]: https://pub.dev/documentation/chrono/latest/chrono/MinutesDuration-class.html
 [`Month`]: https://pub.dev/documentation/chrono/latest/chrono/Month-class.html
+[`MonthAsIntJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/MonthAsIntJsonConverter-class.html
 [`MonthDay`]: https://pub.dev/documentation/chrono/latest/chrono/MonthDay-class.html
+[`MonthDayAsIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/MonthDayAsIsoStringJsonConverter-class.html
 [`Months`]: https://pub.dev/documentation/chrono/latest/chrono/Months-class.html
 [`MonthsDuration`]: https://pub.dev/documentation/chrono/latest/chrono/MonthsDuration-class.html
 [`Nanoseconds`]: https://pub.dev/documentation/chrono/latest/chrono/Nanoseconds-class.html
 [`OrdinalDate`]: https://pub.dev/documentation/chrono/latest/chrono/OrdinalDate-class.html
+[`OrdinalDateAsIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/OrdinalDateAsIsoStringJsonConverter-class.html
 [`Seconds`]: https://pub.dev/documentation/chrono/latest/chrono/Seconds-class.html
 [`Time`]: https://pub.dev/documentation/chrono/latest/chrono/Time-class.html
+[`TimeAsIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/TimeAsIsoStringJsonConverter-class.html
 [`TimeDuration`]: https://pub.dev/documentation/chrono/latest/chrono/TimeDuration-class.html
 [`UnixEpochMicroseconds`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochMicroseconds-class.html
+[`UnixEpochMicrosecondsAsIntJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochMicrosecondsAsIntJsonConverter-class.html
+[`UnixEpochMicrosecondsAsIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochMicrosecondsAsIsoStringJsonConverter-class.html
 [`UnixEpochMilliseconds`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochMilliseconds-class.html
+[`UnixEpochMillisecondsAsIntJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochMillisecondsAsIntJsonConverter-class.html
+[`UnixEpochMillisecondsAsIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochMillisecondsAsIsoStringJsonConverter-class.html
 [`UnixEpochNanoseconds`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochNanoseconds-class.html
+[`UnixEpochNanosecondsAsIntJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochNanosecondsAsIntJsonConverter-class.html
+[`UnixEpochNanosecondsAsIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochNanosecondsAsIsoStringJsonConverter-class.html
 [`UnixEpochSeconds`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochSeconds-class.html
+[`UnixEpochSecondsAsIntJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochSecondsAsIntJsonConverter-class.html
+[`UnixEpochSecondsAsIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochSecondsAsIsoStringJsonConverter-class.html
 [`UnixEpochTimestamp<D>`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochTimestamp-class.html
 [`WeekDate`]: https://pub.dev/documentation/chrono/latest/chrono/WeekDate-class.html
+[`WeekDateAsIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/WeekDateAsIsoStringJsonConverter-class.html
 [`Weekday`]: https://pub.dev/documentation/chrono/latest/chrono/Weekday-class.html
+[`WeekdayAsIntJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/WeekdayAsIntJsonConverter-class.html
 [`Weeks`]: https://pub.dev/documentation/chrono/latest/chrono/Weeks-class.html
 [`Year`]: https://pub.dev/documentation/chrono/latest/chrono/Year-class.html
+[`YearAsIntJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/YearAsIntJsonConverter-class.html
+[`YearAsIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/YearAsIsoStringJsonConverter-class.html
 [`YearMonth`]: https://pub.dev/documentation/chrono/latest/chrono/YearMonth-class.html
+[`YearMonthAsIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/YearMonthAsIsoStringJsonConverter-class.html
 [`Years`]: https://pub.dev/documentation/chrono/latest/chrono/Years-class.html
 [`YearWeek`]: https://pub.dev/documentation/chrono/latest/chrono/YearWeek-class.html
+[`YearWeekAsIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/YearWeekAsIsoStringJsonConverter-class.html
 
 <!-- clock -->
 
