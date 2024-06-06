@@ -528,43 +528,44 @@ final class Microseconds extends MicrosecondsDuration {
   /// The microseconds in a millisecond.
   static const millisecond = Microseconds(perMillisecond);
 
-  /// The number of REPLACE in a second.
+  /// The number of microseconds in a second.
   static const perSecond = perMillisecond * Milliseconds.perSecond;
 
   /// The microseconds in a second.
   static const second = Microseconds(perSecond);
 
-  /// The number of REPLACE in a minute.
+  /// The number of microseconds in a minute.
   static const perMinute = perMillisecond * Milliseconds.perMinute;
 
   /// The microseconds in a minute.
   static const minute = Microseconds(perMinute);
 
-  /// The number of REPLACE in an hour.
+  /// The number of microseconds in an hour.
   static const perHour = perMillisecond * Milliseconds.perHour;
 
   /// The microseconds in an hour.
   static const hour = Microseconds(perHour);
 
-  /// The number of REPLACE in a normal day, i.e., a day with exactly 24 hours
-  /// (no daylight savings time changes and no leap seconds).
+  /// The number of microseconds in a normal day, i.e., a day with exactly
+  /// 24 hours (no daylight savings time changes and no leap seconds).
   static const perNormalDay = perMillisecond * Milliseconds.perNormalDay;
 
   /// The microseconds in a normal day, i.e., a day with exactly 24 hours (no
   /// daylight savings time changes and no leap seconds).
   static const normalDay = Microseconds(perNormalDay);
 
-  /// The number of REPLACE in a normal week, i.e., a week where all days are
-  /// exactly 24 hours long (no daylight savings time changes and no leap seconds).
+  /// The number of microseconds in a normal week, i.e., a week where all days
+  /// are exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
   static const perNormalWeek = perMillisecond * Milliseconds.perNormalWeek;
 
   /// The microseconds in a normal week, i.e., a week where all days are exactly
   /// 24 hours long (no daylight savings time changes and no leap seconds).
   static const normalWeek = Microseconds(perNormalWeek);
 
-  /// The number of REPLACE in a normal (non-leap) year (365 days), i.e., a year
-  /// where all days are exactly 24 hours long (no daylight savings time changes
-  /// and no leap seconds).
+  /// The number of microseconds in a normal (non-leap) year (365 days), i.e., a
+  /// year where all days are exactly 24 hours long (no daylight savings time
+  /// changes and no leap seconds).
   static const perNormalYear = perMillisecond * Milliseconds.perNormalYear;
 
   /// The microseconds in a normal (non-leap) year (365 days), i.e., a year
@@ -572,9 +573,9 @@ final class Microseconds extends MicrosecondsDuration {
   /// and no leap seconds).
   static const normalYear = Microseconds(perNormalYear);
 
-  /// The number of REPLACE in a leap year (366 days), i.e., a year where all
-  /// days are exactly 24 hours long (no daylight savings time changes and no
-  /// leap seconds).
+  /// The number of microseconds in a leap year (366 days), i.e., a year where
+  /// all days are exactly 24 hours long (no daylight savings time changes and
+  /// no leap seconds).
   static const perNormalLeapYear =
       perMillisecond * Milliseconds.perNormalLeapYear;
 
