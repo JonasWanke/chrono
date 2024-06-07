@@ -54,7 +54,7 @@ Future timestamps, e.g., for scheduling a meeting, should rather be represented 
 [`DateTime`] combines [`Date`] and [`Time`] without timezone information.
 This is also called plain or local time [in other languages](#comparison-to-other-languages).
 
-For example, April 23, 2023 at 18:24:20 happened at different moments in different time zones.
+For example, April 23, 2023, at 18:24:20 happened at different moments in different time zones.
 In Chrono's classes, it would be represented as:
 
 ![`DateTime` classes visualization](doc/DateTime%20classes%20visualization.svg)
