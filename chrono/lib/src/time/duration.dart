@@ -75,13 +75,31 @@ abstract class TimeDuration extends Duration
 
   @override
   TimeDuration operator -();
+
   @override
   TimeDuration operator *(int factor);
+  FractionalSeconds timesNum(
+    num factor, {
+    int factorPrecisionAfterComma = 8,
+  }) =>
+      timesFixed(Fixed.fromNum(factor, scale: factorPrecisionAfterComma));
+  FractionalSeconds timesFixed(Fixed factor) =>
+      FractionalSeconds(inFractionalSeconds * factor);
+
   @override
   TimeDuration operator ~/(int divisor);
   // TODO(JonasWanke): Is this division precise enough?
   Fixed dividedByTimeDuration(TimeDuration divisor) =>
       inFractionalSeconds / divisor.inFractionalSeconds;
+  FractionalSeconds dividedByNum(
+    num divisor, {
+    int divisorPrecisionAfterComma = 8,
+  }) =>
+      dividedByFixed(Fixed.fromNum(divisor, scale: divisorPrecisionAfterComma));
+  // TODO(JonasWanke): Is this division precise enough?
+  FractionalSeconds dividedByFixed(Fixed divisor) =>
+      FractionalSeconds(inFractionalSeconds / divisor);
+
   @override
   TimeDuration operator %(int divisor);
   @override
@@ -361,17 +379,7 @@ final class FractionalSeconds extends TimeDuration {
   FractionalSeconds operator -() => FractionalSeconds(-inFractionalSeconds);
   @override
   FractionalSeconds operator *(int factor) =>
-      FractionalSeconds(inFractionalSeconds * Fixed.fromInt(factor, scale: 0));
-  FractionalSeconds timesNum(
-    num factor, {
-    int factorPrecisionAfterComma = 8,
-  }) {
-    return FractionalSeconds(
-      inFractionalSeconds *
-          Fixed.fromNum(factor, scale: factorPrecisionAfterComma),
-    );
-  }
-
+      timesFixed(Fixed.fromInt(factor, scale: 0));
   @override
   FractionalSeconds operator ~/(int divisor) {
     return FractionalSeconds(
@@ -379,17 +387,6 @@ final class FractionalSeconds extends TimeDuration {
         inFractionalSeconds.minorUnits ~/ BigInt.from(divisor),
         scale: inFractionalSeconds.scale,
       ),
-    );
-  }
-
-  FractionalSeconds dividedByNum(
-    num divisor, {
-    int divisorPrecisionAfterComma = 8,
-  }) {
-    return FractionalSeconds(
-      // TODO(JonasWanke): Is this division precise enough?
-      inFractionalSeconds /
-          Fixed.fromNum(divisor, scale: divisorPrecisionAfterComma),
     );
   }
 
