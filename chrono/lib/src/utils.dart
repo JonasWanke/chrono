@@ -29,6 +29,12 @@ extension FixedChronoInternal on Fixed {
     }
     return minorUnits.toDouble();
   }
+
+  Fixed get half {
+    return minorUnits.isEven
+        ? Fixed.fromBigInt(minorUnits ~/ BigInt.two, scale: scale)
+        : Fixed.fromBigInt(minorUnits * BigInt.from(5), scale: scale + 1);
+  }
 }
 
 extension ResultWithStringErrorChronoInternal<T extends Object>

@@ -392,6 +392,7 @@ final class FractionalSeconds extends TimeDuration {
     );
   }
 
+  FractionalSeconds get half => FractionalSeconds(inFractionalSeconds.half);
   @override
   FractionalSeconds operator %(int divisor) {
     return FractionalSeconds(
