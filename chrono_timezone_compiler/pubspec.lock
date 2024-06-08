@@ -159,7 +159,7 @@ packages:
       path: "../chrono"
       relative: true
     source: path
-    version: "0.0.0"
+    version: "0.1.0"
   clock:
     dependency: transitive
     description:
