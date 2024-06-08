@@ -287,6 +287,8 @@ abstract class TimeDuration extends Duration
 /// A [TimeDuration] with arbitrary precision.
 final class FractionalSeconds extends TimeDuration {
   const FractionalSeconds(this.inFractionalSeconds);
+  FractionalSeconds.fromNum(num seconds, {int scale = 8})
+      : inFractionalSeconds = Fixed.fromNum(seconds, scale: scale);
 
   // `Fixed.zero` has a scale of 16, which we don't need.
   static final zero = FractionalSeconds(Fixed.fromInt(0, scale: 0));
