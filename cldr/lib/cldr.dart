@@ -1,10 +1,12 @@
 import 'dart:io';
 
+import 'package:meta/meta.dart';
 import 'package:xml/xml.dart';
 
 import 'src/dates.dart';
 
-final class CommonLocaleData {
+@immutable
+class CommonLocaleData {
   const CommonLocaleData({required this.dates});
 
   factory CommonLocaleData.fromXml(XmlElement element) {

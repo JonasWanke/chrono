@@ -1,6 +1,8 @@
+import 'package:meta/meta.dart';
 import 'package:xml/xml.dart';
 
-final class ValueWithVariant {
+@immutable
+class ValueWithVariant {
   const ValueWithVariant(this.value, [this.variant]);
 
   factory ValueWithVariant.fromXml(List<XmlElement> elements) {
@@ -44,7 +46,8 @@ final class ValueWithVariant {
       [value, if (variant != null) '(Variant: $variant)'].join(' ');
 }
 
-final class Value {
+@immutable
+class Value {
   const Value(this.value);
 
   factory Value.fromXml(XmlElement element) {
