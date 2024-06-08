@@ -42,10 +42,26 @@ class Calendars {
 
 @immutable
 class Calendar {
-  const Calendar({required this.days, required this.eras});
+  const Calendar({
+    required this.months,
+    required this.days,
+    required this.eras,
+  });
 
   factory Calendar.fromXml(XmlElement element) {
     return Calendar(
+      months: Context.fromXml(
+        element.getElement('months')!,
+        'monthContext',
+        (it) => Widths.fromXml(
+          it,
+          'monthWidth',
+          (it) => it
+              .findElements('month')
+              .associateBy((it) => int.parse(it.getAttribute('type')!))
+              .mapValues((it) => Value.fromXml(it.value)),
+        ),
+      ),
       days: Context.fromXml(
         element.getElement('days')!,
         'dayContext',
@@ -55,11 +71,12 @@ class Calendar {
     );
   }
 
+  final Context<Widths<Map<int, Value>>> months;
   final Context<DayWidths> days;
   final Eras eras;
 
   @override
-  String toString() => 'Calendar(days: $days, eras: $eras)';
+  String toString() => 'Calendar(months: $months, days: $days, eras: $eras)';
 }
 
 class DayWidths extends Widths<Days> {
@@ -229,8 +246,28 @@ class Widths<T extends Object> {
     required this.narrow,
   });
 
+  factory Widths.fromXml(
+    XmlElement element,
+    String elementName,
+    T Function(XmlElement) valueFromXml,
+  ) {
+    final values = element
+        .findElements(elementName)
+        .associateBy((it) => it.getAttribute('type')!)
+        .mapValues((it) => valueFromXml(it.value));
+    return Widths(
+      wide: values['wide']!,
+      abbreviated: values['abbreviated']!,
+      narrow: values['narrow']!,
+    );
+  }
+
   /// The default.
   final T wide;
   final T abbreviated;
   final T narrow;
+
+  @override
+  String toString() =>
+      'Widths(wide: $wide, abbreviated: $abbreviated, narrow: $narrow)';
 }
