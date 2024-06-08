@@ -130,7 +130,7 @@ Some duration classes also have a corresponding `…Duration` class, e.g., [`Min
 When constructing or returning values, you should use [`Minutes`] directly.
 However, in parameters, you should accept any [`MinutesDuration`].
 This way, callers can pass not only [`Minutes`], but also [`Hours`].
-To convert this to [`Minutes`], call `asMinutes`
+To convert this to [`Minutes`], call `asMinutes`.
 
 ### Compound Durations
 
@@ -152,7 +152,7 @@ All timestamp, date, and time classes support JSON serialization.
 
 Because there are often multiple possibilities of how to encode a value, Chono lets you choose the format:
 There are subclasses of [`JsonConverter`] for each class called `<Chrono type>As<JSON type>JsonConverter`, e.g., [`DateTimeAsIsoStringJsonConverter`].
-These are all converters and how they encode February 3, 2001 at 4:05:06.007008009 UTC:
+These are all converters and how they encode February 3, 2001, at 4:05:06.007008009 UTC:
 
 |                                   Converter class | Encoding example                   |
 | ------------------------------------------------: | :--------------------------------- |
