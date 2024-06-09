@@ -9,7 +9,10 @@ part 'dates.freezed.dart';
 
 @freezed
 class Dates with _$Dates {
-  const factory Dates({required Calendars calendars}) = _Dates;
+  const factory Dates({
+    required Calendars calendars,
+    // TODO(JonasWanke): `<fields>`, `<timeZoneNames>`
+  }) = _Dates;
   const Dates._();
 
   factory Dates.fromXml(XmlElement element) {
@@ -39,6 +42,7 @@ class Calendar with _$Calendar {
   const factory Calendar({
     required Context<Widths<Map<int, Value>>> months,
     required Context<DayWidths> days,
+    // TODO(JonasWanke): `<quarters>`, `<dayPeriods>`
     required Eras eras,
     required DateOrTimeFormats dateFormats,
     required DateOrTimeFormats timeFormats,
@@ -236,6 +240,7 @@ class DateTimeFormats with _$DateTimeFormats {
     required DateOrTimeFormats<DateTimeFormat> formats,
     // TODO(JonasWanke): Parse skeletons
     required Map<String, Value<List<DateOrTimePatternPart>>> availableFormats,
+    // TODO(JonasWanke): `<appendItems>`, `<intervalFormats>`
   }) = _DateTimeFormats;
   const DateTimeFormats._();
 

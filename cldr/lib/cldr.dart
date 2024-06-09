@@ -9,7 +9,12 @@ part 'cldr.freezed.dart';
 
 @freezed
 class CommonLocaleData with _$CommonLocaleData {
-  const factory CommonLocaleData({required Dates dates}) = _CommonLocaleData;
+  const factory CommonLocaleData({
+    required Dates dates,
+    // TODO(JonasWanke): `<localeDisplayNames>`, `<contextTransforms>`,
+    // `<characters>`, `<delimiters>`, `<numbers>`, `<units>`, `<listPatterns>`,
+    // `<posix>`, `<characterLabels>`, `<typographicNames>`, `<personNames>`
+  }) = _CommonLocaleData;
   const CommonLocaleData._();
 
   factory CommonLocaleData.fromXml(XmlElement element) {
