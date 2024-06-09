@@ -40,8 +40,8 @@ class Calendar with _$Calendar {
     required Context<Widths<Map<int, Value>>> months,
     required Context<DayWidths> days,
     required Eras eras,
-    required DateTimeFormats dateFormats,
-    required DateTimeFormats timeFormats,
+    required DateOrTimeFormats dateFormats,
+    required DateOrTimeFormats timeFormats,
   }) = _Calendar;
   const Calendar._();
 
@@ -65,11 +65,11 @@ class Calendar with _$Calendar {
         DayWidths.fromXml,
       ),
       eras: Eras.fromXml(element.getElement('eras')!),
-      dateFormats: DateTimeFormats.fromXml(
+      dateFormats: DateOrTimeFormats.fromXml(
         element.getElement('dateFormats')!,
         'dateFormat',
       ),
-      timeFormats: DateTimeFormats.fromXml(
+      timeFormats: DateOrTimeFormats.fromXml(
         element.getElement('timeFormats')!,
         'timeFormat',
       ),
@@ -177,23 +177,23 @@ class Era with _$Era {
 }
 
 @freezed
-class DateTimeFormats with _$DateTimeFormats {
-  const factory DateTimeFormats({
-    required DateTimeFormat full,
-    required DateTimeFormat long,
-    required DateTimeFormat medium,
-    required DateTimeFormat short,
-  }) = _DateTimeFormats;
-  const DateTimeFormats._();
+class DateOrTimeFormats with _$DateOrTimeFormats {
+  const factory DateOrTimeFormats({
+    required DateOrTimeFormat full,
+    required DateOrTimeFormat long,
+    required DateOrTimeFormat medium,
+    required DateOrTimeFormat short,
+  }) = _DateOrTimeFormats;
+  const DateOrTimeFormats._();
 
-  factory DateTimeFormats.fromXml(XmlElement element, String nodeName) {
+  factory DateOrTimeFormats.fromXml(XmlElement element, String nodeName) {
     final lengths = element
         .findElements('${nodeName}Length')
         .associateBy((it) => it.getAttribute('type')!)
         .mapValues(
-          (it) => DateTimeFormat.fromXml(it.value.getElement(nodeName)!),
+          (it) => DateOrTimeFormat.fromXml(it.value.getElement(nodeName)!),
         );
-    return DateTimeFormats(
+    return DateOrTimeFormats(
       full: lengths['full']!,
       long: lengths['long']!,
       medium: lengths['medium']!,
@@ -203,15 +203,15 @@ class DateTimeFormats with _$DateTimeFormats {
 }
 
 @freezed
-class DateTimeFormat with _$DateTimeFormat {
-  const factory DateTimeFormat({
+class DateOrTimeFormat with _$DateOrTimeFormat {
+  const factory DateOrTimeFormat({
     required Value<List<DatePatternPart>> pattern,
     required String? displayName,
-  }) = _DateTimeFormat;
-  const DateTimeFormat._();
+  }) = _DateOrTimeFormat;
+  const DateOrTimeFormat._();
 
-  factory DateTimeFormat.fromXml(XmlElement element) {
-    return DateTimeFormat(
+  factory DateOrTimeFormat.fromXml(XmlElement element) {
+    return DateOrTimeFormat(
       pattern: Value.customFromXml(
         element.getElement('pattern')!,
         DatePatternPart.parse,
