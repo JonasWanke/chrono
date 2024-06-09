@@ -76,9 +76,8 @@ class Calendar with _$Calendar {
         'timeFormat',
         DateOrTimeFormat.fromXml,
       ),
-      dateTimeFormats: DateTimeFormats.fromXml(
-        element.getElement('dateTimeFormats')!,
-      ),
+      dateTimeFormats:
+          DateTimeFormats.fromXml(element.getElement('dateTimeFormats')!),
     );
   }
 }
@@ -235,6 +234,8 @@ class DateOrTimeFormat with _$DateOrTimeFormat {
 class DateTimeFormats with _$DateTimeFormats {
   const factory DateTimeFormats({
     required DateOrTimeFormats<DateTimeFormat> formats,
+    // TODO(JonasWanke): Parse skeletons
+    required Map<String, Value<List<DateOrTimePatternPart>>> availableFormats,
   }) = _DateTimeFormats;
   const DateTimeFormats._();
 
@@ -245,6 +246,13 @@ class DateTimeFormats with _$DateTimeFormats {
         'dateTimeFormat',
         DateTimeFormat.fromXml,
       ),
+      availableFormats: element
+          .getElement('availableFormats')!
+          .findElements('dateFormatItem')
+          .associateBy((it) => it.getAttribute('id')!)
+          .mapValues(
+            (it) => Value.customFromXml(it.value, DateOrTimePatternPart.parse),
+          ),
     );
   }
 }
@@ -369,7 +377,7 @@ sealed class DateOrTimePatternPart with _$DateOrTimePatternPart {
           // Quoted text
           while (true) {
             final end = pattern.indexOf("'", offset + 1);
-            if (end == -1) {
+            if (end < 0) {
               throw ArgumentError('Unclosed quote in pattern: `$pattern`');
             }
 
@@ -380,6 +388,8 @@ sealed class DateOrTimePatternPart with _$DateOrTimePatternPart {
             if (pattern[offset] == "'") {
               addLiteral("'");
               offset++;
+            } else {
+              break;
             }
           }
 
