@@ -47,17 +47,22 @@ class ValueWithVariant {
 }
 
 @immutable
-class Value {
+class Value<T extends Object> {
   const Value(this.value);
 
-  factory Value.fromXml(XmlElement element) {
+  factory Value.customFromXml(
+    XmlElement element,
+    T Function(String) fromString,
+  ) {
     final text = element.innerText;
-    return Value(text == '↑↑↑' ? null : text);
+    return Value(text == '↑↑↑' ? null : fromString(text));
   }
+  static Value<String> fromXml(XmlElement element) =>
+      Value.customFromXml(element, (it) => it);
 
-  final String? value;
+  final T? value;
   bool get isInherited => value == null;
 
   @override
-  String toString() => isInherited ? '<inherited>' : value!;
+  String toString() => isInherited ? '<inherited>' : value!.toString();
 }
