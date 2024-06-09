@@ -42,6 +42,7 @@ class Calendar with _$Calendar {
     required Eras eras,
     required DateOrTimeFormats dateFormats,
     required DateOrTimeFormats timeFormats,
+    required DateTimeFormats dateTimeFormats,
   }) = _Calendar;
   const Calendar._();
 
@@ -68,10 +69,15 @@ class Calendar with _$Calendar {
       dateFormats: DateOrTimeFormats.fromXml(
         element.getElement('dateFormats')!,
         'dateFormat',
+        DateOrTimeFormat.fromXml,
       ),
       timeFormats: DateOrTimeFormats.fromXml(
         element.getElement('timeFormats')!,
         'timeFormat',
+        DateOrTimeFormat.fromXml,
+      ),
+      dateTimeFormats: DateTimeFormats.fromXml(
+        element.getElement('dateTimeFormats')!,
       ),
     );
   }
@@ -177,21 +183,25 @@ class Era with _$Era {
 }
 
 @freezed
-class DateOrTimeFormats with _$DateOrTimeFormats {
+class DateOrTimeFormats<T extends Object> with _$DateOrTimeFormats<T> {
   const factory DateOrTimeFormats({
-    required DateOrTimeFormat full,
-    required DateOrTimeFormat long,
-    required DateOrTimeFormat medium,
-    required DateOrTimeFormat short,
+    required T full,
+    required T long,
+    required T medium,
+    required T short,
   }) = _DateOrTimeFormats;
   const DateOrTimeFormats._();
 
-  factory DateOrTimeFormats.fromXml(XmlElement element, String nodeName) {
+  factory DateOrTimeFormats.fromXml(
+    XmlElement element,
+    String nodeName,
+    T Function(XmlElement) fromXml,
+  ) {
     final lengths = element
         .findElements('${nodeName}Length')
         .associateBy((it) => it.getAttribute('type')!)
         .mapValues(
-          (it) => DateOrTimeFormat.fromXml(it.value.getElement(nodeName)!),
+          (it) => fromXml(it.value.getElement(nodeName)!),
         );
     return DateOrTimeFormats(
       full: lengths['full']!,
@@ -205,7 +215,7 @@ class DateOrTimeFormats with _$DateOrTimeFormats {
 @freezed
 class DateOrTimeFormat with _$DateOrTimeFormat {
   const factory DateOrTimeFormat({
-    required Value<List<DatePatternPart>> pattern,
+    required Value<List<DateOrTimePatternPart>> pattern,
     required String? displayName,
   }) = _DateOrTimeFormat;
   const DateOrTimeFormat._();
@@ -214,7 +224,7 @@ class DateOrTimeFormat with _$DateOrTimeFormat {
     return DateOrTimeFormat(
       pattern: Value.customFromXml(
         element.getElement('pattern')!,
-        DatePatternPart.parse,
+        DateOrTimePatternPart.parse,
       ),
       displayName: element.getElement('displayName')?.innerText,
     );
@@ -222,21 +232,129 @@ class DateOrTimeFormat with _$DateOrTimeFormat {
 }
 
 @freezed
-sealed class DatePatternPart with _$DatePatternPart {
-  const factory DatePatternPart.literal(String value) = _DatePatternPartLiteral;
-  const factory DatePatternPart.field(DateTimeField field) =
-      _DatePatternPartField;
-  const DatePatternPart._();
+class DateTimeFormats with _$DateTimeFormats {
+  const factory DateTimeFormats({
+    required DateOrTimeFormats<DateTimeFormat> formats,
+  }) = _DateTimeFormats;
+  const DateTimeFormats._();
 
-  static List<DatePatternPart> parse(String pattern) {
+  factory DateTimeFormats.fromXml(XmlElement element) {
+    return DateTimeFormats(
+      formats: DateOrTimeFormats.fromXml(
+        element,
+        'dateTimeFormat',
+        DateTimeFormat.fromXml,
+      ),
+    );
+  }
+}
+
+@freezed
+class DateTimeFormat with _$DateTimeFormat {
+  const factory DateTimeFormat({
+    required Value<List<DateTimePatternPart>> pattern,
+    required String? displayName,
+  }) = _DateTimeFormat;
+  const DateTimeFormat._();
+
+  factory DateTimeFormat.fromXml(XmlElement element) {
+    return DateTimeFormat(
+      pattern: Value.customFromXml(
+        element.getElement('pattern')!,
+        DateTimePatternPart.parse,
+      ),
+      displayName: element.getElement('displayName')?.innerText,
+    );
+  }
+}
+
+@freezed
+class DateTimePatternPart with _$DateTimePatternPart {
+  const factory DateTimePatternPart.literal(String value) =
+      _DateTimePatternPartLiteral;
+  const factory DateTimePatternPart.time() = _DateTimePatternPartTime;
+  const factory DateTimePatternPart.date() = _DateTimePatternPartDate;
+  const factory DateTimePatternPart.field(DateTimeField field) =
+      _DateTimePatternPartField;
+  const DateTimePatternPart._();
+
+  static List<DateTimePatternPart> parse(String pattern) {
+    final raw = DateOrTimePatternPart.parse(pattern);
+    return raw.expand((it) {
+      return it.when(
+        literal: (value) {
+          var lastOffset = 0;
+          var offset = 0;
+          final parts = <DateTimePatternPart>[];
+          void addCurrent() {
+            if (offset > lastOffset) {
+              parts.add(
+                DateTimePatternPart.literal(
+                  value.substring(lastOffset, offset),
+                ),
+              );
+            }
+            lastOffset = offset;
+          }
+
+          while (offset < value.length) {
+            final index = value.indexOf('{', offset);
+            if (index < 0 ||
+                index + 2 > value.length ||
+                value[index + 2] != '}') {
+              break;
+            }
+
+            offset = index;
+            switch (value[index + 1]) {
+              case '0':
+                addCurrent();
+                parts.add(const DateTimePatternPart.time());
+                offset = lastOffset = index + 3;
+              case '1':
+                addCurrent();
+                parts.add(const DateTimePatternPart.date());
+                offset = lastOffset = index + 3;
+              default:
+                offset++;
+            }
+          }
+          addCurrent();
+          return parts;
+        },
+        field: (field) => [DateTimePatternPart.field(field)],
+      );
+    }).toList();
+  }
+
+  @override
+  String toString() {
+    return when(
+      literal: (value) => "'${value.replaceAll("'", "''")}'",
+      time: () => 'time',
+      date: () => 'date',
+      field: (field) => field.toString(),
+    );
+  }
+}
+
+@freezed
+sealed class DateOrTimePatternPart with _$DateOrTimePatternPart {
+  const factory DateOrTimePatternPart.literal(String value) =
+      _DateOrTimePatternPartLiteral;
+  const factory DateOrTimePatternPart.field(DateTimeField field) =
+      _DateOrTimePatternPartField;
+  const DateOrTimePatternPart._();
+
+  static List<DateOrTimePatternPart> parse(String pattern) {
     var offset = 0;
-    final parts = <DatePatternPart>[];
+    final parts = <DateOrTimePatternPart>[];
     void addLiteral(String literal) {
-      if (parts.lastOrNull is _DatePatternPartLiteral) {
-        final last = parts.removeLast() as _DatePatternPartLiteral;
-        parts.add(_DatePatternPartLiteral(last.value + literal));
+      if (parts.lastOrNull is _DateOrTimePatternPartLiteral) {
+        final last = parts.removeLast() as _DateOrTimePatternPartLiteral;
+        parts.add(_DateOrTimePatternPartLiteral(last.value + literal));
       } else {
-        parts.add(_DatePatternPartLiteral(literal));
+        parts.add(_DateOrTimePatternPartLiteral(literal));
       }
     }
 
@@ -416,7 +534,7 @@ sealed class DatePatternPart with _$DatePatternPart {
               ),
             _ => DateTimeField.unknown(character, length),
           };
-          parts.add(DatePatternPart.field(field));
+          parts.add(DateOrTimePatternPart.field(field));
           offset += length;
         default:
           addLiteral(character);
