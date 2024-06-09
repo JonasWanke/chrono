@@ -1,3 +1,4 @@
+import 'package:code_builder/code_builder.dart';
 import 'package:collection/collection.dart';
 import 'package:dartx/dartx.dart' hide IterableLastOrNull;
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -8,7 +9,7 @@ import 'common.dart';
 part 'dates.freezed.dart';
 
 @freezed
-class Dates with _$Dates {
+class Dates with _$Dates implements ToExpression {
   const factory Dates({
     required Calendars calendars,
     // TODO(JonasWanke): `<fields>`, `<timeZoneNames>`
@@ -20,10 +21,14 @@ class Dates with _$Dates {
       calendars: Calendars.fromXml(element.getElement('calendars')!),
     );
   }
+
+  @override
+  Expression toExpression() =>
+      referCldr('Dates')([], {'calendars': calendars.toExpression()});
 }
 
 @freezed
-class Calendars with _$Calendars {
+class Calendars with _$Calendars implements ToExpression {
   const factory Calendars({required Calendar gregorian}) = _Calendars;
   const Calendars._();
 
@@ -35,12 +40,16 @@ class Calendars with _$Calendars {
       gregorian: Calendar.fromXml(calendars['gregorian']!),
     );
   }
+
+  @override
+  Expression toExpression() =>
+      referCldr('Calendars')([], {'gregorian': gregorian.toExpression()});
 }
 
 @freezed
-class Calendar with _$Calendar {
+class Calendar with _$Calendar implements ToExpression {
   const factory Calendar({
-    required Context<Widths<Map<int, Value>>> months,
+    required Context<Widths<Map<int, Value<String>>>> months,
     required Context<DayWidths> days,
     // TODO(JonasWanke): `<quarters>`, `<dayPeriods>`
     required Eras eras,
@@ -84,10 +93,25 @@ class Calendar with _$Calendar {
           DateTimeFormats.fromXml(element.getElement('dateTimeFormats')!),
     );
   }
+
+  @override
+  Expression toExpression() {
+    return referCldr('Calendar')(
+      [],
+      {
+        'months': months.toExpression(),
+        'days': days.toExpression(),
+        'eras': eras.toExpression(),
+        'dateFormats': dateFormats.toExpression(),
+        'timeFormats': timeFormats.toExpression(),
+        'dateTimeFormats': dateTimeFormats.toExpression(),
+      },
+    );
+  }
 }
 
 @freezed
-class DayWidths with _$DayWidths {
+class DayWidths with _$DayWidths implements ToExpression {
   const factory DayWidths({
     required Days wide,
     required Days abbreviated,
@@ -112,18 +136,31 @@ class DayWidths with _$DayWidths {
       narrow: days['narrow']!,
     );
   }
+
+  @override
+  Expression toExpression() {
+    return referCldr('DayWidths')(
+      [],
+      {
+        'wide': wide.toExpression(),
+        'abbreviated': abbreviated.toExpression(),
+        'short': short.toExpression(),
+        'narrow': narrow.toExpression(),
+      },
+    );
+  }
 }
 
 @freezed
-class Days with _$Days {
+class Days with _$Days implements ToExpression {
   const factory Days({
-    required Value sunday,
-    required Value monday,
-    required Value tuesday,
-    required Value wednesday,
-    required Value thursday,
-    required Value friday,
-    required Value saturday,
+    required Value<String> sunday,
+    required Value<String> monday,
+    required Value<String> tuesday,
+    required Value<String> wednesday,
+    required Value<String> thursday,
+    required Value<String> friday,
+    required Value<String> saturday,
   }) = _Days;
   const Days._();
 
@@ -142,10 +179,26 @@ class Days with _$Days {
       saturday: days['sat']!,
     );
   }
+
+  @override
+  Expression toExpression() {
+    return referCldr('Days')(
+      [],
+      {
+        'sunday': sunday.toExpression(),
+        'monday': monday.toExpression(),
+        'tuesday': tuesday.toExpression(),
+        'wednesday': wednesday.toExpression(),
+        'thursday': thursday.toExpression(),
+        'friday': friday.toExpression(),
+        'saturday': saturday.toExpression(),
+      },
+    );
+  }
 }
 
 @freezed
-class Eras with _$Eras {
+class Eras with _$Eras implements ToExpression {
   const factory Eras({required Map<int, Era> eras}) = _Eras;
   const Eras._();
 
@@ -173,26 +226,54 @@ class Eras with _$Eras {
     });
     return Eras(eras: eras);
   }
+
+  @override
+  Expression toExpression() {
+    return referCldr('Eras')(
+      [],
+      {
+        'eras': literalMap(
+          eras.map(
+            (key, value) => MapEntry(literalNum(key), value.toExpression()),
+          ),
+        ),
+      },
+    );
+  }
 }
 
 @freezed
-class Era with _$Era {
+class Era with _$Era implements ToExpression {
   const factory Era({
-    required ValueWithVariant name,
-    required ValueWithVariant abbreviation,
-    required ValueWithVariant narrow,
+    required ValueWithVariant<String> name,
+    required ValueWithVariant<String> abbreviation,
+    required ValueWithVariant<String> narrow,
   }) = _Era;
   const Era._();
+
+  @override
+  Expression toExpression() {
+    return referCldr('Era')(
+      [],
+      {
+        'name': name.toExpression(),
+        'abbreviation': abbreviation.toExpression(),
+        'narrow': narrow.toExpression(),
+      },
+    );
+  }
 }
 
 @freezed
-class DateOrTimeFormats<T extends Object> with _$DateOrTimeFormats<T> {
+class DateOrTimeFormats<T extends ToExpression>
+    with _$DateOrTimeFormats<T>
+    implements ToExpression {
   const factory DateOrTimeFormats({
     required T full,
     required T long,
     required T medium,
     required T short,
-  }) = _DateOrTimeFormats;
+  }) = _DateOrTimeFormats<T>;
   const DateOrTimeFormats._();
 
   factory DateOrTimeFormats.fromXml(
@@ -213,10 +294,23 @@ class DateOrTimeFormats<T extends Object> with _$DateOrTimeFormats<T> {
       short: lengths['short']!,
     );
   }
+
+  @override
+  Expression toExpression() {
+    return referCldr('DateOrTimeFormats')(
+      [],
+      {
+        'full': full.toExpression(),
+        'long': long.toExpression(),
+        'medium': medium.toExpression(),
+        'short': short.toExpression(),
+      },
+    );
+  }
 }
 
 @freezed
-class DateOrTimeFormat with _$DateOrTimeFormat {
+class DateOrTimeFormat with _$DateOrTimeFormat implements ToExpression {
   const factory DateOrTimeFormat({
     required Value<List<DateOrTimePatternPart>> pattern,
     required String? displayName,
@@ -232,10 +326,22 @@ class DateOrTimeFormat with _$DateOrTimeFormat {
       displayName: element.getElement('displayName')?.innerText,
     );
   }
+
+  @override
+  Expression toExpression() {
+    return referCldr('DateOrTimeFormat')(
+      [],
+      {
+        'pattern': pattern.toExpression(),
+        'displayName':
+            displayName == null ? literalNull : literalString(displayName!),
+      },
+    );
+  }
 }
 
 @freezed
-class DateTimeFormats with _$DateTimeFormats {
+class DateTimeFormats with _$DateTimeFormats implements ToExpression {
   const factory DateTimeFormats({
     required DateOrTimeFormats<DateTimeFormat> formats,
     // TODO(JonasWanke): Parse skeletons
@@ -260,10 +366,25 @@ class DateTimeFormats with _$DateTimeFormats {
           ),
     );
   }
+
+  @override
+  Expression toExpression() {
+    return referCldr('DateTimeFormats')(
+      [],
+      {
+        'formats': formats.toExpression(),
+        'availableFormats': literalMap(
+          availableFormats.map(
+            (key, value) => MapEntry(literalString(key), value.toExpression()),
+          ),
+        ),
+      },
+    );
+  }
 }
 
 @freezed
-class DateTimeFormat with _$DateTimeFormat {
+class DateTimeFormat with _$DateTimeFormat implements ToExpression {
   const factory DateTimeFormat({
     required Value<List<DateTimePatternPart>> pattern,
     required String? displayName,
@@ -279,10 +400,22 @@ class DateTimeFormat with _$DateTimeFormat {
       displayName: element.getElement('displayName')?.innerText,
     );
   }
+
+  @override
+  Expression toExpression() {
+    return referCldr('DateTimeFormat')(
+      [],
+      {
+        'pattern': pattern.toExpression(),
+        'displayName':
+            displayName == null ? literalNull : literalString(displayName!),
+      },
+    );
+  }
 }
 
 @freezed
-class DateTimePatternPart with _$DateTimePatternPart {
+class DateTimePatternPart with _$DateTimePatternPart implements ToExpression {
   const factory DateTimePatternPart.literal(String value) =
       _DateTimePatternPartLiteral;
   const factory DateTimePatternPart.time() = _DateTimePatternPartTime;
@@ -341,6 +474,19 @@ class DateTimePatternPart with _$DateTimePatternPart {
   }
 
   @override
+  Expression toExpression() {
+    Expression create(String name, [List<Expression> args = const []]) =>
+        referCldr('DateTimePatternPart').newInstanceNamed(name, args);
+
+    return when(
+      literal: (value) => create('literal', [literalString(value)]),
+      time: () => create('time', []),
+      date: () => create('date', []),
+      field: (field) => create('field', [field.toExpression()]),
+    );
+  }
+
+  @override
   String toString() {
     return when(
       literal: (value) => "'${value.replaceAll("'", "''")}'",
@@ -352,7 +498,9 @@ class DateTimePatternPart with _$DateTimePatternPart {
 }
 
 @freezed
-sealed class DateOrTimePatternPart with _$DateOrTimePatternPart {
+sealed class DateOrTimePatternPart
+    with _$DateOrTimePatternPart
+    implements ToExpression {
   const factory DateOrTimePatternPart.literal(String value) =
       _DateOrTimePatternPartLiteral;
   const factory DateOrTimePatternPart.field(DateTimeField field) =
@@ -411,8 +559,8 @@ sealed class DateOrTimePatternPart with _$DateOrTimePatternPart {
             ('G', >= 1 && <= 3) => const DateTimeField.eraAbbreviated(),
             ('G', 4) => const DateTimeField.eraLong(),
             ('G', 5) => const DateTimeField.eraNarrow(),
-            ('y', _) => DateTimeField.year(length),
-            ('Y', _) => DateTimeField.weekBasedYear(length),
+            ('y', _) => DateTimeField.year(minDigits: length),
+            ('Y', _) => DateTimeField.weekBasedYear(minDigits: length),
             ('u', _) => const DateTimeField.extendedYear(),
             ('U', >= 1 && <= 3) =>
               const DateTimeField.cyclicYearNameAbbreviated(),
@@ -561,6 +709,17 @@ sealed class DateOrTimePatternPart with _$DateOrTimePatternPart {
   }
 
   @override
+  Expression toExpression() {
+    Expression create(String name, [List<Expression> args = const []]) =>
+        referCldr('DateOrTimePatternPart').newInstanceNamed(name, args);
+
+    return when(
+      literal: (value) => create('literal', [literalString(value)]),
+      field: (field) => create('field', [field.toExpression()]),
+    );
+  }
+
+  @override
   String toString() {
     return when(
       literal: (value) => "'${value.replaceAll("'", "''")}'",
@@ -570,7 +729,7 @@ sealed class DateOrTimePatternPart with _$DateOrTimePatternPart {
 }
 
 @freezed
-sealed class DateTimeField with _$DateTimeField {
+sealed class DateTimeField with _$DateTimeField implements ToExpression {
   /// Era (abbreviated form), e.g., “AD”.
   ///
   /// Unicode Shorthand: `G`, `GG`, `GGG`
@@ -601,7 +760,8 @@ sealed class DateTimeField with _$DateTimeField {
   ///
   /// Unicode Shorthand: `y`, `yy`, `yyy`, `yyyy`, `yyyyy`, etc.
   @Assert('minDigits >= 1')
-  const factory DateTimeField.year(int minDigits) = _DateTimeFieldYear;
+  const factory DateTimeField.year({required int minDigits}) =
+      _DateTimeFieldYear;
 
   /// Year (in "Week of Year" based calendars), e.g., “1997”.
   ///
@@ -613,7 +773,7 @@ sealed class DateTimeField with _$DateTimeField {
   ///
   /// Unicode Shorthand: `Y`, `YY`, `YYY`, `YYYY`, `YYYYY`, etc.
   @Assert('minDigits >= 1')
-  const factory DateTimeField.weekBasedYear(int minDigits) =
+  const factory DateTimeField.weekBasedYear({required int minDigits}) =
       _DateTimeFieldWeekBasedYear;
 
   /// Extended year, e.g., “4601”.
@@ -997,13 +1157,129 @@ sealed class DateTimeField with _$DateTimeField {
 
   const factory DateTimeField.unknown(String character, int length) =
       _DateTimeFieldUnknown;
+
+  const DateTimeField._();
+
+  @override
+  Expression toExpression() {
+    Expression create(
+      String name, [
+      Map<String, Expression> args = const {},
+    ]) =>
+        referCldr('DateTimeField').newInstanceNamed(name, [], args);
+
+    return when(
+      eraAbbreviated: () => create('eraAbbreviated'),
+      eraLong: () => create('eraLong'),
+      eraNarrow: () => create('eraNarrow'),
+      year: (minDigits) => create('year', {'minDigits': literalNum(minDigits)}),
+      weekBasedYear: (minDigits) =>
+          create('weekBasedYear', {'minDigits': literalNum(minDigits)}),
+      extendedYear: () => create('extendedYear'),
+      cyclicYearNameAbbreviated: () => create('cyclicYearNameAbbreviated'),
+      cyclicYearNameFull: () => create('cyclicYearNameFull'),
+      cyclicYearNameNarrow: () => create('cyclicYearNameNarrow'),
+      quarterNumerical: (isPadded) =>
+          create('quarterNumerical', {'isPadded': literalBool(isPadded)}),
+      quarterAbbreviated: () => create('quarterAbbreviated'),
+      quarterFull: () => create('quarterFull'),
+      standAloneQuarterNumerical: () => create('standAloneQuarterNumerical'),
+      standAloneQuarterAbbreviated: () =>
+          create('standAloneQuarterAbbreviated'),
+      standAloneQuarterFull: () => create('standAloneQuarterFull'),
+      monthNumerical: (isPadded) =>
+          create('monthNumerical', {'isPadded': literalBool(isPadded)}),
+      monthAbbreviated: () => create('monthAbbreviated'),
+      monthFull: () => create('monthFull'),
+      monthNarrow: () => create('monthNarrow'),
+      standAloneMonthNumerical: (isPadded) => create(
+        'standAloneMonthNumerical',
+        {'isPadded': literalBool(isPadded)},
+      ),
+      standAloneMonthAbbreviated: () => create('standAloneMonthAbbreviated'),
+      standAloneMonthFull: () => create('standAloneMonthFull'),
+      standAloneMonthNarrow: () => create('standAloneMonthNarrow'),
+      weekOfYear: (isPadded) =>
+          create('weekOfYear', {'isPadded': literalBool(isPadded)}),
+      weekOfMonth: () => create('weekOfMonth'),
+      dayOfMonth: (isPadded) =>
+          create('dayOfMonth', {'isPadded': literalBool(isPadded)}),
+      dayOfYear: (padding) =>
+          create('dayOfYear', {'padding': padding.toExpression()}),
+      dayOfWeekInMonth: () => create('dayOfWeekInMonth'),
+      modifiedJulianDay: () => create('modifiedJulianDay'),
+      dayOfWeekShortDay: () => create('dayOfWeekShortDay'),
+      dayOfWeekFull: () => create('dayOfWeekFull'),
+      dayOfWeekNarrow: () => create('dayOfWeekNarrow'),
+      dayOfWeekShort: () => create('dayOfWeekShort'),
+      localDayOfWeekNumeric: () => create('localDayOfWeekNumeric'),
+      standAloneLocalDayOfWeekShortDay: () =>
+          create('standAloneLocalDayOfWeekShortDay'),
+      standAloneLocalDayOfWeekFull: () =>
+          create('standAloneLocalDayOfWeekFull'),
+      standAloneLocalDayOfWeekNarrow: () =>
+          create('standAloneLocalDayOfWeekNarrow'),
+      standAloneLocalDayOfWeekShort: () =>
+          create('standAloneLocalDayOfWeekShort'),
+      period: () => create('period'),
+      hour12: (isPadded) =>
+          create('hour12', {'isPadded': literalBool(isPadded)}),
+      hour24: (isPadded) =>
+          create('hour24', {'isPadded': literalBool(isPadded)}),
+      hour12ZeroBased: (isPadded) =>
+          create('hour12ZeroBased', {'isPadded': literalBool(isPadded)}),
+      hour24OneBased: (isPadded) =>
+          create('hour24OneBased', {'isPadded': literalBool(isPadded)}),
+      minute: (isPadded) =>
+          create('minute', {'isPadded': literalBool(isPadded)}),
+      second: (isPadded) =>
+          create('second', {'isPadded': literalBool(isPadded)}),
+      fractionalSecond: (digits) =>
+          create('fractionalSecond', {'digits': literalNum(digits)}),
+      millisecondsInDay: (digits) =>
+          create('millisecondsInDay', {'digits': literalNum(digits)}),
+      zoneSpecificNonLocation: (length) =>
+          create('zoneSpecificNonLocation', {'length': length.toExpression()}),
+      zoneLocalizedGmt: (length) =>
+          create('zoneLocalizedGmt', {'length': length.toExpression()}),
+      zoneGenericNonLocation: (length) =>
+          create('zoneGenericNonLocation', {'length': length.toExpression()}),
+      zoneID: (length) => create('zoneID', {'length': length.toExpression()}),
+      zoneExemplarCity: () => create('zoneExemplarCity'),
+      zoneGenericLocationFormat: () => create('zoneGenericLocationFormat'),
+      zoneIso8601: (style, useZForZeroOffset) => create(
+        'zoneIso8601',
+        {
+          'style': style.toExpression(),
+          'useZForZeroOffset': literalBool(useZForZeroOffset),
+        },
+      ),
+      unknown: (character, length) => create('unknown', {
+        'character': literalString(character),
+        'length': literalNum(length),
+      }),
+    );
+  }
 }
 
-enum DayOfYearPadding { one, two, three }
+enum DayOfYearPadding implements ToExpression {
+  one,
+  two,
+  three;
 
-enum ZoneFieldLength { short, long }
+  @override
+  Expression toExpression() => referCldr('DayOfYearPadding').property(name);
+}
 
-enum ZoneFieldIso8601Style {
+enum ZoneFieldLength implements ToExpression {
+  short,
+  long;
+
+  @override
+  Expression toExpression() => referCldr('ZoneFieldLength').property(name);
+}
+
+enum ZoneFieldIso8601Style implements ToExpression {
   /// The ISO 8601 basic format with hours field and optional minutes field,
   /// e.g., “-08” or “+0530”.
   ///
@@ -1043,13 +1319,19 @@ enum ZoneFieldIso8601Style {
   ///
   /// Unicode Shorthand: `XXXXX`, `ZZZZZ` (with “Z” for zero offset), `xxxxx`
   /// (without “Z” for zero offset)
-  extendedWithHoursMinutesOptionalSeconds,
+  extendedWithHoursMinutesOptionalSeconds;
+
+  @override
+  Expression toExpression() =>
+      referCldr('ZoneFieldIso8601Style').property(name);
 }
 
 // Common
 
 @freezed
-class Context<T extends Object> with _$Context<T> {
+class Context<T extends ToExpression>
+    with _$Context<T>
+    implements ToExpression {
   const factory Context({
     /// The form used within a date format string (such as "Saturday, November
     /// 12th").
@@ -1057,7 +1339,7 @@ class Context<T extends Object> with _$Context<T> {
 
     /// The form used independently, such as in calendar headers.
     required T standAlone,
-  }) = _Context;
+  }) = _Context<T>;
   const Context._();
 
   factory Context.fromXml(
@@ -1074,16 +1356,27 @@ class Context<T extends Object> with _$Context<T> {
       standAlone: formats['stand-alone']!,
     );
   }
+
+  @override
+  Expression toExpression() {
+    return referCldr('Context')(
+      [],
+      {
+        'format': format.toExpression(),
+        'standAlone': standAlone.toExpression(),
+      },
+    );
+  }
 }
 
 @freezed
-class Widths<T extends Object> with _$Widths<T> {
+class Widths<T extends Object> with _$Widths<T> implements ToExpression {
   const factory Widths({
     /// The default.
     required T wide,
     required T abbreviated,
     required T narrow,
-  }) = _Widths;
+  }) = _Widths<T>;
   const Widths._();
 
   factory Widths.fromXml(
@@ -1099,6 +1392,18 @@ class Widths<T extends Object> with _$Widths<T> {
       wide: values['wide']!,
       abbreviated: values['abbreviated']!,
       narrow: values['narrow']!,
+    );
+  }
+
+  @override
+  Expression toExpression() {
+    return referCldr('Widths')(
+      [],
+      {
+        'wide': ToExpression.convert(wide),
+        'abbreviated': ToExpression.convert(abbreviated),
+        'narrow': ToExpression.convert(narrow),
+      },
     );
   }
 }

@@ -7,7 +7,9 @@ environment:
   sdk: ^3.4.0
 
 dependencies:
+  code_builder: ^4.10.0
   collection: ^1.18.0
+  dart_style: ^2.3.6
   dartx: ^1.2.0
   freezed_annotation: ^2.4.1
   meta: ^1.3.0

@@ -7,6 +7,8 @@ environment:
   sdk: ^3.4.0
 
 dependencies:
+  cldr:
+    path: ../cldr
   clock: ^1.1.1
   dartx: ^1.1.0
   fixed: '>=2.0.0 <5.0.0'
