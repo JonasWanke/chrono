@@ -7,25 +7,22 @@ import 'common.dart';
 
 part 'dates.freezed.dart';
 
-@immutable
-class Dates {
-  const Dates({required this.calendars});
+@freezed
+class Dates with _$Dates {
+  const factory Dates({required Calendars calendars}) = _Dates;
+  const Dates._();
 
   factory Dates.fromXml(XmlElement element) {
     return Dates(
       calendars: Calendars.fromXml(element.getElement('calendars')!),
     );
   }
-
-  final Calendars calendars;
-
-  @override
-  String toString() => 'Dates(calendars: $calendars)';
 }
 
-@immutable
-class Calendars {
-  const Calendars({required this.gregorian});
+@freezed
+class Calendars with _$Calendars {
+  const factory Calendars({required Calendar gregorian}) = _Calendars;
+  const Calendars._();
 
   factory Calendars.fromXml(XmlElement element) {
     final calendars = element
@@ -35,22 +32,18 @@ class Calendars {
       gregorian: Calendar.fromXml(calendars['gregorian']!),
     );
   }
-
-  final Calendar gregorian;
-
-  @override
-  String toString() => 'Calendars(gregorian: $gregorian)';
 }
 
-@immutable
-class Calendar {
-  const Calendar({
-    required this.months,
-    required this.days,
-    required this.eras,
-    required this.dateFormats,
-    required this.timeFormats,
-  });
+@freezed
+class Calendar with _$Calendar {
+  const factory Calendar({
+    required Context<Widths<Map<int, Value>>> months,
+    required Context<DayWidths> days,
+    required Eras eras,
+    required DateTimeFormats dateFormats,
+    required DateTimeFormats timeFormats,
+  }) = _Calendar;
+  const Calendar._();
 
   factory Calendar.fromXml(XmlElement element) {
     return Calendar(
@@ -82,27 +75,21 @@ class Calendar {
       ),
     );
   }
-
-  final Context<Widths<Map<int, Value>>> months;
-  final Context<DayWidths> days;
-  final Eras eras;
-  final DateTimeFormats dateFormats;
-  final DateTimeFormats timeFormats;
-
-  @override
-  String toString() {
-    return 'Calendar(months: $months, days: $days, eras: $eras, '
-        'dateFormats: $dateFormats, timeFormats: $timeFormats)';
-  }
 }
 
-class DayWidths extends Widths<Days> {
-  const DayWidths({
-    required super.wide,
-    required super.abbreviated,
-    required this.short,
-    required super.narrow,
-  });
+@freezed
+class DayWidths with _$DayWidths {
+  const factory DayWidths({
+    required Days wide,
+    required Days abbreviated,
+
+    /// Ideally between the abbreviated and narrow widths, but must be no longer
+    /// than abbreviated and no shorter than narrow (if short day names are not
+    /// explicitly specified, abbreviated day names are used instead).
+    required Days short,
+    required Days narrow,
+  }) = _DayWidths;
+  const DayWidths._();
 
   factory DayWidths.fromXml(XmlElement element) {
     final days = element
@@ -116,30 +103,20 @@ class DayWidths extends Widths<Days> {
       narrow: days['narrow']!,
     );
   }
-
-  /// Ideally between the abbreviated and narrow widths, but must be no longer
-  /// than abbreviated and no shorter than narrow (if short day names are not
-  /// explicitly specified, abbreviated day names are used instead).
-  final Days short;
-
-  @override
-  String toString() {
-    return 'DayWidths(wide: $wide, abbreviated: $abbreviated, short: $short, '
-        'narrow: $narrow)';
-  }
 }
 
-@immutable
-class Days {
-  const Days({
-    required this.sunday,
-    required this.monday,
-    required this.tuesday,
-    required this.wednesday,
-    required this.thursday,
-    required this.friday,
-    required this.saturday,
-  });
+@freezed
+class Days with _$Days {
+  const factory Days({
+    required Value sunday,
+    required Value monday,
+    required Value tuesday,
+    required Value wednesday,
+    required Value thursday,
+    required Value friday,
+    required Value saturday,
+  }) = _Days;
+  const Days._();
 
   factory Days.fromXml(XmlElement element) {
     final days = element
@@ -156,26 +133,12 @@ class Days {
       saturday: days['sat']!,
     );
   }
-
-  final Value sunday;
-  final Value monday;
-  final Value tuesday;
-  final Value wednesday;
-  final Value thursday;
-  final Value friday;
-  final Value saturday;
-
-  @override
-  String toString() {
-    return 'Days(sunday: $sunday, monday: $monday, tuesday: $tuesday, '
-        'wednesday: $wednesday, thursday: $thursday, friday: $friday, '
-        'saturday: $saturday)';
-  }
 }
 
-@immutable
-class Eras {
-  const Eras({required this.eras});
+@freezed
+class Eras with _$Eras {
+  const factory Eras({required Map<int, Era> eras}) = _Eras;
+  const Eras._();
 
   factory Eras.fromXml(XmlElement element) {
     final eraNames = element.getElement('eraNames')!.findElements('era');
@@ -201,38 +164,27 @@ class Eras {
     });
     return Eras(eras: eras);
   }
-
-  final Map<int, Era> eras;
-
-  @override
-  String toString() => 'Eras(eras: $eras)';
 }
 
-@immutable
-class Era {
-  const Era({
-    required this.name,
-    required this.abbreviation,
-    required this.narrow,
-  });
-
-  final ValueWithVariant name;
-  final ValueWithVariant abbreviation;
-  final ValueWithVariant narrow;
-
-  @override
-  String toString() =>
-      'Era(name: $name, abbreviation: $abbreviation, narrow: $narrow)';
+@freezed
+class Era with _$Era {
+  const factory Era({
+    required ValueWithVariant name,
+    required ValueWithVariant abbreviation,
+    required ValueWithVariant narrow,
+  }) = _Era;
+  const Era._();
 }
 
-@immutable
-class DateTimeFormats {
-  const DateTimeFormats({
-    required this.full,
-    required this.long,
-    required this.medium,
-    required this.short,
-  });
+@freezed
+class DateTimeFormats with _$DateTimeFormats {
+  const factory DateTimeFormats({
+    required DateTimeFormat full,
+    required DateTimeFormat long,
+    required DateTimeFormat medium,
+    required DateTimeFormat short,
+  }) = _DateTimeFormats;
+  const DateTimeFormats._();
 
   factory DateTimeFormats.fromXml(XmlElement element, String nodeName) {
     final lengths = element
@@ -248,22 +200,15 @@ class DateTimeFormats {
       short: lengths['short']!,
     );
   }
-
-  final DateTimeFormat full;
-  final DateTimeFormat long;
-  final DateTimeFormat medium;
-  final DateTimeFormat short;
-
-  @override
-  String toString() {
-    return 'DateTimeFormats(full: $full, long: $long, medium: $medium, '
-        'short: $short)';
-  }
 }
 
-@immutable
-class DateTimeFormat {
-  const DateTimeFormat({required this.pattern, required this.displayName});
+@freezed
+class DateTimeFormat with _$DateTimeFormat {
+  const factory DateTimeFormat({
+    required Value<List<DatePatternPart>> pattern,
+    required String? displayName,
+  }) = _DateTimeFormat;
+  const DateTimeFormat._();
 
   factory DateTimeFormat.fromXml(XmlElement element) {
     return DateTimeFormat(
@@ -274,13 +219,6 @@ class DateTimeFormat {
       displayName: element.getElement('displayName')?.innerText,
     );
   }
-
-  final Value<List<DatePatternPart>> pattern;
-  final String? displayName;
-
-  @override
-  String toString() =>
-      'DateTimeFormat(pattern: $pattern, displayName: $displayName)';
 }
 
 @freezed
@@ -977,9 +915,17 @@ enum ZoneFieldIso8601Style {
 
 // Common
 
-@immutable
-class Context<T extends Object> {
-  const Context({required this.format, required this.standAlone});
+@freezed
+class Context<T extends Object> with _$Context<T> {
+  const factory Context({
+    /// The form used within a date format string (such as "Saturday, November
+    /// 12th").
+    required T format,
+
+    /// The form used independently, such as in calendar headers.
+    required T standAlone,
+  }) = _Context;
+  const Context._();
 
   factory Context.fromXml(
     XmlElement element,
@@ -995,25 +941,17 @@ class Context<T extends Object> {
       standAlone: formats['stand-alone']!,
     );
   }
-
-  /// The form used within a date format string (such as "Saturday, November
-  /// 12th").
-  final T format;
-
-  /// The form used independently, such as in calendar headers.
-  final T standAlone;
-
-  @override
-  String toString() => 'Context(format: $format, standAlone: $standAlone)';
 }
 
-@immutable
-class Widths<T extends Object> {
-  const Widths({
-    required this.wide,
-    required this.abbreviated,
-    required this.narrow,
-  });
+@freezed
+class Widths<T extends Object> with _$Widths<T> {
+  const factory Widths({
+    /// The default.
+    required T wide,
+    required T abbreviated,
+    required T narrow,
+  }) = _Widths;
+  const Widths._();
 
   factory Widths.fromXml(
     XmlElement element,
@@ -1030,13 +968,4 @@ class Widths<T extends Object> {
       narrow: values['narrow']!,
     );
   }
-
-  /// The default.
-  final T wide;
-  final T abbreviated;
-  final T narrow;
-
-  @override
-  String toString() =>
-      'Widths(wide: $wide, abbreviated: $abbreviated, narrow: $narrow)';
 }

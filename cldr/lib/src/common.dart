@@ -1,9 +1,13 @@
-import 'package:meta/meta.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:xml/xml.dart';
 
-@immutable
-class ValueWithVariant {
-  const ValueWithVariant(this.value, [this.variant]);
+part 'common.freezed.dart';
+
+@freezed
+class ValueWithVariant with _$ValueWithVariant {
+  const factory ValueWithVariant(Value value, [Value? variant]) =
+      _ValueWithVariant;
+  const ValueWithVariant._();
 
   factory ValueWithVariant.fromXml(List<XmlElement> elements) {
     if (elements.isEmpty) throw const FormatException('No elements found');
@@ -38,17 +42,15 @@ class ValueWithVariant {
     return ValueWithVariant(normal, alt);
   }
 
-  final Value value;
-  final Value? variant;
-
   @override
   String toString() =>
       [value, if (variant != null) '(Variant: $variant)'].join(' ');
 }
 
-@immutable
-class Value<T extends Object> {
-  const Value(this.value);
+@freezed
+class Value<T extends Object> with _$Value<T> {
+  const factory Value(T? value) = _Value;
+  const Value._();
 
   factory Value.customFromXml(
     XmlElement element,
@@ -60,7 +62,6 @@ class Value<T extends Object> {
   static Value<String> fromXml(XmlElement element) =>
       Value.customFromXml(element, (it) => it);
 
-  final T? value;
   bool get isInherited => value == null;
 
   @override

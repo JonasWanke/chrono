@@ -1,24 +1,22 @@
 import 'dart:io';
 
-import 'package:meta/meta.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:xml/xml.dart';
 
 import 'src/dates.dart';
 
-@immutable
-class CommonLocaleData {
-  const CommonLocaleData({required this.dates});
+part 'cldr.freezed.dart';
+
+@freezed
+class CommonLocaleData with _$CommonLocaleData {
+  const factory CommonLocaleData({required Dates dates}) = _CommonLocaleData;
+  const CommonLocaleData._();
 
   factory CommonLocaleData.fromXml(XmlElement element) {
     return CommonLocaleData(
       dates: Dates.fromXml(element.getElement('dates')!),
     );
   }
-
-  final Dates dates;
-
-  @override
-  String toString() => 'CommonLocaleData(dates: $dates)';
 }
 
 Future<void> main() async {
