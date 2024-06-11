@@ -580,21 +580,21 @@ sealed class DateOrTimePatternPart
             ('Q', 3) => const DateTimeField.quarterAbbreviated(),
             ('Q', 4) => const DateTimeField.quarterFull(),
             ('q', >= 1 && <= 2) =>
-              const DateTimeField.standAloneQuarterNumerical(),
-            ('q', 3) => const DateTimeField.standAloneQuarterAbbreviated(),
-            ('q', 4) => const DateTimeField.standAloneQuarterFull(),
+              const DateTimeField.standaloneQuarterNumerical(),
+            ('q', 3) => const DateTimeField.standaloneQuarterAbbreviated(),
+            ('q', 4) => const DateTimeField.standaloneQuarterFull(),
             ('M', 1) => const DateTimeField.monthNumerical(isPadded: false),
             ('M', 2) => const DateTimeField.monthNumerical(isPadded: true),
             ('M', 3) => const DateTimeField.monthAbbreviated(),
             ('M', 4) => const DateTimeField.monthFull(),
             ('M', 5) => const DateTimeField.monthNarrow(),
             ('L', 1) =>
-              const DateTimeField.standAloneMonthNumerical(isPadded: false),
+              const DateTimeField.standaloneMonthNumerical(isPadded: false),
             ('L', 2) =>
-              const DateTimeField.standAloneMonthNumerical(isPadded: true),
-            ('L', 3) => const DateTimeField.standAloneMonthAbbreviated(),
-            ('L', 4) => const DateTimeField.standAloneMonthFull(),
-            ('L', 5) => const DateTimeField.standAloneMonthNarrow(),
+              const DateTimeField.standaloneMonthNumerical(isPadded: true),
+            ('L', 3) => const DateTimeField.standaloneMonthAbbreviated(),
+            ('L', 4) => const DateTimeField.standaloneMonthFull(),
+            ('L', 5) => const DateTimeField.standaloneMonthNarrow(),
             ('w', 1) => const DateTimeField.weekOfYear(isPadded: false),
             ('w', 2) => const DateTimeField.weekOfYear(isPadded: true),
             ('W', 1) => const DateTimeField.weekOfMonth(),
@@ -617,10 +617,10 @@ sealed class DateOrTimePatternPart
             ('e', >= 1 && <= 3) ||
             ('c', 1) =>
               const DateTimeField.localDayOfWeekNumeric(),
-            ('c', 3) => const DateTimeField.standAloneLocalDayOfWeekShortDay(),
-            ('c', 4) => const DateTimeField.standAloneLocalDayOfWeekFull(),
-            ('c', 5) => const DateTimeField.standAloneLocalDayOfWeekNarrow(),
-            ('c', 6) => const DateTimeField.standAloneLocalDayOfWeekShort(),
+            ('c', 3) => const DateTimeField.standaloneLocalDayOfWeekShortDay(),
+            ('c', 4) => const DateTimeField.standaloneLocalDayOfWeekFull(),
+            ('c', 5) => const DateTimeField.standaloneLocalDayOfWeekNarrow(),
+            ('c', 6) => const DateTimeField.standaloneLocalDayOfWeekShort(),
             ('a', 1) => const DateTimeField.period(),
             ('h', 1) => const DateTimeField.hour12(isPadded: false),
             ('h', 2) => const DateTimeField.hour12(isPadded: true),
@@ -861,20 +861,20 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
   /// Stand-Alone Quarter (numerical), e.g., “02”.
   ///
   /// Unicode Shorthand: `q`, `qq`
-  const factory DateTimeField.standAloneQuarterNumerical() =
-      _DateTimeFieldStandAloneQuarterNumerical;
+  const factory DateTimeField.standaloneQuarterNumerical() =
+      _DateTimeFieldStandaloneQuarterNumerical;
 
   /// Stand-Alone Quarter (abbreviated), e.g., “Q2”.
   ///
   /// Unicode Shorthand: `qqq`
-  const factory DateTimeField.standAloneQuarterAbbreviated() =
-      _DateTimeFieldStandAloneQuarterAbbreviated;
+  const factory DateTimeField.standaloneQuarterAbbreviated() =
+      _DateTimeFieldStandaloneQuarterAbbreviated;
 
   /// Stand-Alone Quarter (full name), e.g., “2nd quarter”.
   ///
   /// Unicode Shorthand: `qqqq`
-  const factory DateTimeField.standAloneQuarterFull() =
-      _DateTimeFieldStandAloneQuarterFull;
+  const factory DateTimeField.standaloneQuarterFull() =
+      _DateTimeFieldStandaloneQuarterFull;
 
   /// Month (numerical), e.g., “0” (not padded) or “09” (padded).
   ///
@@ -901,27 +901,27 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
   /// Stand-Alone Month (numerical), e.g., “9” (not padded) or “09” (padded).
   ///
   /// Unicode Shorthand: `L` (not padded), `LL` (padded)
-  const factory DateTimeField.standAloneMonthNumerical({
+  const factory DateTimeField.standaloneMonthNumerical({
     required bool isPadded,
-  }) = _DateTimeFieldStandAloneMonthNumerical;
+  }) = _DateTimeFieldStandaloneMonthNumerical;
 
   /// Stand-Alone Month (abbreviated), e.g., “Sept”.
   ///
   /// Unicode Shorthand: `LLL`
-  const factory DateTimeField.standAloneMonthAbbreviated() =
-      _DateTimeFieldStandAloneMonthAbbreviated;
+  const factory DateTimeField.standaloneMonthAbbreviated() =
+      _DateTimeFieldStandaloneMonthAbbreviated;
 
   /// Stand-Alone Month (full), e.g., September”.
   ///
   /// Unicode Shorthand: `LLLL`
-  const factory DateTimeField.standAloneMonthFull() =
-      _DateTimeFieldStandAloneMonthFull;
+  const factory DateTimeField.standaloneMonthFull() =
+      _DateTimeFieldStandaloneMonthFull;
 
   /// Stand-Alone Month (narrow), e.g., “S”.
   ///
   /// Unicode Shorthand: `LLLLL`
-  const factory DateTimeField.standAloneMonthNarrow() =
-      _DateTimeFieldStandAloneMonthNarrow;
+  const factory DateTimeField.standaloneMonthNarrow() =
+      _DateTimeFieldStandaloneMonthNarrow;
 
   /// Week of Year, e.g., “27”.
   ///
@@ -997,26 +997,26 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
   /// Stand-Alone Local Day of Week (short day), e.g., “Tues”.
   ///
   /// Unicode Shorthand: `ccc`
-  const factory DateTimeField.standAloneLocalDayOfWeekShortDay() =
-      _DateTimeFieldStandAloneLocalDayOfWeekShortDay;
+  const factory DateTimeField.standaloneLocalDayOfWeekShortDay() =
+      _DateTimeFieldStandaloneLocalDayOfWeekShortDay;
 
   /// Stand-Alone Local Day of Week (full name), e.g., “Tuesday”.
   ///
   /// Unicode Shorthand: `cccc`
-  const factory DateTimeField.standAloneLocalDayOfWeekFull() =
-      _DateTimeFieldStandAloneLocalDayOfWeekFull;
+  const factory DateTimeField.standaloneLocalDayOfWeekFull() =
+      _DateTimeFieldStandaloneLocalDayOfWeekFull;
 
   /// Stand-Alone Local Day of Week (narrow name), e.g., “T”.
   ///
   /// Unicode Shorthand: `ccccc`
-  const factory DateTimeField.standAloneLocalDayOfWeekNarrow() =
-      _DateTimeFieldStandAloneLocalDayOfWeekNarrow;
+  const factory DateTimeField.standaloneLocalDayOfWeekNarrow() =
+      _DateTimeFieldStandaloneLocalDayOfWeekNarrow;
 
   /// Stand-Alone Local Day of Week (short name), e.g., “Tu”.
   ///
   /// Unicode Shorthand: `cccccc`
-  const factory DateTimeField.standAloneLocalDayOfWeekShort() =
-      _DateTimeFieldStandAloneLocalDayOfWeekShort;
+  const factory DateTimeField.standaloneLocalDayOfWeekShort() =
+      _DateTimeFieldStandaloneLocalDayOfWeekShort;
 
   /// Period (AM or PM), e.g., “AM”.
   ///
@@ -1192,22 +1192,22 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
           create('quarterNumerical', {'isPadded': literalBool(isPadded)}),
       quarterAbbreviated: () => create('quarterAbbreviated'),
       quarterFull: () => create('quarterFull'),
-      standAloneQuarterNumerical: () => create('standAloneQuarterNumerical'),
-      standAloneQuarterAbbreviated: () =>
-          create('standAloneQuarterAbbreviated'),
-      standAloneQuarterFull: () => create('standAloneQuarterFull'),
+      standaloneQuarterNumerical: () => create('standaloneQuarterNumerical'),
+      standaloneQuarterAbbreviated: () =>
+          create('standaloneQuarterAbbreviated'),
+      standaloneQuarterFull: () => create('standaloneQuarterFull'),
       monthNumerical: (isPadded) =>
           create('monthNumerical', {'isPadded': literalBool(isPadded)}),
       monthAbbreviated: () => create('monthAbbreviated'),
       monthFull: () => create('monthFull'),
       monthNarrow: () => create('monthNarrow'),
-      standAloneMonthNumerical: (isPadded) => create(
-        'standAloneMonthNumerical',
+      standaloneMonthNumerical: (isPadded) => create(
+        'standaloneMonthNumerical',
         {'isPadded': literalBool(isPadded)},
       ),
-      standAloneMonthAbbreviated: () => create('standAloneMonthAbbreviated'),
-      standAloneMonthFull: () => create('standAloneMonthFull'),
-      standAloneMonthNarrow: () => create('standAloneMonthNarrow'),
+      standaloneMonthAbbreviated: () => create('standaloneMonthAbbreviated'),
+      standaloneMonthFull: () => create('standaloneMonthFull'),
+      standaloneMonthNarrow: () => create('standaloneMonthNarrow'),
       weekOfYear: (isPadded) =>
           create('weekOfYear', {'isPadded': literalBool(isPadded)}),
       weekOfMonth: () => create('weekOfMonth'),
@@ -1222,14 +1222,14 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
       dayOfWeekNarrow: () => create('dayOfWeekNarrow'),
       dayOfWeekShort: () => create('dayOfWeekShort'),
       localDayOfWeekNumeric: () => create('localDayOfWeekNumeric'),
-      standAloneLocalDayOfWeekShortDay: () =>
-          create('standAloneLocalDayOfWeekShortDay'),
-      standAloneLocalDayOfWeekFull: () =>
-          create('standAloneLocalDayOfWeekFull'),
-      standAloneLocalDayOfWeekNarrow: () =>
-          create('standAloneLocalDayOfWeekNarrow'),
-      standAloneLocalDayOfWeekShort: () =>
-          create('standAloneLocalDayOfWeekShort'),
+      standaloneLocalDayOfWeekShortDay: () =>
+          create('standaloneLocalDayOfWeekShortDay'),
+      standaloneLocalDayOfWeekFull: () =>
+          create('standaloneLocalDayOfWeekFull'),
+      standaloneLocalDayOfWeekNarrow: () =>
+          create('standaloneLocalDayOfWeekNarrow'),
+      standaloneLocalDayOfWeekShort: () =>
+          create('standaloneLocalDayOfWeekShort'),
       period: () => create('period'),
       hour12: (isPadded) =>
           create('hour12', {'isPadded': literalBool(isPadded)}),
@@ -1524,7 +1524,7 @@ class Context<T extends ToExpression>
     required T format,
 
     /// The form used independently, such as in calendar headers.
-    required T standAlone,
+    required T standalone,
   }) = _Context<T>;
   const Context._();
 
@@ -1539,7 +1539,7 @@ class Context<T extends ToExpression>
         .mapValues((it) => valueFromXml(it.value));
     return Context(
       format: formats['format']!,
-      standAlone: formats['stand-alone']!,
+      standalone: formats['stand-alone']!,
     );
   }
 
@@ -1549,7 +1549,7 @@ class Context<T extends ToExpression>
       [],
       {
         'format': format.toExpression(),
-        'standAlone': standAlone.toExpression(),
+        'standalone': standalone.toExpression(),
       },
     );
   }
