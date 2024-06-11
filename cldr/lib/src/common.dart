@@ -108,8 +108,9 @@ class ValueWithVariant<T extends Object>
 }
 
 @freezed
-class Value<T extends Object> with _$Value<T> implements ToExpression {
-  const factory Value(T? value) = _Value<T>;
+sealed class Value<T extends Object> with _$Value<T> implements ToExpression {
+  const factory Value(T value) = _Value<T>;
+  const factory Value.inherited() = _ValueInherited<T>;
   const Value._();
 
   factory Value.customFromXml(
@@ -117,19 +118,22 @@ class Value<T extends Object> with _$Value<T> implements ToExpression {
     T Function(String) fromString,
   ) {
     final text = element.innerText;
-    return Value(text == '↑↑↑' ? null : fromString(text));
+    return text == '↑↑↑' ? const Value.inherited() : Value(fromString(text));
   }
   static Value<String> fromXml(XmlElement element) =>
       Value.customFromXml(element, (it) => it);
 
-  bool get isInherited => value == null;
+  @override
+  Expression toExpression() {
+    return when(
+      (it) => referCldr('Value')([ToExpression.convert(it)]),
+      inherited: () => referCldr('Value').newInstanceNamed('inherited', []),
+    );
+  }
 
   @override
-  Expression toExpression() =>
-      referCldr('Value')([ToExpression.convert(value)]);
-
-  @override
-  String toString() => isInherited ? '<inherited>' : value!.toString();
+  String toString() =>
+      when((it) => it.toString(), inherited: () => '<inherited>');
 }
 
 abstract interface class ToExpression {
