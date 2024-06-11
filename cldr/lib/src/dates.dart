@@ -1,6 +1,6 @@
 import 'package:code_builder/code_builder.dart';
 import 'package:collection/collection.dart';
-import 'package:dartx/dartx.dart' hide IterableLastOrNull;
+import 'package:dartx/dartx.dart' hide IterableFirstOrNull, IterableLastOrNull;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:xml/xml.dart';
 
@@ -12,19 +12,28 @@ part 'dates.freezed.dart';
 class Dates with _$Dates implements ToExpression {
   const factory Dates({
     required Calendars calendars,
-    // TODO(JonasWanke): `<fields>`, `<timeZoneNames>`
+    required Fields fields,
+    // TODO(JonasWanke): `<timeZoneNames>`
   }) = _Dates;
   const Dates._();
 
   factory Dates.fromXml(XmlElement element) {
     return Dates(
       calendars: Calendars.fromXml(element.getElement('calendars')!),
+      fields: Fields.fromXml(element.getElement('fields')!),
     );
   }
 
   @override
-  Expression toExpression() =>
-      referCldr('Dates')([], {'calendars': calendars.toExpression()});
+  Expression toExpression() {
+    return referCldr('Dates')(
+      [],
+      {
+        'calendars': calendars.toExpression(),
+        'fields': fields.toExpression(),
+      },
+    );
+  }
 }
 
 @freezed
@@ -1324,6 +1333,183 @@ enum ZoneFieldIso8601Style implements ToExpression {
   @override
   Expression toExpression() =>
       referCldr('ZoneFieldIso8601Style').property(name);
+}
+
+@freezed
+class Fields with _$Fields implements ToExpression {
+  const factory Fields({
+    required FieldWidths era,
+    required FieldWidths year,
+    required FieldWidths quarter,
+    required FieldWidths month,
+    required FieldWidths week,
+    required FieldWidths weekOfMonth,
+    required FieldWidths day,
+    required FieldWidths dayOfYear,
+    required FieldWidths weekday,
+    required FieldWidths weekdayOfMonth,
+    required FieldWidths sun,
+    required FieldWidths mon,
+    required FieldWidths tue,
+    required FieldWidths wed,
+    required FieldWidths thu,
+    required FieldWidths fri,
+    required FieldWidths sat,
+    required FieldWidths dayperiod,
+    required FieldWidths hour,
+    required FieldWidths minute,
+    required FieldWidths second,
+    required FieldWidths zone,
+  }) = _Fields;
+  const Fields._();
+
+  factory Fields.fromXml(XmlElement element) {
+    final fields = element
+        .findElements('field')
+        .associateBy((it) => it.getAttribute('type')!);
+    FieldWidths fieldFromXml(String type) {
+      return FieldWidths(
+        full: Field.fromXml(fields[type]!),
+        short: Field.fromXml(fields['$type-short']!),
+        narrow: Field.fromXml(fields['$type-narrow']!),
+      );
+    }
+
+    return Fields(
+      era: fieldFromXml('era'),
+      year: fieldFromXml('year'),
+      quarter: fieldFromXml('quarter'),
+      month: fieldFromXml('month'),
+      week: fieldFromXml('week'),
+      weekOfMonth: fieldFromXml('weekOfMonth'),
+      day: fieldFromXml('day'),
+      dayOfYear: fieldFromXml('dayOfYear'),
+      weekday: fieldFromXml('weekday'),
+      weekdayOfMonth: fieldFromXml('weekdayOfMonth'),
+      sun: fieldFromXml('sun'),
+      mon: fieldFromXml('mon'),
+      tue: fieldFromXml('tue'),
+      wed: fieldFromXml('wed'),
+      thu: fieldFromXml('thu'),
+      fri: fieldFromXml('fri'),
+      sat: fieldFromXml('sat'),
+      dayperiod: fieldFromXml('dayperiod'),
+      hour: fieldFromXml('hour'),
+      minute: fieldFromXml('minute'),
+      second: fieldFromXml('second'),
+      zone: fieldFromXml('zone'),
+    );
+  }
+
+  @override
+  Expression toExpression() {
+    return referCldr('Fields')(
+      [],
+      {
+        'era': era.toExpression(),
+        'year': year.toExpression(),
+        'quarter': quarter.toExpression(),
+        'month': month.toExpression(),
+        'week': week.toExpression(),
+        'weekOfMonth': weekOfMonth.toExpression(),
+        'day': day.toExpression(),
+        'dayOfYear': dayOfYear.toExpression(),
+        'weekday': weekday.toExpression(),
+        'weekdayOfMonth': weekdayOfMonth.toExpression(),
+        'sun': sun.toExpression(),
+        'mon': mon.toExpression(),
+        'tue': tue.toExpression(),
+        'wed': wed.toExpression(),
+        'thu': thu.toExpression(),
+        'fri': fri.toExpression(),
+        'sat': sat.toExpression(),
+        'dayperiod': dayperiod.toExpression(),
+        'hour': hour.toExpression(),
+        'minute': minute.toExpression(),
+        'second': second.toExpression(),
+        'zone': zone.toExpression(),
+      },
+    );
+  }
+}
+
+@freezed
+class FieldWidths with _$FieldWidths implements ToExpression {
+  const factory FieldWidths({
+    required Field full,
+    required Field short,
+    required Field narrow,
+  }) = _FieldWidths;
+  const FieldWidths._();
+
+  @override
+  Expression toExpression() {
+    return referCldr('FieldWidths')(
+      [],
+      {
+        'full': full.toExpression(),
+        'short': short.toExpression(),
+        'narrow': narrow.toExpression(),
+      },
+    );
+  }
+}
+
+@freezed
+class Field with _$Field implements ToExpression {
+  const factory Field({
+    required Value<String>? displayName,
+    required Map<int, Value<String>> relative,
+    // TODO(JonasWanke): parse placeholder position
+    required Plural<Value<String>>? relativeTimePast,
+    required Plural<Value<String>>? relativeTimeFuture,
+  }) = _Field;
+  const Field._();
+
+  factory Field.fromXml(XmlElement element) {
+    final relative = element
+        .findElements('relative')
+        .associateBy((it) => int.parse(it.getAttribute('type')!))
+        .mapValues((it) => Value.fromXml(it.value));
+    final relativeTimePast = element
+        .findElements('relativeTime')
+        .where((it) => it.getAttribute('type') == 'past')
+        .map((it) => Plural.fromXml(it, 'relativeTimePattern', Value.fromXml))
+        .firstOrNull;
+    final relativeTimeFuture = element
+        .findElements('relativeTime')
+        .where((it) => it.getAttribute('type') == 'future')
+        .map((it) => Plural.fromXml(it, 'relativeTimePattern', Value.fromXml))
+        .firstOrNull;
+    return Field(
+      displayName: element.getElement('displayName')?.let(Value.fromXml),
+      relative: relative,
+      relativeTimePast: relativeTimePast,
+      relativeTimeFuture: relativeTimeFuture,
+    );
+  }
+
+  @override
+  Expression toExpression() {
+    return referCldr('Field')(
+      [],
+      {
+        'displayName':
+            displayName == null ? literalNull : displayName!.toExpression(),
+        'relative': literalMap(
+          relative.map(
+            (key, value) => MapEntry(literalNum(key), value.toExpression()),
+          ),
+        ),
+        'relativeTimePast': relativeTimePast == null
+            ? literalNull
+            : relativeTimePast!.toExpression(),
+        'relativeTimeFuture': relativeTimeFuture == null
+            ? literalNull
+            : relativeTimeFuture!.toExpression(),
+      },
+    );
+  }
 }
 
 // Common

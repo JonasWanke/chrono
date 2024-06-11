@@ -1,6 +1,7 @@
 import 'dart:io';
 
-import 'package:code_builder/code_builder.dart';
+import 'package:code_builder/code_builder.dart' as code_builder;
+import 'package:code_builder/code_builder.dart' hide Field;
 import 'package:dart_style/dart_style.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:xml/xml.dart';
@@ -8,7 +9,7 @@ import 'package:xml/xml.dart';
 import 'src/common.dart';
 import 'src/dates.dart';
 
-export 'src/common.dart' hide referCldr;
+export 'src/common.dart' hide LetExtension, referCldr;
 export 'src/dates.dart';
 
 part 'cldr.freezed.dart';
@@ -38,7 +39,7 @@ class CommonLocaleData with _$CommonLocaleData implements ToExpression {
         ..ignoreForFile
             .addAll(['require_trailing_commas', 'prefer-trailing-comma'])
         ..body.add(
-          Field(
+          code_builder.Field(
             (b) => b
               ..modifier = FieldModifier.constant
               ..name = localeName

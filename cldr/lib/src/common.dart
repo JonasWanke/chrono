@@ -1,8 +1,55 @@
 import 'package:code_builder/code_builder.dart';
+import 'package:dartx/dartx.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:xml/xml.dart';
 
 part 'common.freezed.dart';
+
+@freezed
+class Plural<T extends ToExpression> with _$Plural<T> implements ToExpression {
+  const factory Plural({
+    T? zero,
+    T? one,
+    T? two,
+    T? few,
+    T? many,
+    T? other,
+  }) = _Plural<T>;
+  const Plural._();
+
+  factory Plural.fromXml(
+    XmlElement element,
+    String elementName,
+    T Function(XmlElement) valueFromElement,
+  ) {
+    final elements = element
+        .findElements(elementName)
+        .associateBy((it) => it.getAttribute('count')!);
+    return Plural(
+      zero: elements['zero']?.let(valueFromElement),
+      one: elements['one']?.let(valueFromElement),
+      two: elements['two']?.let(valueFromElement),
+      few: elements['few']?.let(valueFromElement),
+      many: elements['many']?.let(valueFromElement),
+      other: elements['other']?.let(valueFromElement),
+    );
+  }
+
+  @override
+  Expression toExpression() {
+    return referCldr('Plural')(
+      [],
+      {
+        if (zero != null) 'zero': zero!.toExpression(),
+        if (one != null) 'one': one!.toExpression(),
+        if (two != null) 'two': two!.toExpression(),
+        if (few != null) 'few': few!.toExpression(),
+        if (many != null) 'many': many!.toExpression(),
+        if (other != null) 'other': other!.toExpression(),
+      },
+    );
+  }
+}
 
 @freezed
 class ValueWithVariant<T extends Object>
@@ -104,3 +151,8 @@ abstract interface class ToExpression {
 }
 
 Reference referCldr(String name) => refer(name, 'package:cldr/cldr.dart');
+
+/// https://github.com/JonasWanke/supernova/blob/c568672838f2982d0b04562f33b42f6bafa85f70/supernova/lib/src/scope_functions.dart
+extension LetExtension<T extends Object> on T {
+  R let<R>(R Function(T) block) => block(this);
+}
