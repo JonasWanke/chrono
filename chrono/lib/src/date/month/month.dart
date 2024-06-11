@@ -1,14 +1,19 @@
 import 'dart:core' as core;
 import 'dart:core';
 
+import 'package:cldr/cldr.dart' as cldr;
 import 'package:clock/clock.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:oxidized/oxidized.dart';
 
+import '../../formatting.dart';
 import '../../json.dart';
 import '../../utils.dart';
 import '../date.dart';
 import '../duration.dart';
 import 'month_day.dart';
+
+part 'month.freezed.dart';
 
 /// A month in the ISO 8601 calendar, e.g., April.
 enum Month
@@ -161,4 +166,58 @@ class MonthAsIntJsonConverter
 
   @override
   int toJson(Month object) => object.number;
+}
+
+class LocalizedMonthFormatter extends LocalizedFormatter<Month> {
+  const LocalizedMonthFormatter(super.localeData, this.style);
+
+  final MonthStyle style;
+
+  @override
+  String format(Month value) {
+    final months = localeData.dates.calendars.gregorian.months;
+    return style.when(
+      // TODO(JonasWanke): use localized numbers
+      numeric: (isPadded) => isPadded
+          ? value.number.toString().padLeft(2, '0')
+          : value.number.toString(),
+      format: (width) => switch (width) {
+        FieldWidth.narrow => months.format.narrow[value.number]!.unwrap(),
+        FieldWidth.abbreviated =>
+          months.format.abbreviated[value.number]!.unwrap(),
+        FieldWidth.wide => months.format.wide[value.number]!.unwrap(),
+      },
+      standalone: (width) => switch (width) {
+        FieldWidth.narrow => months.standalone.narrow[value.number]!.unwrap(),
+        FieldWidth.abbreviated =>
+          months.standalone.abbreviated[value.number]!.unwrap(),
+        FieldWidth.wide => months.standalone.wide[value.number]!.unwrap(),
+      },
+    );
+  }
+}
+
+extension<T extends Object> on cldr.Value<T> {
+  T unwrap() => whenOrNull((it) => it)!;
+}
+
+@freezed
+class MonthStyle with _$MonthStyle {
+  /// The month as a number, e.g., 1 for January.
+  ///
+  /// If [isPadded] is `true`, the number is padded to two digits with leading
+  /// zeros.
+  const factory MonthStyle.numeric({required bool isPadded}) =
+      _MonthStyleNumeric;
+
+  /// Format so that it can be used in a formatted date
+  const factory MonthStyle.format({required FieldWidth width}) =
+      _MonthStyleFormat;
+
+  /// The so that it can be used in a stand-alone context, e.g., in a calendar
+  /// header.
+  const factory MonthStyle.standalone({required FieldWidth width}) =
+      _MonthStyleStandAlone;
+
+  const MonthStyle._();
 }
