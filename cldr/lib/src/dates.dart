@@ -17,10 +17,10 @@ class Dates with _$Dates implements ToExpression {
   }) = _Dates;
   const Dates._();
 
-  factory Dates.fromXml(XmlElement element) {
+  factory Dates.fromXml(CldrXml xml, CldrPath path) {
     return Dates(
-      calendars: Calendars.fromXml(element.getElement('calendars')!),
-      fields: Fields.fromXml(element.getElement('fields')!),
+      calendars: Calendars.fromXml(xml, path.child('calendars')),
+      fields: Fields.fromXml(xml, path.child('fields')),
     );
   }
 
@@ -41,13 +41,15 @@ class Calendars with _$Calendars implements ToExpression {
   const factory Calendars({required Calendar gregorian}) = _Calendars;
   const Calendars._();
 
-  factory Calendars.fromXml(XmlElement element) {
-    final calendars = element
-        .findElements('calendar')
-        .associateBy((it) => it.getAttribute('type')!);
-    return Calendars(
-      gregorian: Calendar.fromXml(calendars['gregorian']!),
-    );
+  factory Calendars.fromXml(CldrXml xml, CldrPath path) {
+    Calendar resolve(String type) {
+      return Calendar.fromXml(
+        xml,
+        path.child('calendar', attributes: {'type': type}),
+      );
+    }
+
+    return Calendars(gregorian: resolve('gregorian'));
   }
 
   @override
@@ -58,48 +60,46 @@ class Calendars with _$Calendars implements ToExpression {
 @freezed
 class Calendar with _$Calendar implements ToExpression {
   const factory Calendar({
-    required Context<Widths<Map<int, Value<String>>>> months,
+    required Context<Widths<Map<int, String>>> months,
     required Context<DayWidths> days,
     // TODO(JonasWanke): `<quarters>`, `<dayPeriods>`
     required Eras eras,
-    required DateOrTimeFormats dateFormats,
-    required DateOrTimeFormats timeFormats,
+    required DateOrTimeFormats<DateOrTimeFormat> dateFormats,
+    required DateOrTimeFormats<DateOrTimeFormat> timeFormats,
     required DateTimeFormats dateTimeFormats,
   }) = _Calendar;
   const Calendar._();
 
-  factory Calendar.fromXml(XmlElement element) {
+  factory Calendar.fromXml(CldrXml xml, CldrPath path) {
     return Calendar(
       months: Context.fromXml(
-        element.getElement('months')!,
-        'monthContext',
-        (it) => Widths.fromXml(
-          it,
-          'monthWidth',
-          (it) => it
-              .findElements('month')
-              .associateBy((it) => int.parse(it.getAttribute('type')!))
-              .mapValues((it) => Value.fromXml(it.value)),
+        path.child('months').child('monthContext'),
+        (path) => Widths.fromXml(
+          path.child('monthWidth'),
+          (path) => 1.rangeTo(12).associateWith(
+                (number) => xml.resolveString(
+                  path.child('month', attributes: {'type': number.toString()}),
+                ),
+              ),
         ),
       ),
       days: Context.fromXml(
-        element.getElement('days')!,
-        'dayContext',
-        DayWidths.fromXml,
+        path.child('days').child('dayContext'),
+        (path) => DayWidths.fromXml(xml, path),
       ),
-      eras: Eras.fromXml(element.getElement('eras')!),
+      eras: Eras.fromXml(xml, path.child('eras')),
       dateFormats: DateOrTimeFormats.fromXml(
-        element.getElement('dateFormats')!,
+        path.child('dateFormats'),
         'dateFormat',
-        DateOrTimeFormat.fromXml,
+        (path) => DateOrTimeFormat.fromXml(xml, path),
       ),
       timeFormats: DateOrTimeFormats.fromXml(
-        element.getElement('timeFormats')!,
+        path.child('timeFormats'),
         'timeFormat',
-        DateOrTimeFormat.fromXml,
+        (path) => DateOrTimeFormat.fromXml(xml, path),
       ),
       dateTimeFormats:
-          DateTimeFormats.fromXml(element.getElement('dateTimeFormats')!),
+          DateTimeFormats.fromXml(xml, path.child('dateTimeFormats')),
     );
   }
 
@@ -133,16 +133,14 @@ class DayWidths with _$DayWidths implements ToExpression {
   }) = _DayWidths;
   const DayWidths._();
 
-  factory DayWidths.fromXml(XmlElement element) {
-    final days = element
-        .findElements('dayWidth')
-        .associateBy((it) => it.getAttribute('type')!)
-        .mapValues((it) => Days.fromXml(it.value));
+  factory DayWidths.fromXml(CldrXml xml, CldrPath path) {
+    Days resolve(String type) =>
+        Days.fromXml(xml, path.child('dayWidth', attributes: {'type': type}));
     return DayWidths(
-      wide: days['wide']!,
-      abbreviated: days['abbreviated']!,
-      short: days['short']!,
-      narrow: days['narrow']!,
+      wide: resolve('wide'),
+      abbreviated: resolve('abbreviated'),
+      short: resolve('short'),
+      narrow: resolve('narrow'),
     );
   }
 
@@ -163,29 +161,27 @@ class DayWidths with _$DayWidths implements ToExpression {
 @freezed
 class Days with _$Days implements ToExpression {
   const factory Days({
-    required Value<String> sunday,
-    required Value<String> monday,
-    required Value<String> tuesday,
-    required Value<String> wednesday,
-    required Value<String> thursday,
-    required Value<String> friday,
-    required Value<String> saturday,
+    required String sunday,
+    required String monday,
+    required String tuesday,
+    required String wednesday,
+    required String thursday,
+    required String friday,
+    required String saturday,
   }) = _Days;
   const Days._();
 
-  factory Days.fromXml(XmlElement element) {
-    final days = element
-        .findElements('day')
-        .associateBy((it) => it.getAttribute('type')!)
-        .mapValues((it) => Value.fromXml(it.value));
+  factory Days.fromXml(CldrXml xml, CldrPath path) {
+    String resolve(String type) =>
+        xml.resolveString(path.child('day', attributes: {'type': type}));
     return Days(
-      sunday: days['sun']!,
-      monday: days['mon']!,
-      tuesday: days['tue']!,
-      wednesday: days['wed']!,
-      thursday: days['thu']!,
-      friday: days['fri']!,
-      saturday: days['sat']!,
+      sunday: resolve('sun'),
+      monday: resolve('mon'),
+      tuesday: resolve('tue'),
+      wednesday: resolve('wed'),
+      thursday: resolve('thu'),
+      friday: resolve('fri'),
+      saturday: resolve('sat'),
     );
   }
 
@@ -194,13 +190,13 @@ class Days with _$Days implements ToExpression {
     return referCldr('Days')(
       [],
       {
-        'sunday': sunday.toExpression(),
-        'monday': monday.toExpression(),
-        'tuesday': tuesday.toExpression(),
-        'wednesday': wednesday.toExpression(),
-        'thursday': thursday.toExpression(),
-        'friday': friday.toExpression(),
-        'saturday': saturday.toExpression(),
+        'sunday': literalString(sunday),
+        'monday': literalString(monday),
+        'tuesday': literalString(tuesday),
+        'wednesday': literalString(wednesday),
+        'thursday': literalString(thursday),
+        'friday': literalString(friday),
+        'saturday': literalString(saturday),
       },
     );
   }
@@ -211,26 +207,22 @@ class Eras with _$Eras implements ToExpression {
   const factory Eras({required Map<int, Era> eras}) = _Eras;
   const Eras._();
 
-  factory Eras.fromXml(XmlElement element) {
-    final eraNames = element.getElement('eraNames')!.findElements('era');
-    final eraAbbreviations = element.getElement('eraAbbr')!.findElements('era');
-    final eraNarrow = element.getElement('eraNarrow')!.findElements('era');
-    final eras = eraNames
-        .groupListsBy((it) => it.getAttribute('type')!)
-        .map((type, nameElements) {
-      return MapEntry(
-        int.parse(type),
-        Era(
-          name: ValueWithVariant.fromXml(nameElements),
-          abbreviation: ValueWithVariant.fromXml(
-            eraAbbreviations
-                .where((it) => it.getAttribute('type') == type)
-                .toList(),
-          ),
-          narrow: ValueWithVariant.fromXml(
-            eraNarrow.where((it) => it.getAttribute('type') == type).toList(),
-          ),
-        ),
+  factory Eras.fromXml(CldrXml xml, CldrPath path) {
+    Map<int, List<XmlElement>> find(String elementName) {
+      return xml
+          .listChildElements(path.child(elementName))
+          .groupListsBy((it) => int.parse(it.getAttribute('type')!));
+    }
+
+    final eraNames = find('eraNames');
+    final eraAbbreviations = find('eraAbbr');
+    final eraNarrow = find('eraNarrow');
+
+    final eras = eraNames.keys.associateWith((type) {
+      return Era(
+        name: ValueWithVariant.fromXmlElements(eraNames[type]!),
+        abbreviation: ValueWithVariant.fromXmlElements(eraAbbreviations[type]!),
+        narrow: ValueWithVariant.fromXmlElements(eraNarrow[type]!),
       );
     });
     return Eras(eras: eras);
@@ -286,21 +278,24 @@ class DateOrTimeFormats<T extends ToExpression>
   const DateOrTimeFormats._();
 
   factory DateOrTimeFormats.fromXml(
-    XmlElement element,
-    String nodeName,
-    T Function(XmlElement) fromXml,
+    CldrPath path,
+    String elementName,
+    T Function(CldrPath path) valueFromXml,
   ) {
-    final lengths = element
-        .findElements('${nodeName}Length')
-        .associateBy((it) => it.getAttribute('type')!)
-        .mapValues(
-          (it) => fromXml(it.value.getElement(nodeName)!),
-        );
+    T resolve(String length) {
+      return valueFromXml(
+        path.child(
+          '${elementName}Length',
+          attributes: {'type': length},
+        ).child(elementName),
+      );
+    }
+
     return DateOrTimeFormats(
-      full: lengths['full']!,
-      long: lengths['long']!,
-      medium: lengths['medium']!,
-      short: lengths['short']!,
+      full: resolve('full'),
+      long: resolve('long'),
+      medium: resolve('medium'),
+      short: resolve('short'),
     );
   }
 
@@ -321,18 +316,16 @@ class DateOrTimeFormats<T extends ToExpression>
 @freezed
 class DateOrTimeFormat with _$DateOrTimeFormat implements ToExpression {
   const factory DateOrTimeFormat({
-    required Value<List<DateOrTimePatternPart>> pattern,
+    required List<DateOrTimePatternPart> pattern,
     required String? displayName,
   }) = _DateOrTimeFormat;
   const DateOrTimeFormat._();
 
-  factory DateOrTimeFormat.fromXml(XmlElement element) {
+  factory DateOrTimeFormat.fromXml(CldrXml xml, CldrPath path) {
     return DateOrTimeFormat(
-      pattern: Value.customFromXml(
-        element.getElement('pattern')!,
-        DateOrTimePatternPart.parse,
-      ),
-      displayName: element.getElement('displayName')?.innerText,
+      pattern:
+          DateOrTimePatternPart.parse(xml.resolveString(path.child('pattern'))),
+      displayName: xml.resolveOptionalString(path.child('displayName')),
     );
   }
 
@@ -353,25 +346,32 @@ class DateOrTimeFormat with _$DateOrTimeFormat implements ToExpression {
 class DateTimeFormats with _$DateTimeFormats implements ToExpression {
   const factory DateTimeFormats({
     required DateOrTimeFormats<DateTimeFormat> formats,
-    // TODO(JonasWanke): Parse skeletons
-    required Map<String, Value<List<DateOrTimePatternPart>>> availableFormats,
-    // TODO(JonasWanke): `<appendItems>`, `<intervalFormats>`
+    // `TODO`(JonasWanke): Parse skeletons
+    required Map<String, Plural<List<DateOrTimePatternPart>>> availableFormats,
+    // `TODO`(JonasWanke): `<appendItems>`, `<intervalFormats>`
   }) = _DateTimeFormats;
   const DateTimeFormats._();
 
-  factory DateTimeFormats.fromXml(XmlElement element) {
+  factory DateTimeFormats.fromXml(CldrXml xml, CldrPath path) {
     return DateTimeFormats(
       formats: DateOrTimeFormats.fromXml(
-        element,
+        path,
         'dateTimeFormat',
-        DateTimeFormat.fromXml,
+        (path) => DateTimeFormat.fromXml(xml, path),
       ),
-      availableFormats: element
-          .getElement('availableFormats')!
-          .findElements('dateFormatItem')
-          .associateBy((it) => it.getAttribute('id')!)
-          .mapValues(
-            (it) => Value.customFromXml(it.value, DateOrTimePatternPart.parse),
+      availableFormats: xml
+          .listChildElements(path.child('availableFormats'))
+          .where((it) => it.localName == 'dateFormatItem')
+          .map((it) => it.getAttribute('id')!)
+          .toSet()
+          .associateWith(
+            (id) => Plural.fromXml(
+              xml,
+              path
+                  .child('availableFormats')
+                  .child('dateFormatItem', attributes: {'id': id}),
+              (element) => DateOrTimePatternPart.parse(element.innerText),
+            ),
           ),
     );
   }
@@ -395,18 +395,16 @@ class DateTimeFormats with _$DateTimeFormats implements ToExpression {
 @freezed
 class DateTimeFormat with _$DateTimeFormat implements ToExpression {
   const factory DateTimeFormat({
-    required Value<List<DateTimePatternPart>> pattern,
+    required List<DateTimePatternPart> pattern,
     required String? displayName,
   }) = _DateTimeFormat;
   const DateTimeFormat._();
 
-  factory DateTimeFormat.fromXml(XmlElement element) {
+  factory DateTimeFormat.fromXml(CldrXml xml, CldrPath path) {
     return DateTimeFormat(
-      pattern: Value.customFromXml(
-        element.getElement('pattern')!,
-        DateTimePatternPart.parse,
-      ),
-      displayName: element.getElement('displayName')?.innerText,
+      pattern:
+          DateTimePatternPart.parse(xml.resolveString(path.child('pattern'))),
+      displayName: xml.resolveOptionalString(path.child('displayName')),
     );
   }
 
@@ -563,7 +561,7 @@ sealed class DateOrTimePatternPart
           while (offset + length < pattern.length &&
               pattern[offset + length] == character) {
             length++;
-          }
+          } // TODO(JonasWanke): Update to newer UTS version
           final field = switch ((character, length)) {
             ('G', >= 1 && <= 3) => const DateTimeField.eraAbbreviated(),
             ('G', 4) => const DateTimeField.eraLong(),
@@ -704,7 +702,7 @@ sealed class DateOrTimePatternPart
                     .extendedWithHoursMinutesOptionalSeconds,
                 useZForZeroOffset: false,
               ),
-            _ => DateTimeField.unknown(character, length),
+            _ => DateTimeField.unknown(character: character, length: length),
           };
           parts.add(DateOrTimePatternPart.field(field));
           offset += length;
@@ -1097,7 +1095,7 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
   /// The localized GMT format, e.g., “GMT-8” (short) or “GMT-08:00” (long).
   ///
   /// Unicode Shorthand: `O` (short), `ZZZZ`, `OOOO` (long)
-  // TODO(JonasWanke): check example since the spec conflicts itself
+  // `TODO`(JonasWanke): check example since the spec conflicts itself
   const factory DateTimeField.zoneLocalizedGmt({
     required ZoneFieldLength length,
   }) = _DateTimeFieldZoneLocalizedGmt;
@@ -1164,8 +1162,10 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
     required bool useZForZeroOffset,
   }) = _DateTimeFieldZoneIso8601Basic;
 
-  const factory DateTimeField.unknown(String character, int length) =
-      _DateTimeFieldUnknown;
+  const factory DateTimeField.unknown({
+    required String character,
+    required int length,
+  }) = _DateTimeFieldUnknown;
 
   const DateTimeField._();
 
@@ -1363,15 +1363,19 @@ class Fields with _$Fields implements ToExpression {
   }) = _Fields;
   const Fields._();
 
-  factory Fields.fromXml(XmlElement element) {
-    final fields = element
-        .findElements('field')
-        .associateBy((it) => it.getAttribute('type')!);
+  factory Fields.fromXml(CldrXml xml, CldrPath path) {
     FieldWidths fieldFromXml(String type) {
       return FieldWidths(
-        full: Field.fromXml(fields[type]!),
-        short: Field.fromXml(fields['$type-short']!),
-        narrow: Field.fromXml(fields['$type-narrow']!),
+        full:
+            Field.fromXml(xml, path.child('field', attributes: {'type': type})),
+        short: Field.fromXml(
+          xml,
+          path.child('field', attributes: {'type': '$type-short'}),
+        ),
+        narrow: Field.fromXml(
+          xml,
+          path.child('field', attributes: {'type': '$type-narrow'}),
+        ),
       );
     }
 
@@ -1458,34 +1462,36 @@ class FieldWidths with _$FieldWidths implements ToExpression {
 @freezed
 class Field with _$Field implements ToExpression {
   const factory Field({
-    required Value<String>? displayName,
-    required Map<int, Value<String>> relative,
-    // TODO(JonasWanke): parse placeholder position
-    required Plural<Value<String>>? relativeTimePast,
-    required Plural<Value<String>>? relativeTimeFuture,
+    required String? displayName,
+    required Map<int, String> relative,
+    // `TODO`(JonasWanke): parse placeholder position
+    required Plural<String>? relativeTimePast,
+    required Plural<String>? relativeTimeFuture,
   }) = _Field;
   const Field._();
 
-  factory Field.fromXml(XmlElement element) {
-    final relative = element
-        .findElements('relative')
-        .associateBy((it) => int.parse(it.getAttribute('type')!))
-        .mapValues((it) => Value.fromXml(it.value));
-    final relativeTimePast = element
-        .findElements('relativeTime')
-        .where((it) => it.getAttribute('type') == 'past')
-        .map((it) => Plural.fromXml(it, 'relativeTimePattern', Value.fromXml))
-        .firstOrNull;
-    final relativeTimeFuture = element
-        .findElements('relativeTime')
-        .where((it) => it.getAttribute('type') == 'future')
-        .map((it) => Plural.fromXml(it, 'relativeTimePattern', Value.fromXml))
-        .firstOrNull;
+  factory Field.fromXml(CldrXml xml, CldrPath path) {
     return Field(
-      displayName: element.getElement('displayName')?.let(Value.fromXml),
-      relative: relative,
-      relativeTimePast: relativeTimePast,
-      relativeTimeFuture: relativeTimeFuture,
+      displayName: xml.resolveOptionalString(path.child('displayName')),
+      relative: xml.listChildElements(path.child('relative')).associate(
+            (it) => MapEntry(int.parse(it.getAttribute('type')!), it.innerText),
+          ),
+      relativeTimePast: xml
+          .listChildElements(path.child('relativeTime'))
+          .where((it) => it.getAttribute('type') == 'past')
+          .map(
+            (it) =>
+                Plural.stringsFromXml(xml, path.child('relativeTimePattern')),
+          )
+          .firstOrNull,
+      relativeTimeFuture: xml
+          .listChildElements(path.child('relativeTime'))
+          .where((it) => it.getAttribute('type') == 'future')
+          .map(
+            (it) =>
+                Plural.stringsFromXml(xml, path.child('relativeTimePattern')),
+          )
+          .firstOrNull,
     );
   }
 
@@ -1495,10 +1501,10 @@ class Field with _$Field implements ToExpression {
       [],
       {
         'displayName':
-            displayName == null ? literalNull : displayName!.toExpression(),
+            displayName == null ? literalNull : literalString(displayName!),
         'relative': literalMap(
           relative.map(
-            (key, value) => MapEntry(literalNum(key), value.toExpression()),
+            (key, value) => MapEntry(literalNum(key), literalString(value)),
           ),
         ),
         'relativeTimePast': relativeTimePast == null
@@ -1529,17 +1535,12 @@ class Context<T extends ToExpression>
   const Context._();
 
   factory Context.fromXml(
-    XmlElement element,
-    String elementName,
-    T Function(XmlElement) valueFromXml,
+    CldrPath path,
+    T Function(CldrPath path) valueFromXml,
   ) {
-    final formats = element
-        .findElements(elementName)
-        .associateBy((it) => it.getAttribute('type')!)
-        .mapValues((it) => valueFromXml(it.value));
     return Context(
-      format: formats['format']!,
-      standalone: formats['stand-alone']!,
+      format: valueFromXml(path.withAttribute('type', 'format')),
+      standalone: valueFromXml(path.withAttribute('type', 'stand-alone')),
     );
   }
 
@@ -1566,18 +1567,13 @@ class Widths<T extends Object> with _$Widths<T> implements ToExpression {
   const Widths._();
 
   factory Widths.fromXml(
-    XmlElement element,
-    String elementName,
-    T Function(XmlElement) valueFromXml,
+    CldrPath path,
+    T Function(CldrPath path) valueFromXml,
   ) {
-    final values = element
-        .findElements(elementName)
-        .associateBy((it) => it.getAttribute('type')!)
-        .mapValues((it) => valueFromXml(it.value));
     return Widths(
-      wide: values['wide']!,
-      abbreviated: values['abbreviated']!,
-      narrow: values['narrow']!,
+      wide: valueFromXml(path.withAttribute('type', 'wide')),
+      abbreviated: valueFromXml(path.withAttribute('type', 'abbreviated')),
+      narrow: valueFromXml(path.withAttribute('type', 'narrow')),
     );
   }
 

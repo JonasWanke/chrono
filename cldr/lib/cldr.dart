@@ -9,7 +9,7 @@ import 'package:xml/xml.dart';
 import 'src/common.dart';
 import 'src/dates.dart';
 
-export 'src/common.dart' hide LetExtension, referCldr;
+export 'src/common.dart' hide CldrXml, LetExtension, referCldr;
 export 'src/dates.dart';
 
 part 'cldr.freezed.dart';
@@ -24,9 +24,11 @@ class CommonLocaleData with _$CommonLocaleData implements ToExpression {
   }) = _CommonLocaleData;
   const CommonLocaleData._();
 
-  factory CommonLocaleData.fromXml(XmlElement element) {
+  factory CommonLocaleData.fromXml(List<XmlDocument> documents) {
+    final xml = CldrXml(documents);
+    const path = CldrPath([CldrPathSegment('ldml')]);
     return CommonLocaleData(
-      dates: Dates.fromXml(element.getElement('dates')!),
+      dates: Dates.fromXml(xml, path.child('dates')),
     );
   }
 
@@ -51,10 +53,12 @@ class CommonLocaleData with _$CommonLocaleData implements ToExpression {
 }
 
 Future<void> main() async {
-  final xmlString = await File('de.xml').readAsString();
-  final xml = XmlDocument.parse(xmlString);
+  final deXmlString = await File('de.xml').readAsString();
+  final deXml = XmlDocument.parse(deXmlString);
+  final rootXmlString = await File('root.xml').readAsString();
+  final rootXml = XmlDocument.parse(rootXmlString);
 
-  final data = CommonLocaleData.fromXml(xml.rootElement);
+  final data = CommonLocaleData.fromXml([deXml, rootXml]);
   print(data);
 
   final code = data.toLibrary('de');
