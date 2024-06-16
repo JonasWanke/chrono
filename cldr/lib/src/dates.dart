@@ -64,8 +64,8 @@ class Calendar with _$Calendar implements ToExpression {
     required Context<DayWidths> days,
     // TODO(JonasWanke): `<quarters>`, `<dayPeriods>`
     required Eras eras,
-    required DateOrTimeFormats<DateOrTimeFormat> dateFormats,
-    required DateOrTimeFormats<DateOrTimeFormat> timeFormats,
+    required DateOrTimeFormats<DateOrTimeFormat<DateField>> dateFormats,
+    required DateOrTimeFormats<DateOrTimeFormat<TimeField>> timeFormats,
     required DateTimeFormats dateTimeFormats,
   }) = _Calendar;
   const Calendar._();
@@ -91,12 +91,12 @@ class Calendar with _$Calendar implements ToExpression {
       dateFormats: DateOrTimeFormats.fromXml(
         path.child('dateFormats'),
         'dateFormat',
-        (path) => DateOrTimeFormat.fromXml(xml, path),
+        (path) => DateOrTimeFormat.fromXml(xml, path, DateField.parse),
       ),
       timeFormats: DateOrTimeFormats.fromXml(
         path.child('timeFormats'),
         'timeFormat',
-        (path) => DateOrTimeFormat.fromXml(xml, path),
+        (path) => DateOrTimeFormat.fromXml(xml, path, TimeField.parse),
       ),
       dateTimeFormats:
           DateTimeFormats.fromXml(xml, path.child('dateTimeFormats')),
@@ -314,17 +314,25 @@ class DateOrTimeFormats<T extends ToExpression>
 }
 
 @freezed
-class DateOrTimeFormat with _$DateOrTimeFormat implements ToExpression {
+class DateOrTimeFormat<F extends ToExpression>
+    with _$DateOrTimeFormat<F>
+    implements ToExpression {
   const factory DateOrTimeFormat({
     required List<DateOrTimePatternPart> pattern,
     required String? displayName,
-  }) = _DateOrTimeFormat;
+  }) = _DateOrTimeFormat<F>;
   const DateOrTimeFormat._();
 
-  factory DateOrTimeFormat.fromXml(CldrXml xml, CldrPath path) {
+  factory DateOrTimeFormat.fromXml(
+    CldrXml xml,
+    CldrPath path,
+    ParseDateOrTimePatternField<F> parseField,
+  ) {
     return DateOrTimeFormat(
-      pattern:
-          DateOrTimePatternPart.parse(xml.resolveString(path.child('pattern'))),
+      pattern: DateOrTimePatternPart.parse(
+        xml.resolveString(path.child('pattern')),
+        parseField,
+      ),
       displayName: xml.resolveOptionalString(path.child('displayName')),
     );
   }
@@ -347,7 +355,8 @@ class DateTimeFormats with _$DateTimeFormats implements ToExpression {
   const factory DateTimeFormats({
     required DateOrTimeFormats<DateTimeFormat> formats,
     // `TODO`(JonasWanke): Parse skeletons
-    required Map<String, Plural<List<DateOrTimePatternPart>>> availableFormats,
+    required Map<String, Plural<List<DateOrTimePatternPart<DateTimeField>>>>
+        availableFormats,
     // `TODO`(JonasWanke): `<appendItems>`, `<intervalFormats>`
   }) = _DateTimeFormats;
   const DateTimeFormats._();
@@ -370,7 +379,10 @@ class DateTimeFormats with _$DateTimeFormats implements ToExpression {
               path
                   .child('availableFormats')
                   .child('dateFormatItem', attributes: {'id': id}),
-              (element) => DateOrTimePatternPart.parse(element.innerText),
+              (element) => DateOrTimePatternPart.parse(
+                element.innerText,
+                DateTimeField.parse,
+              ),
             ),
           ),
     );
@@ -432,7 +444,7 @@ class DateTimePatternPart with _$DateTimePatternPart implements ToExpression {
   const DateTimePatternPart._();
 
   static List<DateTimePatternPart> parse(String pattern) {
-    final raw = DateOrTimePatternPart.parse(pattern);
+    final raw = DateOrTimePatternPart.parse(pattern, DateTimeField.parse);
     return raw.expand((it) {
       return it.when(
         literal: (value) {
@@ -505,21 +517,24 @@ class DateTimePatternPart with _$DateTimePatternPart implements ToExpression {
 }
 
 @freezed
-sealed class DateOrTimePatternPart
-    with _$DateOrTimePatternPart
+sealed class DateOrTimePatternPart<F extends ToExpression>
+    with _$DateOrTimePatternPart<F>
     implements ToExpression {
   const factory DateOrTimePatternPart.literal(String value) =
-      _DateOrTimePatternPartLiteral;
-  const factory DateOrTimePatternPart.field(DateTimeField field) =
-      _DateOrTimePatternPartField;
+      _DateOrTimePatternPartLiteral<F>;
+  const factory DateOrTimePatternPart.field(F field) =
+      _DateOrTimePatternPartField<F>;
   const DateOrTimePatternPart._();
 
-  static List<DateOrTimePatternPart> parse(String pattern) {
+  static List<DateOrTimePatternPart<F>> parse<F extends ToExpression>(
+    String pattern,
+    ParseDateOrTimePatternField<F> parseField,
+  ) {
     var offset = 0;
-    final parts = <DateOrTimePatternPart>[];
+    final parts = <DateOrTimePatternPart<F>>[];
     void addLiteral(String literal) {
-      if (parts.lastOrNull is _DateOrTimePatternPartLiteral) {
-        final last = parts.removeLast() as _DateOrTimePatternPartLiteral;
+      if (parts.lastOrNull is _DateOrTimePatternPartLiteral<F>) {
+        final last = parts.removeLast() as _DateOrTimePatternPartLiteral<F>;
         parts.add(_DateOrTimePatternPartLiteral(last.value + literal));
       } else {
         parts.add(_DateOrTimePatternPartLiteral(literal));
@@ -561,152 +576,13 @@ sealed class DateOrTimePatternPart
           while (offset + length < pattern.length &&
               pattern[offset + length] == character) {
             length++;
-          } // TODO(JonasWanke): Update to newer UTS version
-          final field = switch ((character, length)) {
-            ('G', >= 1 && <= 3) => const DateTimeField.eraAbbreviated(),
-            ('G', 4) => const DateTimeField.eraLong(),
-            ('G', 5) => const DateTimeField.eraNarrow(),
-            ('y', _) => DateTimeField.year(minDigits: length),
-            ('Y', _) => DateTimeField.weekBasedYear(minDigits: length),
-            ('u', _) => const DateTimeField.extendedYear(),
-            ('U', >= 1 && <= 3) =>
-              const DateTimeField.cyclicYearNameAbbreviated(),
-            ('U', 4) => const DateTimeField.cyclicYearNameFull(),
-            ('U', 5) => const DateTimeField.cyclicYearNameNarrow(),
-            ('Q', 1) => const DateTimeField.quarterNumerical(isPadded: false),
-            ('Q', 2) => const DateTimeField.quarterNumerical(isPadded: true),
-            ('Q', 3) => const DateTimeField.quarterAbbreviated(),
-            ('Q', 4) => const DateTimeField.quarterFull(),
-            ('q', >= 1 && <= 2) =>
-              const DateTimeField.standaloneQuarterNumerical(),
-            ('q', 3) => const DateTimeField.standaloneQuarterAbbreviated(),
-            ('q', 4) => const DateTimeField.standaloneQuarterFull(),
-            ('M', 1) => const DateTimeField.monthNumerical(isPadded: false),
-            ('M', 2) => const DateTimeField.monthNumerical(isPadded: true),
-            ('M', 3) => const DateTimeField.monthAbbreviated(),
-            ('M', 4) => const DateTimeField.monthFull(),
-            ('M', 5) => const DateTimeField.monthNarrow(),
-            ('L', 1) =>
-              const DateTimeField.standaloneMonthNumerical(isPadded: false),
-            ('L', 2) =>
-              const DateTimeField.standaloneMonthNumerical(isPadded: true),
-            ('L', 3) => const DateTimeField.standaloneMonthAbbreviated(),
-            ('L', 4) => const DateTimeField.standaloneMonthFull(),
-            ('L', 5) => const DateTimeField.standaloneMonthNarrow(),
-            ('w', 1) => const DateTimeField.weekOfYear(isPadded: false),
-            ('w', 2) => const DateTimeField.weekOfYear(isPadded: true),
-            ('W', 1) => const DateTimeField.weekOfMonth(),
-            ('d', 1) => const DateTimeField.dayOfMonth(isPadded: false),
-            ('d', 2) => const DateTimeField.dayOfMonth(isPadded: true),
-            ('D', 1) =>
-              const DateTimeField.dayOfYear(padding: DayOfYearPadding.one),
-            ('D', 2) =>
-              const DateTimeField.dayOfYear(padding: DayOfYearPadding.two),
-            ('D', 3) =>
-              const DateTimeField.dayOfYear(padding: DayOfYearPadding.three),
-            ('F', 1) => const DateTimeField.dayOfWeekInMonth(),
-            ('g', _) => const DateTimeField.modifiedJulianDay(),
-            ('E', >= 1 && <= 3) ||
-            ('e', 3) =>
-              const DateTimeField.dayOfWeekShortDay(),
-            ('E' || 'e', 4) => const DateTimeField.dayOfWeekFull(),
-            ('E' || 'e', 5) => const DateTimeField.dayOfWeekNarrow(),
-            ('E' || 'e', 6) => const DateTimeField.dayOfWeekShort(),
-            ('e', >= 1 && <= 3) ||
-            ('c', 1) =>
-              const DateTimeField.localDayOfWeekNumeric(),
-            ('c', 3) => const DateTimeField.standaloneLocalDayOfWeekShortDay(),
-            ('c', 4) => const DateTimeField.standaloneLocalDayOfWeekFull(),
-            ('c', 5) => const DateTimeField.standaloneLocalDayOfWeekNarrow(),
-            ('c', 6) => const DateTimeField.standaloneLocalDayOfWeekShort(),
-            ('a', 1) => const DateTimeField.period(),
-            ('h', 1) => const DateTimeField.hour12(isPadded: false),
-            ('h', 2) => const DateTimeField.hour12(isPadded: true),
-            ('H', 1) => const DateTimeField.hour24(isPadded: false),
-            ('H', 2) => const DateTimeField.hour24(isPadded: true),
-            ('K', 1) => const DateTimeField.hour12ZeroBased(isPadded: false),
-            ('K', 2) => const DateTimeField.hour12ZeroBased(isPadded: true),
-            ('k', 1) => const DateTimeField.hour24OneBased(isPadded: false),
-            ('k', 2) => const DateTimeField.hour24OneBased(isPadded: true),
-            ('m', 1) => const DateTimeField.minute(isPadded: false),
-            ('m', 2) => const DateTimeField.minute(isPadded: true),
-            ('s', 1) => const DateTimeField.second(isPadded: false),
-            ('s', 2) => const DateTimeField.second(isPadded: true),
-            ('S', _) => DateTimeField.fractionalSecond(length),
-            ('A', _) => DateTimeField.millisecondsInDay(length),
-            ('z', >= 1 && <= 3) => const DateTimeField.zoneSpecificNonLocation(
-                length: ZoneFieldLength.short,
-              ),
-            ('z', 4) => const DateTimeField.zoneSpecificNonLocation(
-                length: ZoneFieldLength.long,
-              ),
-            ('Z' || 'O', 4) => const DateTimeField.zoneLocalizedGmt(
-                length: ZoneFieldLength.long,
-              ),
-            ('O', 1) => const DateTimeField.zoneLocalizedGmt(
-                length: ZoneFieldLength.short,
-              ),
-            ('v', 1) => const DateTimeField.zoneGenericNonLocation(
-                length: ZoneFieldLength.short,
-              ),
-            ('v', 4) => const DateTimeField.zoneGenericNonLocation(
-                length: ZoneFieldLength.long,
-              ),
-            ('V', 1) =>
-              const DateTimeField.zoneID(length: ZoneFieldLength.short),
-            ('V', 2) =>
-              const DateTimeField.zoneID(length: ZoneFieldLength.long),
-            ('V', 3) => const DateTimeField.zoneExemplarCity(),
-            ('V', 4) => const DateTimeField.zoneGenericLocationFormat(),
-            ('X', 1) => const DateTimeField.zoneIso8601(
-                style: ZoneFieldIso8601Style.basicWithHoursOptionalMinutes,
-                useZForZeroOffset: true,
-              ),
-            ('X', 2) => const DateTimeField.zoneIso8601(
-                style: ZoneFieldIso8601Style.basicWithHoursMinutes,
-                useZForZeroOffset: true,
-              ),
-            ('X', 3) => const DateTimeField.zoneIso8601(
-                style: ZoneFieldIso8601Style.extendedWithHoursMinutes,
-                useZForZeroOffset: true,
-              ),
-            ('X', 4) => const DateTimeField.zoneIso8601(
-                style:
-                    ZoneFieldIso8601Style.basicWithHoursMinutesOptionalSeconds,
-                useZForZeroOffset: true,
-              ),
-            ('X' || 'Z', 5) => const DateTimeField.zoneIso8601(
-                style: ZoneFieldIso8601Style
-                    .extendedWithHoursMinutesOptionalSeconds,
-                useZForZeroOffset: true,
-              ),
-            ('x', 1) => const DateTimeField.zoneIso8601(
-                style: ZoneFieldIso8601Style.basicWithHoursOptionalMinutes,
-                useZForZeroOffset: false,
-              ),
-            ('x', 2) => const DateTimeField.zoneIso8601(
-                style: ZoneFieldIso8601Style.basicWithHoursMinutes,
-                useZForZeroOffset: false,
-              ),
-            ('x', 3) => const DateTimeField.zoneIso8601(
-                style: ZoneFieldIso8601Style.extendedWithHoursMinutes,
-                useZForZeroOffset: false,
-              ),
-            ('x', 4) || ('Z', >= 1 && <= 3) => const DateTimeField.zoneIso8601(
-                style:
-                    ZoneFieldIso8601Style.basicWithHoursMinutesOptionalSeconds,
-                useZForZeroOffset: false,
-              ),
-            ('x', 5) => const DateTimeField.zoneIso8601(
-                style: ZoneFieldIso8601Style
-                    .extendedWithHoursMinutesOptionalSeconds,
-                useZForZeroOffset: false,
-              ),
-            _ => DateTimeField.unknown(character: character, length: length),
-          };
+          }
+          final field = parseField(character, length) ??
+              (throw FormatException('Unknown field: `${character * length}`'));
           parts.add(DateOrTimePatternPart.field(field));
           offset += length;
         default:
+          // Unquoted text
           addLiteral(character);
           offset++;
       }
@@ -735,22 +611,44 @@ sealed class DateOrTimePatternPart
   }
 }
 
+typedef ParseDateOrTimePatternField<F extends ToExpression> = F? Function(
+  String character,
+  int length,
+);
+
 @freezed
 sealed class DateTimeField with _$DateTimeField implements ToExpression {
-  /// Era (abbreviated form), e.g., “AD”.
-  ///
-  /// Unicode Shorthand: `G`, `GG`, `GGG`
-  const factory DateTimeField.eraAbbreviated() = _DateTimeFieldEraAbbreviated;
+  const factory DateTimeField.dateField(DateField field) =
+      _DateTimeFieldDateField;
+  const factory DateTimeField.timeField(TimeField field) =
+      _DateTimeFieldTimeField;
+  const DateTimeField._();
 
-  /// Era (long form), e.g., “Anno Domini”.
-  ///
-  /// Unicode Shorthand: `GGGG`
-  const factory DateTimeField.eraLong() = _DateTimeFieldEraLong;
+  static DateTimeField? parse(String character, int length) {
+    return DateField.parse(character, length)?.let(DateTimeField.dateField) ??
+        TimeField.parse(character, length)?.let(DateTimeField.timeField);
+  }
 
-  /// Era (narrow form), e.g., “A”.
+  @override
+  Expression toExpression() {
+    final create = referCldr('DateTimeField').newInstanceNamed;
+    return when(
+      dateField: (field) => create('dateField', [field.toExpression()]),
+      timeField: (field) => create('timeField', [field.toExpression()]),
+    );
+  }
+}
+
+@freezed
+sealed class DateField with _$DateField implements ToExpression {
+  /// Era name:
   ///
-  /// Unicode Shorthand: `GGGGG`
-  const factory DateTimeField.eraNarrow() = _DateTimeFieldEraNarrow;
+  /// | Width         | Example                           | Unicode Shorthand |
+  /// | :------------ | :-------------------------------- | :---------------- |
+  /// | `wide`        | Anno Domini (variant: Common Era) | `GGGG`            |
+  /// | `abbreviated` | AD (variant: CE)                  | `G`, `GG`, `GGG`  |
+  /// | `narrow`      | A                                 | `GGGGG`           |
+  const factory DateField.era(FieldWidth width) = _DateFieldEra;
 
   /// Year, e.g., “1996”.
   ///
@@ -767,8 +665,7 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
   ///
   /// Unicode Shorthand: `y`, `yy`, `yyy`, `yyyy`, `yyyyy`, etc.
   @Assert('minDigits >= 1')
-  const factory DateTimeField.year({required int minDigits}) =
-      _DateTimeFieldYear;
+  const factory DateField.year({required int minDigits}) = _DateFieldYear;
 
   /// Year (in "Week of Year" based calendars), e.g., “1997”.
   ///
@@ -780,8 +677,8 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
   ///
   /// Unicode Shorthand: `Y`, `YY`, `YYY`, `YYYY`, `YYYYY`, etc.
   @Assert('minDigits >= 1')
-  const factory DateTimeField.weekBasedYear({required int minDigits}) =
-      _DateTimeFieldWeekBasedYear;
+  const factory DateField.weekBasedYear({required int minDigits}) =
+      _DateFieldWeekBasedYear;
 
   /// Extended year, e.g., “4601”.
   ///
@@ -791,10 +688,11 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
   /// year value for the Julian calendar system assigns positive values to CE
   /// years and negative values to BCE years, with 1 BCE being year 0.
   ///
-  /// Unicode Shorthand: `u`
-  const factory DateTimeField.extendedYear() = _DateTimeFieldExtendedYear;
+  /// Unicode Shorthand: `u`, `uu`, `uuu`, etc.
+  const factory DateField.extendedYear({required int minDigits}) =
+      _DateFieldExtendedYear;
 
-  /// Cyclic year name (abbreviated), e.g., “甲子”.
+  /// Cyclic year name.
   ///
   /// Calendars such as the Chinese lunar calendar (and related calendars) and
   /// the Hindu calendars use 60-year cycles of year names.
@@ -803,155 +701,65 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
   /// value to be formatted is out of the range of years for which cyclic name
   /// data is provided, then numeric formatting is used (behaves like "y").
   ///
-  /// Unicode Shorthand: `U`, `UU`, `UUU`
-  const factory DateTimeField.cyclicYearNameAbbreviated() =
-      _DateTimeFieldCyclicYearNameAbbreviated;
+  /// | Width         | Example       | Unicode Shorthand |
+  /// | :------------ | :------------ | :---------------- |
+  /// | `wide`        | 甲子           | `UUUU`            |
+  /// | `abbreviated` | 甲子 (for now) | `U`, `UU`, `UUU`  |
+  /// | `narrow`      | 甲子 (for now) | `UUUUU`           |
+  const factory DateField.cyclicYearName(FieldWidth width) =
+      _DateFieldCyclicYearName;
 
-  /// Cyclic year name (full name), e.g., “甲子”.
+  /// Related Gregorian year (numeric).
   ///
-  /// Calendars such as the Chinese lunar calendar (and related calendars) and
-  /// the Hindu calendars use 60-year cycles of year names.
+  /// For non-Gregorian calendars, this corresponds to the extended Gregorian
+  /// year in which the calendar’s year begins. Related Gregorian years are
+  /// often displayed, for example, when formatting dates in the Japanese
+  /// calendar – e.g., “2012(平成24)年1月15日” – or in the Chinese calendar – e.g.,
+  /// “2012壬辰年腊月初四”. The related Gregorian year is usually displayed using
+  /// the “latn” numbering system, regardless of what numbering systems may be
+  /// used for other parts of the formatted date. If the calendar’s year is
+  /// linked to the solar year (perhaps using leap months), then for that
+  /// calendar the ‘r’ year will always be at a fixed offset from the ‘u’ year.
+  /// For the Gregorian calendar, the ‘r’ year is the same as the ‘u’ year.
   ///
-  /// If the calendar does not provide cyclic year name data, or if the year
-  /// value to be formatted is out of the range of years for which cyclic name
-  /// data is provided, then numeric formatting is used (behaves like "y").
-  ///
-  /// Note: Currently the data only provides abbreviated names, which will be
-  /// used for all requested name widths.
-  ///
-  /// Unicode Shorthand: `UUUU`
-  const factory DateTimeField.cyclicYearNameFull() =
-      _DateTimeFieldCyclicYearNameFull;
+  /// Unicode Shorthand: `r`, `rr`, `rrr`, etc.
+  const factory DateField.relatedGregorianYear({required int minDigits}) =
+      _DateFieldRelatedGregorianYear;
 
-  /// Cyclic year name (narrow name), e.g., “甲子”.
-  ///
-  /// Calendars such as the Chinese lunar calendar (and related calendars) and
-  /// the Hindu calendars use 60-year cycles of year names.
-  ///
-  /// If the calendar does not provide cyclic year name data, or if the year
-  /// value to be formatted is out of the range of years for which cyclic name
-  /// data is provided, then numeric formatting is used (behaves like "y").
-  ///
-  /// Note: Currently the data only provides abbreviated names, which will be
-  /// used for all requested name widths.
-  ///
-  /// Unicode Shorthand: `UUUUU`
-  const factory DateTimeField.cyclicYearNameNarrow() =
-      _DateTimeFieldCyclicYearNameNarrow;
+  const factory DateField.quarter(QuarterStyle style) = _DateFieldQuarter;
 
-  /// Quarter (numerical), e.g., “2” (not padded) or “02” (padded).
-  ///
-  /// Unicode Shorthand: `Q` (not padded), `QQ` (padded)
-  const factory DateTimeField.quarterNumerical({required bool isPadded}) =
-      _DateTimeFieldQuarterNumerical;
-
-  /// Quarter (abbreviated), e.g., “Q2”.
-  ///
-  /// Unicode Shorthand: `QQQ`
-  const factory DateTimeField.quarterAbbreviated() =
-      _DateTimeFieldQuarterAbbreviated;
-
-  /// Quarter (full name), e.g., “2nd quarter”.
-  ///
-  /// Unicode Shorthand: `QQQQ`
-  const factory DateTimeField.quarterFull() = _DateTimeFieldQuarterFull;
-
-  /// Stand-Alone Quarter (numerical), e.g., “02”.
-  ///
-  /// Unicode Shorthand: `q`, `qq`
-  const factory DateTimeField.standaloneQuarterNumerical() =
-      _DateTimeFieldStandaloneQuarterNumerical;
-
-  /// Stand-Alone Quarter (abbreviated), e.g., “Q2”.
-  ///
-  /// Unicode Shorthand: `qqq`
-  const factory DateTimeField.standaloneQuarterAbbreviated() =
-      _DateTimeFieldStandaloneQuarterAbbreviated;
-
-  /// Stand-Alone Quarter (full name), e.g., “2nd quarter”.
-  ///
-  /// Unicode Shorthand: `qqqq`
-  const factory DateTimeField.standaloneQuarterFull() =
-      _DateTimeFieldStandaloneQuarterFull;
-
-  /// Month (numerical), e.g., “0” (not padded) or “09” (padded).
-  ///
-  /// Unicode Shorthand: `M` (not padded), `MM` (padded)
-  const factory DateTimeField.monthNumerical({required bool isPadded}) =
-      _DateTimeFieldMonthNumerical;
-
-  /// Month (abbreviation), e.g., “Sept”.
-  ///
-  /// Unicode Shorthand: `MMM`
-  const factory DateTimeField.monthAbbreviated() =
-      _DateTimeFieldMonthAbbreviated;
-
-  /// Month (full name), e.g., “September”.
-  ///
-  /// Unicode Shorthand: `MMMM`
-  const factory DateTimeField.monthFull() = _DateTimeFieldMonthFull;
-
-  /// Month (narrow), e.g., “S”.
-  ///
-  /// Unicode Shorthand: `MMMMM`
-  const factory DateTimeField.monthNarrow() = _DateTimeFieldMonthNarrow;
-
-  /// Stand-Alone Month (numerical), e.g., “9” (not padded) or “09” (padded).
-  ///
-  /// Unicode Shorthand: `L` (not padded), `LL` (padded)
-  const factory DateTimeField.standaloneMonthNumerical({
-    required bool isPadded,
-  }) = _DateTimeFieldStandaloneMonthNumerical;
-
-  /// Stand-Alone Month (abbreviated), e.g., “Sept”.
-  ///
-  /// Unicode Shorthand: `LLL`
-  const factory DateTimeField.standaloneMonthAbbreviated() =
-      _DateTimeFieldStandaloneMonthAbbreviated;
-
-  /// Stand-Alone Month (full), e.g., September”.
-  ///
-  /// Unicode Shorthand: `LLLL`
-  const factory DateTimeField.standaloneMonthFull() =
-      _DateTimeFieldStandaloneMonthFull;
-
-  /// Stand-Alone Month (narrow), e.g., “S”.
-  ///
-  /// Unicode Shorthand: `LLLLL`
-  const factory DateTimeField.standaloneMonthNarrow() =
-      _DateTimeFieldStandaloneMonthNarrow;
+  const factory DateField.month(MonthStyle style) = _DateFieldMonth;
 
   /// Week of Year, e.g., “27”.
   ///
   /// Unicode Shorthand: `w` (not padded), `ww` (padded)
-  const factory DateTimeField.weekOfYear({required bool isPadded}) =
-      _DateTimeFieldWeekOfYear;
+  const factory DateField.weekOfYear({required bool isPadded}) =
+      _DateFieldWeekOfYear;
 
   /// Week of Month, e.g., “3”.
   ///
   /// Unicode Shorthand: `W`
-  const factory DateTimeField.weekOfMonth() = _DateTimeFieldWeekOfMonth;
+  const factory DateField.weekOfMonth() = _DateFieldWeekOfMonth;
 
   /// Date - Day of the month, e.g., “1”.
   ///
   /// Unicode Shorthand: `d` (not padded), `dd` (padded)
-  const factory DateTimeField.dayOfMonth({required bool isPadded}) =
-      _DateTimeFieldDayOfMonth;
+  const factory DateField.dayOfMonth({required bool isPadded}) =
+      _DateFieldDayOfMonth;
 
   /// Day of year, e.g., “345”.
   ///
-  /// Unicode Shorthand: `D` (padded to one digit), `DD` (padded to two digits),
+  /// Unicode Shorthand: `D` (one digit), `DD` (padded to two digits),
   /// `DDD` (padded to three digits)
-  const factory DateTimeField.dayOfYear({required DayOfYearPadding padding}) =
-      _DateTimeFieldDayOfYear;
+  const factory DateField.dayOfYear({required DayOfYearPadding padding}) =
+      _DateFieldDayOfYear;
 
   /// Day of Week in Month, e.g., “2”.
   ///
   /// The example is for the 2nd Wed in July
   ///
   /// Unicode Shorthand: `F`
-  const factory DateTimeField.dayOfWeekInMonth() =
-      _DateTimeFieldDayOfWeekInMonth;
+  const factory DateField.dayOfWeekInMonth() = _DateFieldDayOfWeekInMonth;
 
   /// Modified Julian day.
   ///
@@ -962,107 +770,403 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
   /// date-related fields.
   ///
   /// Unicode Shorthand: `g`
-  const factory DateTimeField.modifiedJulianDay() =
-      _DateTimeFieldModifiedJulianDay;
+  const factory DateField.modifiedJulianDay() = _DateFieldModifiedJulianDay;
 
-  /// Day of Week (short day), e.g., “Tues”.
+  const factory DateField.weekday(WeekdayStyle style) = _DateFieldWeekday;
+
+  const DateField._();
+
+  static DateField? parse(String character, int length) {
+    return switch ((character, length)) {
+          ('G', >= 1 && <= 3) => const DateField.era(FieldWidth.abbreviated),
+          ('G', 4) => const DateField.era(FieldWidth.wide),
+          ('G', 5) => const DateField.era(FieldWidth.narrow),
+          ('y', _) => DateField.year(minDigits: length),
+          ('Y', _) => DateField.weekBasedYear(minDigits: length),
+          ('u', _) => DateField.extendedYear(minDigits: length),
+          ('U', >= 1 && <= 3) =>
+            const DateField.cyclicYearName(FieldWidth.abbreviated),
+          ('U', 4) => const DateField.cyclicYearName(FieldWidth.wide),
+          ('U', 5) => const DateField.cyclicYearName(FieldWidth.narrow),
+          ('r', _) => DateField.relatedGregorianYear(minDigits: length),
+          ('w', 1) => const DateField.weekOfYear(isPadded: false),
+          ('w', 2) => const DateField.weekOfYear(isPadded: true),
+          ('W', 1) => const DateField.weekOfMonth(),
+          ('d', 1) => const DateField.dayOfMonth(isPadded: false),
+          ('d', 2) => const DateField.dayOfMonth(isPadded: true),
+          ('D', 1) => const DateField.dayOfYear(padding: DayOfYearPadding.one),
+          ('D', 2) => const DateField.dayOfYear(padding: DayOfYearPadding.two),
+          ('D', 3) =>
+            const DateField.dayOfYear(padding: DayOfYearPadding.three),
+          ('F', 1) => const DateField.dayOfWeekInMonth(),
+          ('g', _) => const DateField.modifiedJulianDay(),
+          _ => null,
+        } ??
+        QuarterStyle.parse(character, length)?.let(DateField.quarter) ??
+        MonthStyle.parse(character, length)?.let(DateField.month) ??
+        WeekdayStyle.parse(character, length)?.let(DateField.weekday);
+  }
+
+  @override
+  Expression toExpression() {
+    final create = referCldr('DateField').newInstanceNamed;
+    return when(
+      era: (width) => create('era', [width.toExpression()]),
+      year: (minDigits) =>
+          create('year', [], {'minDigits': literalNum(minDigits)}),
+      weekBasedYear: (minDigits) =>
+          create('weekBasedYear', [], {'minDigits': literalNum(minDigits)}),
+      extendedYear: (minDigits) =>
+          create('extendedYear', [], {'minDigits': literalNum(minDigits)}),
+      cyclicYearName: (width) =>
+          create('cyclicYearName', [width.toExpression()]),
+      relatedGregorianYear: (minDigits) => create(
+        'relatedGregorianYear',
+        [],
+        {'minDigits': literalNum(minDigits)},
+      ),
+      quarter: (style) => create('quarter', [style.toExpression()]),
+      month: (style) => create('month', [style.toExpression()]),
+      weekOfYear: (isPadded) =>
+          create('weekOfYear', [], {'isPadded': literalBool(isPadded)}),
+      weekOfMonth: () => create('weekOfMonth', []),
+      dayOfMonth: (isPadded) =>
+          create('dayOfMonth', [], {'isPadded': literalBool(isPadded)}),
+      dayOfYear: (padding) =>
+          create('dayOfYear', [], {'padding': padding.toExpression()}),
+      dayOfWeekInMonth: () => create('dayOfWeekInMonth', []),
+      modifiedJulianDay: () => create('modifiedJulianDay', []),
+      weekday: (style) => create('weekday', [style.toExpression()]),
+    );
+  }
+}
+
+enum DayOfYearPadding implements ToExpression {
+  one,
+  two,
+  three;
+
+  @override
+  Expression toExpression() => referCldr('DayOfYearPadding').property(name);
+}
+
+@freezed
+sealed class QuarterStyle with _$QuarterStyle implements ToExpression {
+  /// The form used within a date format string (such as “2nd quarter 2024”).
   ///
-  /// Unicode Shorthand: `E`, `EE`, `EEE`, `eee`
-  const factory DateTimeField.dayOfWeekShortDay() =
-      _DateTimeFieldDayOfWeekShortDay;
+  /// | Width         | Example     | Unicode Shorthand |
+  /// | :------------ | :---------- | :---------------- |
+  /// | `wide`        | 2nd quarter | `QQQQ`            |
+  /// | `abbreviated` | Q2          | `QQQ`             |
+  /// | `narrow`      | 2           | `QQQQQ`           |
+  const factory QuarterStyle.format(FieldWidth width) = _QuarterStyleFormat;
 
-  /// Day of Week (full name), e.g., “Tuesday”.
+  /// Numeric version of [QuarterStyle.format], e.g., “2” (not padded) or “02”
+  /// (padded).
   ///
-  /// Unicode Shorthand: `EEEE`, `eeee`
-  const factory DateTimeField.dayOfWeekFull() = _DateTimeFieldDayOfWeekFull;
+  /// Unicode Shorthand: `Q` (one digit), `QQ` (padded to two digits)
+  const factory QuarterStyle.formatNumeric({required bool isPadded}) =
+      _QuarterStyleFormatNumeric;
 
-  /// Day of Week (narrow name), e.g., “T”.
+  /// The form used independently, e.g., in a calendar header.
   ///
-  /// Unicode Shorthand: `EEEEE`, `eeeee`
-  const factory DateTimeField.dayOfWeekNarrow() = _DateTimeFieldDayOfWeekNarrow;
+  /// | Width         | Example     | Unicode Shorthand |
+  /// | :------------ | :---------- | :---------------- |
+  /// | `wide`        | 2nd quarter | `qqqq`            |
+  /// | `abbreviated` | Q2          | `qqq`             |
+  /// | `narrow`      | 2           | `qqqqL`           |
+  const factory QuarterStyle.standalone(FieldWidth width) =
+      _QuarterStyleStandalone;
 
-  /// Day of Week (short name), e.g., “Tu”.
+  /// Numeric version of [QuarterStyle.standalone], e.g., “2” (not padded) or
+  /// “02” (padded).
   ///
-  /// Unicode Shorthand: `EEEEEE`, `eeeeee`
-  const factory DateTimeField.dayOfWeekShort() = _DateTimeFieldDayOfWeekShort;
+  /// Unicode Shorthand: `q` (one digit), `qq` (padded to two digits)
+  const factory QuarterStyle.standaloneNumeric({required bool isPadded}) =
+      _QuarterStyleStandaloneNumeric;
 
-  /// Local Day of Week (numeric), e.g., “2”.
+  const QuarterStyle._();
+
+  static QuarterStyle? parse(String character, int length) {
+    return switch ((character, length)) {
+      ('Q', 1) => const QuarterStyle.formatNumeric(isPadded: false),
+      ('Q', 2) => const QuarterStyle.formatNumeric(isPadded: true),
+      ('Q', 3) => const QuarterStyle.format(FieldWidth.abbreviated),
+      ('Q', 4) => const QuarterStyle.format(FieldWidth.wide),
+      ('Q', 5) => const QuarterStyle.format(FieldWidth.narrow),
+      ('q', 1) => const QuarterStyle.standaloneNumeric(isPadded: false),
+      ('q', 2) => const QuarterStyle.standaloneNumeric(isPadded: true),
+      ('q', 3) => const QuarterStyle.standalone(FieldWidth.abbreviated),
+      ('q', 4) => const QuarterStyle.standalone(FieldWidth.wide),
+      ('q', 5) => const QuarterStyle.standalone(FieldWidth.narrow),
+      _ => null,
+    };
+  }
+
+  @override
+  Expression toExpression() {
+    final create = referCldr('QuarterStyle').newInstanceNamed;
+    return when(
+      format: (width) => create('format', [width.toExpression()]),
+      formatNumeric: (isPadded) =>
+          create('formatNumeric', [], {'isPadded': literalBool(isPadded)}),
+      standalone: (width) => create('standalone', [width.toExpression()]),
+      standaloneNumeric: (isPadded) =>
+          create('standaloneNumeric', [], {'isPadded': literalBool(isPadded)}),
+    );
+  }
+}
+
+@freezed
+sealed class MonthStyle with _$MonthStyle implements ToExpression {
+  /// The form used within a date format string (such as “Saturday, November
+  /// 12th”).
   ///
-  /// Unicode Shorthand: `e`, `ee`, `c`
-  const factory DateTimeField.localDayOfWeekNumeric() =
-      _DateTimeFieldLocalDayOfWeekNumeric;
-
-  /// Stand-Alone Local Day of Week (short day), e.g., “Tues”.
+  /// The format style name is an additional form of the month name (besides the
+  /// standalone style) that can be used in contexts where it is different than
+  /// the standalone form. For example, depending on the language, patterns that
+  /// combine month with day-of month (e.g., “d MMMM”) may require the month to
+  /// be in genitive form.
   ///
-  /// Unicode Shorthand: `ccc`
-  const factory DateTimeField.standaloneLocalDayOfWeekShortDay() =
-      _DateTimeFieldStandaloneLocalDayOfWeekShortDay;
-
-  /// Stand-Alone Local Day of Week (full name), e.g., “Tuesday”.
+  /// If a separate form is not needed, the format and standalone forms can be
+  /// the same.
   ///
-  /// Unicode Shorthand: `cccc`
-  const factory DateTimeField.standaloneLocalDayOfWeekFull() =
-      _DateTimeFieldStandaloneLocalDayOfWeekFull;
+  /// | Width         | Example   | Unicode Shorthand |
+  /// | :------------ | :-------- | :---------------- |
+  /// | `wide`        | September | `MMMM`            |
+  /// | `abbreviated` | Sep       | `MMM`             |
+  /// | `narrow`      | S         | `MMMMM`           |
+  const factory MonthStyle.format(FieldWidth width) = _MonthStyleFormat;
 
-  /// Stand-Alone Local Day of Week (narrow name), e.g., “T”.
+  /// Numeric version of [MonthStyle.format], e.g., “9” (not padded) or “09”
+  /// (padded).
   ///
-  /// Unicode Shorthand: `ccccc`
-  const factory DateTimeField.standaloneLocalDayOfWeekNarrow() =
-      _DateTimeFieldStandaloneLocalDayOfWeekNarrow;
+  /// Unicode Shorthand: `M` (one digit), `MM` (padded to two digits)
+  const factory MonthStyle.formatNumeric({required bool isPadded}) =
+      _MonthStyleFormatNumeric;
 
-  /// Stand-Alone Local Day of Week (short name), e.g., “Tu”.
+  /// The form used independently, e.g., in a calendar header.
   ///
-  /// Unicode Shorthand: `cccccc`
-  const factory DateTimeField.standaloneLocalDayOfWeekShort() =
-      _DateTimeFieldStandaloneLocalDayOfWeekShort;
+  /// | Width         | Example   | Unicode Shorthand |
+  /// | :------------ | :-------- | :---------------- |
+  /// | `wide`        | September | `LLLL`            |
+  /// | `abbreviated` | Sep       | `LLL`             |
+  /// | `narrow`      | S         | `LLLLL`           |
+  const factory MonthStyle.standalone(FieldWidth width) = _MonthStyleStandalone;
 
+  /// Numeric version of [MonthStyle.standalone], e.g., “9” (not padded) or “09”
+  /// (padded).
+  ///
+  /// Unicode Shorthand: `L` (one digit), `LL` (padded to two digits)
+  const factory MonthStyle.standaloneNumeric({required bool isPadded}) =
+      _MonthStyleStandaloneNumeric;
+
+  const MonthStyle._();
+
+  static MonthStyle? parse(String character, int length) {
+    return switch ((character, length)) {
+      ('M', 1) => const MonthStyle.formatNumeric(isPadded: false),
+      ('M', 2) => const MonthStyle.formatNumeric(isPadded: true),
+      ('M', 3) => const MonthStyle.format(FieldWidth.abbreviated),
+      ('M', 4) => const MonthStyle.format(FieldWidth.wide),
+      ('M', 5) => const MonthStyle.format(FieldWidth.narrow),
+      ('L', 1) => const MonthStyle.standaloneNumeric(isPadded: false),
+      ('L', 2) => const MonthStyle.standaloneNumeric(isPadded: true),
+      ('L', 3) => const MonthStyle.standalone(FieldWidth.abbreviated),
+      ('L', 4) => const MonthStyle.standalone(FieldWidth.wide),
+      ('L', 5) => const MonthStyle.standalone(FieldWidth.narrow),
+      _ => null,
+    };
+  }
+
+  @override
+  Expression toExpression() {
+    final create = referCldr('MonthStyle').newInstanceNamed;
+    return when(
+      format: (width) => create('format', [width.toExpression()]),
+      formatNumeric: (isPadded) =>
+          create('formatNumeric', [], {'isPadded': literalBool(isPadded)}),
+      standalone: (width) => create('standalone', [width.toExpression()]),
+      standaloneNumeric: (isPadded) =>
+          create('standaloneNumeric', [], {'isPadded': literalBool(isPadded)}),
+    );
+  }
+}
+
+@freezed
+sealed class WeekdayStyle with _$WeekdayStyle implements ToExpression {
+  /// The form used within a date format string (such as “Saturday, November
+  /// 12th”).
+  ///
+  /// | Width         | Example | Unicode Shorthand       |
+  /// | :------------ | :------ | :---------------------- |
+  /// | `wide`        | Tuesday | `EEEE`, `eeee`          |
+  /// | `abbreviated` | Tue     | `E`, `EE`, `EEE`, `eee` |
+  /// | `short`       | Tu      | `EEEEEE`, `eeeeee`      |
+  /// | `narrow`      | T       | `EEEEE`, `eeeee`        |
+  const factory WeekdayStyle.format(DayFieldWidth width) = _WeekdayStyleFormat;
+
+  /// Local weekday (numeric), e.g., “2”.
+  ///
+  /// Unicode Shorthand: `e` (one digit), `ee` (padded to two digits)
+  const factory WeekdayStyle.formatNumeric({required bool isPadded}) =
+      _WeekdayStyleFormatNumeric;
+
+  /// The form used independently, e.g., in a calendar header.
+  ///
+  /// | Width         | Example | Unicode Shorthand |
+  /// | :------------ | :------ | :---------------- |
+  /// | `wide`        | Tuesday | `cccc`            |
+  /// | `abbreviated` | Tue     | `ccc`             |
+  /// | `short`       | Tu      | `cccccc`          |
+  /// | `narrow`      | T       | `ccccc`           |
+  const factory WeekdayStyle.standalone(DayFieldWidth width) =
+      _WeekdayStyleStandalone;
+
+  /// Standalone local day of week number, e.g., “2”.
+  ///
+  /// Unicode Shorthand: `c`, `cc`
+  const factory WeekdayStyle.standaloneNumeric() =
+      _WeekdayStyleStandaloneNumeric;
+
+  const WeekdayStyle._();
+
+  static WeekdayStyle? parse(String character, int length) {
+    return switch ((character, length)) {
+      ('E', >= 1 && <= 3) ||
+      ('e', 3) =>
+        const WeekdayStyle.format(DayFieldWidth.abbreviated),
+      ('E' || 'e', 4) => const WeekdayStyle.format(DayFieldWidth.wide),
+      ('E' || 'e', 5) => const WeekdayStyle.format(DayFieldWidth.narrow),
+      ('E' || 'e', 6) => const WeekdayStyle.format(DayFieldWidth.short),
+      ('e', 1) => const WeekdayStyle.formatNumeric(isPadded: false),
+      ('e', 2) => const WeekdayStyle.formatNumeric(isPadded: true),
+      ('c', >= 1 && <= 2) => const WeekdayStyle.standaloneNumeric(),
+      ('c', 3) => const WeekdayStyle.standalone(DayFieldWidth.abbreviated),
+      ('c', 4) => const WeekdayStyle.standalone(DayFieldWidth.wide),
+      ('c', 5) => const WeekdayStyle.standalone(DayFieldWidth.narrow),
+      ('c', 6) => const WeekdayStyle.standalone(DayFieldWidth.short),
+      _ => null,
+    };
+  }
+
+  @override
+  Expression toExpression() {
+    final create = referCldr('WeekdayStyle').newInstanceNamed;
+    return when(
+      format: (width) => create('format', [width.toExpression()]),
+      formatNumeric: (isPadded) => create(
+        'formatNumeric',
+        [],
+        {'isPadded': literalBool(isPadded)},
+      ),
+      standalone: (width) => create('standalone', [width.toExpression()]),
+      standaloneNumeric: () => create('standaloneNumeric', []),
+    );
+  }
+}
+
+enum FieldWidth implements ToExpression {
+  wide,
+  abbreviated,
+  narrow;
+
+  @override
+  Expression toExpression() => referCldr('FieldWidth').property(name);
+}
+
+enum DayFieldWidth implements ToExpression {
+  wide,
+  abbreviated,
+  short,
+  narrow;
+
+  @override
+  Expression toExpression() => referCldr('DayFieldWidth').property(name);
+}
+
+@freezed
+sealed class TimeField with _$TimeField implements ToExpression {
   /// Period (AM or PM), e.g., “AM”.
   ///
-  /// Unicode Shorthand: `a`
-  const factory DateTimeField.period() = _DateTimeFieldPeriod;
+  /// May be uppercase or lowercase depending on the locale and other options.
+  /// The wide form may be the same as the short form if the “real” long form
+  /// (e.g., ante meridiem) is not customarily used. The narrow form must be
+  /// unique, unlike some other fields
+  ///
+  /// | Width         | Example            | Unicode Shorthand |
+  /// | :------------ | :----------------- | :---------------- |
+  /// | `wide`        | am. (e.g., 12 am.) | `aaaa`            |
+  /// | `abbreviated` | am. (e.g., 12 am.) | `a`, `aa`, `aaa`  |
+  /// | `narrow`      | a (e.g., 12a)      | `aaaaa`           |
+  const factory TimeField.periodAmPm(FieldWidth width) = _TimeFieldPeriodAmPm;
+
+  /// Period (AM or PM) with optional values for noon and midnight, e.g., “AM”.
+  ///
+  /// May be uppercase or lowercase depending on the locale and other options.
+  /// If the locale doesn't have the notion of a unique “noon” = 12:00, then the
+  /// PM form may be substituted. Similarly for “midnight” = 00:00 and the AM
+  /// form. The narrow form must be unique, unlike some other fields.
+  ///
+  /// | Width         | Example                      | Unicode Shorthand |
+  /// | :------------ | :--------------------------- | :---------------- |
+  /// | `wide`        | midnight (e.g., 12 midnight) | `bbbb`            |
+  /// | `abbreviated` | mid. (e.g., 12 mid.)         | `b`, `bb`, `bbb`  |
+  /// | `narrow`      | md (e.g., 12 md)             | `bbbbb`           |
+  const factory TimeField.periodAmPmNoonMidnight(FieldWidth width) =
+      _TimeFieldPeriodAmPmNoonMidnight;
+
+  /// Flexible day period, e.g., “at night”.
+  ///
+  /// May be uppercase or lowercase depending on the locale and other options.
+  /// Often, there is only one width that is customarily used.
+  ///
+  /// | Width         | Example                        | Unicode Shorthand |
+  /// | :------------ | :----------------------------- | :---------------- |
+  /// | `wide`        | at night (e.g., 3:00 at night) | `BBBB`            |
+  /// | `abbreviated` | at night (e.g., 3:00 at night) | `B`, `BB`, `BBB`  |
+  /// | `narrow`      | at night (e.g., 3:00 at night) | `BBBBB`           |
+  const factory TimeField.periodFlexible(FieldWidth width) =
+      _TimeFieldPeriodFlexible;
 
   /// Hour (1 – 12), e.g., “11”.
   ///
   /// Unicode Shorthand: `h`, `hh`
-  const factory DateTimeField.hour12({required bool isPadded}) =
-      _DateTimeFieldHour12;
+  const factory TimeField.hour12({required bool isPadded}) = _TimeFieldHour12;
 
   /// Hour (0 – 23), e.g., “13”.
   ///
   /// Unicode Shorthand: `H`, `HH`
-  const factory DateTimeField.hour24({required bool isPadded}) =
-      _DateTimeFieldHour24;
+  const factory TimeField.hour24({required bool isPadded}) = _TimeFieldHour24;
 
   /// Hour (0 – 11), e.g., “0” or “00”.
   ///
   /// Unicode Shorthand: `K`, `KK`
-  const factory DateTimeField.hour12ZeroBased({required bool isPadded}) =
-      _DateTimeFieldHour12ZeroBased;
+  const factory TimeField.hour12ZeroBased({required bool isPadded}) =
+      _TimeFieldHour12ZeroBased;
 
   /// Hour (1 – 24), e.g., “24”.
   ///
   /// Unicode Shorthand: `k`, `kk`
-  const factory DateTimeField.hour24OneBased({required bool isPadded}) =
-      _DateTimeFieldHour24OneBased;
+  const factory TimeField.hour24OneBased({required bool isPadded}) =
+      _TimeFieldHour24OneBased;
 
   /// Minute, e.g., “59”.
   ///
   /// Unicode Shorthand: `m`, `mm`
-  const factory DateTimeField.minute({required bool isPadded}) =
-      _DateTimeFieldMinute;
+  const factory TimeField.minute({required bool isPadded}) = _TimeFieldMinute;
 
   /// Second, e.g., “12”.
   ///
   /// Unicode Shorthand: `s`, `ss`
-  const factory DateTimeField.second({required bool isPadded}) =
-      _DateTimeFieldSecond;
+  const factory TimeField.second({required bool isPadded}) = _TimeFieldSecond;
 
   /// Fractional Second, e.g., “3456”.
   ///
   /// Unicode Shorthand: `S`, `SS`, etc.
   @Assert('digits >= 1')
-  const factory DateTimeField.fractionalSecond(int digits) =
-      _DateTimeFieldFractionalSecond;
+  const factory TimeField.fractionalSecond(int digits) =
+      _TimeFieldFractionalSecond;
 
   /// Milliseconds in day, e.g., “69540000”.
   ///
@@ -1075,8 +1179,8 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
   ///
   /// Unicode Shorthand: `A`, `AA`, etc.
   @Assert('digits >= 1')
-  const factory DateTimeField.millisecondsInDay(int digits) =
-      _DateTimeFieldMillisecondsInDay;
+  const factory TimeField.millisecondsInDay(int digits) =
+      _TimeFieldMillisecondsInDay;
 
   /// The specific non-location format, e.g., “PDT” (short) or “Pacific Daylight
   /// Time” (long).
@@ -1088,17 +1192,17 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
   /// format (“OOOO”).
   ///
   /// Unicode Shorthand: `z`, `zz`, `zzz` (short), `zzzz` (long)
-  const factory DateTimeField.zoneSpecificNonLocation({
+  const factory TimeField.zoneSpecificNonLocation({
     required ZoneFieldLength length,
-  }) = _DateTimeFieldZoneSpecificNonLocation;
+  }) = _TimeFieldZoneSpecificNonLocation;
 
   /// The localized GMT format, e.g., “GMT-8” (short) or “GMT-08:00” (long).
   ///
   /// Unicode Shorthand: `O` (short), `ZZZZ`, `OOOO` (long)
   // `TODO`(JonasWanke): check example since the spec conflicts itself
-  const factory DateTimeField.zoneLocalizedGmt({
+  const factory TimeField.zoneLocalizedGmt({
     required ZoneFieldLength length,
-  }) = _DateTimeFieldZoneLocalizedGmt;
+  }) = _TimeFieldZoneLocalizedGmt;
 
   /// The generic non-location format, e.g., “PT” (short) or “Pacific Time”
   /// (long).
@@ -1111,9 +1215,9 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
   /// (“VVVV”).
   ///
   /// Unicode Shorthand: `v` (short), `vvvv` (long)
-  const factory DateTimeField.zoneGenericNonLocation({
+  const factory TimeField.zoneGenericNonLocation({
     required ZoneFieldLength length,
-  }) = _DateTimeFieldZoneGenericNonLocation;
+  }) = _TimeFieldZoneGenericNonLocation;
 
   /// The time zone ID, e.g., “uslax” (short) or “America/Los_Angeles” (long).
   ///
@@ -1126,8 +1230,8 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
   /// changed to designate a short time zone ID.
   ///
   /// Unicode Shorthand: `V` (short), `VV` (long)
-  const factory DateTimeField.zoneID({required ZoneFieldLength length}) =
-      _DateTimeFieldZoneID;
+  const factory TimeField.zoneID({required ZoneFieldLength length}) =
+      _TimeFieldZoneID;
 
   /// The exemplar city (location) for the time zone, e.g., “Los Angeles”.
   ///
@@ -1136,8 +1240,7 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
   /// City”).
   ///
   /// Unicode Shorthand: `VVV`
-  const factory DateTimeField.zoneExemplarCity() =
-      _DateTimeFieldZoneExemplarCity;
+  const factory TimeField.zoneExemplarCity() = _TimeFieldZoneExemplarCity;
 
   /// The generic location format, e.g., “Los Angeles Time”.
   ///
@@ -1148,8 +1251,8 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
   /// the `v` format.
   ///
   /// Unicode Shorthand: `VVVV`
-  const factory DateTimeField.zoneGenericLocationFormat() =
-      _DateTimeFieldZoneGenericLocationFormat;
+  const factory TimeField.zoneGenericLocationFormat() =
+      _TimeFieldZoneGenericLocationFormat;
 
   /// An ISO 8601 basic format, see [ZoneFieldIso8601Style] for details.
   ///
@@ -1157,127 +1260,154 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
   /// used when local time offset is 0.
   ///
   /// Unicode Shorthand: See [ZoneFieldIso8601Style]
-  const factory DateTimeField.zoneIso8601({
+  const factory TimeField.zoneIso8601({
     required ZoneFieldIso8601Style style,
     required bool useZForZeroOffset,
-  }) = _DateTimeFieldZoneIso8601Basic;
+  }) = _TimeFieldZoneIso8601Basic;
 
-  const factory DateTimeField.unknown({
-    required String character,
-    required int length,
-  }) = _DateTimeFieldUnknown;
+  const TimeField._();
 
-  const DateTimeField._();
+  static TimeField? parse(String character, int length) {
+    return switch ((character, length)) {
+      ('a', >= 1 && <= 3) => const TimeField.periodAmPm(FieldWidth.abbreviated),
+      ('a', 4) => const TimeField.periodAmPm(FieldWidth.wide),
+      ('a', 5) => const TimeField.periodAmPm(FieldWidth.narrow),
+      ('b', >= 1 && <= 3) =>
+        const TimeField.periodAmPmNoonMidnight(FieldWidth.abbreviated),
+      ('b', 4) => const TimeField.periodAmPmNoonMidnight(FieldWidth.wide),
+      ('b', 5) => const TimeField.periodAmPmNoonMidnight(FieldWidth.narrow),
+      ('B', >= 1 && <= 3) =>
+        const TimeField.periodFlexible(FieldWidth.abbreviated),
+      ('B', 4) => const TimeField.periodFlexible(FieldWidth.wide),
+      ('B', 5) => const TimeField.periodFlexible(FieldWidth.narrow),
+      ('h', 1) => const TimeField.hour12(isPadded: false),
+      ('h', 2) => const TimeField.hour12(isPadded: true),
+      ('H', 1) => const TimeField.hour24(isPadded: false),
+      ('H', 2) => const TimeField.hour24(isPadded: true),
+      ('K', 1) => const TimeField.hour12ZeroBased(isPadded: false),
+      ('K', 2) => const TimeField.hour12ZeroBased(isPadded: true),
+      ('k', 1) => const TimeField.hour24OneBased(isPadded: false),
+      ('k', 2) => const TimeField.hour24OneBased(isPadded: true),
+      ('m', 1) => const TimeField.minute(isPadded: false),
+      ('m', 2) => const TimeField.minute(isPadded: true),
+      ('s', 1) => const TimeField.second(isPadded: false),
+      ('s', 2) => const TimeField.second(isPadded: true),
+      ('S', _) => TimeField.fractionalSecond(length),
+      ('A', _) => TimeField.millisecondsInDay(length),
+      ('z', >= 1 && <= 3) => const TimeField.zoneSpecificNonLocation(
+          length: ZoneFieldLength.short,
+        ),
+      ('z', 4) => const TimeField.zoneSpecificNonLocation(
+          length: ZoneFieldLength.long,
+        ),
+      ('Z' || 'O', 4) => const TimeField.zoneLocalizedGmt(
+          length: ZoneFieldLength.long,
+        ),
+      ('O', 1) => const TimeField.zoneLocalizedGmt(
+          length: ZoneFieldLength.short,
+        ),
+      ('v', 1) => const TimeField.zoneGenericNonLocation(
+          length: ZoneFieldLength.short,
+        ),
+      ('v', 4) => const TimeField.zoneGenericNonLocation(
+          length: ZoneFieldLength.long,
+        ),
+      ('V', 1) => const TimeField.zoneID(length: ZoneFieldLength.short),
+      ('V', 2) => const TimeField.zoneID(length: ZoneFieldLength.long),
+      ('V', 3) => const TimeField.zoneExemplarCity(),
+      ('V', 4) => const TimeField.zoneGenericLocationFormat(),
+      ('X', 1) => const TimeField.zoneIso8601(
+          style: ZoneFieldIso8601Style.basicWithHoursOptionalMinutes,
+          useZForZeroOffset: true,
+        ),
+      ('X', 2) => const TimeField.zoneIso8601(
+          style: ZoneFieldIso8601Style.basicWithHoursMinutes,
+          useZForZeroOffset: true,
+        ),
+      ('X', 3) => const TimeField.zoneIso8601(
+          style: ZoneFieldIso8601Style.extendedWithHoursMinutes,
+          useZForZeroOffset: true,
+        ),
+      ('X', 4) => const TimeField.zoneIso8601(
+          style: ZoneFieldIso8601Style.basicWithHoursMinutesOptionalSeconds,
+          useZForZeroOffset: true,
+        ),
+      ('X' || 'Z', 5) => const TimeField.zoneIso8601(
+          style: ZoneFieldIso8601Style.extendedWithHoursMinutesOptionalSeconds,
+          useZForZeroOffset: true,
+        ),
+      ('x', 1) => const TimeField.zoneIso8601(
+          style: ZoneFieldIso8601Style.basicWithHoursOptionalMinutes,
+          useZForZeroOffset: false,
+        ),
+      ('x', 2) => const TimeField.zoneIso8601(
+          style: ZoneFieldIso8601Style.basicWithHoursMinutes,
+          useZForZeroOffset: false,
+        ),
+      ('x', 3) => const TimeField.zoneIso8601(
+          style: ZoneFieldIso8601Style.extendedWithHoursMinutes,
+          useZForZeroOffset: false,
+        ),
+      ('x', 4) || ('Z', >= 1 && <= 3) => const TimeField.zoneIso8601(
+          style: ZoneFieldIso8601Style.basicWithHoursMinutesOptionalSeconds,
+          useZForZeroOffset: false,
+        ),
+      ('x', 5) => const TimeField.zoneIso8601(
+          style: ZoneFieldIso8601Style.extendedWithHoursMinutesOptionalSeconds,
+          useZForZeroOffset: false,
+        ),
+      _ => null,
+    };
+  }
 
   @override
   Expression toExpression() {
-    Expression create(
-      String name, [
-      Map<String, Expression> args = const {},
-    ]) =>
-        referCldr('DateTimeField').newInstanceNamed(name, [], args);
+    final create = referCldr('TimeField').newInstanceNamed;
 
     return when(
-      eraAbbreviated: () => create('eraAbbreviated'),
-      eraLong: () => create('eraLong'),
-      eraNarrow: () => create('eraNarrow'),
-      year: (minDigits) => create('year', {'minDigits': literalNum(minDigits)}),
-      weekBasedYear: (minDigits) =>
-          create('weekBasedYear', {'minDigits': literalNum(minDigits)}),
-      extendedYear: () => create('extendedYear'),
-      cyclicYearNameAbbreviated: () => create('cyclicYearNameAbbreviated'),
-      cyclicYearNameFull: () => create('cyclicYearNameFull'),
-      cyclicYearNameNarrow: () => create('cyclicYearNameNarrow'),
-      quarterNumerical: (isPadded) =>
-          create('quarterNumerical', {'isPadded': literalBool(isPadded)}),
-      quarterAbbreviated: () => create('quarterAbbreviated'),
-      quarterFull: () => create('quarterFull'),
-      standaloneQuarterNumerical: () => create('standaloneQuarterNumerical'),
-      standaloneQuarterAbbreviated: () =>
-          create('standaloneQuarterAbbreviated'),
-      standaloneQuarterFull: () => create('standaloneQuarterFull'),
-      monthNumerical: (isPadded) =>
-          create('monthNumerical', {'isPadded': literalBool(isPadded)}),
-      monthAbbreviated: () => create('monthAbbreviated'),
-      monthFull: () => create('monthFull'),
-      monthNarrow: () => create('monthNarrow'),
-      standaloneMonthNumerical: (isPadded) => create(
-        'standaloneMonthNumerical',
-        {'isPadded': literalBool(isPadded)},
-      ),
-      standaloneMonthAbbreviated: () => create('standaloneMonthAbbreviated'),
-      standaloneMonthFull: () => create('standaloneMonthFull'),
-      standaloneMonthNarrow: () => create('standaloneMonthNarrow'),
-      weekOfYear: (isPadded) =>
-          create('weekOfYear', {'isPadded': literalBool(isPadded)}),
-      weekOfMonth: () => create('weekOfMonth'),
-      dayOfMonth: (isPadded) =>
-          create('dayOfMonth', {'isPadded': literalBool(isPadded)}),
-      dayOfYear: (padding) =>
-          create('dayOfYear', {'padding': padding.toExpression()}),
-      dayOfWeekInMonth: () => create('dayOfWeekInMonth'),
-      modifiedJulianDay: () => create('modifiedJulianDay'),
-      dayOfWeekShortDay: () => create('dayOfWeekShortDay'),
-      dayOfWeekFull: () => create('dayOfWeekFull'),
-      dayOfWeekNarrow: () => create('dayOfWeekNarrow'),
-      dayOfWeekShort: () => create('dayOfWeekShort'),
-      localDayOfWeekNumeric: () => create('localDayOfWeekNumeric'),
-      standaloneLocalDayOfWeekShortDay: () =>
-          create('standaloneLocalDayOfWeekShortDay'),
-      standaloneLocalDayOfWeekFull: () =>
-          create('standaloneLocalDayOfWeekFull'),
-      standaloneLocalDayOfWeekNarrow: () =>
-          create('standaloneLocalDayOfWeekNarrow'),
-      standaloneLocalDayOfWeekShort: () =>
-          create('standaloneLocalDayOfWeekShort'),
-      period: () => create('period'),
+      periodAmPm: (width) => create('periodAmPm', [width.toExpression()]),
+      periodAmPmNoonMidnight: (width) =>
+          create('periodAmPmNoonMidnight', [width.toExpression()]),
+      periodFlexible: (width) =>
+          create('periodFlexible', [width.toExpression()]),
       hour12: (isPadded) =>
-          create('hour12', {'isPadded': literalBool(isPadded)}),
+          create('hour12', [], {'isPadded': literalBool(isPadded)}),
       hour24: (isPadded) =>
-          create('hour24', {'isPadded': literalBool(isPadded)}),
+          create('hour24', [], {'isPadded': literalBool(isPadded)}),
       hour12ZeroBased: (isPadded) =>
-          create('hour12ZeroBased', {'isPadded': literalBool(isPadded)}),
+          create('hour12ZeroBased', [], {'isPadded': literalBool(isPadded)}),
       hour24OneBased: (isPadded) =>
-          create('hour24OneBased', {'isPadded': literalBool(isPadded)}),
+          create('hour24OneBased', [], {'isPadded': literalBool(isPadded)}),
       minute: (isPadded) =>
-          create('minute', {'isPadded': literalBool(isPadded)}),
+          create('minute', [], {'isPadded': literalBool(isPadded)}),
       second: (isPadded) =>
-          create('second', {'isPadded': literalBool(isPadded)}),
+          create('second', [], {'isPadded': literalBool(isPadded)}),
       fractionalSecond: (digits) =>
-          create('fractionalSecond', {'digits': literalNum(digits)}),
+          create('fractionalSecond', [], {'digits': literalNum(digits)}),
       millisecondsInDay: (digits) =>
-          create('millisecondsInDay', {'digits': literalNum(digits)}),
-      zoneSpecificNonLocation: (length) =>
-          create('zoneSpecificNonLocation', {'length': length.toExpression()}),
-      zoneLocalizedGmt: (length) =>
-          create('zoneLocalizedGmt', {'length': length.toExpression()}),
-      zoneGenericNonLocation: (length) =>
-          create('zoneGenericNonLocation', {'length': length.toExpression()}),
-      zoneID: (length) => create('zoneID', {'length': length.toExpression()}),
-      zoneExemplarCity: () => create('zoneExemplarCity'),
-      zoneGenericLocationFormat: () => create('zoneGenericLocationFormat'),
-      zoneIso8601: (style, useZForZeroOffset) => create(
-        'zoneIso8601',
-        {
-          'style': style.toExpression(),
-          'useZForZeroOffset': literalBool(useZForZeroOffset),
-        },
+          create('millisecondsInDay', [], {'digits': literalNum(digits)}),
+      zoneSpecificNonLocation: (length) => create(
+        'zoneSpecificNonLocation',
+        [],
+        {'length': length.toExpression()},
       ),
-      unknown: (character, length) => create('unknown', {
-        'character': literalString(character),
-        'length': literalNum(length),
+      zoneLocalizedGmt: (length) =>
+          create('zoneLocalizedGmt', [], {'length': length.toExpression()}),
+      zoneGenericNonLocation: (length) => create(
+        'zoneGenericNonLocation',
+        [],
+        {'length': length.toExpression()},
+      ),
+      zoneID: (length) =>
+          create('zoneID', [], {'length': length.toExpression()}),
+      zoneExemplarCity: () => create('zoneExemplarCity', []),
+      zoneGenericLocationFormat: () => create('zoneGenericLocationFormat', []),
+      zoneIso8601: (style, useZForZeroOffset) => create('zoneIso8601', [], {
+        'style': style.toExpression(),
+        'useZForZeroOffset': literalBool(useZForZeroOffset),
       }),
     );
   }
-}
-
-enum DayOfYearPadding implements ToExpression {
-  one,
-  two,
-  three;
-
-  @override
-  Expression toExpression() => referCldr('DayOfYearPadding').property(name);
 }
 
 enum ZoneFieldLength implements ToExpression {
