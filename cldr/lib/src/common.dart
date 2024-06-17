@@ -421,14 +421,14 @@ class CldrPathSegment with _$CldrPathSegment {
           .where((it) => !_attributesWithLateralFallbacks.contains(it.key)),
     );
     return countVariants
-        .expand((count) => altVariants.map((alt) => (count: count, alt: alt)))
+        .expand((count) => altVariants.map((alt) => (alt: alt, count: count)))
         .map(
           (it) => CldrPathSegment(
             elementName,
             attributes: {
               ...remainingAttributes,
-              if (it.count != null) 'count': it.count!,
               if (it.alt != null) 'alt': it.alt!,
+              if (it.count != null) 'count': it.count!,
             },
           ),
         )
