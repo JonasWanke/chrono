@@ -107,6 +107,8 @@ class ValueWithVariant<T extends Object>
     return ValueWithVariant(normal.innerText, alt.innerText);
   }
 
+  T get variantOrValue => variant ?? value;
+
   @override
   Expression toExpression() {
     return referCldr('ValueWithVariant')(
