@@ -147,8 +147,12 @@ class CldrXml {
 
       // Look up path in document and fallbacks
       for (final document in documents) {
-        XmlElement? lookup(CldrPath path) =>
-            document.xpath(path.toString()).whereType<XmlElement>().firstOrNull;
+        XmlElement? lookup(CldrPath path) {
+          return document
+              .xpath(path.toExplicitString())
+              .whereType<XmlElement>()
+              .firstOrNull;
+        }
 
         final element = lookup(path);
         if (element == null) continue;
@@ -172,7 +176,9 @@ class CldrXml {
         if (parentNavigations > path.segments.length) return null;
 
         final parentPath = path.nthParent(parentNavigations)!;
-        final alias = root.xpath('$parentPath/alias').firstOrNull;
+        final alias = root
+            .xpath(parentPath.child('alias').toExplicitString())
+            .firstOrNull;
         if (alias == null) {
           parentNavigations++;
           continue;
@@ -340,6 +346,8 @@ class CldrPath with _$CldrPath implements Comparable<CldrPath> {
   @override
   int compareTo(CldrPath other) => toString().compareTo(other.toString());
 
+  String toExplicitString() =>
+      segments.map((it) => it.toExplicitString()).join();
   @override
   String toString() => segments.join();
 }
@@ -425,6 +433,16 @@ class CldrPathSegment with _$CldrPathSegment {
           ),
         )
         .skip(1);
+  }
+
+  String toExplicitString() {
+    final buffer = StringBuffer(toString());
+    for (final attribute in _distinguishingAttributes) {
+      if (!attributes.containsKey(attribute)) {
+        buffer.write('[not(@$attribute)]');
+      }
+    }
+    return buffer.toString();
   }
 
   @override
