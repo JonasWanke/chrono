@@ -357,13 +357,16 @@ class CldrPathSegment with _$CldrPathSegment {
     final attributeRegExp = RegExp(r"\[\@(?<type>[^=]+)='(?<value>[^']+)'\]");
 
     final attributeMatches = attributeRegExp.allMatches(segment);
+    final attributes = attributeMatches.associate(
+      (it) => MapEntry(it.namedGroup('type')!, it.namedGroup('value')!),
+    );
+    if (attributes['type'] == 'standard') attributes.remove('type');
+
     return CldrPathSegment(
       attributeMatches.isEmpty
           ? segment
           : segment.substring(0, attributeMatches.first.start),
-      attributes: attributeMatches.associate(
-        (it) => MapEntry(it.namedGroup('type')!, it.namedGroup('value')!),
-      ),
+      attributes: attributes,
     );
   }
 
