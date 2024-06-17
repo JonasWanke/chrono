@@ -1,5 +1,6 @@
 export 'src/date/date.dart';
 export 'src/date/duration.dart';
+export 'src/date/era.dart';
 export 'src/date/month/month.dart';
 export 'src/date/month/month_day.dart';
 export 'src/date/month/year_month.dart';
