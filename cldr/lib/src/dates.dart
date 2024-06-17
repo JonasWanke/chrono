@@ -144,6 +144,15 @@ class DayWidths with _$DayWidths implements ToExpression {
     );
   }
 
+  Days operator [](DayFieldWidth width) {
+    return switch (width) {
+      DayFieldWidth.wide => wide,
+      DayFieldWidth.abbreviated => abbreviated,
+      DayFieldWidth.short => short,
+      DayFieldWidth.narrow => narrow,
+    };
+  }
+
   @override
   Expression toExpression() {
     return referCldr('DayWidths')(
@@ -156,6 +165,16 @@ class DayWidths with _$DayWidths implements ToExpression {
       },
     );
   }
+}
+
+enum DayFieldWidth implements ToExpression {
+  wide,
+  abbreviated,
+  short,
+  narrow;
+
+  @override
+  Expression toExpression() => referCldr('DayFieldWidth').property(name);
 }
 
 @freezed
@@ -297,6 +316,15 @@ class DateOrTimeFormats<T extends ToExpression>
       medium: resolve('medium'),
       short: resolve('short'),
     );
+  }
+
+  T operator [](DateOrTimeFormatWidth width) {
+    return switch (width) {
+      DateOrTimeFormatWidth.full => full,
+      DateOrTimeFormatWidth.long => long,
+      DateOrTimeFormatWidth.medium => medium,
+      DateOrTimeFormatWidth.short => short,
+    };
   }
 
   @override
@@ -1066,25 +1094,6 @@ sealed class WeekdayStyle with _$WeekdayStyle implements ToExpression {
   }
 }
 
-enum FieldWidth implements ToExpression {
-  wide,
-  abbreviated,
-  narrow;
-
-  @override
-  Expression toExpression() => referCldr('FieldWidth').property(name);
-}
-
-enum DayFieldWidth implements ToExpression {
-  wide,
-  abbreviated,
-  short,
-  narrow;
-
-  @override
-  Expression toExpression() => referCldr('DayFieldWidth').property(name);
-}
-
 @freezed
 sealed class TimeField with _$TimeField implements ToExpression {
   /// Period (AM or PM), e.g., “AM”.
@@ -1707,6 +1716,14 @@ class Widths<T extends Object> with _$Widths<T> implements ToExpression {
     );
   }
 
+  T operator [](FieldWidth width) {
+    return switch (width) {
+      FieldWidth.wide => wide,
+      FieldWidth.abbreviated => abbreviated,
+      FieldWidth.narrow => narrow,
+    };
+  }
+
   @override
   Expression toExpression() {
     return referCldr('Widths')(
@@ -1718,4 +1735,13 @@ class Widths<T extends Object> with _$Widths<T> implements ToExpression {
       },
     );
   }
+}
+
+enum FieldWidth implements ToExpression {
+  wide,
+  abbreviated,
+  narrow;
+
+  @override
+  Expression toExpression() => referCldr('FieldWidth').property(name);
 }
