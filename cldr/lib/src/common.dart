@@ -297,11 +297,10 @@ class CldrPath with _$CldrPath implements Comparable<CldrPath> {
   CldrPath child(
     String elementName, {
     Map<String, String> attributes = const {},
-  }) {
-    return CldrPath(
-      [...segments, CldrPathSegment(elementName, attributes: attributes)],
-    );
-  }
+  }) =>
+      childSegment(CldrPathSegment(elementName, attributes: attributes));
+  CldrPath childSegment(CldrPathSegment segment) =>
+      CldrPath([...segments, segment]);
 
   CldrPath nestedChild(Iterable<CldrPathSegment> segments) =>
       CldrPath([...this.segments, ...segments]);
@@ -331,8 +330,12 @@ class CldrPath with _$CldrPath implements Comparable<CldrPath> {
     return CldrPath([...segments.take(segments.length - 1), segment]);
   }
 
-  Iterable<CldrPath> get lateralFallbacks =>
-      isRoot ? [] : segments.last.lateralFallbacks.map((it) => sibling(it)!);
+  Iterable<CldrPath> get lateralFallbacks {
+    if (isRoot) return [];
+    return [parent!].followedBy(parent!.lateralFallbacks).expand(
+          (parent) => segments.last.lateralFallbacks.map(parent.childSegment),
+        );
+  }
 
   @override
   int compareTo(CldrPath other) => toString().compareTo(other.toString());
