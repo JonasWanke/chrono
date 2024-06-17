@@ -299,42 +299,47 @@ class LocalizedDateFormatter extends LocalizedFormatter<Date> {
   String format(Date value) {
     final dateFormats = localeData.dates.calendars.gregorian.dateFormats;
 
-    String formatField(DateField field) {
-      return field.when(
-        era: (style) =>
-            LocalizedEraFormatter(localeData, style).format(value.year.era),
-        year: (style) =>
-            LocalizedYearFormatter(localeData, style).format(value.year),
-        weekBasedYear: (style) => LocalizedYearFormatter(localeData, style)
-            .format(value.yearWeek.weekBasedYear),
-        extendedYear: (_) => throw UnimplementedError(),
-        cyclicYearName: (_) => throw UnimplementedError(),
-        relatedGregorianYear: (_) => throw UnimplementedError(),
-        quarter: (_) => throw UnimplementedError(),
-        month: (style) =>
-            LocalizedMonthFormatter(localeData, style).format(value.month),
-        // TODO(JonasWanke): use localized numbers
-        weekOfYear: (isPadded) =>
-            value.yearWeek.week.toString().padLeft(isPadded ? 2 : 1, '0'),
-        weekOfMonth: () => throw UnimplementedError(),
-        // TODO(JonasWanke): use localized numbers
-        dayOfMonth: (isPadded) =>
-            value.day.toString().padLeft(isPadded ? 2 : 1, '0'),
-        // TODO(JonasWanke): use localized numbers
-        dayOfYear: (padding) =>
-            value.dayOfYear.toString().padLeft(padding.asInt, '0'),
-        dayOfWeekInMonth: () => throw UnimplementedError(),
-        modifiedJulianDay: () => throw UnimplementedError(),
-        weekday: (style) =>
-            LocalizedWeekdayFormatter(localeData, style).format(value.weekday),
-      );
-    }
-
     return style.when(
       defaultFormat: (width) => dateFormats[width]
           .pattern
-          .map((it) => it.when(literal: (value) => value, field: formatField))
+          .map(
+            (it) => it.when(
+              literal: (value) => value,
+              field: (field) => formatField(value, field),
+            ),
+          )
           .join(),
+    );
+  }
+
+  String formatField(Date value, DateField field) {
+    return field.when(
+      era: (style) =>
+          LocalizedEraFormatter(localeData, style).format(value.year.era),
+      year: (style) =>
+          LocalizedYearFormatter(localeData, style).format(value.year),
+      weekBasedYear: (style) => LocalizedYearFormatter(localeData, style)
+          .format(value.yearWeek.weekBasedYear),
+      extendedYear: (_) => throw UnimplementedError(),
+      cyclicYearName: (_) => throw UnimplementedError(),
+      relatedGregorianYear: (_) => throw UnimplementedError(),
+      quarter: (_) => throw UnimplementedError(),
+      month: (style) =>
+          LocalizedMonthFormatter(localeData, style).format(value.month),
+      // TODO(JonasWanke): use localized numbers
+      weekOfYear: (isPadded) =>
+          value.yearWeek.week.toString().padLeft(isPadded ? 2 : 1, '0'),
+      weekOfMonth: () => throw UnimplementedError(),
+      // TODO(JonasWanke): use localized numbers
+      dayOfMonth: (isPadded) =>
+          value.day.toString().padLeft(isPadded ? 2 : 1, '0'),
+      // TODO(JonasWanke): use localized numbers
+      dayOfYear: (padding) =>
+          value.dayOfYear.toString().padLeft(padding.asInt, '0'),
+      dayOfWeekInMonth: () => throw UnimplementedError(),
+      modifiedJulianDay: () => throw UnimplementedError(),
+      weekday: (style) =>
+          LocalizedWeekdayFormatter(localeData, style).format(value.weekday),
     );
   }
 }

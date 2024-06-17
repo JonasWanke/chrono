@@ -1,16 +1,21 @@
 import 'dart:core' as core;
 import 'dart:core';
 
+import 'package:cldr/cldr.dart';
 import 'package:clock/clock.dart';
-import 'package:meta/meta.dart';
+import 'package:fixed/fixed.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../date_time/date_time.dart';
+import '../formatting.dart';
 import '../json.dart';
 import '../parser.dart';
 import '../rounding.dart';
 import '../utils.dart';
 import 'duration.dart';
+
+part 'time.freezed.dart';
 
 /// A specific time of a day, e.g., 18:24:20.
 @immutable
@@ -213,4 +218,80 @@ class TimeAsIsoStringJsonConverter
       Parser.parseTime(json);
   @override
   String toJson(Time object) => object.toString();
+}
+
+class LocalizedTimeFormatter extends LocalizedFormatter<Time> {
+  const LocalizedTimeFormatter(super.localeData, this.style);
+
+  final TimeStyle style;
+
+  @override
+  String format(Time value) {
+    final timeFormats = localeData.dates.calendars.gregorian.timeFormats;
+    return style.when(
+      defaultFormat: (width) => timeFormats[width]
+          .pattern
+          .map(
+            (it) => it.when(
+              literal: (value) => value,
+              field: (field) => formatField(value, field),
+            ),
+          )
+          .join(),
+    );
+  }
+
+  String formatField(Time value, TimeField field) {
+    return field.when(
+      periodAmPm: (_) => throw UnimplementedError(),
+      periodAmPmNoonMidnight: (_) => throw UnimplementedError(),
+      periodFlexible: (_) => throw UnimplementedError(),
+      hour: (style) => style.when(
+        from0To23: (isPadded) =>
+            value.hour.toString().padLeft(isPadded ? 2 : 1, '0'),
+        from1To24: (isPadded) => (value.hour == 0 ? 24 : value.hour)
+            .toString()
+            .padLeft(isPadded ? 2 : 1, '0'),
+        from0To11: (isPadded) =>
+            (value.hour % 12).toString().padLeft(isPadded ? 2 : 1, '0'),
+        from1To12: (isPadded) {
+          var hour = value.hour % 12;
+          if (hour == 0) hour = 12;
+          return hour.toString().padLeft(isPadded ? 2 : 1, '0');
+        },
+      ),
+      minute: (isPadded) =>
+          value.minute.toString().padLeft(isPadded ? 2 : 1, '0'),
+      second: (isPadded) =>
+          value.second.toString().padLeft(isPadded ? 2 : 1, '0'),
+      fractionalSecond: (digits) =>
+          (value.fractionalSecondsSinceMidnight.inFractionalSeconds *
+                  Fixed.ten.pow(digits))
+              .toInt()
+              .toString(),
+      millisecondsInDay: (minDigits) => value.fractionalSecondsSinceMidnight
+          .roundToMilliseconds()
+          .inMilliseconds
+          .toString()
+          .padLeft(minDigits, '0'),
+      zoneSpecificNonLocation: (_) => throw UnimplementedError(),
+      zoneLocalizedGmt: (_) => throw UnimplementedError(),
+      zoneGenericNonLocation: (_) => throw UnimplementedError(),
+      zoneID: (_) => throw UnimplementedError(),
+      zoneExemplarCity: () => throw UnimplementedError(),
+      zoneGenericLocationFormat: () => throw UnimplementedError(),
+      zoneIso8601: (_, __) => throw UnimplementedError(),
+    );
+  }
+}
+
+@freezed
+class TimeStyle with _$TimeStyle {
+  // TODO(JonasWanke): customizable component formats
+
+  const factory TimeStyle.defaultFormat({
+    required DateOrTimeFormatWidth width,
+  }) = _TimeStyleFormat;
+
+  const TimeStyle._();
 }

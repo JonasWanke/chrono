@@ -1,15 +1,17 @@
 import 'dart:core' as core;
 import 'dart:core';
 
+import 'package:cldr/cldr.dart' hide Days;
 import 'package:clock/clock.dart' as cl;
 import 'package:clock/clock.dart';
-import 'package:meta/meta.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../date/date.dart';
 import '../date/duration.dart';
 import '../date/month/month.dart';
 import '../date/year.dart';
+import '../formatting.dart';
 import '../json.dart';
 import '../parser.dart';
 import '../rounding.dart';
@@ -18,6 +20,8 @@ import '../time/time.dart';
 import '../unix_epoch_timestamp.dart';
 import '../utils.dart';
 import 'duration.dart';
+
+part 'date_time.freezed.dart';
 
 /// A date and time in the ISO 8601 calendar represented using [Date] and
 /// [Time], e.g., April 23, 2023, at 18:24:20.
@@ -196,4 +200,61 @@ class DateTimeAsIsoStringJsonConverter
       Parser.parseDateTime(json);
   @override
   String toJson(DateTime object) => object.toString();
+}
+
+class LocalizedDateTimeFormatter extends LocalizedFormatter<DateTime> {
+  const LocalizedDateTimeFormatter(super.localeData, this.style);
+
+  final DateTimeStyle style;
+
+  @override
+  String format(DateTime value) {
+    final formats =
+        localeData.dates.calendars.gregorian.dateTimeFormats.formats;
+    return style.when(
+      defaultFormat: (width, useAtTimeVariant) {
+        final widthFormats = formats[width];
+        final format = useAtTimeVariant
+            ? (widthFormats.atTime ?? widthFormats.standard)
+            : widthFormats.standard;
+
+        final timeFormatter = LocalizedTimeFormatter(
+          localeData,
+          TimeStyle.defaultFormat(width: width),
+        );
+        final dateFormatter = LocalizedDateFormatter(
+          localeData,
+          DateStyle.defaultFormat(width: width),
+        );
+
+        return format.pattern
+            .map(
+              (it) => it.when(
+                literal: (value) => value,
+                time: () => timeFormatter.format(value.time),
+                date: () => dateFormatter.format(value.date),
+                field: (field) => field.when(
+                  dateField: (field) =>
+                      dateFormatter.formatField(value.date, field),
+                  timeField: (field) =>
+                      timeFormatter.formatField(value.time, field),
+                ),
+              ),
+            )
+            .join();
+      },
+    );
+  }
+}
+
+@freezed
+class DateTimeStyle with _$DateTimeStyle {
+  // TODO(JonasWanke): customizable component formats
+
+  const factory DateTimeStyle.defaultFormat({
+    required DateOrTimeFormatWidth width,
+    @Default(false) bool useAtTimeVariant,
+  }) = _DateTimeStyleFormat;
+
+  const DateTimeStyle._();
 }
