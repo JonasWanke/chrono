@@ -11,6 +11,7 @@ import '../parser.dart';
 import '../utils.dart';
 import 'date.dart';
 import 'duration.dart';
+import 'era.dart';
 import 'month/month.dart';
 import 'month/year_month.dart';
 import 'ordinal_date.dart';
@@ -46,6 +47,8 @@ final class Year
       Date.todayInLocalZone(clock: clock).year;
   factory Year.currentInUtc({Clock? clock}) =>
       Date.todayInUtc(clock: clock).year;
+
+  Era get era => number >= 1 ? Era.common : Era.beforeCommon;
 
   final int number;
 
