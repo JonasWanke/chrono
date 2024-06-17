@@ -1,11 +1,13 @@
 import 'dart:core' as core;
 import 'dart:core';
 
+import 'package:cldr/cldr.dart' as cldr;
 import 'package:clock/clock.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
+import '../formatting.dart';
 import '../json.dart';
 import '../parser.dart';
 import '../utils.dart';
@@ -188,4 +190,21 @@ class YearAsIntJsonConverter extends JsonConverter<Year, int> {
 
   @override
   int toJson(Year object) => object.number;
+}
+
+class LocalizedYearFormatter extends LocalizedFormatter<Year> {
+  const LocalizedYearFormatter(super.localeData, this.style);
+
+  final cldr.YearStyle style;
+
+  @override
+  String format(Year value) {
+    // TODO(JonasWanke): use localized numbers
+    // TODO(JonasWanke): support negative years
+    // TODO(JonasWanke): support eras
+    return style.when(
+      (minDigits) => value.number.toString().padLeft(minDigits, '0'),
+      twoDigits: () => (value.number % 100).toString().padLeft(2, '0'),
+    );
+  }
 }

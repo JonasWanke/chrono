@@ -1,7 +1,5 @@
 import 'package:cldr/cldr.dart';
 
-enum FieldWidth { wide, abbreviated, narrow }
-
 abstract interface class Formatter<T extends Object> {
   String format(T value);
 }

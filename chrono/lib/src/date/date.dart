@@ -1,17 +1,20 @@
 import 'dart:core' as core;
 import 'dart:core';
 
+import 'package:cldr/cldr.dart' hide Days;
 import 'package:clock/clock.dart';
 import 'package:dartx/dartx.dart';
-import 'package:meta/meta.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../date_time/date_time.dart';
+import '../formatting.dart';
 import '../json.dart';
 import '../parser.dart';
 import '../time/time.dart';
 import '../utils.dart';
 import 'duration.dart';
+import 'era.dart';
 import 'month/month.dart';
 import 'month/month_day.dart';
 import 'month/year_month.dart';
@@ -20,6 +23,8 @@ import 'week/week_date.dart';
 import 'week/year_week.dart';
 import 'weekday.dart';
 import 'year.dart';
+
+part 'date.freezed.dart';
 
 /// A date in the ISO 8601 calendar, e.g., April 23, 2023.
 ///
@@ -283,4 +288,64 @@ class DateAsIsoStringJsonConverter
       Parser.parseDate(json);
   @override
   String toJson(Date object) => object.toString();
+}
+
+class LocalizedDateFormatter extends LocalizedFormatter<Date> {
+  const LocalizedDateFormatter(super.localeData, this.style);
+
+  final DateStyle style;
+
+  @override
+  String format(Date value) {
+    final dateFormats = localeData.dates.calendars.gregorian.dateFormats;
+
+    String formatField(DateField field) {
+      return field.when(
+        era: (style) =>
+            LocalizedEraFormatter(localeData, style).format(value.year.era),
+        year: (style) =>
+            LocalizedYearFormatter(localeData, style).format(value.year),
+        weekBasedYear: (style) => LocalizedYearFormatter(localeData, style)
+            .format(value.yearWeek.weekBasedYear),
+        extendedYear: (_) => throw UnimplementedError(),
+        cyclicYearName: (_) => throw UnimplementedError(),
+        relatedGregorianYear: (_) => throw UnimplementedError(),
+        quarter: (_) => throw UnimplementedError(),
+        month: (style) =>
+            LocalizedMonthFormatter(localeData, style).format(value.month),
+        // TODO(JonasWanke): use localized numbers
+        weekOfYear: (isPadded) =>
+            value.yearWeek.week.toString().padLeft(isPadded ? 2 : 1, '0'),
+        weekOfMonth: () => throw UnimplementedError(),
+        // TODO(JonasWanke): use localized numbers
+        dayOfMonth: (isPadded) =>
+            value.day.toString().padLeft(isPadded ? 2 : 1, '0'),
+        // TODO(JonasWanke): use localized numbers
+        dayOfYear: (padding) =>
+            value.dayOfYear.toString().padLeft(padding.asInt, '0'),
+        dayOfWeekInMonth: () => throw UnimplementedError(),
+        modifiedJulianDay: () => throw UnimplementedError(),
+        weekday: (style) =>
+            LocalizedWeekdayFormatter(localeData, style).format(value.weekday),
+      );
+    }
+
+    return style.when(
+      defaultFormat: (width) => dateFormats[width]
+          .pattern
+          .map((it) => it.when(literal: (value) => value, field: formatField))
+          .join(),
+    );
+  }
+}
+
+@freezed
+class DateStyle with _$DateStyle {
+  // TODO(JonasWanke): customizable component formats
+
+  const factory DateStyle.defaultFormat({
+    required DateOrTimeFormatWidth width,
+  }) = _DateStyleFormat;
+
+  const DateStyle._();
 }

@@ -56,3 +56,16 @@ enum Era
     };
   }
 }
+
+class LocalizedEraFormatter extends LocalizedFormatter<Era> {
+  const LocalizedEraFormatter(super.localeData, this.style);
+
+  final cldr.EraStyle style;
+
+  @override
+  String format(Era value) {
+    final eraValue = localeData
+        .dates.calendars.gregorian.eras.eras[value.index]![style.width];
+    return style.useVariant ? eraValue.variantOrValue : eraValue.value;
+  }
+}
