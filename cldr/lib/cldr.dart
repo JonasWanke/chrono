@@ -61,8 +61,9 @@ Future<void> main() async {
   final rootXmlString = await File('root.xml').readAsString();
   final rootXml = XmlDocument.parse(rootXmlString);
 
+  final startedAt = DateTime.now();
   final data = CommonLocaleData.fromXml([deXml, rootXml]);
-  print(data);
+  print('Parsing took ${DateTime.now().difference(startedAt)}');
 
   final code = data.toLibrary('de');
   final codeString =
