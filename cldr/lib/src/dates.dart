@@ -223,7 +223,9 @@ class Days with _$Days implements ToExpression {
 
 @freezed
 class Eras with _$Eras implements ToExpression {
-  const factory Eras({required Map<int, Era> eras}) = _Eras;
+  const factory Eras({
+    required Map<int, Widths<ValueWithVariant<String>>> eras,
+  }) = _Eras;
   const Eras._();
 
   factory Eras.fromXml(CldrXml xml, CldrPath path) {
@@ -238,9 +240,9 @@ class Eras with _$Eras implements ToExpression {
     final eraNarrow = find('eraNarrow');
 
     final eras = eraNames.keys.associateWith((type) {
-      return Era(
-        name: ValueWithVariant.fromXmlElements(eraNames[type]!),
-        abbreviation: ValueWithVariant.fromXmlElements(eraAbbreviations[type]!),
+      return Widths(
+        wide: ValueWithVariant.fromXmlElements(eraNames[type]!),
+        abbreviated: ValueWithVariant.fromXmlElements(eraAbbreviations[type]!),
         narrow: ValueWithVariant.fromXmlElements(eraNarrow[type]!),
       );
     });
@@ -257,28 +259,6 @@ class Eras with _$Eras implements ToExpression {
             (key, value) => MapEntry(literalNum(key), value.toExpression()),
           ),
         ),
-      },
-    );
-  }
-}
-
-@freezed
-class Era with _$Era implements ToExpression {
-  const factory Era({
-    required ValueWithVariant<String> name,
-    required ValueWithVariant<String> abbreviation,
-    required ValueWithVariant<String> narrow,
-  }) = _Era;
-  const Era._();
-
-  @override
-  Expression toExpression() {
-    return referCldr('Era')(
-      [],
-      {
-        'name': name.toExpression(),
-        'abbreviation': abbreviation.toExpression(),
-        'narrow': narrow.toExpression(),
       },
     );
   }
@@ -341,12 +321,14 @@ class DateOrTimeFormats<T extends ToExpression>
   }
 }
 
+enum DateOrTimeFormatWidth { full, long, medium, short }
+
 @freezed
 class DateOrTimeFormat<F extends ToExpression>
     with _$DateOrTimeFormat<F>
     implements ToExpression {
   const factory DateOrTimeFormat({
-    required List<DateOrTimePatternPart> pattern,
+    required List<DateOrTimePatternPart<F>> pattern,
     required String? displayName,
   }) = _DateOrTimeFormat<F>;
   const DateOrTimeFormat._();
@@ -669,43 +651,12 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
 
 @freezed
 sealed class DateField with _$DateField implements ToExpression {
-  /// Era name:
-  ///
-  /// | Width         | Example                           | Unicode Shorthand |
-  /// | :------------ | :-------------------------------- | :---------------- |
-  /// | `wide`        | Anno Domini (variant: Common Era) | `GGGG`            |
-  /// | `abbreviated` | AD (variant: CE)                  | `G`, `GG`, `GGG`  |
-  /// | `narrow`      | A                                 | `GGGGG`           |
-  const factory DateField.era(FieldWidth width) = _DateFieldEra;
+  const factory DateField.era(EraStyle style) = _DateFieldEra;
 
-  /// Year, e.g., “1996”.
-  ///
-  /// Normally, the length specifies the padding, but for 2 it also specifies
-  /// the maximum length. Example:
-  ///
-  /// | Year     |     1 |  2 |     3 |     4 |     5 |
-  /// | :------- | ----: | -: |   --: | ----: | ----: |
-  /// | AD 1     |     1 | 01 |   001 |  0001 | 00001 |
-  /// | AD 12    |    12 | 12 |   012 |  0012 | 00012 |
-  /// | AD 123   |   123 | 23 |   123 |  0123 | 00123 |
-  /// | AD 1234  |  1234 | 34 |  1234 |  1234 | 01234 |
-  /// | AD 12345 | 12345 | 45 | 12345 | 12345 | 12345 |
-  ///
-  /// Unicode Shorthand: `y`, `yy`, `yyy`, `yyyy`, `yyyyy`, etc.
-  @Assert('minDigits >= 1')
-  const factory DateField.year({required int minDigits}) = _DateFieldYear;
+  const factory DateField.year(YearStyle yearStyle) = _DateFieldYear;
 
-  /// Year (in "Week of Year" based calendars), e.g., “1997”.
-  ///
-  /// Normally, the length specifies the padding, but for 2 it also specifies
-  /// the maximum length. This year designation is used in ISO year-week
-  /// calendar as defined by ISO 8601, but can be used in non-Gregorian based
-  /// calendar systems where week date processing is desired. May not always be
-  /// the same value as calendar year.
-  ///
-  /// Unicode Shorthand: `Y`, `YY`, `YYY`, `YYYY`, `YYYYY`, etc.
-  @Assert('minDigits >= 1')
-  const factory DateField.weekBasedYear({required int minDigits}) =
+  /// Year (in "Week of Year"-based calendars), e.g., “1997”.
+  const factory DateField.weekBasedYear(YearStyle yearStyle) =
       _DateFieldWeekBasedYear;
 
   /// Extended year, e.g., “4601”.
@@ -806,11 +757,6 @@ sealed class DateField with _$DateField implements ToExpression {
 
   static DateField? parse(String character, int length) {
     return switch ((character, length)) {
-          ('G', >= 1 && <= 3) => const DateField.era(FieldWidth.abbreviated),
-          ('G', 4) => const DateField.era(FieldWidth.wide),
-          ('G', 5) => const DateField.era(FieldWidth.narrow),
-          ('y', _) => DateField.year(minDigits: length),
-          ('Y', _) => DateField.weekBasedYear(minDigits: length),
           ('u', _) => DateField.extendedYear(minDigits: length),
           ('U', >= 1 && <= 3) =>
             const DateField.cyclicYearName(FieldWidth.abbreviated),
@@ -830,6 +776,10 @@ sealed class DateField with _$DateField implements ToExpression {
           ('g', _) => const DateField.modifiedJulianDay(),
           _ => null,
         } ??
+        EraStyle.parse(character, length)?.let(DateField.era) ??
+        YearStyle.parseCalendarYear(character, length)?.let(DateField.year) ??
+        YearStyle.parseWeekBasedYear(character, length)
+            ?.let(DateField.weekBasedYear) ??
         QuarterStyle.parse(character, length)?.let(DateField.quarter) ??
         MonthStyle.parse(character, length)?.let(DateField.month) ??
         WeekdayStyle.parse(character, length)?.let(DateField.weekday);
@@ -839,11 +789,9 @@ sealed class DateField with _$DateField implements ToExpression {
   Expression toExpression() {
     final create = referCldr('DateField').newInstanceNamed;
     return when(
-      era: (width) => create('era', [width.toExpression()]),
-      year: (minDigits) =>
-          create('year', [], {'minDigits': literalNum(minDigits)}),
-      weekBasedYear: (minDigits) =>
-          create('weekBasedYear', [], {'minDigits': literalNum(minDigits)}),
+      era: (style) => create('era', [style.toExpression()]),
+      year: (style) => create('year', [style.toExpression()]),
+      weekBasedYear: (style) => create('weekBasedYear', [style.toExpression()]),
       extendedYear: (minDigits) =>
           create('extendedYear', [], {'minDigits': literalNum(minDigits)}),
       cyclicYearName: (width) =>
@@ -874,8 +822,95 @@ enum DayOfYearPadding implements ToExpression {
   two,
   three;
 
+  int get asInt => index + 1;
+
   @override
   Expression toExpression() => referCldr('DayOfYearPadding').property(name);
+}
+
+@freezed
+sealed class EraStyle with _$EraStyle implements ToExpression {
+  /// Era name:
+  ///
+  /// | Width         | Example                           | Unicode Shorthand |
+  /// | :------------ | :-------------------------------- | :---------------- |
+  /// | `wide`        | Anno Domini (variant: Common Era) | `GGGG`            |
+  /// | `abbreviated` | AD (variant: CE)                  | `G`, `GG`, `GGG`  |
+  /// | `narrow`      | A                                 | `GGGGG`           |
+  const factory EraStyle(
+    FieldWidth width, {
+    @Default(false) bool useVariant,
+  }) = _EraStyle;
+
+  const EraStyle._();
+
+  static EraStyle? parse(String character, int length) {
+    return switch ((character, length)) {
+      ('G', >= 1 && <= 3) => const EraStyle(FieldWidth.abbreviated),
+      ('G', 4) => const EraStyle(FieldWidth.wide),
+      ('G', 5) => const EraStyle(FieldWidth.narrow),
+      _ => null,
+    };
+  }
+
+  @override
+  Expression toExpression() {
+    return referCldr('EraStyle').newInstance(
+      [width.toExpression()],
+      {'useVariant': literalBool(useVariant)},
+    );
+  }
+}
+
+@freezed
+sealed class YearStyle with _$YearStyle implements ToExpression {
+  /// Year number, e.g., “1996”.
+  ///
+  /// | Year     |     1 |     2 |     3 |     4 |     5 |
+  /// | :------- | ----: | ----: |   --: | ----: | ----: |
+  /// | AD 1     |     1 |    01 |   001 |  0001 | 00001 |
+  /// | AD 12    |    12 |    12 |   012 |  0012 | 00012 |
+  /// | AD 123   |   123 |   123 |   123 |  0123 | 00123 |
+  /// | AD 1234  |  1234 |  1234 |  1234 |  1234 | 01234 |
+  /// | AD 12345 | 12345 | 12345 | 12345 | 12345 | 12345 |
+  ///
+  /// Unicode Shorthand: `y`, `yyy`, `yyyy`, `yyyyy`, etc. (calendar year),
+  /// `Y`, `YYY`, `YYYY`, `YYYYY`, etc. (week-based year)
+  @Assert('minDigits >= 1')
+  const factory YearStyle({required int minDigits}) = _YearStyle;
+
+  /// Two-digit year number, e.g., “96”.
+  ///
+  /// Unicode Shorthand: `yy` (calendar year), `YY` (week-based year)
+  const factory YearStyle.twoDigits() = _YearStyleTwoDigits;
+
+  const YearStyle._();
+
+  static YearStyle? parseCalendarYear(String character, int length) {
+    return switch ((character, length)) {
+      ('y', 2) => const YearStyle.twoDigits(),
+      ('y', _) => YearStyle(minDigits: length),
+      _ => null,
+    };
+  }
+
+  static YearStyle? parseWeekBasedYear(String character, int length) {
+    return switch ((character, length)) {
+      ('Y', 2) => const YearStyle.twoDigits(),
+      ('Y', _) => YearStyle(minDigits: length),
+      _ => null,
+    };
+  }
+
+  @override
+  Expression toExpression() {
+    final clazz = referCldr('YearStyle');
+    return when(
+      (minDigits) =>
+          clazz.newInstance([], {'minDigits': literalNum(minDigits)}),
+      twoDigits: () => clazz.newInstanceNamed('twoDigits', []),
+    );
+  }
 }
 
 @freezed

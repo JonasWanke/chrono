@@ -38,8 +38,11 @@ class CommonLocaleData with _$CommonLocaleData implements ToExpression {
   Library toLibrary(String localeName) {
     return Library(
       (b) => b
-        ..ignoreForFile
-            .addAll(['require_trailing_commas', 'prefer-trailing-comma'])
+        ..ignoreForFile.addAll([
+          'require_trailing_commas',
+          'avoid_redundant_argument_values',
+          'prefer-trailing-comma',
+        ])
         ..body.add(
           code_builder.Field(
             (b) => b
