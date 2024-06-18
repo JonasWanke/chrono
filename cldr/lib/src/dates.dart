@@ -447,8 +447,8 @@ class DateTimeFormat with _$DateTimeFormat implements ToExpression {
 class DateTimePatternPart with _$DateTimePatternPart implements ToExpression {
   const factory DateTimePatternPart.literal(String value) =
       _DateTimePatternPartLiteral;
-  const factory DateTimePatternPart.time() = _DateTimePatternPartTime;
   const factory DateTimePatternPart.date() = _DateTimePatternPartDate;
+  const factory DateTimePatternPart.time() = _DateTimePatternPartTime;
   const factory DateTimePatternPart.field(DateTimeField field) =
       _DateTimePatternPartField;
   const DateTimePatternPart._();
@@ -509,8 +509,8 @@ class DateTimePatternPart with _$DateTimePatternPart implements ToExpression {
 
     return when(
       literal: (value) => create('literal', [literalString(value)]),
-      time: () => create('time', []),
       date: () => create('date', []),
+      time: () => create('time', []),
       field: (field) => create('field', [field.toExpression()]),
     );
   }
@@ -519,8 +519,8 @@ class DateTimePatternPart with _$DateTimePatternPart implements ToExpression {
   String toString() {
     return when(
       literal: (value) => "'${value.replaceAll("'", "''")}'",
-      time: () => 'time',
       date: () => 'date',
+      time: () => 'time',
       field: (field) => field.toString(),
     );
   }
@@ -1173,27 +1173,7 @@ sealed class TimeField with _$TimeField implements ToExpression {
   const factory TimeField.periodFlexible(FieldWidth width) =
       _TimeFieldPeriodFlexible;
 
-  /// Hour (1 – 12), e.g., “11”.
-  ///
-  /// Unicode Shorthand: `h`, `hh`
-  const factory TimeField.hour12({required bool isPadded}) = _TimeFieldHour12;
-
-  /// Hour (0 – 23), e.g., “13”.
-  ///
-  /// Unicode Shorthand: `H`, `HH`
-  const factory TimeField.hour24({required bool isPadded}) = _TimeFieldHour24;
-
-  /// Hour (0 – 11), e.g., “0” or “00”.
-  ///
-  /// Unicode Shorthand: `K`, `KK`
-  const factory TimeField.hour12ZeroBased({required bool isPadded}) =
-      _TimeFieldHour12ZeroBased;
-
-  /// Hour (1 – 24), e.g., “24”.
-  ///
-  /// Unicode Shorthand: `k`, `kk`
-  const factory TimeField.hour24OneBased({required bool isPadded}) =
-      _TimeFieldHour24OneBased;
+  const factory TimeField.hour(HourStyle style) = _TimeFieldHour;
 
   /// Minute, e.g., “59”.
   ///
@@ -1209,7 +1189,7 @@ sealed class TimeField with _$TimeField implements ToExpression {
   ///
   /// Unicode Shorthand: `S`, `SS`, etc.
   @Assert('digits >= 1')
-  const factory TimeField.fractionalSecond(int digits) =
+  const factory TimeField.fractionalSecond({required int digits}) =
       _TimeFieldFractionalSecond;
 
   /// Milliseconds in day, e.g., “69540000”.
@@ -1222,8 +1202,8 @@ sealed class TimeField with _$TimeField implements ToExpression {
   /// a unique local time value.
   ///
   /// Unicode Shorthand: `A`, `AA`, etc.
-  @Assert('digits >= 1')
-  const factory TimeField.millisecondsInDay(int digits) =
+  @Assert('minDigits >= 1')
+  const factory TimeField.millisecondsInDay({required int minDigits}) =
       _TimeFieldMillisecondsInDay;
 
   /// The specific non-location format, e.g., “PDT” (short) or “Pacific Daylight
@@ -1313,95 +1293,91 @@ sealed class TimeField with _$TimeField implements ToExpression {
 
   static TimeField? parse(String character, int length) {
     return switch ((character, length)) {
-      ('a', >= 1 && <= 3) => const TimeField.periodAmPm(FieldWidth.abbreviated),
-      ('a', 4) => const TimeField.periodAmPm(FieldWidth.wide),
-      ('a', 5) => const TimeField.periodAmPm(FieldWidth.narrow),
-      ('b', >= 1 && <= 3) =>
-        const TimeField.periodAmPmNoonMidnight(FieldWidth.abbreviated),
-      ('b', 4) => const TimeField.periodAmPmNoonMidnight(FieldWidth.wide),
-      ('b', 5) => const TimeField.periodAmPmNoonMidnight(FieldWidth.narrow),
-      ('B', >= 1 && <= 3) =>
-        const TimeField.periodFlexible(FieldWidth.abbreviated),
-      ('B', 4) => const TimeField.periodFlexible(FieldWidth.wide),
-      ('B', 5) => const TimeField.periodFlexible(FieldWidth.narrow),
-      ('h', 1) => const TimeField.hour12(isPadded: false),
-      ('h', 2) => const TimeField.hour12(isPadded: true),
-      ('H', 1) => const TimeField.hour24(isPadded: false),
-      ('H', 2) => const TimeField.hour24(isPadded: true),
-      ('K', 1) => const TimeField.hour12ZeroBased(isPadded: false),
-      ('K', 2) => const TimeField.hour12ZeroBased(isPadded: true),
-      ('k', 1) => const TimeField.hour24OneBased(isPadded: false),
-      ('k', 2) => const TimeField.hour24OneBased(isPadded: true),
-      ('m', 1) => const TimeField.minute(isPadded: false),
-      ('m', 2) => const TimeField.minute(isPadded: true),
-      ('s', 1) => const TimeField.second(isPadded: false),
-      ('s', 2) => const TimeField.second(isPadded: true),
-      ('S', _) => TimeField.fractionalSecond(length),
-      ('A', _) => TimeField.millisecondsInDay(length),
-      ('z', >= 1 && <= 3) => const TimeField.zoneSpecificNonLocation(
-          length: ZoneFieldLength.short,
-        ),
-      ('z', 4) => const TimeField.zoneSpecificNonLocation(
-          length: ZoneFieldLength.long,
-        ),
-      ('Z' || 'O', 4) => const TimeField.zoneLocalizedGmt(
-          length: ZoneFieldLength.long,
-        ),
-      ('O', 1) => const TimeField.zoneLocalizedGmt(
-          length: ZoneFieldLength.short,
-        ),
-      ('v', 1) => const TimeField.zoneGenericNonLocation(
-          length: ZoneFieldLength.short,
-        ),
-      ('v', 4) => const TimeField.zoneGenericNonLocation(
-          length: ZoneFieldLength.long,
-        ),
-      ('V', 1) => const TimeField.zoneID(length: ZoneFieldLength.short),
-      ('V', 2) => const TimeField.zoneID(length: ZoneFieldLength.long),
-      ('V', 3) => const TimeField.zoneExemplarCity(),
-      ('V', 4) => const TimeField.zoneGenericLocationFormat(),
-      ('X', 1) => const TimeField.zoneIso8601(
-          style: ZoneFieldIso8601Style.basicWithHoursOptionalMinutes,
-          useZForZeroOffset: true,
-        ),
-      ('X', 2) => const TimeField.zoneIso8601(
-          style: ZoneFieldIso8601Style.basicWithHoursMinutes,
-          useZForZeroOffset: true,
-        ),
-      ('X', 3) => const TimeField.zoneIso8601(
-          style: ZoneFieldIso8601Style.extendedWithHoursMinutes,
-          useZForZeroOffset: true,
-        ),
-      ('X', 4) => const TimeField.zoneIso8601(
-          style: ZoneFieldIso8601Style.basicWithHoursMinutesOptionalSeconds,
-          useZForZeroOffset: true,
-        ),
-      ('X' || 'Z', 5) => const TimeField.zoneIso8601(
-          style: ZoneFieldIso8601Style.extendedWithHoursMinutesOptionalSeconds,
-          useZForZeroOffset: true,
-        ),
-      ('x', 1) => const TimeField.zoneIso8601(
-          style: ZoneFieldIso8601Style.basicWithHoursOptionalMinutes,
-          useZForZeroOffset: false,
-        ),
-      ('x', 2) => const TimeField.zoneIso8601(
-          style: ZoneFieldIso8601Style.basicWithHoursMinutes,
-          useZForZeroOffset: false,
-        ),
-      ('x', 3) => const TimeField.zoneIso8601(
-          style: ZoneFieldIso8601Style.extendedWithHoursMinutes,
-          useZForZeroOffset: false,
-        ),
-      ('x', 4) || ('Z', >= 1 && <= 3) => const TimeField.zoneIso8601(
-          style: ZoneFieldIso8601Style.basicWithHoursMinutesOptionalSeconds,
-          useZForZeroOffset: false,
-        ),
-      ('x', 5) => const TimeField.zoneIso8601(
-          style: ZoneFieldIso8601Style.extendedWithHoursMinutesOptionalSeconds,
-          useZForZeroOffset: false,
-        ),
-      _ => null,
-    };
+          ('a', >= 1 && <= 3) =>
+            const TimeField.periodAmPm(FieldWidth.abbreviated),
+          ('a', 4) => const TimeField.periodAmPm(FieldWidth.wide),
+          ('a', 5) => const TimeField.periodAmPm(FieldWidth.narrow),
+          ('b', >= 1 && <= 3) =>
+            const TimeField.periodAmPmNoonMidnight(FieldWidth.abbreviated),
+          ('b', 4) => const TimeField.periodAmPmNoonMidnight(FieldWidth.wide),
+          ('b', 5) => const TimeField.periodAmPmNoonMidnight(FieldWidth.narrow),
+          ('B', >= 1 && <= 3) =>
+            const TimeField.periodFlexible(FieldWidth.abbreviated),
+          ('B', 4) => const TimeField.periodFlexible(FieldWidth.wide),
+          ('B', 5) => const TimeField.periodFlexible(FieldWidth.narrow),
+          ('m', 1) => const TimeField.minute(isPadded: false),
+          ('m', 2) => const TimeField.minute(isPadded: true),
+          ('s', 1) => const TimeField.second(isPadded: false),
+          ('s', 2) => const TimeField.second(isPadded: true),
+          ('S', _) => TimeField.fractionalSecond(digits: length),
+          ('A', _) => TimeField.millisecondsInDay(minDigits: length),
+          ('z', >= 1 && <= 3) => const TimeField.zoneSpecificNonLocation(
+              length: ZoneFieldLength.short,
+            ),
+          ('z', 4) => const TimeField.zoneSpecificNonLocation(
+              length: ZoneFieldLength.long,
+            ),
+          ('Z' || 'O', 4) => const TimeField.zoneLocalizedGmt(
+              length: ZoneFieldLength.long,
+            ),
+          ('O', 1) => const TimeField.zoneLocalizedGmt(
+              length: ZoneFieldLength.short,
+            ),
+          ('v', 1) => const TimeField.zoneGenericNonLocation(
+              length: ZoneFieldLength.short,
+            ),
+          ('v', 4) => const TimeField.zoneGenericNonLocation(
+              length: ZoneFieldLength.long,
+            ),
+          ('V', 1) => const TimeField.zoneID(length: ZoneFieldLength.short),
+          ('V', 2) => const TimeField.zoneID(length: ZoneFieldLength.long),
+          ('V', 3) => const TimeField.zoneExemplarCity(),
+          ('V', 4) => const TimeField.zoneGenericLocationFormat(),
+          ('X', 1) => const TimeField.zoneIso8601(
+              style: ZoneFieldIso8601Style.basicWithHoursOptionalMinutes,
+              useZForZeroOffset: true,
+            ),
+          ('X', 2) => const TimeField.zoneIso8601(
+              style: ZoneFieldIso8601Style.basicWithHoursMinutes,
+              useZForZeroOffset: true,
+            ),
+          ('X', 3) => const TimeField.zoneIso8601(
+              style: ZoneFieldIso8601Style.extendedWithHoursMinutes,
+              useZForZeroOffset: true,
+            ),
+          ('X', 4) => const TimeField.zoneIso8601(
+              style: ZoneFieldIso8601Style.basicWithHoursMinutesOptionalSeconds,
+              useZForZeroOffset: true,
+            ),
+          ('X' || 'Z', 5) => const TimeField.zoneIso8601(
+              style:
+                  ZoneFieldIso8601Style.extendedWithHoursMinutesOptionalSeconds,
+              useZForZeroOffset: true,
+            ),
+          ('x', 1) => const TimeField.zoneIso8601(
+              style: ZoneFieldIso8601Style.basicWithHoursOptionalMinutes,
+              useZForZeroOffset: false,
+            ),
+          ('x', 2) => const TimeField.zoneIso8601(
+              style: ZoneFieldIso8601Style.basicWithHoursMinutes,
+              useZForZeroOffset: false,
+            ),
+          ('x', 3) => const TimeField.zoneIso8601(
+              style: ZoneFieldIso8601Style.extendedWithHoursMinutes,
+              useZForZeroOffset: false,
+            ),
+          ('x', 4) || ('Z', >= 1 && <= 3) => const TimeField.zoneIso8601(
+              style: ZoneFieldIso8601Style.basicWithHoursMinutesOptionalSeconds,
+              useZForZeroOffset: false,
+            ),
+          ('x', 5) => const TimeField.zoneIso8601(
+              style:
+                  ZoneFieldIso8601Style.extendedWithHoursMinutesOptionalSeconds,
+              useZForZeroOffset: false,
+            ),
+          _ => null,
+        } ??
+        HourStyle.parse(character, length)?.let(TimeField.hour);
   }
 
   @override
@@ -1414,14 +1390,7 @@ sealed class TimeField with _$TimeField implements ToExpression {
           create('periodAmPmNoonMidnight', [width.toExpression()]),
       periodFlexible: (width) =>
           create('periodFlexible', [width.toExpression()]),
-      hour12: (isPadded) =>
-          create('hour12', [], {'isPadded': literalBool(isPadded)}),
-      hour24: (isPadded) =>
-          create('hour24', [], {'isPadded': literalBool(isPadded)}),
-      hour12ZeroBased: (isPadded) =>
-          create('hour12ZeroBased', [], {'isPadded': literalBool(isPadded)}),
-      hour24OneBased: (isPadded) =>
-          create('hour24OneBased', [], {'isPadded': literalBool(isPadded)}),
+      hour: (style) => create('hour', [style.toExpression()]),
       minute: (isPadded) =>
           create('minute', [], {'isPadded': literalBool(isPadded)}),
       second: (isPadded) =>
@@ -1429,7 +1398,7 @@ sealed class TimeField with _$TimeField implements ToExpression {
       fractionalSecond: (digits) =>
           create('fractionalSecond', [], {'digits': literalNum(digits)}),
       millisecondsInDay: (digits) =>
-          create('millisecondsInDay', [], {'digits': literalNum(digits)}),
+          create('millisecondsInDay', [], {'minDigits': literalNum(digits)}),
       zoneSpecificNonLocation: (length) => create(
         'zoneSpecificNonLocation',
         [],
@@ -1450,6 +1419,65 @@ sealed class TimeField with _$TimeField implements ToExpression {
         'style': style.toExpression(),
         'useZForZeroOffset': literalBool(useZForZeroOffset),
       }),
+    );
+  }
+}
+
+@freezed
+sealed class HourStyle with _$HourStyle implements ToExpression {
+  /// Hour (0 – 23), e.g., “13”.
+  ///
+  /// Unicode Shorthand: `H`, `HH`
+  const factory HourStyle.from0To23({required bool isPadded}) =
+      _HourStyleFrom0To23;
+
+  /// Hour (1 – 24), e.g., “24”.
+  ///
+  /// Unicode Shorthand: `k`, `kk`
+  const factory HourStyle.from1To24({required bool isPadded}) =
+      _HourStyleFrom1To24;
+
+  /// Hour (0 – 11), e.g., “0” or “00”.
+  ///
+  /// Unicode Shorthand: `K`, `KK`
+  const factory HourStyle.from0To11({required bool isPadded}) =
+      _HourStyleFrom0To11;
+
+  /// Hour (1 – 12), e.g., “11”.
+  ///
+  /// Unicode Shorthand: `h`, `hh`
+  const factory HourStyle.from1To12({required bool isPadded}) =
+      _HourStyleFrom1To12;
+
+  const HourStyle._();
+
+  static HourStyle? parse(String character, int length) {
+    return switch ((character, length)) {
+      ('h', 1) => const HourStyle.from1To12(isPadded: false),
+      ('h', 2) => const HourStyle.from1To12(isPadded: true),
+      ('H', 1) => const HourStyle.from0To23(isPadded: false),
+      ('H', 2) => const HourStyle.from0To23(isPadded: true),
+      ('K', 1) => const HourStyle.from0To11(isPadded: false),
+      ('K', 2) => const HourStyle.from0To11(isPadded: true),
+      ('k', 1) => const HourStyle.from1To24(isPadded: false),
+      ('k', 2) => const HourStyle.from1To24(isPadded: true),
+      _ => null,
+    };
+  }
+
+  @override
+  Expression toExpression() {
+    final create = referCldr('HourStyle').newInstanceNamed;
+
+    return when(
+      from0To23: (style) =>
+          create('from0To23', [], {'isPadded': literalBool(isPadded)}),
+      from1To24: (style) =>
+          create('from1To24', [], {'isPadded': literalBool(isPadded)}),
+      from0To11: (style) =>
+          create('from0To11', [], {'isPadded': literalBool(isPadded)}),
+      from1To12: (style) =>
+          create('from1To12', [], {'isPadded': literalBool(isPadded)}),
     );
   }
 }
