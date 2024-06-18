@@ -363,7 +363,7 @@ class DateOrTimeFormat<F extends ToExpression>
 @freezed
 class DateTimeFormats with _$DateTimeFormats implements ToExpression {
   const factory DateTimeFormats({
-    required DateOrTimeFormats<DateTimeFormat> formats,
+    required DateOrTimeFormats<DateTimeVariants> formats,
     // `TODO`(JonasWanke): Parse skeletons
     required Map<String, Plural<List<DateOrTimePatternPart<DateTimeField>>>>
         availableFormats,
@@ -376,7 +376,7 @@ class DateTimeFormats with _$DateTimeFormats implements ToExpression {
       formats: DateOrTimeFormats.fromXml(
         path,
         'dateTimeFormat',
-        (path) => DateTimeFormat.fromXml(xml, path),
+        (path) => DateTimeVariants.fromXml(xml, path),
       ),
       availableFormats: xml
           .listChildElements(path.child('availableFormats'))
@@ -410,6 +410,33 @@ class DateTimeFormats with _$DateTimeFormats implements ToExpression {
           ),
         ),
       },
+    );
+  }
+}
+
+@freezed
+class DateTimeVariants with _$DateTimeVariants implements ToExpression {
+  const factory DateTimeVariants(
+    DateTimeFormat standard, {
+    required DateTimeFormat? atTime,
+  }) = _DateTimeVariants;
+  const DateTimeVariants._();
+
+  factory DateTimeVariants.fromXml(CldrXml xml, CldrPath path) {
+    final atTimePath = path.withAttribute('type', 'atTime');
+    return DateTimeVariants(
+      DateTimeFormat.fromXml(xml, path),
+      atTime: xml.resolveOptionalElement(atTimePath) == null
+          ? null
+          : DateTimeFormat.fromXml(xml, atTimePath),
+    );
+  }
+
+  @override
+  Expression toExpression() {
+    return referCldr('DateTimeVariants')(
+      [standard.toExpression()],
+      {'atTime': atTime == null ? literalNull : atTime!.toExpression()},
     );
   }
 }
