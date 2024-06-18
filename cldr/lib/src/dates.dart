@@ -657,14 +657,15 @@ sealed class DateOrTimePatternPart<F extends ToExpression>
           offset += 2;
         case "'":
           // Quoted text
+          offset++;
           while (true) {
-            final end = pattern.indexOf("'", offset + 1);
-            if (end < 0) {
+            final nextQuoteIndex = pattern.indexOf("'", offset);
+            if (nextQuoteIndex < 0) {
               throw ArgumentError('Unclosed quote in pattern: `$pattern`');
             }
 
-            addLiteral(pattern.substring(offset + 1, end));
-            offset = end + 1;
+            addLiteral(pattern.substring(offset, nextQuoteIndex));
+            offset = nextQuoteIndex + 1;
             if (offset == pattern.length) break;
 
             if (pattern[offset] == "'") {
