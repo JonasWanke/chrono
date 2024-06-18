@@ -248,8 +248,18 @@ class LocalizedTimeFormatter extends LocalizedFormatter<Time> {
 
   String formatField(Time value, TimeField field) {
     return field.when(
-      periodAmPm: (_) => throw UnimplementedError(),
-      periodAmPmNoonMidnight: (_) => throw UnimplementedError(),
+      periodAmPm: (width) {
+        final strings =
+            localeData.dates.calendars.gregorian.dayPeriods.format[width];
+        return value.isAm ? strings.am : strings.pm;
+      },
+      periodAmPmNoonMidnight: (width) {
+        final strings =
+            localeData.dates.calendars.gregorian.dayPeriods.format[width];
+        if (value.isMidnight) return strings.midnight ?? strings.am;
+        if (value.isNoon) return strings.noon ?? strings.pm;
+        return value.isAm ? strings.am : strings.pm;
+      },
       periodFlexible: (_) => throw UnimplementedError(),
       hour: (style) => style.when(
         from0To23: (isPadded) =>
