@@ -122,6 +122,11 @@ final class Time
   final int second;
   final FractionalSeconds fraction;
 
+  bool get isAm => hour < 12;
+  bool get isPm => !isAm;
+  bool get isMidnight => this == midnight;
+  bool get isNoon => this == noon;
+
   Hours get hoursSinceMidnight => Hours(hour);
   Minutes get minutesSinceMidnight => Minutes(minute) + hoursSinceMidnight;
   Seconds get secondsSinceMidnight => Seconds(second) + minutesSinceMidnight;
