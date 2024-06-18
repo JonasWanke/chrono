@@ -209,41 +209,58 @@ class LocalizedDateTimeFormatter extends LocalizedFormatter<DateTime> {
 
   @override
   String format(DateTime value) {
-    final formats =
-        localeData.dates.calendars.gregorian.dateTimeFormats.formats;
     return style.when(
-      defaultFormat: (width, useAtTimeVariant) {
-        final widthFormats = formats[width];
-        final format = useAtTimeVariant
-            ? (widthFormats.atTime ?? widthFormats.standard)
-            : widthFormats.standard;
-
-        final timeFormatter = LocalizedTimeFormatter(
-          localeData,
-          TimeStyle.defaultFormat(width: width),
-        );
-        final dateFormatter = LocalizedDateFormatter(
-          localeData,
-          DateStyle.defaultFormat(width: width),
-        );
-
-        return format.pattern
-            .map(
-              (it) => it.when(
-                literal: (value) => value,
-                time: () => timeFormatter.format(value.time),
-                date: () => dateFormatter.format(value.date),
-                field: (field) => field.when(
-                  dateField: (field) =>
-                      dateFormatter.formatField(value.date, field),
-                  timeField: (field) =>
-                      timeFormatter.formatField(value.time, field),
-                ),
-              ),
-            )
-            .join();
-      },
+      defaultFormat: (width, useAtTimeVariant) => _formatWidths(
+        value,
+        dateWidth: width,
+        timeWidth: width,
+        useAtTimeVariant: useAtTimeVariant,
+      ),
+      widths: (dateWidth, timeWidth, useAtTimeVariant) => _formatWidths(
+        value,
+        dateWidth: dateWidth,
+        timeWidth: timeWidth,
+        useAtTimeVariant: useAtTimeVariant,
+      ),
     );
+  }
+
+  String _formatWidths(
+    DateTime value, {
+    required DateOrTimeFormatWidth dateWidth,
+    required DateOrTimeFormatWidth timeWidth,
+    required bool useAtTimeVariant,
+  }) {
+    final widthFormats =
+        localeData.dates.calendars.gregorian.dateTimeFormats.formats[dateWidth];
+    final format = useAtTimeVariant
+        ? (widthFormats.atTime ?? widthFormats.standard)
+        : widthFormats.standard;
+
+    final dateFormatter = LocalizedDateFormatter(
+      localeData,
+      DateStyle.defaultFormat(width: dateWidth),
+    );
+    final timeFormatter = LocalizedTimeFormatter(
+      localeData,
+      TimeStyle.defaultFormat(width: timeWidth),
+    );
+
+    return format.pattern
+        .map(
+          (it) => it.when(
+            literal: (value) => value,
+            date: () => dateFormatter.format(value.date),
+            time: () => timeFormatter.format(value.time),
+            field: (field) => field.when(
+              dateField: (field) =>
+                  dateFormatter.formatField(value.date, field),
+              timeField: (field) =>
+                  timeFormatter.formatField(value.time, field),
+            ),
+          ),
+        )
+        .join();
   }
 }
 
@@ -254,7 +271,12 @@ class DateTimeStyle with _$DateTimeStyle {
   const factory DateTimeStyle.defaultFormat({
     required DateOrTimeFormatWidth width,
     @Default(false) bool useAtTimeVariant,
-  }) = _DateTimeStyleFormat;
+  }) = _DateTimeStyleDefaultFormat;
+  const factory DateTimeStyle.widths({
+    required DateOrTimeFormatWidth dateWidth,
+    required DateOrTimeFormatWidth timeWidth,
+    @Default(false) bool useAtTimeVariant,
+  }) = _DateTimeStyleWidths;
 
   const DateTimeStyle._();
 }
