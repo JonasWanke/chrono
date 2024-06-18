@@ -62,7 +62,8 @@ class Calendar with _$Calendar implements ToExpression {
   const factory Calendar({
     required Context<Widths<Map<int, String>>> months,
     required Context<DayWidths> days,
-    // TODO(JonasWanke): `<quarters>`, `<dayPeriods>`
+    // TODO(JonasWanke): `<quarters>`
+    required Context<Widths<DayPeriods>> dayPeriods,
     required Eras eras,
     required DateOrTimeFormats<DateOrTimeFormat<DateField>> dateFormats,
     required DateOrTimeFormats<DateOrTimeFormat<TimeField>> timeFormats,
@@ -87,6 +88,13 @@ class Calendar with _$Calendar implements ToExpression {
         path.child('days').child('dayContext'),
         (path) => DayWidths.fromXml(xml, path),
       ),
+      dayPeriods: Context.fromXml(
+        path.child('dayPeriods').child('dayPeriodContext'),
+        (path) => Widths.fromXml(
+          path.child('dayPeriodWidth'),
+          (path) => DayPeriods.fromXml(xml, path),
+        ),
+      ),
       eras: Eras.fromXml(xml, path.child('eras')),
       dateFormats: DateOrTimeFormats.fromXml(
         path.child('dateFormats'),
@@ -110,6 +118,7 @@ class Calendar with _$Calendar implements ToExpression {
       {
         'months': months.toExpression(),
         'days': days.toExpression(),
+        'dayPeriods': dayPeriods.toExpression(),
         'eras': eras.toExpression(),
         'dateFormats': dateFormats.toExpression(),
         'timeFormats': timeFormats.toExpression(),
@@ -216,6 +225,67 @@ class Days with _$Days implements ToExpression {
         'thursday': literalString(thursday),
         'friday': literalString(friday),
         'saturday': literalString(saturday),
+      },
+    );
+  }
+}
+
+@freezed
+class DayPeriods with _$DayPeriods implements ToExpression {
+  const factory DayPeriods({
+    required String am,
+    required String pm,
+    required String? midnight,
+    required String? morning1,
+    required String? morning2,
+    required String? noon,
+    required String? afternoon1,
+    required String? afternoon2,
+    required String? evening1,
+    required String? evening2,
+    required String? night1,
+    required String? night2,
+  }) = _DayPeriods;
+  const DayPeriods._();
+
+  factory DayPeriods.fromXml(CldrXml xml, CldrPath path) {
+    CldrPath getPath(String type) =>
+        path.child('dayPeriod', attributes: {'type': type});
+    return DayPeriods(
+      am: xml.resolveString(getPath('am')),
+      pm: xml.resolveString(getPath('pm')),
+      midnight: xml.resolveOptionalString(getPath('midnight')),
+      morning1: xml.resolveOptionalString(getPath('morning1')),
+      morning2: xml.resolveOptionalString(getPath('morning2')),
+      noon: xml.resolveOptionalString(getPath('noon')),
+      afternoon1: xml.resolveOptionalString(getPath('afternoon1')),
+      afternoon2: xml.resolveOptionalString(getPath('afternoon2')),
+      evening1: xml.resolveOptionalString(getPath('evening1')),
+      evening2: xml.resolveOptionalString(getPath('evening2')),
+      night1: xml.resolveOptionalString(getPath('night1')),
+      night2: xml.resolveOptionalString(getPath('night2')),
+    );
+  }
+
+  @override
+  Expression toExpression() {
+    return referCldr('DayPeriods')(
+      [],
+      {
+        'am': literalString(am),
+        'pm': literalString(pm),
+        'midnight': midnight == null ? literalNull : literalString(midnight!),
+        'morning1': morning1 == null ? literalNull : literalString(morning1!),
+        'morning2': morning2 == null ? literalNull : literalString(morning2!),
+        'noon': noon == null ? literalNull : literalString(noon!),
+        'afternoon1':
+            afternoon1 == null ? literalNull : literalString(afternoon1!),
+        'afternoon2':
+            afternoon2 == null ? literalNull : literalString(afternoon2!),
+        'evening1': evening1 == null ? literalNull : literalString(evening1!),
+        'evening2': evening2 == null ? literalNull : literalString(evening2!),
+        'night1': night1 == null ? literalNull : literalString(night1!),
+        'night2': night2 == null ? literalNull : literalString(night2!),
       },
     );
   }
