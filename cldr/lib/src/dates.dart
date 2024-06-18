@@ -299,21 +299,29 @@ class Eras with _$Eras implements ToExpression {
   const Eras._();
 
   factory Eras.fromXml(CldrXml xml, CldrPath path) {
-    Map<int, List<XmlElement>> find(String elementName) {
-      return xml
-          .listChildElements(path.child(elementName))
-          .groupListsBy((it) => int.parse(it.getAttribute('type')!));
-    }
+    // In the root document, `<eraNames>` and `<eraNarrow>` are aliases to
+    // `<eraAbbr>`, so we use that as the source of truth.
+    final eraTypes = xml
+        .listChildElements(path.child('eraAbbr'))
+        .map((it) => int.parse(it.getAttribute('type')!))
+        .toSet();
 
-    final eraNames = find('eraNames');
-    final eraAbbreviations = find('eraAbbr');
-    final eraNarrow = find('eraNarrow');
-
-    final eras = eraNames.keys.associateWith((type) {
+    final eras = eraTypes.associateWith((type) {
+      final lastSegment =
+          CldrPathSegment('era', attributes: {'type': type.toString()});
       return Widths(
-        wide: ValueWithVariant.fromXmlElements(eraNames[type]!),
-        abbreviated: ValueWithVariant.fromXmlElements(eraAbbreviations[type]!),
-        narrow: ValueWithVariant.fromXmlElements(eraNarrow[type]!),
+        wide: ValueWithVariant.fromXml(
+          xml,
+          path.child('eraNames').childSegment(lastSegment),
+        ),
+        abbreviated: ValueWithVariant.fromXml(
+          xml,
+          path.child('eraAbbr').childSegment(lastSegment),
+        ),
+        narrow: ValueWithVariant.fromXml(
+          xml,
+          path.child('eraNarrow').childSegment(lastSegment),
+        ),
       );
     });
     return Eras(eras: eras);
