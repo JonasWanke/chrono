@@ -758,136 +758,22 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
 @freezed
 sealed class DateField with _$DateField implements ToExpression {
   const factory DateField.era(EraStyle style) = _DateFieldEra;
-
-  const factory DateField.year(YearStyle yearStyle) = _DateFieldYear;
-
-  /// Year (in "Week of Year"-based calendars), e.g., “1997”.
-  const factory DateField.weekBasedYear(YearStyle yearStyle) =
-      _DateFieldWeekBasedYear;
-
-  /// Extended year, e.g., “4601”.
-  ///
-  /// This is a single number designating the year of this calendar system,
-  /// encompassing all supra-year fields. For example, for the Julian calendar
-  /// system, year numbers are positive, with an era of BCE or CE. An extended
-  /// year value for the Julian calendar system assigns positive values to CE
-  /// years and negative values to BCE years, with 1 BCE being year 0.
-  ///
-  /// Unicode Shorthand: `u`, `uu`, `uuu`, etc.
-  const factory DateField.extendedYear({required int minDigits}) =
-      _DateFieldExtendedYear;
-
-  /// Cyclic year name.
-  ///
-  /// Calendars such as the Chinese lunar calendar (and related calendars) and
-  /// the Hindu calendars use 60-year cycles of year names.
-  ///
-  /// If the calendar does not provide cyclic year name data, or if the year
-  /// value to be formatted is out of the range of years for which cyclic name
-  /// data is provided, then numeric formatting is used (behaves like "y").
-  ///
-  /// | Width         | Example       | Unicode Shorthand |
-  /// | :------------ | :------------ | :---------------- |
-  /// | `wide`        | 甲子           | `UUUU`            |
-  /// | `abbreviated` | 甲子 (for now) | `U`, `UU`, `UUU`  |
-  /// | `narrow`      | 甲子 (for now) | `UUUUU`           |
-  const factory DateField.cyclicYearName(FieldWidth width) =
-      _DateFieldCyclicYearName;
-
-  /// Related Gregorian year (numeric).
-  ///
-  /// For non-Gregorian calendars, this corresponds to the extended Gregorian
-  /// year in which the calendar’s year begins. Related Gregorian years are
-  /// often displayed, for example, when formatting dates in the Japanese
-  /// calendar – e.g., “2012(平成24)年1月15日” – or in the Chinese calendar – e.g.,
-  /// “2012壬辰年腊月初四”. The related Gregorian year is usually displayed using
-  /// the “latn” numbering system, regardless of what numbering systems may be
-  /// used for other parts of the formatted date. If the calendar’s year is
-  /// linked to the solar year (perhaps using leap months), then for that
-  /// calendar the ‘r’ year will always be at a fixed offset from the ‘u’ year.
-  /// For the Gregorian calendar, the ‘r’ year is the same as the ‘u’ year.
-  ///
-  /// Unicode Shorthand: `r`, `rr`, `rrr`, etc.
-  const factory DateField.relatedGregorianYear({required int minDigits}) =
-      _DateFieldRelatedGregorianYear;
-
+  const factory DateField.year(YearStyle style) = _DateFieldYear;
   const factory DateField.quarter(QuarterStyle style) = _DateFieldQuarter;
-
   const factory DateField.month(MonthStyle style) = _DateFieldMonth;
-
-  /// Week of Year, e.g., “27”.
-  ///
-  /// Unicode Shorthand: `w` (not padded), `ww` (padded)
-  const factory DateField.weekOfYear({required bool isPadded}) =
-      _DateFieldWeekOfYear;
-
-  /// Week of Month, e.g., “3”.
-  ///
-  /// Unicode Shorthand: `W`
-  const factory DateField.weekOfMonth() = _DateFieldWeekOfMonth;
-
-  /// Date - Day of the month, e.g., “1”.
-  ///
-  /// Unicode Shorthand: `d` (not padded), `dd` (padded)
-  const factory DateField.dayOfMonth({required bool isPadded}) =
-      _DateFieldDayOfMonth;
-
-  /// Day of year, e.g., “345”.
-  ///
-  /// Unicode Shorthand: `D` (one digit), `DD` (padded to two digits),
-  /// `DDD` (padded to three digits)
-  const factory DateField.dayOfYear({required DayOfYearPadding padding}) =
-      _DateFieldDayOfYear;
-
-  /// Day of Week in Month, e.g., “2”.
-  ///
-  /// The example is for the 2nd Wed in July
-  ///
-  /// Unicode Shorthand: `F`
-  const factory DateField.dayOfWeekInMonth() = _DateFieldDayOfWeekInMonth;
-
-  /// Modified Julian day.
-  ///
-  /// This is different from the conventional Julian day number in two regards.
-  /// First, it demarcates days at local zone midnight, rather than noon GMT.
-  /// Second, it is a local number; that is, it depends on the local time zone.
-  /// It can be thought of as a single number that encompasses all the
-  /// date-related fields.
-  ///
-  /// Unicode Shorthand: `g`
-  const factory DateField.modifiedJulianDay() = _DateFieldModifiedJulianDay;
-
+  const factory DateField.week(WeekStyle style) = _DateFieldWeek;
+  const factory DateField.day(DayStyle style) = _DateFieldDay;
   const factory DateField.weekday(WeekdayStyle style) = _DateFieldWeekday;
 
   const DateField._();
 
   static DateField? parse(String character, int length) {
-    return switch ((character, length)) {
-          ('u', _) => DateField.extendedYear(minDigits: length),
-          ('U', >= 1 && <= 3) =>
-            const DateField.cyclicYearName(FieldWidth.abbreviated),
-          ('U', 4) => const DateField.cyclicYearName(FieldWidth.wide),
-          ('U', 5) => const DateField.cyclicYearName(FieldWidth.narrow),
-          ('r', _) => DateField.relatedGregorianYear(minDigits: length),
-          ('w', 1) => const DateField.weekOfYear(isPadded: false),
-          ('w', 2) => const DateField.weekOfYear(isPadded: true),
-          ('W', 1) => const DateField.weekOfMonth(),
-          ('d', 1) => const DateField.dayOfMonth(isPadded: false),
-          ('d', 2) => const DateField.dayOfMonth(isPadded: true),
-          ('D', 1) => const DateField.dayOfYear(padding: DayOfYearPadding.one),
-          ('D', 2) => const DateField.dayOfYear(padding: DayOfYearPadding.two),
-          ('D', 3) =>
-            const DateField.dayOfYear(padding: DayOfYearPadding.three),
-          ('F', 1) => const DateField.dayOfWeekInMonth(),
-          ('g', _) => const DateField.modifiedJulianDay(),
-          _ => null,
-        } ??
-        EraStyle.parse(character, length)?.let(DateField.era) ??
-        YearStyle.parseCalendarYear(character, length)?.let(DateField.year) ??
-        YearStyle.parseWeekBasedYear(character, length)
-            ?.let(DateField.weekBasedYear) ??
+    return EraStyle.parse(character, length)?.let(DateField.era) ??
+        YearStyle.parse(character, length)?.let(DateField.year) ??
         QuarterStyle.parse(character, length)?.let(DateField.quarter) ??
         MonthStyle.parse(character, length)?.let(DateField.month) ??
+        WeekStyle.parse(character, length)?.let(DateField.week) ??
+        DayStyle.parse(character, length)?.let(DateField.day) ??
         WeekdayStyle.parse(character, length)?.let(DateField.weekday);
   }
 
@@ -897,27 +783,10 @@ sealed class DateField with _$DateField implements ToExpression {
     return when(
       era: (style) => create('era', [style.toExpression()]),
       year: (style) => create('year', [style.toExpression()]),
-      weekBasedYear: (style) => create('weekBasedYear', [style.toExpression()]),
-      extendedYear: (minDigits) =>
-          create('extendedYear', [], {'minDigits': literalNum(minDigits)}),
-      cyclicYearName: (width) =>
-          create('cyclicYearName', [width.toExpression()]),
-      relatedGregorianYear: (minDigits) => create(
-        'relatedGregorianYear',
-        [],
-        {'minDigits': literalNum(minDigits)},
-      ),
       quarter: (style) => create('quarter', [style.toExpression()]),
       month: (style) => create('month', [style.toExpression()]),
-      weekOfYear: (isPadded) =>
-          create('weekOfYear', [], {'isPadded': literalBool(isPadded)}),
-      weekOfMonth: () => create('weekOfMonth', []),
-      dayOfMonth: (isPadded) =>
-          create('dayOfMonth', [], {'isPadded': literalBool(isPadded)}),
-      dayOfYear: (padding) =>
-          create('dayOfYear', [], {'padding': padding.toExpression()}),
-      dayOfWeekInMonth: () => create('dayOfWeekInMonth', []),
-      modifiedJulianDay: () => create('modifiedJulianDay', []),
+      week: (style) => create('week', [style.toExpression()]),
+      day: (style) => create('day', [style.toExpression()]),
       weekday: (style) => create('weekday', [style.toExpression()]),
     );
   }
@@ -970,7 +839,7 @@ sealed class EraStyle with _$EraStyle implements ToExpression {
 
 @freezed
 sealed class YearStyle with _$YearStyle implements ToExpression {
-  /// Year number, e.g., “1996”.
+  /// Calendar year number, e.g., “1996”.
   ///
   /// | Year     |     1 |     2 |     3 |     4 |     5 |
   /// | :------- | ----: | ----: |   --: | ----: | ----: |
@@ -980,41 +849,121 @@ sealed class YearStyle with _$YearStyle implements ToExpression {
   /// | AD 1234  |  1234 |  1234 |  1234 |  1234 | 01234 |
   /// | AD 12345 | 12345 | 12345 | 12345 | 12345 | 12345 |
   ///
-  /// Unicode Shorthand: `y`, `yyy`, `yyyy`, `yyyyy`, etc. (calendar year),
-  /// `Y`, `YYY`, `YYYY`, `YYYYY`, etc. (week-based year)
+  /// Unicode Shorthand: `y`, `yyy`, `yyyy`, `yyyyy`, etc.
   @Assert('minDigits >= 1')
-  const factory YearStyle({required int minDigits}) = _YearStyle;
+  const factory YearStyle.calendarYear({required int minDigits}) =
+      _YearStyleCalendarYear;
 
   /// Two-digit year number, e.g., “96”.
   ///
-  /// Unicode Shorthand: `yy` (calendar year), `YY` (week-based year)
-  const factory YearStyle.twoDigits() = _YearStyleTwoDigits;
+  /// Unicode Shorthand: `yy`
+  const factory YearStyle.calendarYearTwoDigits() =
+      _YearStyleCalendarYearTwoDigits;
+
+  /// Year number (in "Week of Year"-based calendars), e.g., “1996”.
+  ///
+  /// | Year     |     1 |     2 |     3 |     4 |     5 |
+  /// | :------- | ----: | ----: |   --: | ----: | ----: |
+  /// | AD 1     |     1 |    01 |   001 |  0001 | 00001 |
+  /// | AD 12    |    12 |    12 |   012 |  0012 | 00012 |
+  /// | AD 123   |   123 |   123 |   123 |  0123 | 00123 |
+  /// | AD 1234  |  1234 |  1234 |  1234 |  1234 | 01234 |
+  /// | AD 12345 | 12345 | 12345 | 12345 | 12345 | 12345 |
+  ///
+  /// Unicode Shorthand: `Y`, `YYY`, `YYYY`, `YYYYY`, etc.
+  @Assert('minDigits >= 1')
+  const factory YearStyle.weekBasedYear({required int minDigits}) =
+      _YearStyleWeekBasedYear;
+
+  /// Two-digit year number (in "Week of Year"-based calendars), e.g., “96”.
+  ///
+  /// Unicode Shorthand: `YY`
+  const factory YearStyle.weekBasedYearTwoDigits() =
+      _YearStyleWeekBasedYearTwoDigits;
+
+  /// Extended year, e.g., “4601”.
+  ///
+  /// This is a single number designating the year of this calendar system,
+  /// encompassing all supra-year fields. For example, for the Julian calendar
+  /// system, year numbers are positive, with an era of BCE or CE. An extended
+  /// year value for the Julian calendar system assigns positive values to CE
+  /// years and negative values to BCE years, with 1 BCE being year 0.
+  ///
+  /// Unicode Shorthand: `u`, `uu`, `uuu`, etc.
+  const factory YearStyle.extendedYear({required int minDigits}) =
+      _YearStyleExtendedYear;
+
+  /// Cyclic year name.
+  ///
+  /// Calendars such as the Chinese lunar calendar (and related calendars) and
+  /// the Hindu calendars use 60-year cycles of year names.
+  ///
+  /// If the calendar does not provide cyclic year name data, or if the year
+  /// value to be formatted is out of the range of years for which cyclic name
+  /// data is provided, then numeric formatting is used (behaves like "y").
+  ///
+  /// | Width         | Example       | Unicode Shorthand |
+  /// | :------------ | :------------ | :---------------- |
+  /// | `wide`        | 甲子           | `UUUU`            |
+  /// | `abbreviated` | 甲子 (for now) | `U`, `UU`, `UUU`  |
+  /// | `narrow`      | 甲子 (for now) | `UUUUU`           |
+  const factory YearStyle.cyclicYearName(FieldWidth width) =
+      _YearStyleCyclicYearName;
+
+  /// Related Gregorian year (numeric).
+  ///
+  /// For non-Gregorian calendars, this corresponds to the extended Gregorian
+  /// year in which the calendar’s year begins. Related Gregorian years are
+  /// often displayed, for example, when formatting dates in the Japanese
+  /// calendar – e.g., “2012(平成24)年1月15日” – or in the Chinese calendar – e.g.,
+  /// “2012壬辰年腊月初四”. The related Gregorian year is usually displayed using
+  /// the “latn” numbering system, regardless of what numbering systems may be
+  /// used for other parts of the formatted date. If the calendar’s year is
+  /// linked to the solar year (perhaps using leap months), then for that
+  /// calendar the ‘r’ year will always be at a fixed offset from the ‘u’ year.
+  /// For the Gregorian calendar, the ‘r’ year is the same as the ‘u’ year.
+  ///
+  /// Unicode Shorthand: `r`, `rr`, `rrr`, etc.
+  const factory YearStyle.relatedGregorianYear({required int minDigits}) =
+      _YearStyleRelatedGregorianYear;
 
   const YearStyle._();
 
-  static YearStyle? parseCalendarYear(String character, int length) {
+  static YearStyle? parse(String character, int length) {
     return switch ((character, length)) {
-      ('y', 2) => const YearStyle.twoDigits(),
-      ('y', _) => YearStyle(minDigits: length),
-      _ => null,
-    };
-  }
-
-  static YearStyle? parseWeekBasedYear(String character, int length) {
-    return switch ((character, length)) {
-      ('Y', 2) => const YearStyle.twoDigits(),
-      ('Y', _) => YearStyle(minDigits: length),
+      ('y', 2) => const YearStyle.calendarYearTwoDigits(),
+      ('y', _) => YearStyle.calendarYear(minDigits: length),
+      ('Y', 2) => const YearStyle.weekBasedYearTwoDigits(),
+      ('Y', _) => YearStyle.weekBasedYear(minDigits: length),
+      ('u', _) => YearStyle.extendedYear(minDigits: length),
+      ('U', >= 1 && <= 3) =>
+        const YearStyle.cyclicYearName(FieldWidth.abbreviated),
+      ('U', 4) => const YearStyle.cyclicYearName(FieldWidth.wide),
+      ('U', 5) => const YearStyle.cyclicYearName(FieldWidth.narrow),
+      ('r', _) => YearStyle.relatedGregorianYear(minDigits: length),
       _ => null,
     };
   }
 
   @override
   Expression toExpression() {
-    final clazz = referCldr('YearStyle');
+    final create = referCldr('YearStyle').newInstanceNamed;
     return when(
-      (minDigits) =>
-          clazz.newInstance([], {'minDigits': literalNum(minDigits)}),
-      twoDigits: () => clazz.newInstanceNamed('twoDigits', []),
+      calendarYear: (minDigits) =>
+          create('calendarYear', [], {'minDigits': literalNum(minDigits)}),
+      calendarYearTwoDigits: () => create('calendarYearTwoDigits', []),
+      weekBasedYear: (minDigits) =>
+          create('weekBasedYear', [], {'minDigits': literalNum(minDigits)}),
+      weekBasedYearTwoDigits: () => create('weekBasedYearTwoDigits', []),
+      extendedYear: (minDigits) =>
+          create('extendedYear', [], {'minDigits': literalNum(minDigits)}),
+      cyclicYearName: (width) =>
+          create('cyclicYearName', [width.toExpression()]),
+      relatedGregorianYear: (minDigits) => create(
+        'relatedGregorianYear',
+        [],
+        {'minDigits': literalNum(minDigits)},
+      ),
     );
   }
 }
@@ -1163,6 +1112,103 @@ sealed class MonthStyle with _$MonthStyle implements ToExpression {
 }
 
 @freezed
+sealed class WeekStyle with _$WeekStyle implements ToExpression {
+  /// Week of Year, e.g., “27”.
+  ///
+  /// Unicode Shorthand: `w` (not padded), `ww` (padded)
+  const factory WeekStyle.weekOfYear({required bool isPadded}) =
+      _WeekStyleWeekOfYear;
+
+  /// Week of Month, e.g., “3”.
+  ///
+  /// Unicode Shorthand: `W`
+  const factory WeekStyle.weekOfMonth() = _WeekStyleWeekOfMonth;
+
+  const WeekStyle._();
+
+  static WeekStyle? parse(String character, int length) {
+    return switch ((character, length)) {
+      ('w', 1) => const WeekStyle.weekOfYear(isPadded: false),
+      ('w', 2) => const WeekStyle.weekOfYear(isPadded: true),
+      ('W', 1) => const WeekStyle.weekOfMonth(),
+      _ => null,
+    };
+  }
+
+  @override
+  Expression toExpression() {
+    final create = referCldr('WeekStyle').newInstanceNamed;
+    return when(
+      weekOfYear: (isPadded) =>
+          create('weekOfYear', [], {'isPadded': literalBool(isPadded)}),
+      weekOfMonth: () => create('weekOfMonth', []),
+    );
+  }
+}
+
+@freezed
+sealed class DayStyle with _$DayStyle implements ToExpression {
+  /// Date - Day of the month, e.g., “1”.
+  ///
+  /// Unicode Shorthand: `d` (not padded), `dd` (padded)
+  const factory DayStyle.dayOfMonth({required bool isPadded}) =
+      _DayStyleDayOfMonth;
+
+  /// Day of year, e.g., “345”.
+  ///
+  /// Unicode Shorthand: `D` (one digit), `DD` (padded to two digits),
+  /// `DDD` (padded to three digits)
+  const factory DayStyle.dayOfYear({required DayOfYearPadding padding}) =
+      _DayStyleDayOfYear;
+
+  /// Day of Week in Month, e.g., “2”.
+  ///
+  /// The example is for the 2nd Wed in July
+  ///
+  /// Unicode Shorthand: `F`
+  const factory DayStyle.dayOfWeekInMonth() = _DayStyleDayOfWeekInMonth;
+
+  /// Modified Julian day.
+  ///
+  /// This is different from the conventional Julian day number in two regards.
+  /// First, it demarcates days at local zone midnight, rather than noon GMT.
+  /// Second, it is a local number; that is, it depends on the local time zone.
+  /// It can be thought of as a single number that encompasses all the
+  /// date-related fields.
+  ///
+  /// Unicode Shorthand: `g`
+  const factory DayStyle.modifiedJulianDay() = _DayStyleModifiedJulianDay;
+
+  const DayStyle._();
+
+  static DayStyle? parse(String character, int length) {
+    return switch ((character, length)) {
+      ('d', 1) => const DayStyle.dayOfMonth(isPadded: false),
+      ('d', 2) => const DayStyle.dayOfMonth(isPadded: true),
+      ('D', 1) => const DayStyle.dayOfYear(padding: DayOfYearPadding.one),
+      ('D', 2) => const DayStyle.dayOfYear(padding: DayOfYearPadding.two),
+      ('D', 3) => const DayStyle.dayOfYear(padding: DayOfYearPadding.three),
+      ('F', 1) => const DayStyle.dayOfWeekInMonth(),
+      ('g', _) => const DayStyle.modifiedJulianDay(),
+      _ => null,
+    };
+  }
+
+  @override
+  Expression toExpression() {
+    final create = referCldr('DayStyle').newInstanceNamed;
+    return when(
+      dayOfMonth: (isPadded) =>
+          create('dayOfMonth', [], {'isPadded': literalBool(isPadded)}),
+      dayOfYear: (padding) =>
+          create('dayOfYear', [], {'padding': padding.toExpression()}),
+      dayOfWeekInMonth: () => create('dayOfWeekInMonth', []),
+      modifiedJulianDay: () => create('modifiedJulianDay', []),
+    );
+  }
+}
+
+@freezed
 sealed class WeekdayStyle with _$WeekdayStyle implements ToExpression {
   /// The form used within a date format string (such as “Saturday, November
   /// 12th”).
@@ -1237,6 +1283,36 @@ sealed class WeekdayStyle with _$WeekdayStyle implements ToExpression {
 
 @freezed
 sealed class TimeField with _$TimeField implements ToExpression {
+  const factory TimeField.period(PeriodStyle style) = _TimeFieldPeriod;
+  const factory TimeField.hour(HourStyle style) = _TimeFieldHour;
+  const factory TimeField.minute(MinuteStyle style) = _TimeFieldMinute;
+  const factory TimeField.second(SecondStyle style) = _TimeFieldSecond;
+  const factory TimeField.zone(ZoneStyle style) = _TimeFieldZone;
+  const TimeField._();
+
+  static TimeField? parse(String character, int length) {
+    return PeriodStyle.parse(character, length)?.let(TimeField.period) ??
+        HourStyle.parse(character, length)?.let(TimeField.hour) ??
+        MinuteStyle.parse(character, length)?.let(TimeField.minute) ??
+        SecondStyle.parse(character, length)?.let(TimeField.second) ??
+        ZoneStyle.parse(character, length)?.let(TimeField.zone);
+  }
+
+  @override
+  Expression toExpression() {
+    final create = referCldr('TimeField').newInstanceNamed;
+    return when(
+      period: (style) => create('period', [style.toExpression()]),
+      hour: (style) => create('hour', [style.toExpression()]),
+      minute: (style) => create('minute', [style.toExpression()]),
+      second: (style) => create('second', [style.toExpression()]),
+      zone: (style) => create('zone', [style.toExpression()]),
+    );
+  }
+}
+
+@freezed
+sealed class PeriodStyle with _$PeriodStyle implements ToExpression {
   /// Period (AM or PM), e.g., “AM”.
   ///
   /// May be uppercase or lowercase depending on the locale and other options.
@@ -1249,7 +1325,7 @@ sealed class TimeField with _$TimeField implements ToExpression {
   /// | `wide`        | am. (e.g., 12 am.) | `aaaa`            |
   /// | `abbreviated` | am. (e.g., 12 am.) | `a`, `aa`, `aaa`  |
   /// | `narrow`      | a (e.g., 12a)      | `aaaaa`           |
-  const factory TimeField.periodAmPm(FieldWidth width) = _TimeFieldPeriodAmPm;
+  const factory PeriodStyle.amPm(FieldWidth width) = _PeriodStyleAmPm;
 
   /// Period (AM or PM) with optional values for noon and midnight, e.g., “AM”.
   ///
@@ -1263,8 +1339,8 @@ sealed class TimeField with _$TimeField implements ToExpression {
   /// | `wide`        | midnight (e.g., 12 midnight) | `bbbb`            |
   /// | `abbreviated` | mid. (e.g., 12 mid.)         | `b`, `bb`, `bbb`  |
   /// | `narrow`      | md (e.g., 12 md)             | `bbbbb`           |
-  const factory TimeField.periodAmPmNoonMidnight(FieldWidth width) =
-      _TimeFieldPeriodAmPmNoonMidnight;
+  const factory PeriodStyle.amPmNoonMidnight(FieldWidth width) =
+      _PeriodStyleAmPmNoonMidnight;
 
   /// Flexible day period, e.g., “at night”.
   ///
@@ -1276,255 +1352,35 @@ sealed class TimeField with _$TimeField implements ToExpression {
   /// | `wide`        | at night (e.g., 3:00 at night) | `BBBB`            |
   /// | `abbreviated` | at night (e.g., 3:00 at night) | `B`, `BB`, `BBB`  |
   /// | `narrow`      | at night (e.g., 3:00 at night) | `BBBBB`           |
-  const factory TimeField.periodFlexible(FieldWidth width) =
-      _TimeFieldPeriodFlexible;
+  const factory PeriodStyle.flexible(FieldWidth width) = _PeriodStyleFlexible;
 
-  const factory TimeField.hour(HourStyle style) = _TimeFieldHour;
+  const PeriodStyle._();
 
-  /// Minute, e.g., “59”.
-  ///
-  /// Unicode Shorthand: `m`, `mm`
-  const factory TimeField.minute({required bool isPadded}) = _TimeFieldMinute;
-
-  /// Second, e.g., “12”.
-  ///
-  /// Unicode Shorthand: `s`, `ss`
-  const factory TimeField.second({required bool isPadded}) = _TimeFieldSecond;
-
-  /// Fractional Second, e.g., “3456”.
-  ///
-  /// Unicode Shorthand: `S`, `SS`, etc.
-  @Assert('digits >= 1')
-  const factory TimeField.fractionalSecond({required int digits}) =
-      _TimeFieldFractionalSecond;
-
-  /// Milliseconds in day, e.g., “69540000”.
-  ///
-  /// This field behaves exactly like a composite of all time-related fields,
-  /// not including the zone fields. As such, it also reflects discontinuities
-  /// of those fields on DST transition days. On a day of DST onset, it will
-  /// jump forward. On a day of DST cessation, it will jump backward. This
-  /// reflects the fact that is must be combined with the offset field to obtain
-  /// a unique local time value.
-  ///
-  /// Unicode Shorthand: `A`, `AA`, etc.
-  @Assert('minDigits >= 1')
-  const factory TimeField.millisecondsInDay({required int minDigits}) =
-      _TimeFieldMillisecondsInDay;
-
-  /// The specific non-location format, e.g., “PDT” (short) or “Pacific Daylight
-  /// Time” (long).
-  ///
-  /// Short: Where that is unavailable, falls back to the short localized GMT
-  /// format (“O”).
-  ///
-  /// Long: Where that is unavailable, falls back to the long localized GMT
-  /// format (“OOOO”).
-  ///
-  /// Unicode Shorthand: `z`, `zz`, `zzz` (short), `zzzz` (long)
-  const factory TimeField.zoneSpecificNonLocation({
-    required ZoneFieldLength length,
-  }) = _TimeFieldZoneSpecificNonLocation;
-
-  /// The localized GMT format, e.g., “GMT-8” (short) or “GMT-08:00” (long).
-  ///
-  /// Unicode Shorthand: `O` (short), `ZZZZ`, `OOOO` (long)
-  // `TODO`(JonasWanke): check example since the spec conflicts itself
-  const factory TimeField.zoneLocalizedGmt({
-    required ZoneFieldLength length,
-  }) = _TimeFieldZoneLocalizedGmt;
-
-  /// The generic non-location format, e.g., “PT” (short) or “Pacific Time”
-  /// (long).
-  ///
-  /// Short: Where that is unavailable, falls back to the generic location
-  /// format (“VVVV”), then the short localized GMT format as the final
-  /// fallback.
-  ///
-  /// Long: Where that is unavailable, falls back to generic location format
-  /// (“VVVV”).
-  ///
-  /// Unicode Shorthand: `v` (short), `vvvv` (long)
-  const factory TimeField.zoneGenericNonLocation({
-    required ZoneFieldLength length,
-  }) = _TimeFieldZoneGenericNonLocation;
-
-  /// The time zone ID, e.g., “uslax” (short) or “America/Los_Angeles” (long).
-  ///
-  /// Short: Where that is unavailable, the special short time zone ID `unk`
-  /// (Unknown Zone) is used.
-  ///
-  /// Short: Note: This specifier was originally used for a variant of the short
-  /// specific non-location format, but it was deprecated in the later version
-  /// of this specification. In CLDR 23, the definition of the specifier was
-  /// changed to designate a short time zone ID.
-  ///
-  /// Unicode Shorthand: `V` (short), `VV` (long)
-  const factory TimeField.zoneID({required ZoneFieldLength length}) =
-      _TimeFieldZoneID;
-
-  /// The exemplar city (location) for the time zone, e.g., “Los Angeles”.
-  ///
-  /// Where that is unavailable, the localized exemplar city name for the
-  /// special zone Etc/Unknown is used as the fallback (for example, “Unknown
-  /// City”).
-  ///
-  /// Unicode Shorthand: `VVV`
-  const factory TimeField.zoneExemplarCity() = _TimeFieldZoneExemplarCity;
-
-  /// The generic location format, e.g., “Los Angeles Time”.
-  ///
-  /// Where that is unavailable, falls back to the long localized GMT format
-  /// (“OOOO”; Note: Fallback is only necessary with a GMT-style Time Zone ID,
-  /// like Etc/GMT-830.) This is especially useful when presenting possible
-  /// timezone choices for user selection, since the naming is more uniform than
-  /// the `v` format.
-  ///
-  /// Unicode Shorthand: `VVVV`
-  const factory TimeField.zoneGenericLocationFormat() =
-      _TimeFieldZoneGenericLocationFormat;
-
-  /// An ISO 8601 basic format, see [ZoneFieldIso8601Style] for details.
-  ///
-  /// With [useZForZeroOffset] set to `true`, the ISO 8601 UTC indicator “Z” is
-  /// used when local time offset is 0.
-  ///
-  /// Unicode Shorthand: See [ZoneFieldIso8601Style]
-  const factory TimeField.zoneIso8601({
-    required ZoneFieldIso8601Style style,
-    required bool useZForZeroOffset,
-  }) = _TimeFieldZoneIso8601Basic;
-
-  const TimeField._();
-
-  static TimeField? parse(String character, int length) {
+  static PeriodStyle? parse(String character, int length) {
     return switch ((character, length)) {
-          ('a', >= 1 && <= 3) =>
-            const TimeField.periodAmPm(FieldWidth.abbreviated),
-          ('a', 4) => const TimeField.periodAmPm(FieldWidth.wide),
-          ('a', 5) => const TimeField.periodAmPm(FieldWidth.narrow),
-          ('b', >= 1 && <= 3) =>
-            const TimeField.periodAmPmNoonMidnight(FieldWidth.abbreviated),
-          ('b', 4) => const TimeField.periodAmPmNoonMidnight(FieldWidth.wide),
-          ('b', 5) => const TimeField.periodAmPmNoonMidnight(FieldWidth.narrow),
-          ('B', >= 1 && <= 3) =>
-            const TimeField.periodFlexible(FieldWidth.abbreviated),
-          ('B', 4) => const TimeField.periodFlexible(FieldWidth.wide),
-          ('B', 5) => const TimeField.periodFlexible(FieldWidth.narrow),
-          ('m', 1) => const TimeField.minute(isPadded: false),
-          ('m', 2) => const TimeField.minute(isPadded: true),
-          ('s', 1) => const TimeField.second(isPadded: false),
-          ('s', 2) => const TimeField.second(isPadded: true),
-          ('S', _) => TimeField.fractionalSecond(digits: length),
-          ('A', _) => TimeField.millisecondsInDay(minDigits: length),
-          ('z', >= 1 && <= 3) => const TimeField.zoneSpecificNonLocation(
-              length: ZoneFieldLength.short,
-            ),
-          ('z', 4) => const TimeField.zoneSpecificNonLocation(
-              length: ZoneFieldLength.long,
-            ),
-          ('Z' || 'O', 4) => const TimeField.zoneLocalizedGmt(
-              length: ZoneFieldLength.long,
-            ),
-          ('O', 1) => const TimeField.zoneLocalizedGmt(
-              length: ZoneFieldLength.short,
-            ),
-          ('v', 1) => const TimeField.zoneGenericNonLocation(
-              length: ZoneFieldLength.short,
-            ),
-          ('v', 4) => const TimeField.zoneGenericNonLocation(
-              length: ZoneFieldLength.long,
-            ),
-          ('V', 1) => const TimeField.zoneID(length: ZoneFieldLength.short),
-          ('V', 2) => const TimeField.zoneID(length: ZoneFieldLength.long),
-          ('V', 3) => const TimeField.zoneExemplarCity(),
-          ('V', 4) => const TimeField.zoneGenericLocationFormat(),
-          ('X', 1) => const TimeField.zoneIso8601(
-              style: ZoneFieldIso8601Style.basicWithHoursOptionalMinutes,
-              useZForZeroOffset: true,
-            ),
-          ('X', 2) => const TimeField.zoneIso8601(
-              style: ZoneFieldIso8601Style.basicWithHoursMinutes,
-              useZForZeroOffset: true,
-            ),
-          ('X', 3) => const TimeField.zoneIso8601(
-              style: ZoneFieldIso8601Style.extendedWithHoursMinutes,
-              useZForZeroOffset: true,
-            ),
-          ('X', 4) => const TimeField.zoneIso8601(
-              style: ZoneFieldIso8601Style.basicWithHoursMinutesOptionalSeconds,
-              useZForZeroOffset: true,
-            ),
-          ('X' || 'Z', 5) => const TimeField.zoneIso8601(
-              style:
-                  ZoneFieldIso8601Style.extendedWithHoursMinutesOptionalSeconds,
-              useZForZeroOffset: true,
-            ),
-          ('x', 1) => const TimeField.zoneIso8601(
-              style: ZoneFieldIso8601Style.basicWithHoursOptionalMinutes,
-              useZForZeroOffset: false,
-            ),
-          ('x', 2) => const TimeField.zoneIso8601(
-              style: ZoneFieldIso8601Style.basicWithHoursMinutes,
-              useZForZeroOffset: false,
-            ),
-          ('x', 3) => const TimeField.zoneIso8601(
-              style: ZoneFieldIso8601Style.extendedWithHoursMinutes,
-              useZForZeroOffset: false,
-            ),
-          ('x', 4) || ('Z', >= 1 && <= 3) => const TimeField.zoneIso8601(
-              style: ZoneFieldIso8601Style.basicWithHoursMinutesOptionalSeconds,
-              useZForZeroOffset: false,
-            ),
-          ('x', 5) => const TimeField.zoneIso8601(
-              style:
-                  ZoneFieldIso8601Style.extendedWithHoursMinutesOptionalSeconds,
-              useZForZeroOffset: false,
-            ),
-          _ => null,
-        } ??
-        HourStyle.parse(character, length)?.let(TimeField.hour);
+      ('a', >= 1 && <= 3) => const PeriodStyle.amPm(FieldWidth.abbreviated),
+      ('a', 4) => const PeriodStyle.amPm(FieldWidth.wide),
+      ('a', 5) => const PeriodStyle.amPm(FieldWidth.narrow),
+      ('b', >= 1 && <= 3) =>
+        const PeriodStyle.amPmNoonMidnight(FieldWidth.abbreviated),
+      ('b', 4) => const PeriodStyle.amPmNoonMidnight(FieldWidth.wide),
+      ('b', 5) => const PeriodStyle.amPmNoonMidnight(FieldWidth.narrow),
+      ('B', >= 1 && <= 3) => const PeriodStyle.flexible(FieldWidth.abbreviated),
+      ('B', 4) => const PeriodStyle.flexible(FieldWidth.wide),
+      ('B', 5) => const PeriodStyle.flexible(FieldWidth.narrow),
+      _ => null,
+    };
   }
 
   @override
   Expression toExpression() {
-    final create = referCldr('TimeField').newInstanceNamed;
+    final create = referCldr('PeriodStyle').newInstanceNamed;
 
     return when(
-      periodAmPm: (width) => create('periodAmPm', [width.toExpression()]),
-      periodAmPmNoonMidnight: (width) =>
-          create('periodAmPmNoonMidnight', [width.toExpression()]),
-      periodFlexible: (width) =>
-          create('periodFlexible', [width.toExpression()]),
-      hour: (style) => create('hour', [style.toExpression()]),
-      minute: (isPadded) =>
-          create('minute', [], {'isPadded': literalBool(isPadded)}),
-      second: (isPadded) =>
-          create('second', [], {'isPadded': literalBool(isPadded)}),
-      fractionalSecond: (digits) =>
-          create('fractionalSecond', [], {'digits': literalNum(digits)}),
-      millisecondsInDay: (digits) =>
-          create('millisecondsInDay', [], {'minDigits': literalNum(digits)}),
-      zoneSpecificNonLocation: (length) => create(
-        'zoneSpecificNonLocation',
-        [],
-        {'length': length.toExpression()},
-      ),
-      zoneLocalizedGmt: (length) =>
-          create('zoneLocalizedGmt', [], {'length': length.toExpression()}),
-      zoneGenericNonLocation: (length) => create(
-        'zoneGenericNonLocation',
-        [],
-        {'length': length.toExpression()},
-      ),
-      zoneID: (length) =>
-          create('zoneID', [], {'length': length.toExpression()}),
-      zoneExemplarCity: () => create('zoneExemplarCity', []),
-      zoneGenericLocationFormat: () => create('zoneGenericLocationFormat', []),
-      zoneIso8601: (style, useZForZeroOffset) => create('zoneIso8601', [], {
-        'style': style.toExpression(),
-        'useZForZeroOffset': literalBool(useZForZeroOffset),
-      }),
+      amPm: (width) => create('amPm', [width.toExpression()]),
+      amPmNoonMidnight: (width) =>
+          create('amPmNoonMidnight', [width.toExpression()]),
+      flexible: (width) => create('flexible', [width.toExpression()]),
     );
   }
 }
@@ -1571,6 +1427,17 @@ sealed class HourStyle with _$HourStyle implements ToExpression {
     };
   }
 
+  bool get uses24HourCycle {
+    return map(
+      from0To23: (_) => true,
+      from1To24: (_) => true,
+      from0To11: (_) => false,
+      from1To12: (_) => false,
+    );
+  }
+
+  bool get uses12HourCycle => !uses24HourCycle;
+
   @override
   Expression toExpression() {
     final create = referCldr('HourStyle').newInstanceNamed;
@@ -1588,15 +1455,267 @@ sealed class HourStyle with _$HourStyle implements ToExpression {
   }
 }
 
-enum ZoneFieldLength implements ToExpression {
+@freezed
+sealed class MinuteStyle with _$MinuteStyle implements ToExpression {
+  /// Minute, e.g., “59”.
+  ///
+  /// Unicode Shorthand: `m`, `mm`
+  const factory MinuteStyle({required bool isPadded}) = _MinuteStyle;
+  const MinuteStyle._();
+
+  static MinuteStyle? parse(String character, int length) {
+    return switch ((character, length)) {
+      ('m', 1) => const MinuteStyle(isPadded: false),
+      ('m', 2) => const MinuteStyle(isPadded: true),
+      _ => null,
+    };
+  }
+
+  @override
+  Expression toExpression() {
+    return referCldr('MinuteStyle')
+        .newInstance([], {'isPadded': literalBool(isPadded)});
+  }
+}
+
+@freezed
+sealed class SecondStyle with _$SecondStyle implements ToExpression {
+  /// Second in minute, e.g., “12”.
+  ///
+  /// Unicode Shorthand: `s`, `ss`
+  const factory SecondStyle.second({required bool isPadded}) =
+      _SecondStyleSecond;
+
+  /// Fractional Second, e.g., “3456”.
+  ///
+  /// The example shows display using pattern `SSSS` for seconds value 12.34567.
+  ///
+  /// Unicode Shorthand: `S`, `SS`, etc.
+  @Assert('digits >= 1')
+  const factory SecondStyle.fractionalSecond({required int digits}) =
+      _SecondStyleFractionalSecond;
+
+  /// Milliseconds in day, e.g., “69540000”.
+  ///
+  /// This field behaves exactly like a composite of all time-related fields,
+  /// not including the zone fields. As such, it also reflects discontinuities
+  /// of those fields on DST transition days. On a day of DST onset, it will
+  /// jump forward. On a day of DST cessation, it will jump backward. This
+  /// reflects the fact that is must be combined with the offset field to obtain
+  /// a unique local time value.
+  ///
+  /// Unicode Shorthand: `A`, `AA`, etc.
+  @Assert('minDigits >= 1')
+  const factory SecondStyle.millisecondsInDay({required int minDigits}) =
+      _SecondStyleMillisecondsInDay;
+
+  const SecondStyle._();
+
+  static SecondStyle? parse(String character, int length) {
+    return switch ((character, length)) {
+      ('s', 1) => const SecondStyle.second(isPadded: false),
+      ('s', 2) => const SecondStyle.second(isPadded: true),
+      ('S', _) => SecondStyle.fractionalSecond(digits: length),
+      ('A', _) => SecondStyle.millisecondsInDay(minDigits: length),
+      _ => null,
+    };
+  }
+
+  @override
+  Expression toExpression() {
+    final create = referCldr('SecondStyle').newInstanceNamed;
+
+    return when(
+      second: (isPadded) =>
+          create('second', [], {'isPadded': literalBool(isPadded)}),
+      fractionalSecond: (digits) =>
+          create('fractionalSecond', [], {'digits': literalNum(digits)}),
+      millisecondsInDay: (digits) =>
+          create('millisecondsInDay', [], {'minDigits': literalNum(digits)}),
+    );
+  }
+}
+
+@freezed
+sealed class ZoneStyle with _$ZoneStyle implements ToExpression {
+  /// The specific non-location format, e.g., “PDT” (short) or “Pacific Daylight
+  /// Time” (long).
+  ///
+  /// Short: Where that is unavailable, falls back to the short localized GMT
+  /// format (“O”).
+  ///
+  /// Long: Where that is unavailable, falls back to the long localized GMT
+  /// format (“OOOO”).
+  ///
+  /// Unicode Shorthand: `z`, `zz`, `zzz` (short), `zzzz` (long)
+  const factory ZoneStyle.specificNonLocation({
+    required ZoneLength length,
+  }) = _ZoneStyleSpecificNonLocation;
+
+  /// The localized GMT format, e.g., “GMT-8” (short) or “GMT-08:00” (long).
+  ///
+  /// Unicode Shorthand: `O` (short), `ZZZZ`, `OOOO` (long)
+  // `TODO`(JonasWanke): check example since the spec conflicts itself
+  const factory ZoneStyle.localizedGmt({
+    required ZoneLength length,
+  }) = _ZoneStyleLocalizedGmt;
+
+  /// The generic non-location format, e.g., “PT” (short) or “Pacific Time”
+  /// (long).
+  ///
+  /// Short: Where that is unavailable, falls back to the generic location
+  /// format (“VVVV”), then the short localized GMT format as the final
+  /// fallback.
+  ///
+  /// Long: Where that is unavailable, falls back to generic location format
+  /// (“VVVV”).
+  ///
+  /// Unicode Shorthand: `v` (short), `vvvv` (long)
+  const factory ZoneStyle.genericNonLocation({
+    required ZoneLength length,
+  }) = _ZoneStyleGenericNonLocation;
+
+  /// The time zone ID, e.g., “uslax” (short) or “America/Los_Angeles” (long).
+  ///
+  /// Short: Where that is unavailable, the special short time zone ID `unk`
+  /// (Unknown Zone) is used.
+  ///
+  /// Short: Note: This specifier was originally used for a variant of the short
+  /// specific non-location format, but it was deprecated in the later version
+  /// of this specification. In CLDR 23, the definition of the specifier was
+  /// changed to designate a short time zone ID.
+  ///
+  /// Unicode Shorthand: `V` (short), `VV` (long)
+  const factory ZoneStyle.id({required ZoneLength length}) = _ZoneStyleID;
+
+  /// The exemplar city (location) for the time zone, e.g., “Los Angeles”.
+  ///
+  /// Where that is unavailable, the localized exemplar city name for the
+  /// special zone Etc/Unknown is used as the fallback (for example, “Unknown
+  /// City”).
+  ///
+  /// Unicode Shorthand: `VVV`
+  const factory ZoneStyle.exemplarCity() = _ZoneStyleExemplarCity;
+
+  /// The generic location format, e.g., “Los Angeles Time”.
+  ///
+  /// Where that is unavailable, falls back to the long localized GMT format
+  /// (“OOOO”; Note: Fallback is only necessary with a GMT-style Time Zone ID,
+  /// like Etc/GMT-830.) This is especially useful when presenting possible
+  /// timezone choices for user selection, since the naming is more uniform than
+  /// the `v` format.
+  ///
+  /// Unicode Shorthand: `VVVV`
+  const factory ZoneStyle.genericLocationFormat() =
+      _ZoneStyleGenericLocationFormat;
+
+  /// An ISO 8601 basic format, see [ZoneIso8601Style] for details.
+  ///
+  /// With [useZForZeroOffset] set to `true`, the ISO 8601 UTC indicator “Z” is
+  /// used when local time offset is 0.
+  ///
+  /// Unicode Shorthand: See [ZoneIso8601Style]
+  const factory ZoneStyle.iso8601({
+    required ZoneIso8601Style style,
+    required bool useZForZeroOffset,
+  }) = _ZoneStyleIso8601Basic;
+
+  const ZoneStyle._();
+
+  static ZoneStyle? parse(String character, int length) {
+    return switch ((character, length)) {
+      ('z', >= 1 && <= 3) =>
+        const ZoneStyle.specificNonLocation(length: ZoneLength.short),
+      ('z', 4) => const ZoneStyle.specificNonLocation(length: ZoneLength.long),
+      ('Z' || 'O', 4) => const ZoneStyle.localizedGmt(length: ZoneLength.long),
+      ('O', 1) => const ZoneStyle.localizedGmt(length: ZoneLength.short),
+      ('v', 1) => const ZoneStyle.genericNonLocation(length: ZoneLength.short),
+      ('v', 4) => const ZoneStyle.genericNonLocation(length: ZoneLength.long),
+      ('V', 1) => const ZoneStyle.id(length: ZoneLength.short),
+      ('V', 2) => const ZoneStyle.id(length: ZoneLength.long),
+      ('V', 3) => const ZoneStyle.exemplarCity(),
+      ('V', 4) => const ZoneStyle.genericLocationFormat(),
+      ('X', 1) => const ZoneStyle.iso8601(
+          style: ZoneIso8601Style.basicWithHoursOptionalMinutes,
+          useZForZeroOffset: true,
+        ),
+      ('X', 2) => const ZoneStyle.iso8601(
+          style: ZoneIso8601Style.basicWithHoursMinutes,
+          useZForZeroOffset: true,
+        ),
+      ('X', 3) => const ZoneStyle.iso8601(
+          style: ZoneIso8601Style.extendedWithHoursMinutes,
+          useZForZeroOffset: true,
+        ),
+      ('X', 4) => const ZoneStyle.iso8601(
+          style: ZoneIso8601Style.basicWithHoursMinutesOptionalSeconds,
+          useZForZeroOffset: true,
+        ),
+      ('X' || 'Z', 5) => const ZoneStyle.iso8601(
+          style: ZoneIso8601Style.extendedWithHoursMinutesOptionalSeconds,
+          useZForZeroOffset: true,
+        ),
+      ('x', 1) => const ZoneStyle.iso8601(
+          style: ZoneIso8601Style.basicWithHoursOptionalMinutes,
+          useZForZeroOffset: false,
+        ),
+      ('x', 2) => const ZoneStyle.iso8601(
+          style: ZoneIso8601Style.basicWithHoursMinutes,
+          useZForZeroOffset: false,
+        ),
+      ('x', 3) => const ZoneStyle.iso8601(
+          style: ZoneIso8601Style.extendedWithHoursMinutes,
+          useZForZeroOffset: false,
+        ),
+      ('x', 4) || ('Z', >= 1 && <= 3) => const ZoneStyle.iso8601(
+          style: ZoneIso8601Style.basicWithHoursMinutesOptionalSeconds,
+          useZForZeroOffset: false,
+        ),
+      ('x', 5) => const ZoneStyle.iso8601(
+          style: ZoneIso8601Style.extendedWithHoursMinutesOptionalSeconds,
+          useZForZeroOffset: false,
+        ),
+      _ => null,
+    };
+  }
+
+  @override
+  Expression toExpression() {
+    final create = referCldr('ZoneStyle').newInstanceNamed;
+
+    return when(
+      specificNonLocation: (length) => create(
+        'specificNonLocation',
+        [],
+        {'length': length.toExpression()},
+      ),
+      localizedGmt: (length) =>
+          create('localizedGmt', [], {'length': length.toExpression()}),
+      genericNonLocation: (length) => create(
+        'genericNonLocation',
+        [],
+        {'length': length.toExpression()},
+      ),
+      id: (length) => create('id', [], {'length': length.toExpression()}),
+      exemplarCity: () => create('exemplarCity', []),
+      genericLocationFormat: () => create('genericLocationFormat', []),
+      iso8601: (style, useZForZeroOffset) => create('iso8601', [], {
+        'style': style.toExpression(),
+        'useZForZeroOffset': literalBool(useZForZeroOffset),
+      }),
+    );
+  }
+}
+
+enum ZoneLength implements ToExpression {
   short,
   long;
 
   @override
-  Expression toExpression() => referCldr('ZoneFieldLength').property(name);
+  Expression toExpression() => referCldr('ZoneLength').property(name);
 }
 
-enum ZoneFieldIso8601Style implements ToExpression {
+enum ZoneIso8601Style implements ToExpression {
   /// The ISO 8601 basic format with hours field and optional minutes field,
   /// e.g., “-08” or “+0530”.
   ///
@@ -1639,8 +1758,7 @@ enum ZoneFieldIso8601Style implements ToExpression {
   extendedWithHoursMinutesOptionalSeconds;
 
   @override
-  Expression toExpression() =>
-      referCldr('ZoneFieldIso8601Style').property(name);
+  Expression toExpression() => referCldr('ZoneIso8601Style').property(name);
 }
 
 @freezed

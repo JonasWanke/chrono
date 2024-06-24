@@ -203,8 +203,15 @@ class LocalizedYearFormatter extends LocalizedFormatter<Year> {
     // TODO(JonasWanke): support negative years
     // TODO(JonasWanke): support eras
     return style.when(
-      (minDigits) => value.number.toString().padLeft(minDigits, '0'),
-      twoDigits: () => (value.number % 100).toString().padLeft(2, '0'),
+      calendarYear: (minDigits) =>
+          value.number.toString().padLeft(minDigits, '0'),
+      calendarYearTwoDigits: () =>
+          (value.number % 100).toString().padLeft(2, '0'),
+      weekBasedYear: (_) => throw UnimplementedError(),
+      weekBasedYearTwoDigits: () => throw UnimplementedError(),
+      extendedYear: (_) => throw UnimplementedError(),
+      cyclicYearName: (_) => throw UnimplementedError(),
+      relatedGregorianYear: (_) => throw UnimplementedError(),
     );
   }
 }

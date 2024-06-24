@@ -248,19 +248,21 @@ class LocalizedTimeFormatter extends LocalizedFormatter<Time> {
 
   String formatField(Time value, TimeField field) {
     return field.when(
-      periodAmPm: (width) {
-        final strings =
-            localeData.dates.calendars.gregorian.dayPeriods.format[width];
-        return value.isAm ? strings.am : strings.pm;
-      },
-      periodAmPmNoonMidnight: (width) {
-        final strings =
-            localeData.dates.calendars.gregorian.dayPeriods.format[width];
-        if (value.isMidnight) return strings.midnight ?? strings.am;
-        if (value.isNoon) return strings.noon ?? strings.pm;
-        return value.isAm ? strings.am : strings.pm;
-      },
-      periodFlexible: (_) => throw UnimplementedError(),
+      period: (style) => style.when(
+        amPm: (width) {
+          final strings =
+              localeData.dates.calendars.gregorian.dayPeriods.format[width];
+          return value.isAm ? strings.am : strings.pm;
+        },
+        amPmNoonMidnight: (width) {
+          final strings =
+              localeData.dates.calendars.gregorian.dayPeriods.format[width];
+          if (value.isMidnight) return strings.midnight ?? strings.am;
+          if (value.isNoon) return strings.noon ?? strings.pm;
+          return value.isAm ? strings.am : strings.pm;
+        },
+        flexible: (_) => throw UnimplementedError(),
+      ),
       hour: (style) => style.when(
         from0To23: (isPadded) =>
             value.hour.toString().padLeft(isPadded ? 2 : 1, '0'),
@@ -275,27 +277,23 @@ class LocalizedTimeFormatter extends LocalizedFormatter<Time> {
           return hour.toString().padLeft(isPadded ? 2 : 1, '0');
         },
       ),
-      minute: (isPadded) =>
-          value.minute.toString().padLeft(isPadded ? 2 : 1, '0'),
-      second: (isPadded) =>
-          value.second.toString().padLeft(isPadded ? 2 : 1, '0'),
-      fractionalSecond: (digits) =>
-          (value.fractionalSecondsSinceMidnight.inFractionalSeconds *
-                  Fixed.ten.pow(digits))
-              .toInt()
-              .toString(),
-      millisecondsInDay: (minDigits) => value.fractionalSecondsSinceMidnight
-          .roundToMilliseconds()
-          .inMilliseconds
-          .toString()
-          .padLeft(minDigits, '0'),
-      zoneSpecificNonLocation: (_) => throw UnimplementedError(),
-      zoneLocalizedGmt: (_) => throw UnimplementedError(),
-      zoneGenericNonLocation: (_) => throw UnimplementedError(),
-      zoneID: (_) => throw UnimplementedError(),
-      zoneExemplarCity: () => throw UnimplementedError(),
-      zoneGenericLocationFormat: () => throw UnimplementedError(),
-      zoneIso8601: (_, __) => throw UnimplementedError(),
+      minute: (style) =>
+          value.minute.toString().padLeft(style.isPadded ? 2 : 1, '0'),
+      second: (style) => style.when(
+        second: (isPadded) =>
+            value.second.toString().padLeft(isPadded ? 2 : 1, '0'),
+        fractionalSecond: (digits) =>
+            (value.fractionalSecondsSinceMidnight.inFractionalSeconds *
+                    Fixed.ten.pow(digits))
+                .toInt()
+                .toString(),
+        millisecondsInDay: (minDigits) => value.fractionalSecondsSinceMidnight
+            .roundToMilliseconds()
+            .inMilliseconds
+            .toString()
+            .padLeft(minDigits, '0'),
+      ),
+      zone: (_) => throw UnimplementedError(),
     );
   }
 }
