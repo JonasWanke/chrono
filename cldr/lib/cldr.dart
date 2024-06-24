@@ -46,7 +46,7 @@ class CommonLocaleData with _$CommonLocaleData implements ToExpression {
         ..body.add(
           code_builder.Field(
             (b) => b
-              ..modifier = FieldModifier.constant
+              ..modifier = FieldModifier.final$
               ..name = localeName
               ..assignment = toExpression().code,
           ),

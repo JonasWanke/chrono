@@ -54,7 +54,7 @@ class Plural<T> with _$Plural<T> implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('Plural')(
+    return referCldr('Plural').constInstance(
       [],
       {
         if (zero != null) 'zero': ToExpression.convert(zero),
@@ -111,7 +111,7 @@ class ValueWithVariant<T extends Object>
 
   @override
   Expression toExpression() {
-    return referCldr('ValueWithVariant')(
+    return referCldr('ValueWithVariant').constInstance(
       [
         ToExpression.convert(value),
         if (variant != null) ToExpression.convert(variant!),

@@ -26,7 +26,7 @@ class Dates with _$Dates implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('Dates')(
+    return referCldr('Dates').newInstance(
       [],
       {
         'calendars': calendars.toExpression(),
@@ -53,8 +53,8 @@ class Calendars with _$Calendars implements ToExpression {
   }
 
   @override
-  Expression toExpression() =>
-      referCldr('Calendars')([], {'gregorian': gregorian.toExpression()});
+  Expression toExpression() => referCldr('Calendars')
+      .newInstance([], {'gregorian': gregorian.toExpression()});
 }
 
 @freezed
@@ -113,7 +113,7 @@ class Calendar with _$Calendar implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('Calendar')(
+    return referCldr('Calendar').newInstance(
       [],
       {
         'months': months.toExpression(),
@@ -164,7 +164,7 @@ class DayWidths with _$DayWidths implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('DayWidths')(
+    return referCldr('DayWidths').constInstance(
       [],
       {
         'wide': wide.toExpression(),
@@ -215,7 +215,7 @@ class Days with _$Days implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('Days')(
+    return referCldr('Days').constInstance(
       [],
       {
         'sunday': literalString(sunday),
@@ -269,7 +269,7 @@ class DayPeriods with _$DayPeriods implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('DayPeriods')(
+    return referCldr('DayPeriods').constInstance(
       [],
       {
         'am': literalString(am),
@@ -329,7 +329,7 @@ class Eras with _$Eras implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('Eras')(
+    return referCldr('Eras').constInstance(
       [],
       {
         'eras': literalMap(
@@ -387,7 +387,7 @@ class DateOrTimeFormats<T extends ToExpression>
 
   @override
   Expression toExpression() {
-    return referCldr('DateOrTimeFormats')(
+    return referCldr('DateOrTimeFormats').constInstance(
       [],
       {
         'full': full.toExpression(),
@@ -427,7 +427,7 @@ class DateOrTimeFormat<F extends ToExpression>
 
   @override
   Expression toExpression() {
-    return referCldr('DateOrTimeFormat')(
+    return referCldr('DateOrTimeFormat').constInstance(
       [],
       {
         'pattern': pattern.toExpression(),
@@ -442,8 +442,8 @@ class DateOrTimeFormat<F extends ToExpression>
 class DateTimeFormats with _$DateTimeFormats implements ToExpression {
   const factory DateTimeFormats({
     required DateOrTimeFormats<DateTimeVariants> formats,
-    // `TODO`(JonasWanke): Parse skeletons
-    required Map<String, Plural<List<DateOrTimePatternPart<DateTimeField>>>>
+    required Map<DateTimeSkeleton,
+            Plural<List<DateOrTimePatternPart<DateTimeField>>>>
         availableFormats,
     // `TODO`(JonasWanke): `<appendItems>`, `<intervalFormats>`
   }) = _DateTimeFormats;
@@ -461,15 +461,18 @@ class DateTimeFormats with _$DateTimeFormats implements ToExpression {
           .where((it) => it.localName == 'dateFormatItem')
           .map((it) => it.getAttribute('id')!)
           .toSet()
-          .associateWith(
-            (id) => Plural.fromXml(
-              xml,
-              path
-                  .child('availableFormats')
-                  .child('dateFormatItem', attributes: {'id': id}),
-              (element) => DateOrTimePatternPart.parse(
-                element.innerText,
-                DateTimeField.parse,
+          .associate(
+            (id) => MapEntry(
+              DateTimeSkeleton.parse(id),
+              Plural.fromXml(
+                xml,
+                path
+                    .child('availableFormats')
+                    .child('dateFormatItem', attributes: {'id': id}),
+                (element) => DateOrTimePatternPart.parse(
+                  element.innerText,
+                  DateTimeField.parse,
+                ),
               ),
             ),
           ),
@@ -478,13 +481,13 @@ class DateTimeFormats with _$DateTimeFormats implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('DateTimeFormats')(
+    return referCldr('DateTimeFormats').newInstance(
       [],
       {
         'formats': formats.toExpression(),
         'availableFormats': literalMap(
           availableFormats.map(
-            (key, value) => MapEntry(literalString(key), value.toExpression()),
+            (key, value) => MapEntry(key.toExpression(), value.toExpression()),
           ),
         ),
       },
@@ -512,7 +515,7 @@ class DateTimeVariants with _$DateTimeVariants implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('DateTimeVariants')(
+    return referCldr('DateTimeVariants').constInstance(
       [standard.toExpression()],
       {'atTime': atTime == null ? literalNull : atTime!.toExpression()},
     );
@@ -537,7 +540,7 @@ class DateTimeFormat with _$DateTimeFormat implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('DateTimeFormat')(
+    return referCldr('DateTimeFormat').constInstance(
       [],
       {
         'pattern': pattern.toExpression(),
@@ -610,7 +613,7 @@ class DateTimePatternPart with _$DateTimePatternPart implements ToExpression {
   @override
   Expression toExpression() {
     Expression create(String name, [List<Expression> args = const []]) =>
-        referCldr('DateTimePatternPart').newInstanceNamed(name, args);
+        referCldr('DateTimePatternPart').constInstanceNamed(name, args);
 
     return when(
       literal: (value) => create('literal', [literalString(value)]),
@@ -710,7 +713,7 @@ sealed class DateOrTimePatternPart<F extends ToExpression>
   @override
   Expression toExpression() {
     Expression create(String name, [List<Expression> args = const []]) =>
-        referCldr('DateOrTimePatternPart').newInstanceNamed(name, args);
+        referCldr('DateOrTimePatternPart').constInstanceNamed(name, args);
 
     return when(
       literal: (value) => create('literal', [literalString(value)]),
@@ -733,6 +736,93 @@ typedef ParseDateOrTimePatternField<F extends ToExpression> = F? Function(
 );
 
 @freezed
+sealed class DateTimeSkeleton with _$DateTimeSkeleton implements ToExpression {
+  const factory DateTimeSkeleton({
+    EraStyle? era,
+    YearStyle? year,
+    QuarterStyle? quarter,
+    MonthStyle? month,
+    WeekStyle? week,
+    DayStyle? day,
+    WeekdayStyle? weekday,
+    PeriodStyle? period,
+    HourStyle? hour,
+    MinuteStyle? minute,
+    SecondStyle? second,
+    ZoneStyle? zone,
+  }) = _DateTimeSkeleton;
+  const DateTimeSkeleton._();
+
+  factory DateTimeSkeleton.parse(String skeleton) {
+    final fields = DateOrTimePatternPart.parse(skeleton, DateTimeField.parse)
+        .map((it) => (it as _DateOrTimePatternPartField<DateTimeField>).field)
+        .toList();
+    F? getField<DT extends DateTimeField, F extends Object>() {
+      return fields
+          .whereType<DT>()
+          .map((it) => it.field)
+          .whereType<F>()
+          .firstOrNull;
+    }
+
+    F? getDateField<F extends DateField>() =>
+        getField<_DateTimeFieldDateField, F>();
+    F? getTimeField<F extends TimeField>() =>
+        getField<_DateTimeFieldTimeField, F>();
+
+    final era = getDateField<_DateFieldEra>()?.style;
+    final year = getDateField<_DateFieldYear>()?.style;
+    final quarter = getDateField<_DateFieldQuarter>()?.style;
+    final month = getDateField<_DateFieldMonth>()?.style;
+    final week = getDateField<_DateFieldWeek>()?.style;
+    final day = getDateField<_DateFieldDay>()?.style;
+    final weekday = getDateField<_DateFieldWeekday>()?.style;
+    var period = getTimeField<_TimeFieldPeriod>()?.style;
+    final hour = getTimeField<_TimeFieldHour>()?.style;
+    final minute = getTimeField<_TimeFieldMinute>()?.style;
+    final second = getTimeField<_TimeFieldSecond>()?.style;
+    final zone = getTimeField<_TimeFieldZone>()?.style;
+
+    if (hour != null && hour.uses12HourCycle) {
+      period ??= const PeriodStyle.amPm(FieldWidth.abbreviated);
+    }
+
+    return DateTimeSkeleton(
+      era: era,
+      year: year,
+      quarter: quarter,
+      month: month,
+      week: week,
+      day: day,
+      weekday: weekday,
+      period: period,
+      hour: hour,
+      minute: minute,
+      second: second,
+      zone: zone,
+    );
+  }
+
+  @override
+  Expression toExpression() {
+    return referCldr('DateTimeSkeleton').constInstance([], {
+      'era': era == null ? literalNull : era!.toExpression(),
+      'year': year == null ? literalNull : year!.toExpression(),
+      'quarter': quarter == null ? literalNull : quarter!.toExpression(),
+      'month': month == null ? literalNull : month!.toExpression(),
+      'week': week == null ? literalNull : week!.toExpression(),
+      'day': day == null ? literalNull : day!.toExpression(),
+      'weekday': weekday == null ? literalNull : weekday!.toExpression(),
+      'period': period == null ? literalNull : period!.toExpression(),
+      'hour': hour == null ? literalNull : hour!.toExpression(),
+      'minute': minute == null ? literalNull : minute!.toExpression(),
+      'second': second == null ? literalNull : second!.toExpression(),
+      'zone': zone == null ? literalNull : zone!.toExpression(),
+    });
+  }
+}
+
+@freezed
 sealed class DateTimeField with _$DateTimeField implements ToExpression {
   const factory DateTimeField.dateField(DateField field) =
       _DateTimeFieldDateField;
@@ -747,7 +837,7 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
 
   @override
   Expression toExpression() {
-    final create = referCldr('DateTimeField').newInstanceNamed;
+    final create = referCldr('DateTimeField').constInstanceNamed;
     return when(
       dateField: (field) => create('dateField', [field.toExpression()]),
       timeField: (field) => create('timeField', [field.toExpression()]),
@@ -779,7 +869,7 @@ sealed class DateField with _$DateField implements ToExpression {
 
   @override
   Expression toExpression() {
-    final create = referCldr('DateField').newInstanceNamed;
+    final create = referCldr('DateField').constInstanceNamed;
     return when(
       era: (style) => create('era', [style.toExpression()]),
       year: (style) => create('year', [style.toExpression()]),
@@ -947,7 +1037,7 @@ sealed class YearStyle with _$YearStyle implements ToExpression {
 
   @override
   Expression toExpression() {
-    final create = referCldr('YearStyle').newInstanceNamed;
+    final create = referCldr('YearStyle').constInstanceNamed;
     return when(
       calendarYear: (minDigits) =>
           create('calendarYear', [], {'minDigits': literalNum(minDigits)}),
@@ -1023,7 +1113,7 @@ sealed class QuarterStyle with _$QuarterStyle implements ToExpression {
 
   @override
   Expression toExpression() {
-    final create = referCldr('QuarterStyle').newInstanceNamed;
+    final create = referCldr('QuarterStyle').constInstanceNamed;
     return when(
       format: (width) => create('format', [width.toExpression()]),
       formatNumeric: (isPadded) =>
@@ -1099,7 +1189,7 @@ sealed class MonthStyle with _$MonthStyle implements ToExpression {
 
   @override
   Expression toExpression() {
-    final create = referCldr('MonthStyle').newInstanceNamed;
+    final create = referCldr('MonthStyle').constInstanceNamed;
     return when(
       format: (width) => create('format', [width.toExpression()]),
       formatNumeric: (isPadded) =>
@@ -1137,7 +1227,7 @@ sealed class WeekStyle with _$WeekStyle implements ToExpression {
 
   @override
   Expression toExpression() {
-    final create = referCldr('WeekStyle').newInstanceNamed;
+    final create = referCldr('WeekStyle').constInstanceNamed;
     return when(
       weekOfYear: (isPadded) =>
           create('weekOfYear', [], {'isPadded': literalBool(isPadded)}),
@@ -1196,7 +1286,7 @@ sealed class DayStyle with _$DayStyle implements ToExpression {
 
   @override
   Expression toExpression() {
-    final create = referCldr('DayStyle').newInstanceNamed;
+    final create = referCldr('DayStyle').constInstanceNamed;
     return when(
       dayOfMonth: (isPadded) =>
           create('dayOfMonth', [], {'isPadded': literalBool(isPadded)}),
@@ -1267,7 +1357,7 @@ sealed class WeekdayStyle with _$WeekdayStyle implements ToExpression {
 
   @override
   Expression toExpression() {
-    final create = referCldr('WeekdayStyle').newInstanceNamed;
+    final create = referCldr('WeekdayStyle').constInstanceNamed;
     return when(
       format: (width) => create('format', [width.toExpression()]),
       formatNumeric: (isPadded) => create(
@@ -1300,7 +1390,7 @@ sealed class TimeField with _$TimeField implements ToExpression {
 
   @override
   Expression toExpression() {
-    final create = referCldr('TimeField').newInstanceNamed;
+    final create = referCldr('TimeField').constInstanceNamed;
     return when(
       period: (style) => create('period', [style.toExpression()]),
       hour: (style) => create('hour', [style.toExpression()]),
@@ -1374,7 +1464,7 @@ sealed class PeriodStyle with _$PeriodStyle implements ToExpression {
 
   @override
   Expression toExpression() {
-    final create = referCldr('PeriodStyle').newInstanceNamed;
+    final create = referCldr('PeriodStyle').constInstanceNamed;
 
     return when(
       amPm: (width) => create('amPm', [width.toExpression()]),
@@ -1440,7 +1530,7 @@ sealed class HourStyle with _$HourStyle implements ToExpression {
 
   @override
   Expression toExpression() {
-    final create = referCldr('HourStyle').newInstanceNamed;
+    final create = referCldr('HourStyle').constInstanceNamed;
 
     return when(
       from0To23: (style) =>
@@ -1523,7 +1613,7 @@ sealed class SecondStyle with _$SecondStyle implements ToExpression {
 
   @override
   Expression toExpression() {
-    final create = referCldr('SecondStyle').newInstanceNamed;
+    final create = referCldr('SecondStyle').constInstanceNamed;
 
     return when(
       second: (isPadded) =>
@@ -1681,7 +1771,7 @@ sealed class ZoneStyle with _$ZoneStyle implements ToExpression {
 
   @override
   Expression toExpression() {
-    final create = referCldr('ZoneStyle').newInstanceNamed;
+    final create = referCldr('ZoneStyle').constInstanceNamed;
 
     return when(
       specificNonLocation: (length) => create(
@@ -1833,7 +1923,7 @@ class Fields with _$Fields implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('Fields')(
+    return referCldr('Fields').constInstance(
       [],
       {
         'era': era.toExpression(),
@@ -1874,7 +1964,7 @@ class FieldWidths with _$FieldWidths implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('FieldWidths')(
+    return referCldr('FieldWidths').constInstance(
       [],
       {
         'full': full.toExpression(),
@@ -1923,7 +2013,7 @@ class Field with _$Field implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('Field')(
+    return referCldr('Field').constInstance(
       [],
       {
         'displayName':
@@ -1972,7 +2062,7 @@ class Context<T extends ToExpression>
 
   @override
   Expression toExpression() {
-    return referCldr('Context')(
+    return referCldr('Context').constInstance(
       [],
       {
         'format': format.toExpression(),
@@ -2013,7 +2103,7 @@ class Widths<T extends Object> with _$Widths<T> implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('Widths')(
+    return referCldr('Widths').constInstance(
       [],
       {
         'wide': ToExpression.convert(wide),
