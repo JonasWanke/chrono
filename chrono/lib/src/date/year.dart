@@ -125,6 +125,9 @@ final class Year
   /// The year before this one.
   Year get previous => this - const Years(1);
 
+  /// Returns `this - other` as a number of [Years].
+  Years difference(Year other) => Years(number - other.number);
+
   @override
   int compareTo(Year other) => number.compareTo(other.number);
 

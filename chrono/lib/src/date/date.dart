@@ -228,6 +228,20 @@ final class Date
   /// Returns `this - other` as a number of [Days].
   Days difference(Date other) => daysSinceUnixEpoch - other.daysSinceUnixEpoch;
 
+  // TODO: differenceInMonthsDays, differenceInWeeksDays, differenceInYearsDays,
+  // differenceInMonthsWeeksDays, differenceInYearsMonthsDays, etc.
+
+  /// Calculates the age of someone on [onDate] who was born on `this` date.
+  ///
+  /// If [onDate] is not provided, the current date in the local zone is used.
+  Years age({Date? onDate}) {
+    onDate ??= Date.todayInLocalZone();
+
+    var age = onDate.year.difference(year);
+    if (monthDay > onDate.monthDay) age += const Years(1);
+    return age;
+  }
+
   /// The next-closest date with the given [weekday].
   ///
   /// If this date already falls on the given [weekday], it is returned.
