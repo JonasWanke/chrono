@@ -81,6 +81,13 @@ final class YearMonth
   /// The month before this one.
   YearMonth get previous => this - const Months(1);
 
+  /// Returns `this - other` as a number of [Months].
+  Months difference(YearMonth other) {
+    final thisNumber = year.number * Months.perYear + month.number;
+    final otherNumber = other.year.number * Months.perYear + other.month.number;
+    return Months(thisNumber - otherNumber);
+  }
+
   YearMonth copyWith({Year? year, Month? month}) =>
       YearMonth(year ?? this.year, month ?? this.month);
 
