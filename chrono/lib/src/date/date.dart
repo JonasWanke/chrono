@@ -229,7 +229,24 @@ final class Date
   Days differenceInDays(Date other) =>
       daysSinceUnixEpoch - other.daysSinceUnixEpoch;
 
-  // TODO: differenceInMonthsDays, differenceInWeeksDays, differenceInYearsDays,
+  /// Returns `this - other` as a number of [Months] and [Days] so that `other +
+  /// months.days == this`.
+  ///
+  /// The returned [Months] and [Days] are both `>= 0` or both `<= 0`.
+  (Months, Days) differenceInMonthsDays(Date other) {
+    var months = yearMonth.difference(other.yearMonth);
+    var days = Days(day - other.day);
+    if (this > other && days.isNegative) {
+      months -= const Months(1);
+      days += yearMonth.previous.length;
+    } else if (this < other && days.isPositive) {
+      months += const Months(1);
+      days -= yearMonth.length;
+    }
+    return (months, days);
+  }
+
+  // TODO: differenceInWeeksDays, differenceInYearsDays,
   // differenceInMonthsWeeksDays, differenceInYearsMonthsDays, etc.
 
   /// Calculates the age of someone on [onDate] who was born on `this` date.
