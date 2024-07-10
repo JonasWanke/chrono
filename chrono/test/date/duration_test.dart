@@ -19,14 +19,37 @@ void main() {
     Glados<MonthsDuration>().test('absolute', (duration) {
       expect(duration.absolute.isNonNegative, true);
     });
-    Glados<MonthsDuration>().test('asYearsAndMonths', (duration) {
-      final (years, months) = duration.asYearsAndMonths;
-      expect(
-        years.isNonNegative && months.isNonNegative ||
-            years.isNonPositive && months.isNonPositive,
-        true,
-      );
-      expect(months + years, duration);
+    group('asYearsAndMonths', () {
+      Glados<MonthsDuration>().test('glados', (duration) {
+        final (years, months) = duration.asYearsAndMonths;
+        expect(
+          years.isNonNegative && months.isNonNegative ||
+              years.isNonPositive && months.isNonPositive,
+          true,
+        );
+        expect(months + years, duration);
+      });
+      test('edge cases', () {
+        expect(const Months(13).asYearsAndMonths, const (Years(1), Months(1)));
+        // ignore: use_named_constants
+        expect(const Months(12).asYearsAndMonths, const (Years(1), Months(0)));
+        expect(const Months(11).asYearsAndMonths, const (Years(0), Months(11)));
+        expect(const Months(1).asYearsAndMonths, const (Years(0), Months(1)));
+        expect(const Months(0).asYearsAndMonths, const (Years(0), Months(0)));
+        expect(const Months(-1).asYearsAndMonths, const (Years(0), Months(-1)));
+        expect(
+          const Months(-11).asYearsAndMonths,
+          const (Years(0), Months(-11)),
+        );
+        expect(
+          const Months(-12).asYearsAndMonths,
+          const (Years(-1), Months(0)),
+        );
+        expect(
+          const Months(-13).asYearsAndMonths,
+          const (Years(-1), Months(-1)),
+        );
+      });
     });
   });
   group('Months', () {
