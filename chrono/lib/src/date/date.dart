@@ -313,17 +313,15 @@ class LocalizedDateFormatter extends LocalizedFormatter<Date> {
   String format(Date value) {
     final dateFormats = localeData.dates.calendars.gregorian.dateFormats;
 
-    return style.when(
-      defaultFormat: (width) => dateFormats[width]
-          .pattern
-          .map(
-            (it) => it.when(
-              literal: (value) => value,
-              field: (field) => formatField(value, field),
-            ),
-          )
-          .join(),
-    );
+    return dateFormats[style.length]
+        .pattern
+        .map(
+          (it) => it.when(
+            literal: (value) => value,
+            field: (field) => formatField(value, field),
+          ),
+        )
+        .join();
   }
 
   String formatField(Date value, DateField field) {
@@ -359,9 +357,7 @@ class LocalizedDateFormatter extends LocalizedFormatter<Date> {
 class DateStyle with _$DateStyle {
   // TODO(JonasWanke): customizable component formats
 
-  const factory DateStyle.defaultFormat({
-    required DateOrTimeFormatWidth width,
-  }) = _DateStyleFormat;
+  const factory DateStyle(DateOrTimeFormatLength length) = _DateStyleFormat;
 
   const DateStyle._();
 }

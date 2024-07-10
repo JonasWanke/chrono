@@ -233,17 +233,15 @@ class LocalizedTimeFormatter extends LocalizedFormatter<Time> {
   @override
   String format(Time value) {
     final timeFormats = localeData.dates.calendars.gregorian.timeFormats;
-    return style.when(
-      defaultFormat: (width) => timeFormats[width]
-          .pattern
-          .map(
-            (it) => it.when(
-              literal: (value) => value,
-              field: (field) => formatField(value, field),
-            ),
-          )
-          .join(),
-    );
+    return timeFormats[style.length]
+        .pattern
+        .map(
+          (it) => it.when(
+            literal: (value) => value,
+            field: (field) => formatField(value, field),
+          ),
+        )
+        .join();
   }
 
   String formatField(Time value, TimeField field) {
@@ -302,9 +300,7 @@ class LocalizedTimeFormatter extends LocalizedFormatter<Time> {
 class TimeStyle with _$TimeStyle {
   // TODO(JonasWanke): customizable component formats
 
-  const factory TimeStyle.defaultFormat({
-    required DateOrTimeFormatWidth width,
-  }) = _TimeStyleFormat;
+  const factory TimeStyle(DateOrTimeFormatLength length) = _TimeStyleFormat;
 
   const TimeStyle._();
 }

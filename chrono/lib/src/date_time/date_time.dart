@@ -210,41 +210,37 @@ class LocalizedDateTimeFormatter extends LocalizedFormatter<DateTime> {
   @override
   String format(DateTime value) {
     return style.when(
-      defaultFormat: (width, useAtTimeVariant) => _formatWidths(
+      (length, useAtTimeVariant) => _formatLengths(
         value,
-        dateWidth: width,
-        timeWidth: width,
+        dateLength: length,
+        timeLength: length,
         useAtTimeVariant: useAtTimeVariant,
       ),
-      widths: (dateWidth, timeWidth, useAtTimeVariant) => _formatWidths(
+      lengths: (dateLength, timeLength, useAtTimeVariant) => _formatLengths(
         value,
-        dateWidth: dateWidth,
-        timeWidth: timeWidth,
+        dateLength: dateLength,
+        timeLength: timeLength,
         useAtTimeVariant: useAtTimeVariant,
       ),
     );
   }
 
-  String _formatWidths(
+  String _formatLengths(
     DateTime value, {
-    required DateOrTimeFormatWidth dateWidth,
-    required DateOrTimeFormatWidth timeWidth,
+    required DateOrTimeFormatLength dateLength,
+    required DateOrTimeFormatLength timeLength,
     required bool useAtTimeVariant,
   }) {
-    final widthFormats =
-        localeData.dates.calendars.gregorian.dateTimeFormats.formats[dateWidth];
+    final lengthFormats = localeData
+        .dates.calendars.gregorian.dateTimeFormats.formats[dateLength];
     final format = useAtTimeVariant
-        ? (widthFormats.atTime ?? widthFormats.standard)
-        : widthFormats.standard;
+        ? (lengthFormats.atTime ?? lengthFormats.standard)
+        : lengthFormats.standard;
 
-    final dateFormatter = LocalizedDateFormatter(
-      localeData,
-      DateStyle.defaultFormat(width: dateWidth),
-    );
-    final timeFormatter = LocalizedTimeFormatter(
-      localeData,
-      TimeStyle.defaultFormat(width: timeWidth),
-    );
+    final dateFormatter =
+        LocalizedDateFormatter(localeData, DateStyle(dateLength));
+    final timeFormatter =
+        LocalizedTimeFormatter(localeData, TimeStyle(timeLength));
 
     return format.pattern
         .map(
@@ -268,15 +264,16 @@ class LocalizedDateTimeFormatter extends LocalizedFormatter<DateTime> {
 class DateTimeStyle with _$DateTimeStyle {
   // TODO(JonasWanke): customizable component formats
 
-  const factory DateTimeStyle.defaultFormat({
-    required DateOrTimeFormatWidth width,
+  const factory DateTimeStyle(
+    DateOrTimeFormatLength length, {
     @Default(false) bool useAtTimeVariant,
-  }) = _DateTimeStyleDefaultFormat;
-  const factory DateTimeStyle.widths({
-    required DateOrTimeFormatWidth dateWidth,
-    required DateOrTimeFormatWidth timeWidth,
+  }) = _DateTimeStyleLength;
+
+  const factory DateTimeStyle.lengths({
+    required DateOrTimeFormatLength dateLength,
+    required DateOrTimeFormatLength timeLength,
     @Default(false) bool useAtTimeVariant,
-  }) = _DateTimeStyleWidths;
+  }) = _DateTimeStyleLengths;
 
   const DateTimeStyle._();
 }
