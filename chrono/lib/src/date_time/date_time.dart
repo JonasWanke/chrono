@@ -122,7 +122,7 @@ final class DateTime
   CompoundDuration difference(DateTime other) {
     if (this < other) return -other.difference(this);
 
-    var days = date.difference(other.date);
+    var days = date.differenceInDays(other.date);
     FractionalSeconds seconds;
     if (time < other.time) {
       days -= const Days(1);

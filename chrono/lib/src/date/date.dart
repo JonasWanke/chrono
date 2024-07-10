@@ -226,7 +226,8 @@ final class Date
   Date get previous => this - const Days(1);
 
   /// Returns `this - other` as a number of [Days].
-  Days difference(Date other) => daysSinceUnixEpoch - other.daysSinceUnixEpoch;
+  Days differenceInDays(Date other) =>
+      daysSinceUnixEpoch - other.daysSinceUnixEpoch;
 
   // TODO: differenceInMonthsDays, differenceInWeeksDays, differenceInYearsDays,
   // differenceInMonthsWeeksDays, differenceInYearsMonthsDays, etc.

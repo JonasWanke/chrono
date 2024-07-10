@@ -28,10 +28,10 @@ void main() {
 
   // Arithmetic with `MonthsDuration` isn't always round-trippable.
   Glados2<Date, FixedDaysDuration>().test(
-    '+, -, and difference(…)',
+    '+, -, and differenceInDays(…)',
     (date, duration) {
       expect(date + duration - duration, date);
-      expect((date + duration).difference(date), duration);
+      expect((date + duration).differenceInDays(date), duration);
     },
   );
   test('date plus month landing on non-existing February 29', () {
