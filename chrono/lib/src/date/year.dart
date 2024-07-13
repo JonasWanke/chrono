@@ -52,6 +52,17 @@ final class Year
 
   Era get era => number >= 1 ? Era.common : Era.beforeCommon;
 
+  /// The year number in the [era].
+  ///
+  /// For example, the year number of `Year(2024)` is `2024`, the year number of
+  /// `Year(-1)` is `2`.
+  int get eraYear {
+    return switch (era) {
+      Era.common => number,
+      Era.beforeCommon => -number + 1,
+    };
+  }
+
   final int number;
 
   bool isCurrentInLocalZone({Clock? clock}) =>
