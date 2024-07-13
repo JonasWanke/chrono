@@ -144,6 +144,11 @@ void main() {
       );
     });
   });
+  Glados2<Date, Date>().test('untilInYearsMonthsDays(…)', (dateA, dateB) {
+    final (years, months, days) = dateA.untilInYearsMonthsDays(dateB);
+    expect(dateA + years + months + days, dateB);
+  });
+
   test('date plus month landing on non-existing February 29', () {
     expect(
       Date.from(const Year(2023), Month.january, 31).unwrap() + const Months(1),

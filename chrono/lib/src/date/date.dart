@@ -246,8 +246,17 @@ final class Date
     return (months, days);
   }
 
-  // TODO: differenceInWeeksDays, differenceInYearsDays,
-  // differenceInMonthsWeeksDays, differenceInYearsMonthsDays, etc.
+  /// Returns a number of [Years], [Months], and [Days] so that `this + years +
+  /// months + days == other`.
+  ///
+  /// The returned [Years], [Months]y and [Days] are all `>= 0` or all `<= 0`.
+  (Years, Months, Days) untilInYearsMonthsDays(Date other) {
+    final (monthsRaw, days) = untilInMonthsDays(other);
+    final (years, months) = monthsRaw.asYearsAndMonths;
+    return (years, months, days);
+  }
+
+  // TODO: untilInWeeksDays, untilInYearsDays, untilInMonthsWeeksDays, etc.
 
   /// Calculates the age of someone on [onDate] who was born on `this` date.
   ///
