@@ -140,7 +140,7 @@ final class Date
 
   YearWeek get yearWeek {
     // Algorithm from https://en.wikipedia.org/wiki/ISO_week_date#Algorithms
-    final weekOfYear = (dayOfYear - weekday.number + 10) ~/ 7;
+    final weekOfYear = (dayOfYear - weekday.number + 10) ~/ Days.perWeek;
     return switch (weekOfYear) {
       0 => year.previous.lastWeek,
       53 when year.numberOfWeeks == 52 => year.next.firstWeek,
@@ -148,8 +148,14 @@ final class Date
     };
   }
 
-  Weekday get weekday =>
-      Weekday.fromNumber((daysSinceUnixEpoch.inDays + 3) % 7 + 1).unwrap();
+  Weekday get weekday {
+    return Weekday.fromIndex((daysSinceUnixEpoch.inDays + 3) % Days.perWeek)
+        .unwrap();
+  }
+
+  /// Is this the 1st, 2nd, 3rd, 4th, or 5th occurrence of its [weekday] during
+  /// this month?
+  int get weekdayInMonthIndex => (day - 1) ~/ Days.perWeek + 1;
 
   /// This date, represented as a [WeekDate].
   WeekDate get asWeekDate => WeekDate(yearWeek, weekday);
