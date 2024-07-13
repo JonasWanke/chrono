@@ -229,20 +229,25 @@ final class Date
   Days differenceInDays(Date other) =>
       daysSinceUnixEpoch - other.daysSinceUnixEpoch;
 
-  /// Returns `this - other` as a number of [Months] and [Days] so that `other +
-  /// months.days == this`.
+  /// Returns `this - other` as a number of [Months] and [Days] so that `this -
+  /// months - days == other`.
   ///
   /// The returned [Months] and [Days] are both `>= 0` or both `<= 0`.
   (Months, Days) differenceInMonthsDays(Date other) {
     var months = yearMonth.difference(other.yearMonth);
-    var days = Days(day - other.day);
-    if (this > other && days.isNegative) {
+    if (this > other && day < other.day) {
       months -= const Months(1);
-      days += yearMonth.previous.length;
-    } else if (this < other && days.isPositive) {
+    } else if (this < other && day > other.day) {
       months += const Months(1);
-      days -= yearMonth.length;
     }
+
+    var days = Days((this - months).day - other.day);
+    if (this > other && day < other.day) {
+      days += other.yearMonth.length;
+    } else if (this < other && day > other.day) {
+      days -= other.yearMonth.previous.length;
+    }
+
     return (months, days);
   }
 

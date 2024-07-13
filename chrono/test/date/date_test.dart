@@ -42,9 +42,9 @@ void main() {
     },
   );
   group('differenceInMonthsDays(…)', () {
-    Glados2<Date, Date>().test('round-trippable', (dateA, dateB) {
+    Glados2<Date, Date>().test('fulfills contract', (dateA, dateB) {
       final (months, days) = dateA.differenceInMonthsDays(dateB);
-      expect(dateB + months + days, dateA);
+      expect(dateA - months - days, dateB);
     });
     test('edge cases', () {
       (Months, Days) difference(
@@ -135,7 +135,11 @@ void main() {
       );
 
       expect(
-        difference(Month.september, 2, Month.november, 1),
+        difference(Month.september, 2, Month.november, 30),
+        const (Months(-2), Days(-28)),
+      );
+      expect(
+        difference(Month.february, 1, Month.march, 30, const Year(0)),
         const (Months(-1), Days(-29)),
       );
     });
