@@ -38,16 +38,16 @@ void main() {
     'difference methods',
     (date) {
       expect(date.differenceInDays(date), const Days(0));
-      expect(date.differenceInMonthsDays(date), const (Months(0), Days(0)));
+      expect(date.untilInMonthsDays(date), const (Months(0), Days(0)));
     },
   );
-  group('differenceInMonthsDays(…)', () {
+  group('untilInMonthsDays(…)', () {
     Glados2<Date, Date>().test('fulfills contract', (dateA, dateB) {
-      final (months, days) = dateA.differenceInMonthsDays(dateB);
-      expect(dateA - months - days, dateB);
+      final (months, days) = dateA.untilInMonthsDays(dateB);
+      expect(dateA + months + days, dateB);
     });
     test('edge cases', () {
-      (Months, Days) difference(
+      (Months, Days) until(
         Month monthA,
         int dayA,
         Month monthB,
@@ -56,91 +56,91 @@ void main() {
       ]) {
         final dateA = Date.from(year, monthA, dayA).unwrap();
         final dateB = Date.from(year, monthB, dayB).unwrap();
-        return dateA.differenceInMonthsDays(dateB);
+        return dateA.untilInMonthsDays(dateB);
       }
 
       expect(
-        difference(Month.january, 1, Month.january, 1),
+        until(Month.january, 1, Month.january, 1),
         const (Months(0), Days(0)),
       );
 
       // Non-negative
       expect(
-        difference(Month.january, 2, Month.january, 1),
+        until(Month.january, 1, Month.january, 2),
         const (Months(0), Days(1)),
       );
       expect(
-        difference(Month.january, 31, Month.january, 1),
+        until(Month.january, 1, Month.january, 31),
         const (Months(0), Days(30)),
       );
       expect(
-        difference(Month.february, 1, Month.january, 1),
+        until(Month.january, 1, Month.february, 1),
         const (Months(1), Days(0)),
       );
       expect(
-        difference(Month.february, 2, Month.january, 1),
+        until(Month.january, 1, Month.february, 2),
         const (Months(1), Days(1)),
       );
 
       expect(
-        difference(Month.february, 1, Month.january, 10),
+        until(Month.january, 10, Month.february, 1),
         const (Months(0), Days(22)),
       );
       expect(
-        difference(Month.february, 9, Month.january, 10),
+        until(Month.january, 10, Month.february, 9),
         const (Months(0), Days(30)),
       );
       expect(
-        difference(Month.february, 10, Month.january, 10),
+        until(Month.january, 10, Month.february, 10),
         const (Months(1), Days(0)),
       );
       expect(
-        difference(Month.february, 11, Month.january, 10),
+        until(Month.january, 10, Month.february, 11),
         const (Months(1), Days(1)),
       );
 
       // Negative
       expect(
-        difference(Month.january, 1, Month.january, 2),
+        until(Month.january, 2, Month.january, 1),
         const (Months(0), Days(-1)),
       );
       expect(
-        difference(Month.january, 1, Month.january, 31),
+        until(Month.january, 31, Month.january, 1),
         const (Months(0), Days(-30)),
       );
       expect(
-        difference(Month.january, 1, Month.february, 1),
+        until(Month.february, 1, Month.january, 1),
         const (Months(-1), Days(0)),
       );
       expect(
-        difference(Month.january, 1, Month.february, 2),
+        until(Month.february, 2, Month.january, 1),
         const (Months(-1), Days(-1)),
       );
 
       expect(
-        difference(Month.january, 10, Month.february, 1),
+        until(Month.february, 1, Month.january, 10),
         const (Months(0), Days(-22)),
       );
       expect(
-        difference(Month.january, 10, Month.february, 9),
+        until(Month.february, 9, Month.january, 10),
         const (Months(0), Days(-30)),
       );
       expect(
-        difference(Month.january, 10, Month.february, 10),
+        until(Month.february, 10, Month.january, 10),
         const (Months(-1), Days(0)),
       );
       expect(
-        difference(Month.january, 10, Month.february, 11),
+        until(Month.february, 11, Month.january, 10),
         const (Months(-1), Days(-1)),
       );
 
       expect(
-        difference(Month.september, 2, Month.november, 30),
-        const (Months(-2), Days(-28)),
+        until(Month.september, 2, Month.november, 30),
+        const (Months(2), Days(28)),
       );
       expect(
-        difference(Month.february, 1, Month.march, 30, const Year(0)),
-        const (Months(-1), Days(-29)),
+        until(Month.february, 1, Month.march, 30, const Year(0)),
+        const (Months(1), Days(29)),
       );
     });
   });
