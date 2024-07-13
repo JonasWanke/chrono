@@ -10,6 +10,7 @@ import '../../parser.dart';
 import '../../utils.dart';
 import '../date.dart';
 import '../duration.dart';
+import '../weekday.dart';
 import '../year.dart';
 import 'month.dart';
 
@@ -56,6 +57,10 @@ final class YearMonth
       (it) => Date.fromYearMonthAndDay(this, it + 1).unwrap(),
     );
   }
+
+  /// How many times the given [weekday] occurs in this month.
+  int weekdayCount(Weekday weekday) =>
+      (lastDay.day - firstDay.nextOrSame(weekday).day) ~/ Days.perWeek + 1;
 
   YearMonth operator +(MonthsDuration duration) {
     final (years, months) = duration.asYearsAndMonths;
