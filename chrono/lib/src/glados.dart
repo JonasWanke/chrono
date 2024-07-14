@@ -8,8 +8,6 @@ import 'date/duration.dart';
 import 'date/month/month.dart';
 import 'date/month/month_day.dart';
 import 'date/month/year_month.dart';
-import 'date/ordinal_date.dart';
-import 'date/week/week_date.dart';
 import 'date/week/year_week.dart';
 import 'date/weekday.dart';
 import 'date/year.dart';
@@ -36,8 +34,6 @@ void setChronoGladosDefaults() {
   Any.setDefault(any.dateTimeChrono);
   Any.setDefault(any.month);
   Any.setDefault(any.time);
-  Any.setDefault(any.ordinalDate);
-  Any.setDefault(any.weekDate);
   Any.setDefault(any.year);
   Any.setDefault(any.yearMonth);
   Any.setDefault(any.yearWeek);
@@ -135,48 +131,25 @@ extension ChronoAny on Any {
     );
   }
 
-  Generator<OrdinalDate> get ordinalDate {
-    return simple(
-      generate: (random, size) {
-        final year = this.year(random, size);
-        final day = intInRange(1, year.value.length.inDays + 1)(random, size);
-        return (year, day);
-      },
-      shrink: (input) sync* {
-        final (year, day) = input;
-        yield* year.shrink().map((year) {
-          final actualDay = day.value <= year.value.length.inDays
-              ? day
-              : day.shrink().firstWhere(
-                    (it) => it.value <= year.value.length.inDays,
-                  );
-          return (year, actualDay);
-        });
-        yield* day.shrink().map((it) => (year, it));
-      },
-    ).map(
-      (it) => OrdinalDate.from(it.$1.value, it.$2.value).unwrap(),
-    );
-  }
-
-  Generator<WeekDate> get weekDate => combine2(yearWeek, weekday, WeekDate.new);
   Generator<Year> get year => this.int.map(Year.new);
   Generator<YearMonth> get yearMonth => combine2(year, month, YearMonth.new);
   Generator<YearWeek> get yearWeek {
     return simple(
       generate: (random, size) {
         final weekBasedYear = year(random, size);
-        final week =
-            intInRange(1, weekBasedYear.value.numberOfWeeks + 1)(random, size);
+        final week = intInRange(1, weekBasedYear.value.numberOfIsoWeeks + 1)(
+          random,
+          size,
+        );
         return (weekBasedYear, week);
       },
       shrink: (input) sync* {
         final (weekBasedYear, week) = input;
         yield* weekBasedYear.shrink().map((weekBasedYear) {
-          final actualWeek = week.value <= weekBasedYear.value.numberOfWeeks
+          final actualWeek = week.value <= weekBasedYear.value.numberOfIsoWeeks
               ? week
               : week.shrink().firstWhere(
-                    (it) => it.value <= weekBasedYear.value.numberOfWeeks,
+                    (it) => it.value <= weekBasedYear.value.numberOfIsoWeeks,
                   );
           return (weekBasedYear, actualWeek);
         });

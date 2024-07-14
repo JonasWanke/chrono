@@ -59,31 +59,21 @@ In Chrono's classes, it would be represented as:
 
 ![`DateTime` classes visualization](doc/DateTime%20classes%20visualization.svg)
 
-| Class           | Encoding              |
-| :-------------- | :-------------------- |
-| [`DateTime`]    | `2023-04-23T18:24:20` |
-| [`Date`]        | `2023-04-23`          |
-| [`Year`]        | 2023                  |
-| [`Month`]       | 4                     |
-| [`YearMonth`]   | `2023-04`             |
-| [`MonthDay`]    | `--04-23`             |
-| [`OrdinalDate`] | `2023-113`            |
-| [`WeekDate`]    | `2023-W16-7`          |
-| [`YearWeek`]    | `2023-W16`            |
-| [`Weekday`]     | 7                     |
-| [`Time`]        | `18:24:20`            |
+| Class         | Encoding                                  |
+| :------------ | :---------------------------------------- |
+| [`DateTime`]  | `2023-04-23T18:24:20`                     |
+| [`Date`]      | `2023-04-23`, `2023-113`, or `2023-W16-7` |
+| [`Year`]      | 2023                                      |
+| [`Month`]     | 4                                         |
+| [`YearMonth`] | `2023-04`                                 |
+| [`MonthDay`]  | `--04-23`                                 |
+| [`YearWeek`]  | `2023-W16`                                |
+| [`Weekday`]   | 7                                         |
+| [`Time`]      | `18:24:20`                                |
 
 ### 📅 [`Date`]
 
 An ISO 8601 calendar date without timezone information, e.g., April 23, 2023.
-
-Dates can be represented by three different classes:
-
-|           Class | Components                          | Conversion       | Encoding     |
-| --------------: | :---------------------------------- | :--------------- | :----------- |
-|        [`Date`] | [`Year`] + [`Month`] + day of month | `.asDate`        | `2023-04-23` |
-|    [`WeekDate`] | [`YearWeek`] + [`Weekday`]          | `.asWeekDate`    | `2023-W16-7` |
-| [`OrdinalDate`] | [`Year`] + day of year              | `.asOrdinalDate` | `2023-113`   |
 
 - [`Year`]: year in the ISO 8601 calendar (see the class documentation for representation of BCE years)
 - [`Month`]: enum of months
@@ -167,13 +157,13 @@ These are all converters and how they encode February 3, 2001, at 4:05:06.00700
 |            [`UnixEpochSecondsAsIntJsonConverter`] | `981173106`                        |
 |              [`DateTimeAsIsoStringJsonConverter`] | `"2001-02-03T04:05:06.007"`        |
 |                  [`DateAsIsoStringJsonConverter`] | `"2001-02-03"`                     |
+|       [`DateAsOrdinalDateIsoStringJsonConverter`] | `"2001-034"`                       |
+|          [`DateAsWeekDateIsoStringJsonConverter`] | `"2001-W05-6"`                     |
 |                  [`YearAsIsoStringJsonConverter`] | `"2001"`                           |
 |                        [`YearAsIntJsonConverter`] | `2001`                             |
 |                       [`MonthAsIntJsonConverter`] | `2`                                |
 |             [`YearMonthAsIsoStringJsonConverter`] | `"2001-02"`                        |
 |              [`MonthDayAsIsoStringJsonConverter`] | `"--02-03"`                        |
-|           [`OrdinalDateAsIsoStringJsonConverter`] | `"2001-034"`                       |
-|              [`WeekDateAsIsoStringJsonConverter`] | `"2001-W05-6"`                     |
 |              [`YearWeekAsIsoStringJsonConverter`] | `"2001-W05"`                       |
 |                     [`WeekdayAsIntJsonConverter`] | `6`                                |
 |                  [`TimeAsIsoStringJsonConverter`] | `"04:05:06.007"`                   |
@@ -260,6 +250,8 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 [`CompoundDuration`]: https://pub.dev/documentation/chrono/latest/chrono/CompoundDuration-class.html
 [`Date`]: https://pub.dev/documentation/chrono/latest/chrono/Date-class.html
 [`DateAsIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/DateAsIsoStringJsonConverter-class.html
+[`DateAsOrdinalDateIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/DateAsOrdinalDateIsoStringJsonConverter-class.html
+[`DateAsWeekDateIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/DateAsWeekDateIsoStringJsonConverter-class.html
 [`DateDuration`]: https://pub.dev/documentation/chrono/latest/chrono/DateDuration-class.html
 [`DateTime`]: https://pub.dev/documentation/chrono/latest/chrono/DateTime-class.html
 [`DateTimeAsIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/DateTimeAsIsoStringJsonConverter-class.html
@@ -281,8 +273,6 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 [`Months`]: https://pub.dev/documentation/chrono/latest/chrono/Months-class.html
 [`MonthsDuration`]: https://pub.dev/documentation/chrono/latest/chrono/MonthsDuration-class.html
 [`Nanoseconds`]: https://pub.dev/documentation/chrono/latest/chrono/Nanoseconds-class.html
-[`OrdinalDate`]: https://pub.dev/documentation/chrono/latest/chrono/OrdinalDate-class.html
-[`OrdinalDateAsIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/OrdinalDateAsIsoStringJsonConverter-class.html
 [`Seconds`]: https://pub.dev/documentation/chrono/latest/chrono/Seconds-class.html
 [`Time`]: https://pub.dev/documentation/chrono/latest/chrono/Time-class.html
 [`TimeAsIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/TimeAsIsoStringJsonConverter-class.html
@@ -300,8 +290,6 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 [`UnixEpochSecondsAsIntJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochSecondsAsIntJsonConverter-class.html
 [`UnixEpochSecondsAsIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochSecondsAsIsoStringJsonConverter-class.html
 [`UnixEpochTimestamp<D>`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochTimestamp-class.html
-[`WeekDate`]: https://pub.dev/documentation/chrono/latest/chrono/WeekDate-class.html
-[`WeekDateAsIsoStringJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/WeekDateAsIsoStringJsonConverter-class.html
 [`Weekday`]: https://pub.dev/documentation/chrono/latest/chrono/Weekday-class.html
 [`WeekdayAsIntJsonConverter`]: https://pub.dev/documentation/chrono/latest/chrono/WeekdayAsIntJsonConverter-class.html
 [`Weeks`]: https://pub.dev/documentation/chrono/latest/chrono/Weeks-class.html

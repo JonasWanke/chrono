@@ -6,9 +6,7 @@ import 'date/date.dart';
 import 'date/month/month.dart';
 import 'date/month/month_day.dart';
 import 'date/month/year_month.dart';
-import 'date/ordinal_date.dart';
-import 'date/week/week_date.dart';
-import 'date/week/year_week.dart';
+import 'date/week/iso_year_week.dart';
 import 'date/weekday.dart';
 import 'date/year.dart';
 import 'date_time/date_time.dart';
@@ -67,9 +65,9 @@ final class Parser {
       _parse(value, (it) => it._parseDateTime());
   static Result<Date, FormatException> parseDate(String value) =>
       _parse(value, (it) => it._parseDate());
-  static Result<WeekDate, FormatException> parseWeekDate(String value) =>
+  static Result<Date, FormatException> parseWeekDate(String value) =>
       _parse(value, (it) => it._parseWeekDate());
-  static Result<OrdinalDate, FormatException> parseOrdinalDate(
+  static Result<Date, FormatException> parseOrdinalDate(
     String value,
   ) =>
       _parse(value, (it) => it._parseOrdinalDate());
@@ -77,8 +75,8 @@ final class Parser {
       _parse(value, (it) => it._parseYear());
   static Result<YearMonth, FormatException> parseYearMonth(String value) =>
       _parse(value, (it) => it._parseYearMonth());
-  static Result<YearWeek, FormatException> parseYearWeek(String value) =>
-      _parse(value, (it) => it._parseYearWeek());
+  static Result<IsoYearWeek, FormatException> parseIsoYearWeek(String value) =>
+      _parse(value, (it) => it._parseIsoYearWeek());
   static Result<MonthDay, FormatException> parseMonthDay(String value) =>
       _parse(value, (it) => it._parseMonthDay());
 
@@ -131,16 +129,17 @@ final class Parser {
     });
   }
 
-  Result<WeekDate, FormatException> _parseWeekDate() {
-    return _parseYearWeek()
+  Result<Date, FormatException> _parseWeekDate() {
+    return _parseIsoYearWeek()
         .andAlso(() => _requireSeparator({'-'}, 'week number', 'weekday'))
         .andThen(
-          (yearWeek) =>
-              _parseWeekday().map((weekday) => WeekDate(yearWeek, weekday)),
+          (yearWeek) => _parseWeekday().map(
+            (weekday) => Date.fromIsoYearWeekAndWeekday(yearWeek, weekday),
+          ),
         );
   }
 
-  Result<OrdinalDate, FormatException> _parseOrdinalDate() {
+  Result<Date, FormatException> _parseOrdinalDate() {
     return _parseYear()
         .andAlso(() => _requireSeparator({'-'}, 'year', 'day of year'))
         .andThen((year) {
@@ -151,7 +150,7 @@ final class Parser {
         minValue: 1,
         maxValue: year.length.inDays,
       );
-      return dayOfYear.map((it) => OrdinalDate.from(year, it).unwrap());
+      return dayOfYear.map((it) => Date.fromYearAndOrdinal(year, it).unwrap());
     });
   }
 
@@ -163,12 +162,12 @@ final class Parser {
         );
   }
 
-  Result<YearWeek, FormatException> _parseYearWeek() {
+  Result<IsoYearWeek, FormatException> _parseIsoYearWeek() {
     return _parseYear()
         .andAlso(() => _requireSeparator({'-'}, 'year', 'week number'))
         .andThen(
-          (year) => _parseWeek(year.numberOfWeeks).andThen(
-            (it) => YearWeek.from(year, it).mapErr(FormatException.new),
+          (year) => _parseWeek(year.numberOfIsoWeeks).andThen(
+            (it) => IsoYearWeek.from(year, it).mapErr(FormatException.new),
           ),
         );
   }

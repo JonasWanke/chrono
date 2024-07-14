@@ -16,8 +16,7 @@ import 'duration.dart';
 import 'era.dart';
 import 'month/month.dart';
 import 'month/year_month.dart';
-import 'ordinal_date.dart';
-import 'week/year_week.dart';
+import 'week/iso_year_week.dart';
 import 'weekday.dart';
 
 /// A year in the ISO 8601 calendar, e.g., 2023.
@@ -80,7 +79,7 @@ final class Year
   }
 
   Days get length => isLeapYear ? Days.leapYear : Days.normalYear;
-  int get numberOfWeeks {
+  int get numberOfIsoWeeks {
     // https://en.wikipedia.org/wiki/ISO_week_date#Weeks_per_year
     final isLongWeek = lastDay.weekday == Weekday.thursday ||
         previous.lastDay.weekday == Weekday.wednesday;
@@ -98,16 +97,17 @@ final class Year
       Month.values.map((month) => YearMonth(this, month));
 
   /// The first week of this year.
-  YearWeek get firstWeek => YearWeek.from(this, 1).unwrap();
+  IsoYearWeek get firstIsoWeek => IsoYearWeek.from(this, 1).unwrap();
 
   /// The last week of this year.
-  YearWeek get lastWeek => YearWeek.from(this, numberOfWeeks).unwrap();
+  IsoYearWeek get lastIsoWeek =>
+      IsoYearWeek.from(this, numberOfIsoWeeks).unwrap();
 
   /// An iterable of all weeks in this year.
-  Iterable<YearWeek> get weeks {
+  Iterable<IsoYearWeek> get isoWeeks {
     return Iterable.generate(
-      numberOfWeeks,
-      (it) => YearWeek.from(this, it + 1).unwrap(),
+      numberOfIsoWeeks,
+      (it) => IsoYearWeek.from(this, it + 1).unwrap(),
     );
   }
 
@@ -116,13 +116,6 @@ final class Year
 
   /// The last day of this year.
   Date get lastDay => lastMonth.lastDay;
-
-  /// The first day of this year as an [OrdinalDate].
-  OrdinalDate get firstOrdinalDate => OrdinalDate.from(this, 1).unwrap();
-
-  /// The last day of this year as an [OrdinalDate].
-  OrdinalDate get lastOrdinalDate =>
-      OrdinalDate.from(this, length.inDays).unwrap();
 
   /// An iterable of all days in this year.
   Iterable<Date> get days => months.expand((it) => it.days);

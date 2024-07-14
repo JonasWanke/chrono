@@ -18,8 +18,6 @@ import 'era.dart';
 import 'month/month.dart';
 import 'month/month_day.dart';
 import 'month/year_month.dart';
-import 'ordinal_date.dart';
-import 'week/week_date.dart';
 import 'week/year_week.dart';
 import 'weekday.dart';
 import 'year.dart';
@@ -30,11 +28,6 @@ part 'date.freezed.dart';
 ///
 /// The date is represented by a [YearMonth] (= [Year] + [Month]) and a [day]
 /// of the month.
-///
-/// See also:
-///
-/// - [WeekDate], which represents a date by a [YearWeek] and a [Weekday].
-/// - [OrdinalDate], which represents a date by a [Year] and a day of the year.
 @immutable
 final class Date
     with ComparisonOperatorsFromComparable<Date>
@@ -57,6 +50,63 @@ final class Date
     MonthDay monthDay,
   ) =>
       from(year, monthDay.month, monthDay.day);
+
+  /// Creates a date from a [Year] and a one-based ordinal day of the year,
+  /// e.g., the 113th day of 2023.
+  static Result<Date, String> fromYearAndOrdinal(Year year, int dayOfYear) {
+    if (dayOfYear < 1 || dayOfYear > year.length.inDays) {
+      return Err('Invalid day of year for year $year: $dayOfYear');
+    }
+
+    int firstDayOfYear(Month month) {
+      final firstDayOfYearList = year.isCommonYear
+          ? const [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335]
+          : const [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336];
+      return firstDayOfYearList[month.index];
+    }
+
+    final rawMonth = YearMonth(
+      year,
+      Month.fromIndex((dayOfYear - 1) ~/ 31).unwrap(),
+    );
+    final monthEnd =
+        firstDayOfYear(rawMonth.month) + rawMonth.length.inDays - 1;
+    final month = dayOfYear > monthEnd ? rawMonth.next : rawMonth;
+
+    final dayOfMonth = dayOfYear - firstDayOfYear(month.month) + 1;
+    return Ok(Date._(month, dayOfMonth));
+  }
+
+  /// Creates a date from a year week and weekday, e.g., Sunday in the 16th week
+  /// of 2023.
+  static Date fromIsoYearWeekAndWeekday(
+    IsoYearWeek isoYearWeek,
+    Weekday weekday,
+  ) {
+    // https://en.wikipedia.org/wiki/ISO_week_date#Calculating_an_ordinal_or_month_date_from_a_week_date
+    final january4 =
+        Date.from(isoYearWeek.weekBasedYear, Month.january, 4).unwrap();
+
+    final rawDayOfYear = Days.perWeek * isoYearWeek.week +
+        weekday.number -
+        (january4.weekday.number + 3);
+    final Year year;
+    final int dayOfYear;
+    if (rawDayOfYear < 1) {
+      year = isoYearWeek.weekBasedYear - const Years(1);
+      dayOfYear = rawDayOfYear + year.length.inDays;
+    } else {
+      final daysInCurrentYear = isoYearWeek.weekBasedYear.length.inDays;
+      if (rawDayOfYear > daysInCurrentYear) {
+        year = isoYearWeek.weekBasedYear + const Years(1);
+        dayOfYear = rawDayOfYear - daysInCurrentYear;
+      } else {
+        year = isoYearWeek.weekBasedYear;
+        dayOfYear = rawDayOfYear;
+      }
+    }
+    return Date.fromYearAndOrdinal(year, dayOfYear).unwrap();
+  }
 
   const Date._(this.yearMonth, this.day);
 
@@ -135,9 +185,6 @@ final class Date
 
   MonthDay get monthDay => MonthDay.from(month, day).unwrap();
 
-  /// This date, represented as an [OrdinalDate].
-  OrdinalDate get asOrdinalDate => OrdinalDate.from(year, dayOfYear).unwrap();
-
   YearWeek get yearWeek {
     // Algorithm from https://en.wikipedia.org/wiki/ISO_week_date#Algorithms
     final weekOfYear = (dayOfYear - weekday.number + 10) ~/ Days.perWeek;
@@ -156,9 +203,6 @@ final class Date
   /// Is this the 1st, 2nd, 3rd, 4th, or 5th occurrence of its [weekday] during
   /// this month?
   int get weekdayInMonthIndex => (day - 1) ~/ Days.perWeek + 1;
-
-  /// This date, represented as a [WeekDate].
-  WeekDate get asWeekDate => WeekDate(yearWeek, weekday);
 
   /// The number of days since the [unixEpoch].
   Days get daysSinceUnixEpoch {
@@ -323,6 +367,13 @@ final class Date
     final day = this.day.toString().padLeft(2, '0');
     return '$yearMonth-$day';
   }
+
+  String toOrdinalDateString() {
+    final dayOfYear = this.dayOfYear.toString().padLeft(3, '0');
+    return '$year-$dayOfYear';
+  }
+
+  String toWeekDateString() => '$yearWeek-${weekday.number}';
 }
 
 /// Encodes a [Date] as an ISO 8601 string, e.g., “2023-04-23”.
@@ -333,6 +384,30 @@ class DateAsIsoStringJsonConverter
   @override
   Result<Date, FormatException> resultFromJson(String json) =>
       Parser.parseDate(json);
+  @override
+  String toJson(Date object) => object.toString();
+}
+
+/// Encodes a [WeekDate] as an ordinal date ISO 8601 string, e.g., “2023-113”.
+class DateAsOrdinalDateIsoStringJsonConverter
+    extends JsonConverterWithParserResult<Date, String> {
+  const DateAsOrdinalDateIsoStringJsonConverter();
+
+  @override
+  Result<Date, FormatException> resultFromJson(String json) =>
+      Parser.parseOrdinalDate(json);
+  @override
+  String toJson(Date object) => object.toString();
+}
+
+/// Encodes a [Date] as a week date ISO 8601 string, e.g., “2023-W16-7”.
+class DateAsWeekDateIsoStringJsonConverter
+    extends JsonConverterWithParserResult<Date, String> {
+  const DateAsWeekDateIsoStringJsonConverter();
+
+  @override
+  Result<Date, FormatException> resultFromJson(String json) =>
+      Parser.parseWeekDate(json);
   @override
   String toJson(Date object) => object.toString();
 }
