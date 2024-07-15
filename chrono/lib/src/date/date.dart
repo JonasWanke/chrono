@@ -18,6 +18,8 @@ import 'era.dart';
 import 'month/month.dart';
 import 'month/month_day.dart';
 import 'month/year_month.dart';
+import 'week/iso_year_week.dart';
+import 'week/week_config.dart';
 import 'week/year_week.dart';
 import 'weekday.dart';
 import 'year.dart';
@@ -88,8 +90,8 @@ final class Date
         Date.from(isoYearWeek.weekBasedYear, Month.january, 4).unwrap();
 
     final rawDayOfYear = Days.perWeek * isoYearWeek.week +
-        weekday.number -
-        (january4.weekday.number + 3);
+        weekday.isoNumber -
+        (january4.weekday.isoNumber + 3);
     final Year year;
     final int dayOfYear;
     if (rawDayOfYear < 1) {
@@ -185,14 +187,34 @@ final class Date
 
   MonthDay get monthDay => MonthDay.from(month, day).unwrap();
 
-  YearWeek get yearWeek {
+  IsoYearWeek get isoYearWeek {
     // Algorithm from https://en.wikipedia.org/wiki/ISO_week_date#Algorithms
-    final weekOfYear = (dayOfYear - weekday.number + 10) ~/ Days.perWeek;
+    final weekOfYear = (dayOfYear - weekday.isoNumber + 10) ~/ Days.perWeek;
     return switch (weekOfYear) {
-      0 => year.previous.lastWeek,
-      53 when year.numberOfWeeks == 52 => year.next.firstWeek,
-      _ => YearWeek.from(year, weekOfYear).unwrap()
+      0 => year.previous.lastIsoWeek,
+      53 when year.numberOfIsoWeeks == 52 => year.next.firstIsoWeek,
+      _ => IsoYearWeek.from(year, weekOfYear).unwrap()
     };
+  }
+
+  YearWeek yearWeek(WeekConfig config) {
+    final first = year.firstDayOfWeekBasedYear(config);
+    final last = year.lastDayOfWeekBasedYear(config);
+
+    final Year weekBasedYear;
+    final int week;
+    if (this < first) {
+      weekBasedYear = year.previous;
+      week = weekBasedYear.numberOfWeeks(config);
+    } else if (this > last) {
+      weekBasedYear = year.next;
+      week = 1;
+    } else {
+      final diff = differenceInDays(first);
+      weekBasedYear = year;
+      week = 1 + diff.inDays ~/ Days.perWeek;
+    }
+    return YearWeek.from(weekBasedYear, week, config).unwrap();
   }
 
   Weekday get weekday {
@@ -373,7 +395,7 @@ final class Date
     return '$year-$dayOfYear';
   }
 
-  String toWeekDateString() => '$yearWeek-${weekday.number}';
+  String toWeekDateString() => '$isoYearWeek-${weekday.isoNumber}';
 }
 
 /// Encodes a [Date] as an ISO 8601 string, e.g., “2023-04-23”.
@@ -388,7 +410,7 @@ class DateAsIsoStringJsonConverter
   String toJson(Date object) => object.toString();
 }
 
-/// Encodes a [WeekDate] as an ordinal date ISO 8601 string, e.g., “2023-113”.
+/// Encodes a [Date] as an ordinal date ISO 8601 string, e.g., “2023-113”.
 class DateAsOrdinalDateIsoStringJsonConverter
     extends JsonConverterWithParserResult<Date, String> {
   const DateAsOrdinalDateIsoStringJsonConverter();
@@ -397,7 +419,7 @@ class DateAsOrdinalDateIsoStringJsonConverter
   Result<Date, FormatException> resultFromJson(String json) =>
       Parser.parseOrdinalDate(json);
   @override
-  String toJson(Date object) => object.toString();
+  String toJson(Date object) => object.toOrdinalDateString();
 }
 
 /// Encodes a [Date] as a week date ISO 8601 string, e.g., “2023-W16-7”.
@@ -409,7 +431,7 @@ class DateAsWeekDateIsoStringJsonConverter
   Result<Date, FormatException> resultFromJson(String json) =>
       Parser.parseWeekDate(json);
   @override
-  String toJson(Date object) => object.toString();
+  String toJson(Date object) => object.toWeekDateString();
 }
 
 class LocalizedDateFormatter extends LocalizedFormatter<Date> {
@@ -444,7 +466,7 @@ class LocalizedDateFormatter extends LocalizedFormatter<Date> {
           LocalizedMonthFormatter(localeData, style).format(value.month),
       week: (style) => style.when(
         weekOfYear: (isPadded) =>
-            value.yearWeek.week.toString().padLeft(isPadded ? 2 : 1, '0'),
+            value.isoYearWeek.week.toString().padLeft(isPadded ? 2 : 1, '0'),
         weekOfMonth: () => throw UnimplementedError(),
       ),
       day: (style) => style.when(

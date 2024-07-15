@@ -31,7 +31,7 @@ void main() {
     expect(const Year(2100).isLeapYear, false);
   });
 
-  test('numberOfWeeks', () {
+  test('numberOfIsoWeeks', () {
     // https://en.wikipedia.org/wiki/ISO_week_date#Weeks_per_year
     final longYears = {
       //
@@ -54,7 +54,10 @@ void main() {
     };
 
     for (var number = 0; number < 400; number++) {
-      expect(Year(number).numberOfWeeks, longYears.contains(number) ? 53 : 52);
+      expect(
+        Year(number).numberOfIsoWeeks,
+        longYears.contains(number) ? 53 : 52,
+      );
     }
   });
 

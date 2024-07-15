@@ -10,7 +10,7 @@ void main() {
   testDataClassBasics(jsonConverters: [const WeekdayAsIntJsonConverter()]);
 
   testAll('`number` and `fromNumber(…)`', Weekday.values, (weekday) {
-    final number = weekday.number;
+    final number = weekday.isoNumber;
     expect(number, inInclusiveRange(1, 7));
     expect(Weekday.fromNumber(number), Ok<Weekday, String>(weekday));
   });

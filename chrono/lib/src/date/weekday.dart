@@ -2,11 +2,10 @@ import 'package:cldr/cldr.dart' as cldr;
 import 'package:clock/clock.dart';
 import 'package:oxidized/oxidized.dart';
 
+import '../../chrono.dart';
 import '../formatting.dart';
 import '../json.dart';
 import '../utils.dart';
-import 'date.dart';
-import 'duration.dart';
 
 /// A weekday in the ISO 8601 calendar, e.g., Sunday.
 ///
@@ -55,7 +54,13 @@ enum Weekday
   static const maxNumber = 7; // Weekday.sunday.number
 
   /// The number of this weekday (1 for Monday, …, 7 for Sunday).
-  int get number => index + 1;
+  int get isoNumber => index + 1;
+
+  /// The number of this weekday (from 1 to 7) with [firstDayOfWeek] equal to 1.
+  int number({required Weekday firstDayOfWeek}) =>
+      (Days.perWeek + index - firstDayOfWeek.index) % Days.perWeek + 1;
+
+  // TODO: index with `firstDayOfWeek`
 
   bool isCurrentInLocalZone({Clock? clock}) =>
       this == Weekday.currentInLocalZone(clock: clock);
@@ -111,7 +116,7 @@ class WeekdayAsIntJsonConverter
   Result<Weekday, String> resultFromJson(int json) => Weekday.fromNumber(json);
 
   @override
-  int toJson(Weekday object) => object.number;
+  int toJson(Weekday object) => object.isoNumber;
 }
 
 class LocalizedWeekdayFormatter extends LocalizedFormatter<Weekday> {
@@ -143,8 +148,8 @@ class LocalizedWeekdayFormatter extends LocalizedFormatter<Weekday> {
       },
       // TODO(JonasWanke): use localized numbers
       formatNumeric: (isPadded) => isPadded
-          ? value.number.toString().padLeft(2, '0')
-          : value.number.toString(),
+          ? value.isoNumber.toString().padLeft(2, '0')
+          : value.isoNumber.toString(),
       standalone: (width) => switch (width) {
         cldr.DayFieldWidth.narrow => selectFrom(days.standalone.narrow),
         cldr.DayFieldWidth.short => selectFrom(days.standalone.short),
@@ -153,7 +158,7 @@ class LocalizedWeekdayFormatter extends LocalizedFormatter<Weekday> {
         cldr.DayFieldWidth.wide => selectFrom(days.standalone.wide),
       },
       // TODO(JonasWanke): use localized numbers
-      standaloneNumeric: () => value.number.toString(),
+      standaloneNumeric: () => value.isoNumber.toString(),
     );
   }
 }

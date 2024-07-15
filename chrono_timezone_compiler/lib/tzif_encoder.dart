@@ -605,7 +605,7 @@ String? stringoffset(Seconds offset) {
       // Weekdays should be 0 for Sunday, 1 for Monday, etc.
       // (See `TM_SUNDAY`, `TM_MONDAY`, etc. in the original.)
       result +=
-          'M${rp.month.number}.$week.${weekday.number % Weekday.maxNumber}';
+          'M${rp.month.number}.$week.${weekday.isoNumber % Weekday.maxNumber}';
     case GreaterThanOrEqualToDayCode(weekday: var weekday, day: final day):
       final weekdayoff = Days(day - 1) % Days.perWeek;
       if (!weekdayoff.isZero) compat = 2013;
@@ -615,7 +615,7 @@ String? stringoffset(Seconds offset) {
       // Weekdays should be 0 for Sunday, 1 for Monday, etc.
       // (See `TM_SUNDAY`, `TM_MONDAY`, etc. in the original.)
       result +=
-          'M${rp.month.number}.$week.${weekday.number % Weekday.maxNumber}';
+          'M${rp.month.number}.$week.${weekday.isoNumber % Weekday.maxNumber}';
   }
 
   if (rp.timeReference.isUt) tod += stdoff;

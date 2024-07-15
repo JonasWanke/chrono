@@ -17,6 +17,8 @@ import 'era.dart';
 import 'month/month.dart';
 import 'month/year_month.dart';
 import 'week/iso_year_week.dart';
+import 'week/week_config.dart';
+import 'week/year_week.dart';
 import 'weekday.dart';
 
 /// A year in the ISO 8601 calendar, e.g., 2023.
@@ -79,12 +81,6 @@ final class Year
   }
 
   Days get length => isLeapYear ? Days.leapYear : Days.normalYear;
-  int get numberOfIsoWeeks {
-    // https://en.wikipedia.org/wiki/ISO_week_date#Weeks_per_year
-    final isLongWeek = lastDay.weekday == Weekday.thursday ||
-        previous.lastDay.weekday == Weekday.wednesday;
-    return isLongWeek ? 53 : 52;
-  }
 
   /// The first month of this year.
   YearMonth get firstMonth => YearMonth(this, Month.january);
@@ -96,10 +92,17 @@ final class Year
   Iterable<YearMonth> get months =>
       Month.values.map((month) => YearMonth(this, month));
 
-  /// The first week of this year.
+  int get numberOfIsoWeeks {
+    // https://en.wikipedia.org/wiki/ISO_week_date#Weeks_per_year
+    final isLongWeek = lastDay.weekday == Weekday.thursday ||
+        previous.lastDay.weekday == Weekday.wednesday;
+    return isLongWeek ? 53 : 52;
+  }
+
+  /// The first ISO week of this year.
   IsoYearWeek get firstIsoWeek => IsoYearWeek.from(this, 1).unwrap();
 
-  /// The last week of this year.
+  /// The last ISO week of this year.
   IsoYearWeek get lastIsoWeek =>
       IsoYearWeek.from(this, numberOfIsoWeeks).unwrap();
 
@@ -110,6 +113,37 @@ final class Year
       (it) => IsoYearWeek.from(this, it + 1).unwrap(),
     );
   }
+
+  int numberOfWeeks(WeekConfig config) {
+    return 1 +
+        lastDayOfWeekBasedYear(config)
+                .differenceInDays(firstDayOfWeekBasedYear(config))
+                .inDays ~/
+            Days.perWeek;
+  }
+
+  Date firstDayOfWeekBasedYear(WeekConfig config) {
+    final weekDate = firstDay +
+        Days.week -
+        Days(firstDay.weekday.number(firstDayOfWeek: config.firstDay) - 1);
+    assert(weekDate.weekday == config.firstDay);
+
+    final reference =
+        Date.fromYearMonthAndDay(firstMonth, config.minDaysInFirstWeek)
+            .unwrap();
+    return weekDate > reference ? weekDate - const Weeks(1) : weekDate;
+  }
+
+  Date lastDayOfWeekBasedYear(WeekConfig config) =>
+      next.firstDayOfWeekBasedYear(config) - const Days(1);
+
+  /// The first week of this year.
+  YearWeek firstWeek(WeekConfig config) =>
+      YearWeek.from(this, 1, config).unwrap();
+
+  /// The last week of this year.
+  YearWeek lastWeek(WeekConfig config) =>
+      YearWeek.from(this, numberOfWeeks(config), config).unwrap();
 
   /// The first day of this year.
   Date get firstDay => firstMonth.firstDay;

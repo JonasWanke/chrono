@@ -8,6 +8,8 @@ import 'date/duration.dart';
 import 'date/month/month.dart';
 import 'date/month/month_day.dart';
 import 'date/month/year_month.dart';
+import 'date/week/iso_year_week.dart';
+import 'date/week/week_config.dart';
 import 'date/week/year_week.dart';
 import 'date/weekday.dart';
 import 'date/year.dart';
@@ -36,7 +38,9 @@ void setChronoGladosDefaults() {
   Any.setDefault(any.time);
   Any.setDefault(any.year);
   Any.setDefault(any.yearMonth);
+  Any.setDefault(any.isoYearWeek);
   Any.setDefault(any.yearWeek);
+  Any.setDefault(any.weekConfig);
   Any.setDefault(any.monthDay);
   Any.setDefault(any.weekday);
 
@@ -133,7 +137,7 @@ extension ChronoAny on Any {
 
   Generator<Year> get year => this.int.map(Year.new);
   Generator<YearMonth> get yearMonth => combine2(year, month, YearMonth.new);
-  Generator<YearWeek> get yearWeek {
+  Generator<IsoYearWeek> get isoYearWeek {
     return simple(
       generate: (random, size) {
         final weekBasedYear = year(random, size);
@@ -155,7 +159,52 @@ extension ChronoAny on Any {
         });
         yield* week.shrink().map((it) => (weekBasedYear, it));
       },
-    ).map((it) => YearWeek.from(it.$1.value, it.$2.value).unwrap());
+    ).map((it) => IsoYearWeek.from(it.$1.value, it.$2.value).unwrap());
+  }
+
+  Generator<WeekConfig> get weekConfig {
+    return combine2(
+      weekday,
+      intInRange(1, Days.perWeek),
+      (firstDay, minDaysInFirstWeek) => WeekConfig.from(
+        firstDay: firstDay,
+        minDaysInFirstWeek: minDaysInFirstWeek,
+      ).unwrap(),
+    );
+  }
+
+  Generator<YearWeek> get yearWeek {
+    return simple(
+      generate: (random, size) {
+        final config = weekConfig(random, size);
+        final weekBasedYear = year(random, size);
+        final week = intInRange(
+          1,
+          weekBasedYear.value.numberOfWeeks(config.value) + 1,
+        )(random, size);
+        return (config, weekBasedYear, week);
+      },
+      shrink: (input) sync* {
+        final (config, weekBasedYear, week) = input;
+        yield* config.shrink().map((config) {
+          final numberOfWeeks = weekBasedYear.value.numberOfWeeks(config.value);
+          final actualWeek = week.value <= numberOfWeeks
+              ? week
+              : week.shrink().firstWhere((it) => it.value <= numberOfWeeks);
+          return (config, weekBasedYear, actualWeek);
+        });
+        yield* weekBasedYear.shrink().map((weekBasedYear) {
+          final numberOfWeeks = weekBasedYear.value.numberOfWeeks(config.value);
+          final actualWeek = week.value <= numberOfWeeks
+              ? week
+              : week.shrink().firstWhere((it) => it.value <= numberOfWeeks);
+          return (config, weekBasedYear, actualWeek);
+        });
+        yield* week.shrink().map((it) => (config, weekBasedYear, it));
+      },
+    ).map(
+      (it) => YearWeek.from(it.$2.value, it.$3.value, it.$1.value).unwrap(),
+    );
   }
 
   Generator<MonthDay> get monthDay {
