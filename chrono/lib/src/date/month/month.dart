@@ -56,8 +56,8 @@ enum Month
   static Month currentInUtc({Clock? clock}) =>
       Date.todayInUtc(clock: clock).month;
 
-  static const minIndex = 1; // Month.january.index
-  static const maxIndex = 12; // Month.december.index
+  static const minIndex = 0; // Month.january.index
+  static const maxIndex = 11; // Month.december.index
   static const minNumber = 1; // Month.january.number
   static const maxNumber = 12; // Month.december.number
 
