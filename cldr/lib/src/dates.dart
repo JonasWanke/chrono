@@ -376,12 +376,12 @@ class DateOrTimeFormats<T extends ToExpression>
     );
   }
 
-  T operator [](DateOrTimeFormatWidth width) {
+  T operator [](DateOrTimeFormatLength width) {
     return switch (width) {
-      DateOrTimeFormatWidth.full => full,
-      DateOrTimeFormatWidth.long => long,
-      DateOrTimeFormatWidth.medium => medium,
-      DateOrTimeFormatWidth.short => short,
+      DateOrTimeFormatLength.full => full,
+      DateOrTimeFormatLength.long => long,
+      DateOrTimeFormatLength.medium => medium,
+      DateOrTimeFormatLength.short => short,
     };
   }
 
@@ -399,7 +399,7 @@ class DateOrTimeFormats<T extends ToExpression>
   }
 }
 
-enum DateOrTimeFormatWidth { full, long, medium, short }
+enum DateOrTimeFormatLength { full, long, medium, short }
 
 @freezed
 class DateOrTimeFormat<F extends ToExpression>
@@ -478,6 +478,10 @@ class DateTimeFormats with _$DateTimeFormats implements ToExpression {
           ),
     );
   }
+
+  // TODO(JonasWanke): skeleton matching
+  // https://www.unicode.org/reports/tr35/tr35-dates.html#Matching_Skeletons
+  // https://docs.rs/icu_datetime/1.5.1/src/icu_datetime/skeleton/helpers.rs.html#369
 
   @override
   Expression toExpression() {
