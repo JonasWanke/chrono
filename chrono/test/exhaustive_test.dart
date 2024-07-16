@@ -44,8 +44,8 @@ void main() {
       weekday: previousDate.weekday,
     );
     // expect(previous.daysSinceUnixEpoch, -365962029);
-    // expect(previous.dayOfYear, TODO);
-    // expect(previous.weekday, TODO);
+    // expect(previous.dayOfYear, `TODO`);
+    // expect(previous.weekday, `TODO`);
 
     final startTime = Instant.now();
     for (var year = startYear; year <= endYear; year += const Years(1)) {
@@ -61,12 +61,15 @@ void main() {
               ? 1
               : previous.dayOfYear + 1,
         );
-        expect(date, Date.fromYearAndOrdinal(year, dayOfYear));
+        expect(date, Date.fromYearAndOrdinal(year, dayOfYear).unwrap());
 
         final weekday = date.weekday;
         expect(previous.weekday.next, weekday);
         expect(weekday.previous, previous.weekday);
-        expect(date, Date.fromIsoYearWeekAndWeekday(date.isoYearWeek, weekday));
+        expect(
+          date,
+          Date.fromIsoYearWeekAndWeekday(date.isoYearWeek, weekday),
+        );
 
         previous = (
           daysSinceUnixEpoch: daysSinceEpoch,
