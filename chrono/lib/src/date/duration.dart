@@ -193,6 +193,72 @@ final class Years extends MonthsDuration {
 
   final int inYears;
 
+  /// The days in this many normal (non-leap) years (365 days).
+  Days get asNormalDays => Days.normalYear * inYears;
+
+  /// The days in this many leap years (366 days).
+  Days get asLeapDays => Days.normalYear * inYears;
+
+  /// The hours in this many normal (non-leap) years (365 days), i.e., years
+  /// where all days are exactly 24 hours long (no daylight savings time changes
+  /// and no leap seconds).
+  Hours get asNormalHours => asNormalDays.asNormalHours;
+
+  /// The hours in this many normal leap years (366 days), i.e., years where all
+  /// days are exactly 24 hours long (no daylight savings time changes and no
+  /// leap seconds).
+  Hours get asNormalLeapHours => asLeapDays.asNormalHours;
+
+  /// The minutes in this many normal (non-leap) years (365 days), i.e., years
+  /// where all days are exactly 24 hours long (no daylight savings time changes
+  /// and no leap seconds).
+  Minutes get asNormalMinutes => asNormalDays.asNormalMinutes;
+
+  /// The minutes in this many normal leap years (366 days), i.e., years where
+  /// all days are exactly 24 hours long (no daylight savings time changes and
+  /// no leap seconds).
+  Minutes get asNormalLeapMinutes => asLeapDays.asNormalMinutes;
+
+  /// The seconds in this many normal (non-leap) years (365 days), i.e., years
+  /// where all days are exactly 24 hours long (no daylight savings time changes
+  /// and no leap seconds).
+  Seconds get asNormalSeconds => asNormalDays.asNormalSeconds;
+
+  /// The seconds in this many normal leap years (366 days), i.e., years where
+  /// all days are exactly 24 hours long (no daylight savings time changes and
+  /// no leap seconds).
+  Seconds get asNormalLeapSeconds => asLeapDays.asNormalSeconds;
+
+  /// The milliseconds in this many normal (non-leap) years (365 days), i.e.,
+  /// years where all days are exactly 24 hours long (no daylight savings time
+  /// changes and no leap seconds).
+  Milliseconds get asNormalMilliseconds => asNormalDays.asNormalMilliseconds;
+
+  /// The milliseconds in this many normal leap years (366 days), i.e., years
+  /// where all days are exactly 24 hours long (no daylight savings time changes
+  /// and no leap seconds).
+  Milliseconds get asNormalLeapMilliseconds => asLeapDays.asNormalMilliseconds;
+
+  /// The microseconds in this many normal (non-leap) years (365 days), i.e.,
+  /// years where all days are exactly 24 hours long (no daylight savings time
+  /// changes and no leap seconds).
+  Microseconds get asNormalMicroseconds => asNormalDays.asNormalMicroseconds;
+
+  /// The microseconds in this many normal leap years (366 days), i.e., years
+  /// where all days are exactly 24 hours long (no daylight savings time changes
+  /// and no leap seconds).
+  Microseconds get asNormalLeapMicroseconds => asLeapDays.asNormalMicroseconds;
+
+  /// The nanoseconds in this many normal (non-leap) years (365 days), i.e.,
+  /// years where all days are exactly 24 hours long (no daylight savings time
+  /// changes and no leap seconds).
+  Nanoseconds get asNormalNanoseconds => asNormalDays.asNormalNanoseconds;
+
+  /// The nanoseconds in this many normal leap years (366 days), i.e., years
+  /// where all days are exactly 24 hours long (no daylight savings time changes
+  /// and no leap seconds).
+  Nanoseconds get asNormalLeapNanoseconds => asLeapDays.asNormalNanoseconds;
+
   @override
   (Years, Months) get asYearsAndMonths => (this, const Months(0));
   @override

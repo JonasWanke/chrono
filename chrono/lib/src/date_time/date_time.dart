@@ -1,7 +1,6 @@
 import 'dart:core' as core;
 import 'dart:core';
 
-import 'package:cldr/cldr.dart' hide Days;
 import 'package:clock/clock.dart' as cl;
 import 'package:clock/clock.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -9,9 +8,6 @@ import 'package:oxidized/oxidized.dart';
 
 import '../date/date.dart';
 import '../date/duration.dart';
-import '../date/month/month.dart';
-import '../date/year.dart';
-import '../formatting.dart';
 import '../json.dart';
 import '../parser.dart';
 import '../rounding.dart';
@@ -20,8 +16,6 @@ import '../time/time.dart';
 import '../unix_epoch_timestamp.dart';
 import '../utils.dart';
 import 'duration.dart';
-
-part 'date_time.freezed.dart';
 
 /// A date and time in the ISO 8601 calendar represented using [Date] and
 /// [Time], e.g., April 23, 2023, at 18:24:20.
@@ -57,17 +51,13 @@ final class DateTime
   /// [core.DateTime.day], [core.DateTime.hour], etc. getters and ignores
   /// whether that [core.ÐateTime] is in UTC or the local timezone.
   DateTime.fromCore(core.DateTime dateTime)
-      : date = Date.from(
-          Year(dateTime.year),
-          Month.fromNumber(dateTime.month).unwrap(),
-          dateTime.day,
-        ).unwrap(),
+      : date = Date.fromCore(dateTime),
         time = Time.from(
           dateTime.hour,
           dateTime.minute,
           dateTime.second,
-          FractionalSeconds.millisecond * dateTime.millisecond +
-              FractionalSeconds.microsecond * dateTime.microsecond,
+          Nanoseconds.millisecond * dateTime.millisecond +
+              Nanoseconds.microsecond * dateTime.microsecond,
         ).unwrap();
   DateTime.nowInLocalZone({Clock? clock})
       : this.fromCore((clock ?? cl.clock).now().toLocal());
@@ -78,8 +68,8 @@ final class DateTime
   final Time time;
 
   /// The duration since the [unixEpoch].
-  FractionalSeconds get durationSinceUnixEpoch {
-    return time.fractionalSecondsSinceMidnight +
+  Nanoseconds get durationSinceUnixEpoch {
+    return time.nanosecondsSinceMidnight +
         date.daysSinceUnixEpoch.asNormalHours;
   }
 
@@ -107,7 +97,7 @@ final class DateTime
     var newDate = date + compoundDuration.months + compoundDuration.days;
 
     final (days, newTime) =
-        (time.fractionalSecondsSinceMidnight + compoundDuration.seconds)
+        (time.nanosecondsSinceMidnight + compoundDuration.seconds)
             .toDaysAndTime();
     newDate += days;
     return DateTime(newDate, newTime);
@@ -123,22 +113,22 @@ final class DateTime
     if (this < other) return -other.difference(this);
 
     var days = date.differenceInDays(other.date);
-    FractionalSeconds seconds;
+    Nanoseconds nanoseconds;
     if (time < other.time) {
       days -= const Days(1);
-      seconds = time.difference(other.time) + const Days(1).asNormalHours;
+      nanoseconds = time.difference(other.time) + const Days(1).asNormalHours;
     } else {
-      seconds = time.difference(other.time);
+      nanoseconds = time.difference(other.time);
     }
 
-    return CompoundDuration(days: days, seconds: seconds);
+    return CompoundDuration(days: days, seconds: nanoseconds);
   }
 
   /// Returns `this - other` as fractional seconds.
   ///
   /// The returned [CompoundDuration]'s days and seconds are both `>= 0` or both
   /// `<= 0`. The months will always be zero.
-  FractionalSeconds timeDifference(DateTime other) {
+  Nanoseconds timeDifference(DateTime other) {
     final difference = this.difference(other);
     assert(difference.months.isZero);
     return difference.seconds + difference.days.asNormalHours;
@@ -176,16 +166,16 @@ final class DateTime
 
 extension on TimeDuration {
   (Days, Time) toDaysAndTime() {
-    var (seconds, fraction) = asSecondsAndFraction;
-    if (seconds.isZero && fraction.isNegative) {
+    var (seconds, nanoseconds) = asSecondsAndNanoseconds;
+    if (seconds.isZero && nanoseconds.isNegative) {
       seconds = -const Seconds(1);
-      fraction += FractionalSeconds.second;
+      nanoseconds += Nanoseconds.second;
     }
 
     final days = seconds.roundToNormalDays(rounding: Rounding.down);
     final secondsWithinDay = seconds - days.asNormalSeconds;
     final time =
-        Time.fromTimeSinceMidnight(fraction + secondsWithinDay).unwrap();
+        Time.fromTimeSinceMidnight(nanoseconds + secondsWithinDay).unwrap();
     return (days, time);
   }
 }
@@ -202,78 +192,78 @@ class DateTimeAsIsoStringJsonConverter
   String toJson(DateTime object) => object.toString();
 }
 
-class LocalizedDateTimeFormatter extends LocalizedFormatter<DateTime> {
-  const LocalizedDateTimeFormatter(super.localeData, this.style);
+// class LocalizedDateTimeFormatter extends LocalizedFormatter<DateTime> {
+//   const LocalizedDateTimeFormatter(super.localeData, this.style);
 
-  final DateTimeStyle style;
+//   final DateTimeStyle style;
 
-  @override
-  String format(DateTime value) {
-    return style.when(
-      (length, useAtTimeVariant) => _formatLengths(
-        value,
-        dateLength: length,
-        timeLength: length,
-        useAtTimeVariant: useAtTimeVariant,
-      ),
-      lengths: (dateLength, timeLength, useAtTimeVariant) => _formatLengths(
-        value,
-        dateLength: dateLength,
-        timeLength: timeLength,
-        useAtTimeVariant: useAtTimeVariant,
-      ),
-    );
-  }
+//   @override
+//   String format(DateTime value) {
+//     return style.when(
+//       (length, useAtTimeVariant) => _formatLengths(
+//         value,
+//         dateLength: length,
+//         timeLength: length,
+//         useAtTimeVariant: useAtTimeVariant,
+//       ),
+//       lengths: (dateLength, timeLength, useAtTimeVariant) => _formatLengths(
+//         value,
+//         dateLength: dateLength,
+//         timeLength: timeLength,
+//         useAtTimeVariant: useAtTimeVariant,
+//       ),
+//     );
+//   }
 
-  String _formatLengths(
-    DateTime value, {
-    required DateOrTimeFormatLength dateLength,
-    required DateOrTimeFormatLength timeLength,
-    required bool useAtTimeVariant,
-  }) {
-    final lengthFormats = localeData
-        .dates.calendars.gregorian.dateTimeFormats.formats[dateLength];
-    final format = useAtTimeVariant
-        ? (lengthFormats.atTime ?? lengthFormats.standard)
-        : lengthFormats.standard;
+//   String _formatLengths(
+//     DateTime value, {
+//     required DateOrTimeFormatLength dateLength,
+//     required DateOrTimeFormatLength timeLength,
+//     required bool useAtTimeVariant,
+//   }) {
+//     final lengthFormats = localeData
+//         .dates.calendars.gregorian.dateTimeFormats.formats[dateLength];
+//     final format = useAtTimeVariant
+//         ? (lengthFormats.atTime ?? lengthFormats.standard)
+//         : lengthFormats.standard;
 
-    final dateFormatter =
-        LocalizedDateFormatter(localeData, DateStyle(dateLength));
-    final timeFormatter =
-        LocalizedTimeFormatter(localeData, TimeStyle(timeLength));
+//     final dateFormatter =
+//         LocalizedDateFormatter(localeData, DateStyle(dateLength));
+//     final timeFormatter =
+//         LocalizedTimeFormatter(localeData, TimeStyle(timeLength));
 
-    return format.pattern
-        .map(
-          (it) => it.when(
-            literal: (value) => value,
-            date: () => dateFormatter.format(value.date),
-            time: () => timeFormatter.format(value.time),
-            field: (field) => field.when(
-              dateField: (field) =>
-                  dateFormatter.formatField(value.date, field),
-              timeField: (field) =>
-                  timeFormatter.formatField(value.time, field),
-            ),
-          ),
-        )
-        .join();
-  }
-}
+//     return format.pattern
+//         .map(
+//           (it) => it.when(
+//             literal: (value) => value,
+//             date: () => dateFormatter.format(value.date),
+//             time: () => timeFormatter.format(value.time),
+//             field: (field) => field.when(
+//               dateField: (field) =>
+//                   dateFormatter.formatField(value.date, field),
+//               timeField: (field) =>
+//                   timeFormatter.formatField(value.time, field),
+//             ),
+//           ),
+//         )
+//         .join();
+//   }
+// }
 
-@freezed
-class DateTimeStyle with _$DateTimeStyle {
-  // TODO(JonasWanke): customizable component formats
+// @freezed
+// class DateTimeStyle with _$DateTimeStyle {
+//   // `TODO`(JonasWanke): customizable component formats
 
-  const factory DateTimeStyle(
-    DateOrTimeFormatLength length, {
-    @Default(false) bool useAtTimeVariant,
-  }) = _DateTimeStyleLength;
+//   const factory DateTimeStyle(
+//     DateOrTimeFormatLength length, {
+//     @Default(false) bool useAtTimeVariant,
+//   }) = _DateTimeStyleLength;
 
-  const factory DateTimeStyle.lengths({
-    required DateOrTimeFormatLength dateLength,
-    required DateOrTimeFormatLength timeLength,
-    @Default(false) bool useAtTimeVariant,
-  }) = _DateTimeStyleLengths;
+//   const factory DateTimeStyle.lengths({
+//     required DateOrTimeFormatLength dateLength,
+//     required DateOrTimeFormatLength timeLength,
+//     @Default(false) bool useAtTimeVariant,
+//   }) = _DateTimeStyleLengths;
 
-  const DateTimeStyle._();
-}
+//   const DateTimeStyle._();
+// }

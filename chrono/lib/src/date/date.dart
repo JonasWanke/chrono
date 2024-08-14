@@ -1,20 +1,17 @@
 import 'dart:core' as core;
 import 'dart:core';
 
-import 'package:cldr/cldr.dart' hide Days;
 import 'package:clock/clock.dart';
 import 'package:dartx/dartx.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../date_time/date_time.dart';
-import '../formatting.dart';
 import '../json.dart';
 import '../parser.dart';
 import '../time/time.dart';
 import '../utils.dart';
 import 'duration.dart';
-import 'era.dart';
 import 'month/month.dart';
 import 'month/month_day.dart';
 import 'month/year_month.dart';
@@ -23,8 +20,6 @@ import 'week/week_config.dart';
 import 'week/year_week.dart';
 import 'weekday.dart';
 import 'year.dart';
-
-part 'date.freezed.dart';
 
 /// A date in the ISO 8601 calendar, e.g., April 23, 2023.
 ///
@@ -44,7 +39,7 @@ final class Date
     if (day < 1 || day > yearMonth.length.inDays) {
       return Err('Invalid day for $yearMonth: $day');
     }
-    return Ok(Date._(yearMonth, day));
+    return Ok(Date._unchecked(yearMonth, day));
   }
 
   static Result<Date, String> fromYearAndMonthDay(
@@ -76,7 +71,7 @@ final class Date
     final month = dayOfYear > monthEnd ? rawMonth.next : rawMonth;
 
     final dayOfMonth = dayOfYear - firstDayOfYear(month.month) + 1;
-    return Ok(Date._(month, dayOfMonth));
+    return Ok(Date._unchecked(month, dayOfMonth));
   }
 
   /// Creates a date from a year week and weekday, e.g., Sunday in the 16th week
@@ -110,12 +105,13 @@ final class Date
     return Date.fromYearAndOrdinal(year, dayOfYear).unwrap();
   }
 
-  const Date._(this.yearMonth, this.day);
+  const Date._unchecked(this.yearMonth, this.day);
 
   /// The UNIX epoch: 1970-01-01.
   ///
   /// https://en.wikipedia.org/wiki/Unix_time
-  static const unixEpoch = Date._(YearMonth(Year.unixEpoch, Month.january), 1);
+  static const unixEpoch =
+      Date._unchecked(YearMonth(Year.unixEpoch, Month.january), 1);
 
   /// The date corresponding to the given number of days since the [unixEpoch].
   factory Date.fromDaysSinceUnixEpoch(Days sinceUnixEpoch) {
@@ -155,12 +151,25 @@ final class Date
         : (shiftedYear + 1, shiftedMonth - 9);
     assert(1 <= month && month <= 12);
 
-    return Date._(
+    return Date._unchecked(
       YearMonth(Year(year), Month.fromNumber(month).unwrap()),
       day,
     );
   }
 
+  /// Creates a Chrono [Date] from a Dart Core [core.DateTime].
+  ///
+  /// This uses the [core.DateTime.year], [core.DateTime.month], and
+  /// [core.DateTime.day] getters and ignores whether that [core.ÐateTime] is in
+  /// UTC or the local timezone.
+  Date.fromCore(core.DateTime dateTime)
+      : this._unchecked(
+          YearMonth(
+            Year(dateTime.year),
+            Month.fromNumber(dateTime.month).unwrap(),
+          ),
+          dateTime.day,
+        );
   factory Date.todayInLocalZone({Clock? clock}) =>
       DateTime.nowInLocalZone(clock: clock).date;
   factory Date.todayInUtc({Clock? clock}) =>
@@ -279,7 +288,7 @@ final class Date
     final CompoundDaysDuration(:months, :days) =
         duration.asCompoundDaysDuration;
     final yearMonthWithMonths = yearMonth + months;
-    final dateWithMonths = Date._(
+    final dateWithMonths = Date._unchecked(
       yearMonthWithMonths,
       day.coerceAtMost(yearMonthWithMonths.length.inDays),
     );
@@ -432,62 +441,4 @@ class DateAsWeekDateIsoStringJsonConverter
       Parser.parseWeekDate(json);
   @override
   String toJson(Date object) => object.toWeekDateString();
-}
-
-class LocalizedDateFormatter extends LocalizedFormatter<Date> {
-  const LocalizedDateFormatter(super.localeData, this.style);
-
-  final DateStyle style;
-
-  @override
-  String format(Date value) {
-    final dateFormats = localeData.dates.calendars.gregorian.dateFormats;
-
-    return dateFormats[style.length]
-        .pattern
-        .map(
-          (it) => it.when(
-            literal: (value) => value,
-            field: (field) => formatField(value, field),
-          ),
-        )
-        .join();
-  }
-
-  String formatField(Date value, DateField field) {
-    // TODO(JonasWanke): use localized numbers
-    return field.when(
-      era: (style) =>
-          LocalizedEraFormatter(localeData, style).format(value.year.era),
-      year: (style) =>
-          LocalizedYearFormatter(localeData, style).format(value.year),
-      quarter: (_) => throw UnimplementedError(),
-      month: (style) =>
-          LocalizedMonthFormatter(localeData, style).format(value.month),
-      week: (style) => style.when(
-        weekOfYear: (isPadded) =>
-            value.isoYearWeek.week.toString().padLeft(isPadded ? 2 : 1, '0'),
-        weekOfMonth: () => throw UnimplementedError(),
-      ),
-      day: (style) => style.when(
-        dayOfMonth: (isPadded) =>
-            value.day.toString().padLeft(isPadded ? 2 : 1, '0'),
-        dayOfYear: (padding) =>
-            value.dayOfYear.toString().padLeft(padding.asInt, '0'),
-        dayOfWeekInMonth: () => throw UnimplementedError(),
-        modifiedJulianDay: () => throw UnimplementedError(),
-      ),
-      weekday: (style) =>
-          LocalizedWeekdayFormatter(localeData, style).format(value.weekday),
-    );
-  }
-}
-
-@freezed
-class DateStyle with _$DateStyle {
-  // TODO(JonasWanke): customizable component formats
-
-  const factory DateStyle(DateOrTimeFormatLength length) = _DateStyleFormat;
-
-  const DateStyle._();
 }

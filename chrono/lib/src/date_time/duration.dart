@@ -21,7 +21,7 @@ abstract class Duration {
     final compoundDuration = asCompoundDuration;
     return compoundDuration.months.inMonths == 0 &&
         compoundDuration.days.inDays == 0 &&
-        compoundDuration.seconds.inFractionalSeconds.isZero;
+        compoundDuration.seconds.inNanoseconds == BigInt.zero;
   }
 
   Duration operator -();
@@ -39,8 +39,8 @@ abstract class Duration {
     final otherCompound = other.asCompoundDuration;
     return thisCompound.months.inMonths == otherCompound.months.inMonths &&
         thisCompound.days.inDays == otherCompound.days.inDays &&
-        thisCompound.seconds.inFractionalSeconds ==
-            otherCompound.seconds.inFractionalSeconds;
+        thisCompound.seconds.inNanoseconds ==
+            otherCompound.seconds.inNanoseconds;
   }
 
   @override
@@ -49,13 +49,13 @@ abstract class Duration {
     return Object.hash(
       compound.months.inMonths,
       compound.days.inDays,
-      compound.seconds.inFractionalSeconds,
+      compound.seconds.inNanoseconds,
     );
   }
 }
 
 /// [Duration] subclass that can represent any duration by combining [Months],
-/// [Days], and [FractionalSeconds].
+/// [Days], and [Nanoseconds].
 final class CompoundDuration extends Duration {
   CompoundDuration({
     DaysDuration? monthsAndDays,
@@ -71,12 +71,13 @@ final class CompoundDuration extends Duration {
               months: months?.asMonths ?? const Months(0),
               days: days?.asDays ?? const Days(0),
             ),
-        seconds = seconds?.asFractionalSeconds ?? FractionalSeconds.zero;
+        seconds = seconds?.asNanoseconds ?? Nanoseconds(0);
 
   final CompoundDaysDuration monthsAndDays;
   Months get months => monthsAndDays.months;
   Days get days => monthsAndDays.days;
-  final FractionalSeconds seconds;
+  // TODO(JonasWanke): Rename, maybe to `time` or `nanoseconds`
+  final Nanoseconds seconds;
 
   @override
   CompoundDuration get asCompoundDuration => this;

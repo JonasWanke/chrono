@@ -1,8 +1,6 @@
 import 'dart:core' as core;
 import 'dart:core';
 
-import 'package:fixed/fixed.dart';
-
 import '../date/duration.dart';
 import '../date_time/duration.dart';
 import '../rounding.dart';
@@ -17,8 +15,7 @@ import '../utils.dart';
 /// - [DaysDuration], which covers durations based on an integer number of days
 ///   or months.
 /// - [Duration], which is the base class for all durations.
-/// - [FractionalSeconds], which is a subclass storing the duration with
-///   arbitrary precision.
+/// - [Nanoseconds], which is the subclass with the highest precision.
 abstract class TimeDuration extends Duration
     with ComparisonOperatorsFromComparable<TimeDuration>
     implements Comparable<TimeDuration> {
@@ -26,51 +23,47 @@ abstract class TimeDuration extends Duration
 
   // TODO(JonasWanke): add `lerp(…)`, `lerpNullable(…)` in other classes
   // TODO(JonasWanke): comments
-  static FractionalSeconds? lerpNullable(
+  static Nanoseconds? lerpNullable(
     TimeDuration? a,
     TimeDuration? b,
     double t, {
-    int factorPrecisionAfterComma = 8,
+    Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
-    return switch ((a?.asFractionalSeconds, b?.asFractionalSeconds)) {
+    return switch ((a?.asNanoseconds, b?.asNanoseconds)) {
       (null, null) => null,
-      (null, final b?) =>
-        b.timesNum(t, factorPrecisionAfterComma: factorPrecisionAfterComma),
-      (final a?, null) =>
-        a.timesNum(1 - t, factorPrecisionAfterComma: factorPrecisionAfterComma),
-      (final a?, final b?) =>
-        lerp(a, b, t, factorPrecisionAfterComma: factorPrecisionAfterComma),
+      (null, final b?) => b.timesDouble(t, rounding: rounding),
+      (final a?, null) => a.timesDouble(1 - t, rounding: rounding),
+      (final a?, final b?) => lerp(a, b, t, rounding: rounding),
     };
   }
 
-  static FractionalSeconds lerp(
+  static Nanoseconds lerp(
     TimeDuration a,
     TimeDuration b,
     double t, {
-    int factorPrecisionAfterComma = 8,
+    Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
-    return a.asFractionalSeconds.timesNum(
-          1 - t,
-          factorPrecisionAfterComma: factorPrecisionAfterComma,
-        ) +
-        b.asFractionalSeconds
-            .timesNum(t, factorPrecisionAfterComma: factorPrecisionAfterComma);
+    return a.asNanoseconds.timesDouble(1 - t, rounding: rounding) +
+        b.asNanoseconds.timesDouble(t, rounding: rounding);
   }
 
-  FractionalSeconds get asFractionalSeconds;
-  Fixed get inFractionalSeconds => asFractionalSeconds.inFractionalSeconds;
-  (Seconds, FractionalSeconds) get asSecondsAndFraction {
-    final (seconds, fraction) = inFractionalSeconds.integerAndDecimalParts;
-    return (Seconds(seconds.toInt()), FractionalSeconds(fraction));
+  Nanoseconds get asNanoseconds;
+  BigInt get inNanoseconds => asNanoseconds.inNanoseconds;
+  (Seconds, Nanoseconds) get asSecondsAndNanoseconds {
+    final inNanoseconds = this.inNanoseconds;
+    final seconds = inNanoseconds ~/ BigInt.from(Nanoseconds.perSecond);
+    final nanoseconds =
+        inNanoseconds - seconds * BigInt.from(Nanoseconds.perSecond);
+    return (Seconds(seconds.toInt()), Nanoseconds.fromBigInt(nanoseconds));
   }
 
   @override
   CompoundDuration get asCompoundDuration =>
-      CompoundDuration(seconds: asFractionalSeconds);
+      CompoundDuration(seconds: asNanoseconds);
 
-  bool get isPositive => inFractionalSeconds.isPositive;
+  bool get isPositive => inNanoseconds > BigInt.zero;
   bool get isNonPositive => !isPositive;
-  bool get isNegative => inFractionalSeconds.isNegative;
+  bool get isNegative => inNanoseconds.isNegative;
   bool get isNonNegative => !isNegative;
 
   @override
@@ -78,27 +71,36 @@ abstract class TimeDuration extends Duration
 
   @override
   TimeDuration operator *(int factor);
-  FractionalSeconds timesNum(
-    num factor, {
-    int factorPrecisionAfterComma = 8,
+  Nanoseconds timesDouble(
+    double factor, {
+    Rounding rounding = Rounding.nearestAwayFromZero,
   }) =>
-      timesFixed(Fixed.fromNum(factor, scale: factorPrecisionAfterComma));
-  FractionalSeconds timesFixed(Fixed factor) =>
-      FractionalSeconds(inFractionalSeconds * factor);
+      Nanoseconds(rounding.round(inNanoseconds.toDouble() * factor));
+  Nanoseconds timesBigInt(
+    BigInt factor, {
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) =>
+      Nanoseconds.fromBigInt(inNanoseconds * factor);
 
   @override
   TimeDuration operator ~/(int divisor);
-  // TODO(JonasWanke): Is this division precise enough?
-  Fixed dividedByTimeDuration(TimeDuration divisor) =>
-      inFractionalSeconds / divisor.inFractionalSeconds;
-  FractionalSeconds dividedByNum(
-    num divisor, {
-    int divisorPrecisionAfterComma = 8,
+  double dividedByTimeDuration(TimeDuration divisor) =>
+      inNanoseconds / divisor.inNanoseconds;
+  Nanoseconds dividedByInt(
+    int divisor, {
+    Rounding rounding = Rounding.nearestAwayFromZero,
   }) =>
-      dividedByFixed(Fixed.fromNum(divisor, scale: divisorPrecisionAfterComma));
-  // TODO(JonasWanke): Is this division precise enough?
-  FractionalSeconds dividedByFixed(Fixed divisor) =>
-      FractionalSeconds(inFractionalSeconds / divisor);
+      dividedByBigInt(BigInt.from(divisor));
+  Nanoseconds dividedByBigInt(
+    BigInt divisor, {
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) =>
+      Nanoseconds(rounding.round(inNanoseconds / divisor));
+  Nanoseconds dividedByDouble(
+    double divisor, {
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) =>
+      Nanoseconds(rounding.round(inNanoseconds.toDouble() / divisor));
 
   @override
   TimeDuration operator %(int divisor);
@@ -107,39 +109,68 @@ abstract class TimeDuration extends Duration
 
   TimeDuration get absolute => isNegative ? -this : this;
 
-  Nanoseconds roundToNanoseconds({
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) =>
-      Nanoseconds(rounding.round(inFractionalSeconds.toFixedScale(9)));
   Microseconds roundToMicroseconds({
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) =>
-      Microseconds(rounding.round(inFractionalSeconds.toFixedScale(6)));
+  }) {
+    return Microseconds(
+      rounding.round(inNanoseconds / BigInt.from(Nanoseconds.perMicrosecond)),
+    );
+  }
+
   Milliseconds roundToMilliseconds({
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) =>
-      Milliseconds(rounding.round(inFractionalSeconds.toFixedScale(3)));
-  Seconds roundToSeconds({Rounding rounding = Rounding.nearestAwayFromZero}) =>
-      Seconds(rounding.round(inFractionalSeconds.toFixedScale(0)));
-  Minutes roundToMinutes({Rounding rounding = Rounding.nearestAwayFromZero}) =>
-      Minutes(rounding.round(roundToSeconds().inSeconds / Seconds.perMinute));
-  Hours roundToHours({Rounding rounding = Rounding.nearestAwayFromZero}) =>
-      Hours(rounding.round(roundToSeconds().inSeconds / Seconds.perHour));
-  Days roundToNormalDays({Rounding rounding = Rounding.nearestAwayFromZero}) =>
-      Days(rounding.round(roundToSeconds().inSeconds / Seconds.perNormalDay));
+  }) {
+    return Milliseconds(
+      rounding.round(inNanoseconds / BigInt.from(Nanoseconds.perMillisecond)),
+    );
+  }
+
+  Seconds roundToSeconds({Rounding rounding = Rounding.nearestAwayFromZero}) {
+    return Seconds(
+      rounding.round(inNanoseconds / BigInt.from(Nanoseconds.perSecond)),
+    );
+  }
+
+  Minutes roundToMinutes({Rounding rounding = Rounding.nearestAwayFromZero}) {
+    return Minutes(
+      rounding.round(inNanoseconds / BigInt.from(Nanoseconds.perMinute)),
+    );
+  }
+
+  Hours roundToHours({Rounding rounding = Rounding.nearestAwayFromZero}) {
+    return Hours(
+      rounding.round(inNanoseconds / BigInt.from(Nanoseconds.perHour)),
+    );
+  }
+
+  Days roundToNormalDays({Rounding rounding = Rounding.nearestAwayFromZero}) {
+    return Days(
+      rounding.round(inNanoseconds / BigInt.from(Nanoseconds.perNormalDay)),
+    );
+  }
+
   Weeks roundToNormalWeeks({
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) =>
-      Weeks(rounding.round(roundToSeconds().inSeconds / Seconds.perNormalWeek));
+  }) {
+    return Weeks(
+      rounding.round(inNanoseconds / BigInt.from(Nanoseconds.perNormalWeek)),
+    );
+  }
+
   Years roundToNormalYears({
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) =>
-      Years(rounding.round(roundToSeconds().inSeconds / Seconds.perNormalYear));
+  }) {
+    return Years(
+      rounding.round(inNanoseconds / BigInt.from(Nanoseconds.perNormalYear)),
+    );
+  }
+
   Years roundToNormalLeapYears({
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
     return Years(
-      rounding.round(roundToSeconds().inSeconds / Seconds.perNormalLeapYear),
+      rounding
+          .round(inNanoseconds / BigInt.from(Nanoseconds.perNormalLeapYear)),
     );
   }
 
@@ -151,88 +182,43 @@ abstract class TimeDuration extends Duration
     );
   }
 
-  FractionalSeconds roundToMultipleOf(
+  Nanoseconds roundToMultipleOf(
     TimeDuration duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    return duration.asFractionalSeconds *
-        rounding.round(
-          (inFractionalSeconds / duration.inFractionalSeconds).asDouble,
-        );
-  }
-
-  Nanoseconds roundToMultipleOfNanoseconds(
-    NanosecondsDuration duration, {
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    return duration.asNanoseconds *
-        rounding.roundFixed(
-          roundToNanoseconds(rounding: rounding)
-              .dividedByTimeDuration(duration),
-        );
-  }
-
+  }) =>
+      duration.asNanoseconds * rounding.round(dividedByTimeDuration(duration));
   Microseconds roundToMultipleOfMicroseconds(
     MicrosecondsDuration duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    return duration.asMicroseconds *
-        rounding.roundFixed(
-          roundToMicroseconds(rounding: rounding)
-              .dividedByTimeDuration(duration),
-        );
-  }
-
+  }) =>
+      duration.asMicroseconds * rounding.round(dividedByTimeDuration(duration));
   Milliseconds roundToMultipleOfMilliseconds(
     MillisecondsDuration duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    return duration.asMilliseconds *
-        rounding.roundFixed(
-          roundToMilliseconds(rounding: rounding)
-              .dividedByTimeDuration(duration),
-        );
-  }
-
+  }) =>
+      duration.asMilliseconds * rounding.round(dividedByTimeDuration(duration));
   Seconds roundToMultipleOfSeconds(
     SecondsDuration duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    return duration.asSeconds *
-        rounding.roundFixed(
-          roundToSeconds(rounding: rounding).dividedByTimeDuration(duration),
-        );
-  }
-
+  }) =>
+      duration.asSeconds * rounding.round(dividedByTimeDuration(duration));
   Minutes roundToMultipleOfMinutes(
     MinutesDuration duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    return duration.asMinutes *
-        rounding.roundFixed(
-          roundToMinutes(rounding: rounding).dividedByTimeDuration(duration),
-        );
-  }
-
+  }) =>
+      duration.asMinutes * rounding.round(dividedByTimeDuration(duration));
   Hours roundToMultipleOfHours(
     Hours duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    return duration *
-        rounding.roundFixed(
-          roundToHours(rounding: rounding).dividedByTimeDuration(duration),
-        );
-  }
+  }) =>
+      duration * rounding.round(dividedByTimeDuration(duration));
 
   Days roundToMultipleOfNormalDays(
     FixedDaysDuration duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
     return duration.asDays *
-        rounding.round(
-          roundToNormalDays(rounding: rounding)
-              .dividedByFixedDaysDuration(duration),
-        );
+        rounding.round(dividedByTimeDuration(duration.asNormalHours));
   }
 
   Weeks roundToMultipleOfNormalWeeks(
@@ -240,9 +226,7 @@ abstract class TimeDuration extends Duration
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
     return duration *
-        rounding.round(
-          roundToNormalWeeks(rounding: rounding).dividedByWeeks(duration),
-        );
+        rounding.round(dividedByTimeDuration(duration.asNormalHours));
   }
 
   Years roundToMultipleOfNormalYears(
@@ -250,9 +234,7 @@ abstract class TimeDuration extends Duration
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
     return duration *
-        rounding.round(
-          roundToNormalYears(rounding: rounding).dividedByYears(duration),
-        );
+        rounding.round(dividedByTimeDuration(duration.asNormalHours));
   }
 
   Years roundToMultipleOfNormalLeapYears(
@@ -260,215 +242,29 @@ abstract class TimeDuration extends Duration
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
     return duration *
-        rounding.round(
-          roundToNormalLeapYears(rounding: rounding).dividedByYears(duration),
-        );
+        rounding.round(dividedByTimeDuration(duration.asNormalHours));
   }
 
-  Future<void> get wait {
-    return Future<void>.delayed(
-      asFractionalSeconds.roundToMicroseconds().asCoreDuration,
-    );
-  }
+  /// Returns a [Future] that completes after this duration has passed.
+  Future<void> get wait =>
+      Future<void>.delayed(roundToMicroseconds().asCoreDuration);
 
   @override
-  int compareTo(TimeDuration other) {
-    var thisValue = inFractionalSeconds;
-    var otherValue = other.inFractionalSeconds;
-    if (thisValue.scale < otherValue.scale) {
-      thisValue = Fixed.copyWith(thisValue, scale: otherValue.scale);
-    } else if (otherValue.scale < thisValue.scale) {
-      otherValue = Fixed.copyWith(otherValue, scale: thisValue.scale);
-    }
-    return thisValue.minorUnits.compareTo(otherValue.minorUnits);
-  }
-}
-
-/// A [TimeDuration] with arbitrary precision.
-final class FractionalSeconds extends TimeDuration {
-  const FractionalSeconds(this.inFractionalSeconds);
-  FractionalSeconds.fromNum(num seconds, {int scale = 8})
-      : inFractionalSeconds = Fixed.fromNum(seconds, scale: scale);
-
-  // `Fixed.zero` has a scale of 16, which we don't need.
-  static final zero = FractionalSeconds(Fixed.fromInt(0, scale: 0));
-
-  /// The number of seconds in a nanosecond.
-  static final perNanosecond = Fixed.fromInt(1, scale: 9);
-
-  /// The seconds in a nanosecond.
-  static final nanosecond = FractionalSeconds(perNanosecond);
-
-  /// The number of seconds in a microsecond.
-  static final perMicrosecond = Fixed.fromInt(1, scale: 6);
-
-  /// The seconds in a microsecond.
-  static final microsecond = FractionalSeconds(perMicrosecond);
-
-  /// The number of seconds in a millisecond.
-  static final perMillisecond = Fixed.fromInt(1, scale: 3);
-
-  /// The seconds in a millisecond.
-  static final millisecond = FractionalSeconds(perMillisecond);
-
-  /// The number of seconds in a second.
-  static final perSecond = Fixed.fromInt(1, scale: 0);
-
-  /// The seconds in a second.
-  static final second = FractionalSeconds(perSecond);
-
-  /// The number of seconds in a minute.
-  static final perMinute = Fixed.fromInt(Seconds.perMinute, scale: 0);
-
-  /// The seconds in a minute.
-  static final minute = FractionalSeconds(perMinute);
-
-  /// The number of seconds in an hour.
-  static final perHour = Fixed.fromInt(Seconds.perHour, scale: 0);
-
-  /// The seconds in an hour.
-  static final hour = FractionalSeconds(perHour);
-
-  /// The number of seconds in a normal day, i.e., a day with exactly 24 hours
-  /// (no daylight savings time changes and no leap seconds).
-  static final perNormalDay = Fixed.fromInt(Seconds.perNormalDay, scale: 0);
-
-  /// The seconds in a normal day, i.e., a day with exactly 24 hours (no
-  /// daylight savings time changes and no leap seconds).
-  static final normalDay = FractionalSeconds(perNormalDay);
-
-  /// The number of seconds in a normal week, i.e., a week where all days are
-  /// exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static final perNormalWeek = Fixed.fromInt(Seconds.perNormalWeek, scale: 0);
-
-  /// The seconds in a normal week, i.e., a week where all days are exactly
-  /// 24 hours long (no daylight savings time changes and no leap seconds).
-  static final normalWeek = FractionalSeconds(perNormalWeek);
-
-  /// The number of seconds in a normal (non-leap) year (365 days), i.e., a year
-  /// where all days are exactly 24 hours long (no daylight savings time changes
-  /// and no leap seconds).
-  static final perNormalYear = Fixed.fromInt(Seconds.perNormalYear, scale: 0);
-
-  /// The seconds in a normal (non-leap) year (365 days), i.e., a year where all
-  /// days are exactly 24 hours long (no daylight savings time changes and no
-  /// leap seconds).
-  static final normalYear = FractionalSeconds(perNormalYear);
-
-  /// The number of seconds in a leap year (366 days), i.e., a year where all
-  /// days are exactly 24 hours long (no daylight savings time changes and no
-  /// leap seconds).
-  static final perNormalLeapYear =
-      Fixed.fromInt(Seconds.perNormalLeapYear, scale: 0);
-
-  /// The seconds in a leap year (366 days), i.e., a year where all days are
-  /// exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static final normalLeapYear = FractionalSeconds(perNormalLeapYear);
-
-  @override
-  final Fixed inFractionalSeconds;
-
-  @override
-  FractionalSeconds get asFractionalSeconds => this;
-
-  FractionalSeconds operator +(TimeDuration duration) =>
-      FractionalSeconds(inFractionalSeconds + duration.inFractionalSeconds);
-  FractionalSeconds operator -(TimeDuration duration) =>
-      FractionalSeconds(inFractionalSeconds - duration.inFractionalSeconds);
-  @override
-  FractionalSeconds operator -() => FractionalSeconds(-inFractionalSeconds);
-  @override
-  FractionalSeconds operator *(int factor) =>
-      timesFixed(Fixed.fromInt(factor, scale: 0));
-  @override
-  FractionalSeconds operator ~/(int divisor) {
-    return FractionalSeconds(
-      Fixed.fromBigInt(
-        inFractionalSeconds.minorUnits ~/ BigInt.from(divisor),
-        scale: inFractionalSeconds.scale,
-      ),
-    );
-  }
-
-  FractionalSeconds get half => FractionalSeconds(inFractionalSeconds.half);
-  @override
-  FractionalSeconds operator %(int divisor) {
-    return FractionalSeconds(
-      Fixed.fromBigInt(
-        inFractionalSeconds.minorUnits % BigInt.from(divisor),
-        scale: inFractionalSeconds.scale,
-      ),
-    );
-  }
-
-  FractionalSeconds moduloNum(
-    num divisor, {
-    int divisorPrecisionAfterComma = 8,
-  }) {
-    return FractionalSeconds(
-      // TODO(JonasWanke): Is this modulo precise enough?
-      inFractionalSeconds %
-          Fixed.fromNum(divisor, scale: divisorPrecisionAfterComma),
-    );
-  }
-
-  // TODO(JonasWanke): Is this modulo precise enough?
-  Fixed moduloTimeDuration(TimeDuration divisor) =>
-      inFractionalSeconds % divisor.inFractionalSeconds;
-
-  @override
-  FractionalSeconds remainder(int divisor) {
-    return FractionalSeconds(
-      Fixed.fromBigInt(
-        inFractionalSeconds.minorUnits.remainder(BigInt.from(divisor)),
-        scale: inFractionalSeconds.scale,
-      ),
-    );
-  }
-
-  FractionalSeconds remainderNum(
-    num divisor, {
-    int divisorPrecisionAfterComma = 8,
-  }) {
-    return FractionalSeconds(
-      // TODO(JonasWanke): Is this remainder precise enough?
-      inFractionalSeconds.remainder(
-        Fixed.fromNum(divisor, scale: divisorPrecisionAfterComma),
-      ),
-    );
-  }
-
-  // TODO(JonasWanke): Is this remainder precise enough?
-  Fixed remainderTimeDuration(TimeDuration divisor) =>
-      inFractionalSeconds.remainder(divisor.inFractionalSeconds);
-
-  @override
-  FractionalSeconds get absolute => isNegative ? -this : this;
-
-  @override
-  String toString() {
-    return inFractionalSeconds.abs == Fixed.one
-        ? '$inFractionalSeconds second'
-        : '$inFractionalSeconds seconds';
-  }
+  int compareTo(TimeDuration other) =>
+      inNanoseconds.compareTo(other.inNanoseconds);
 }
 
 /// Base class for [Nanoseconds] and larger durations like [Microseconds].
 abstract class NanosecondsDuration extends TimeDuration {
   const NanosecondsDuration();
 
-  Nanoseconds get asNanoseconds;
-  int get inNanoseconds => asNanoseconds.inNanoseconds;
-  @override
-  FractionalSeconds get asFractionalSeconds =>
-      FractionalSeconds.nanosecond * inNanoseconds;
-
   (Microseconds, Nanoseconds) get asMicrosecondsAndNanoseconds {
     final asNanoseconds = this.asNanoseconds;
-    final microseconds =
-        Microseconds(asNanoseconds.inNanoseconds ~/ Nanoseconds.perSecond);
+    final microseconds = Microseconds(
+      (asNanoseconds.inNanoseconds ~/ BigInt.from(Nanoseconds.perSecond))
+          .toInt(),
+    );
+    // TODO(JonasWanke): Use `*` instead of `remainder` where possible
     final nanoseconds = asNanoseconds.remainder(Nanoseconds.perSecond);
     return (microseconds, nanoseconds);
   }
@@ -490,37 +286,38 @@ abstract class NanosecondsDuration extends TimeDuration {
 
 /// An integer number of nanoseconds.
 final class Nanoseconds extends NanosecondsDuration {
-  const Nanoseconds(this.inNanoseconds);
+  Nanoseconds(int inNanoseconds) : inNanoseconds = BigInt.from(inNanoseconds);
+  const Nanoseconds.fromBigInt(this.inNanoseconds);
 
   /// The number of nanoseconds in a microsecond.
   static const perMicrosecond = 1000;
 
   /// The nanoseconds in a microsecond.
-  static const microsecond = Nanoseconds(perMicrosecond);
+  static final microsecond = Nanoseconds(perMicrosecond);
 
   /// The number of nanoseconds in a millisecond.
   static const perMillisecond = perMicrosecond * Microseconds.perMillisecond;
 
   /// The nanoseconds in a millisecond.
-  static const millisecond = Nanoseconds(perMillisecond);
+  static final millisecond = Nanoseconds(perMillisecond);
 
   /// The number of nanoseconds in a second.
   static const perSecond = perMicrosecond * Microseconds.perSecond;
 
   /// The nanoseconds in a second.
-  static const second = Nanoseconds(perSecond);
+  static final second = Nanoseconds(perSecond);
 
   /// The number of nanoseconds in a minute.
   static const perMinute = perMicrosecond * Microseconds.perMinute;
 
   /// The nanoseconds in a minute.
-  static const minute = Nanoseconds(perMinute);
+  static final minute = Nanoseconds(perMinute);
 
   /// The number of nanoseconds in an hour.
   static const perHour = perMicrosecond * Microseconds.perHour;
 
   /// The nanoseconds in an hour.
-  static const hour = Nanoseconds(perHour);
+  static final hour = Nanoseconds(perHour);
 
   /// The number of nanoseconds in a normal day, i.e., a day with exactly
   /// 24 hours (no daylight savings time changes and no leap seconds).
@@ -528,7 +325,7 @@ final class Nanoseconds extends NanosecondsDuration {
 
   /// The nanoseconds in a normal day, i.e., a day with exactly 24 hours (no
   /// daylight savings time changes and no leap seconds).
-  static const normalDay = Nanoseconds(perNormalDay);
+  static final normalDay = Nanoseconds(perNormalDay);
 
   /// The number of nanoseconds in a normal week, i.e., a week where all days
   /// are exactly 24 hours long (no daylight savings time changes and no leap
@@ -537,7 +334,7 @@ final class Nanoseconds extends NanosecondsDuration {
 
   /// The nanoseconds in a normal week, i.e., a week where all days are exactly
   /// 24 hours long (no daylight savings time changes and no leap seconds).
-  static const normalWeek = Nanoseconds(perNormalWeek);
+  static final normalWeek = Nanoseconds(perNormalWeek);
 
   /// The number of nanoseconds in a normal (non-leap) year (365 days), i.e., a
   /// year where all days are exactly 24 hours long (no daylight savings time
@@ -547,7 +344,7 @@ final class Nanoseconds extends NanosecondsDuration {
   /// The nanoseconds in a normal (non-leap) year (365 days), i.e., a year where
   /// all days are exactly 24 hours long (no daylight savings time changes and
   /// no leap seconds).
-  static const normalYear = Nanoseconds(perNormalYear);
+  static final normalYear = Nanoseconds(perNormalYear);
 
   /// The number of nanoseconds in a leap year (366 days), i.e., a year where
   /// all days are exactly 24 hours long (no daylight savings time changes and
@@ -558,37 +355,40 @@ final class Nanoseconds extends NanosecondsDuration {
   /// The nanoseconds in a leap year (366 days), i.e., a year where all days are
   /// exactly 24 hours long (no daylight savings time changes and no leap
   /// seconds).
-  static const normalLeapYear = Nanoseconds(perNormalLeapYear);
+  static final normalLeapYear = Nanoseconds(perNormalLeapYear);
 
   @override
-  final int inNanoseconds;
+  final BigInt inNanoseconds;
 
   @override
   Nanoseconds get asNanoseconds => this;
 
-  Nanoseconds operator +(NanosecondsDuration duration) =>
-      Nanoseconds(inNanoseconds + duration.inNanoseconds);
-  Nanoseconds operator -(NanosecondsDuration duration) =>
-      Nanoseconds(inNanoseconds - duration.inNanoseconds);
+  Nanoseconds operator +(TimeDuration duration) =>
+      Nanoseconds.fromBigInt(inNanoseconds + duration.inNanoseconds);
+  Nanoseconds operator -(TimeDuration duration) =>
+      Nanoseconds.fromBigInt(inNanoseconds - duration.inNanoseconds);
   @override
-  Nanoseconds operator -() => Nanoseconds(-inNanoseconds);
+  Nanoseconds operator -() => Nanoseconds.fromBigInt(-inNanoseconds);
   @override
-  Nanoseconds operator *(int factor) => Nanoseconds(inNanoseconds * factor);
+  Nanoseconds operator *(int factor) =>
+      Nanoseconds.fromBigInt(inNanoseconds * BigInt.from(factor));
   @override
-  Nanoseconds operator ~/(int divisor) => Nanoseconds(inNanoseconds ~/ divisor);
+  Nanoseconds operator ~/(int divisor) =>
+      Nanoseconds.fromBigInt(inNanoseconds ~/ BigInt.from(divisor));
 
   @override
-  Nanoseconds operator %(int divisor) => Nanoseconds(inNanoseconds % divisor);
+  Nanoseconds operator %(int divisor) =>
+      Nanoseconds.fromBigInt(inNanoseconds % BigInt.from(divisor));
   @override
   Nanoseconds remainder(int divisor) =>
-      Nanoseconds(inNanoseconds.remainder(divisor));
+      Nanoseconds.fromBigInt(inNanoseconds.remainder(BigInt.from(divisor)));
 
   @override
   Nanoseconds get absolute => isNegative ? -this : this;
 
   @override
   String toString() {
-    return inNanoseconds.abs() == 1
+    return inNanoseconds.abs() == BigInt.one
         ? '$inNanoseconds nanosecond'
         : '$inNanoseconds nanoseconds';
   }
@@ -602,9 +402,6 @@ abstract class MicrosecondsDuration extends NanosecondsDuration {
   int get inMicroseconds => asMicroseconds.inMicroseconds;
   @override
   Nanoseconds get asNanoseconds => Nanoseconds.microsecond * inMicroseconds;
-  @override
-  FractionalSeconds get asFractionalSeconds =>
-      FractionalSeconds.microsecond * inMicroseconds;
 
   (Milliseconds, Microseconds) get asMillisecondsAndMicroseconds {
     final asMicroseconds = this.asMicroseconds;
@@ -744,9 +541,6 @@ abstract class MillisecondsDuration extends MicrosecondsDuration {
   int get inMilliseconds => asMilliseconds.inMilliseconds;
   @override
   Microseconds get asMicroseconds => Microseconds.millisecond * inMilliseconds;
-  @override
-  FractionalSeconds get asFractionalSeconds =>
-      FractionalSeconds.millisecond * inMilliseconds;
 
   (Seconds, Milliseconds) get asSecondsAndMilliseconds {
     final asMilliseconds = this.asMilliseconds;
@@ -873,15 +667,18 @@ abstract class SecondsDuration extends MillisecondsDuration {
   int get inSeconds => asSeconds.inSeconds;
   @override
   Milliseconds get asMilliseconds => Milliseconds.second * inSeconds;
-  @override
-  FractionalSeconds get asFractionalSeconds =>
-      FractionalSeconds.second * inSeconds;
 
   (Minutes, Seconds) get asMinutesAndSeconds {
     final asSeconds = this.asSeconds;
     final minutes = Minutes(asSeconds.inSeconds ~/ Seconds.perMinute);
     final seconds = asSeconds.remainder(Seconds.perMinute);
     return (minutes, seconds);
+  }
+
+  (Hours, Minutes, Seconds) get asHoursAndMinutesAndSeconds {
+    final (asMinutes, seconds) = asMinutesAndSeconds;
+    final (hours, minutes) = asMinutes.asHoursAndMinutes;
+    return (hours, minutes, seconds);
   }
 
   @override
@@ -957,11 +754,6 @@ final class Seconds extends SecondsDuration {
 
   @override
   Seconds get asSeconds => this;
-  (Hours, Minutes, Seconds) get asHoursAndMinutesAndSeconds {
-    final (asMinutes, seconds) = asMinutesAndSeconds;
-    final (hours, minutes) = asMinutes.asHoursAndMinutes;
-    return (hours, minutes, seconds);
-  }
 
   Seconds operator +(SecondsDuration duration) =>
       Seconds(inSeconds + duration.inSeconds);

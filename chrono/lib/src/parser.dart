@@ -1,4 +1,5 @@
-import 'package:fixed/fixed.dart';
+import 'dart:math' as math;
+
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
@@ -20,17 +21,7 @@ final class Parser {
   Parser._(this._source);
 
   static Result<Instant, FormatException> parseInstant(String value) =>
-      _parse(value, (it) => it._parseInstant());
-  static Result<UnixEpochNanoseconds, FormatException>
-      parseUnixEpochNanoseconds(String value) {
-    return _parse(
-      value,
-      (it) => it
-          ._parseInstant(subSecondDigits: 9)
-          .map((it) => it.roundToNanoseconds()),
-    );
-  }
-
+      _parse(value, (it) => it._parseInstant(subSecondDigits: 9));
   static Result<UnixEpochMicroseconds, FormatException>
       parseUnixEpochMicroseconds(String value) {
     return _parse(
@@ -62,7 +53,7 @@ final class Parser {
   }
 
   static Result<DateTime, FormatException> parseDateTime(String value) =>
-      _parse(value, (it) => it._parseDateTime());
+      _parse(value, (it) => it._parseDateTime(subSecondDigits: 9));
   static Result<Date, FormatException> parseDate(String value) =>
       _parse(value, (it) => it._parseDate());
   static Result<Date, FormatException> parseWeekDate(String value) =>
@@ -81,7 +72,7 @@ final class Parser {
       _parse(value, (it) => it._parseMonthDay());
 
   static Result<Time, FormatException> parseTime(String value) =>
-      _parse(value, (it) => it._parseTime());
+      _parse(value, (it) => it._parseTime(subSecondDigits: 9));
 
   static Result<T, FormatException> _parse<T extends Object>(
     String value,
@@ -96,7 +87,9 @@ final class Parser {
 
   // Date and Time
 
-  Result<Instant, FormatException> _parseInstant({int? subSecondDigits}) {
+  Result<Instant, FormatException> _parseInstant({
+    required int subSecondDigits,
+  }) {
     return _parseDateTime(subSecondDigits: subSecondDigits)
         .andAlso(
           () => _requireString(
@@ -109,7 +102,9 @@ final class Parser {
         .map((it) => it.inUtc);
   }
 
-  Result<DateTime, FormatException> _parseDateTime({int? subSecondDigits}) {
+  Result<DateTime, FormatException> _parseDateTime({
+    required int subSecondDigits,
+  }) {
     return _parseDate()
         .andAlso(() => _requireDesignator('T', 'time', isCaseSensitive: false))
         .andThen(
@@ -183,7 +178,7 @@ final class Parser {
         );
   }
 
-  Result<Time, FormatException> _parseTime({int? subSecondDigits}) {
+  Result<Time, FormatException> _parseTime({required int subSecondDigits}) {
     Result<int, FormatException> parse(String label, {required int maxValue}) =>
         _parseInt(label, minDigits: 2, maxDigits: 2, maxValue: maxValue);
 
@@ -198,22 +193,13 @@ final class Parser {
               parse('second', maxValue: 59).map((it) => (hourMinute, it)),
         )
         .andThen((hourMinuteSecond) {
-      Result<FractionalSeconds, FormatException> parse() {
-        return _parseIntRaw(
-          'fractional second',
-          minDigits: subSecondDigits ?? 1,
-          maxDigits: subSecondDigits,
-        ).map((it) => FractionalSeconds(Fixed.fromInt(it.$1, scale: it.$2)));
-      }
-
+      final hasFractionalSeconds = subSecondDigits == 0 || !_maybeConsume('.');
       // ignore: omit_local_variable_types
-      final Result<FractionalSeconds, FormatException> result =
-          switch (subSecondDigits) {
-        null => _maybeConsume('.') ? parse() : Ok(FractionalSeconds.zero),
-        0 => Ok(FractionalSeconds.zero),
-        _ => _requireSeparator({'.'}, 'second', 'fractional second')
-            .andThen((_) => parse()),
-      };
+      final Result<Nanoseconds, FormatException> result = hasFractionalSeconds
+          ? Ok(Nanoseconds(0))
+          : _parseIntRaw('fractional second', maxDigits: subSecondDigits).map(
+              (it) => Nanoseconds(it.$1 * math.pow(10, 9 - it.$2).toInt()),
+            );
       return result.map((it) => (hourMinuteSecond, it));
     }).andThen((it) {
       final (((hour, minute), second), fraction) = it;

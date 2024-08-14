@@ -1,21 +1,16 @@
 import 'dart:core' as core;
 import 'dart:core';
 
-import 'package:cldr/cldr.dart';
 import 'package:clock/clock.dart';
-import 'package:fixed/fixed.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../date_time/date_time.dart';
-import '../formatting.dart';
 import '../json.dart';
 import '../parser.dart';
 import '../rounding.dart';
 import '../utils.dart';
 import 'duration.dart';
-
-part 'time.freezed.dart';
 
 /// A specific time of a day, e.g., 18:24:20.
 @immutable
@@ -26,7 +21,7 @@ final class Time
     int hour, [
     int minute = 0,
     int second = 0,
-    FractionalSeconds? fraction,
+    Nanoseconds? fraction,
   ]) {
     if (hour < 0 || hour >= Duration.hoursPerDay) {
       return Err('Invalid hour: $hour');
@@ -40,7 +35,7 @@ final class Time
 
     final fractionError = _validateFraction(fraction);
     if (fractionError != null) return Err(fractionError);
-    fraction ??= FractionalSeconds.zero;
+    fraction ??= Nanoseconds(0);
 
     return Ok(Time._(hour, minute, second, fraction));
   }
@@ -61,10 +56,14 @@ final class Time
       );
     }
 
-    final (asSeconds, fraction) = timeSinceMidnight.asSecondsAndFraction;
+    final (asSeconds, nanoseconds) = timeSinceMidnight.asSecondsAndNanoseconds;
     final (hours, minutes, seconds) = asSeconds.asHoursAndMinutesAndSeconds;
-    final time =
-        Time._(hours.inHours, minutes.inMinutes, seconds.inSeconds, fraction);
+    final time = Time._(
+      hours.inHours,
+      minutes.inMinutes,
+      seconds.inSeconds,
+      nanoseconds,
+    );
     return Ok(time);
   }
 
@@ -77,13 +76,13 @@ final class Time
     Time? a,
     Time? b,
     double t, {
-    int factorPrecisionAfterComma = 8,
+    Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
     final duration = TimeDuration.lerpNullable(
-      a?.fractionalSecondsSinceMidnight,
-      b?.fractionalSecondsSinceMidnight,
+      a?.nanosecondsSinceMidnight,
+      b?.nanosecondsSinceMidnight,
       t,
-      factorPrecisionAfterComma: factorPrecisionAfterComma,
+      rounding: rounding,
     );
     if (duration == null) return null;
 
@@ -94,21 +93,21 @@ final class Time
     Time a,
     Time b,
     double t, {
-    int factorPrecisionAfterComma = 8,
+    Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
     return Time.fromTimeSinceMidnight(
       TimeDuration.lerp(
-        a.fractionalSecondsSinceMidnight,
-        b.fractionalSecondsSinceMidnight,
+        a.nanosecondsSinceMidnight,
+        b.nanosecondsSinceMidnight,
         t,
-        factorPrecisionAfterComma: factorPrecisionAfterComma,
+        rounding: rounding,
       ),
     );
   }
 
-  static String? _validateFraction(FractionalSeconds? fraction) {
+  static String? _validateFraction(Nanoseconds? fraction) {
     if (fraction != null &&
-        (fraction.isNegative || fraction >= FractionalSeconds.second)) {
+        (fraction.isNegative || fraction >= Nanoseconds.second)) {
       return 'Invalid fraction of a second: $fraction';
     }
     return null;
@@ -120,7 +119,7 @@ final class Time
   final int hour;
   final int minute;
   final int second;
-  final FractionalSeconds fraction;
+  final Nanoseconds fraction;
 
   bool get isAm => hour < 12;
   bool get isPm => !isAm;
@@ -130,35 +129,31 @@ final class Time
   Hours get hoursSinceMidnight => Hours(hour);
   Minutes get minutesSinceMidnight => Minutes(minute) + hoursSinceMidnight;
   Seconds get secondsSinceMidnight => Seconds(second) + minutesSinceMidnight;
-  FractionalSeconds get fractionalSecondsSinceMidnight =>
-      fraction + secondsSinceMidnight;
+  Nanoseconds get nanosecondsSinceMidnight => fraction + secondsSinceMidnight;
 
   Result<Time, String> add(TimeDuration duration) {
     return Time.fromTimeSinceMidnight(
-      fractionalSecondsSinceMidnight + duration.asFractionalSeconds,
+      nanosecondsSinceMidnight + duration.asNanoseconds,
     );
   }
 
   Result<Time, String> subtract(TimeDuration duration) => add(-duration);
 
   /// Returns `this - other`.
-  FractionalSeconds difference(Time other) =>
-      fractionalSecondsSinceMidnight - other.fractionalSecondsSinceMidnight;
+  Nanoseconds difference(Time other) =>
+      nanosecondsSinceMidnight - other.nanosecondsSinceMidnight;
 
   Time roundToMultipleOf(
     TimeDuration duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
     return Time.fromTimeSinceMidnight(
-      fractionalSecondsSinceMidnight.roundToMultipleOf(
-        duration,
-        rounding: rounding,
-      ),
+      nanosecondsSinceMidnight.roundToMultipleOf(duration, rounding: rounding),
     ).unwrapOrElse((_) {
       // Rounding could round up the value to, e.g., 24 hours. In that case, we
       // floor the value to return the closest value in our range.
       return Time.fromTimeSinceMidnight(
-        fractionalSecondsSinceMidnight.roundToMultipleOf(
+        nanosecondsSinceMidnight.roundToMultipleOf(
           duration,
           rounding: Rounding.down,
         ),
@@ -170,7 +165,7 @@ final class Time
     int? hour,
     int? minute,
     int? second,
-    FractionalSeconds? fraction,
+    Nanoseconds? fraction,
   }) {
     return Time.from(
       hour ?? this.hour,
@@ -206,10 +201,8 @@ final class Time
     final hour = this.hour.toString().padLeft(2, '0');
     final minute = this.minute.toString().padLeft(2, '0');
     final second = this.second.toString().padLeft(2, '0');
-    final fraction = this.fraction.inFractionalSeconds.scale == 0
-        ? ''
-        : this.fraction.inFractionalSeconds.toString().substring(1);
-    return '$hour:$minute:$second$fraction';
+    final fraction = this.fraction.inNanoseconds.toString().padLeft(9, '0');
+    return '$hour:$minute:$second.$fraction';
   }
 }
 
@@ -225,82 +218,31 @@ class TimeAsIsoStringJsonConverter
   String toJson(Time object) => object.toString();
 }
 
-class LocalizedTimeFormatter extends LocalizedFormatter<Time> {
-  const LocalizedTimeFormatter(super.localeData, this.style);
+// class LocalizedTimeFormatter implements Formatter<Time> {
+//   LocalizedTimeFormatter(Intl intl, TimeFormatStyle style)
+//       : _format = intl.datetimeFormat(
+//           DateTimeFormatOptions(
+//             calendar: Calendar.gregory,
+//             timeFormatStyle: style,
+//           ),
+//         );
+//   LocalizedTimeFormatter.components(
+//     Intl intl, {
+//     TimeStyle? hour,
+//     TimeStyle? minute,
+//     TimeStyle? second,
+//   }) : _format = intl.datetimeFormat(
+//           DateTimeFormatOptions(
+//             calendar: Calendar.gregory,
+//             hour: hour,
+//             minute: minute,
+//             second: second,
+//           ),
+//         );
 
-  final TimeStyle style;
+//   final DateTimeFormat _format;
 
-  @override
-  String format(Time value) {
-    final timeFormats = localeData.dates.calendars.gregorian.timeFormats;
-    return timeFormats[style.length]
-        .pattern
-        .map(
-          (it) => it.when(
-            literal: (value) => value,
-            field: (field) => formatField(value, field),
-          ),
-        )
-        .join();
-  }
-
-  String formatField(Time value, TimeField field) {
-    return field.when(
-      period: (style) => style.when(
-        amPm: (width) {
-          final strings =
-              localeData.dates.calendars.gregorian.dayPeriods.format[width];
-          return value.isAm ? strings.am : strings.pm;
-        },
-        amPmNoonMidnight: (width) {
-          final strings =
-              localeData.dates.calendars.gregorian.dayPeriods.format[width];
-          if (value.isMidnight) return strings.midnight ?? strings.am;
-          if (value.isNoon) return strings.noon ?? strings.pm;
-          return value.isAm ? strings.am : strings.pm;
-        },
-        flexible: (_) => throw UnimplementedError(),
-      ),
-      hour: (style) => style.when(
-        from0To23: (isPadded) =>
-            value.hour.toString().padLeft(isPadded ? 2 : 1, '0'),
-        from1To24: (isPadded) => (value.hour == 0 ? 24 : value.hour)
-            .toString()
-            .padLeft(isPadded ? 2 : 1, '0'),
-        from0To11: (isPadded) =>
-            (value.hour % 12).toString().padLeft(isPadded ? 2 : 1, '0'),
-        from1To12: (isPadded) {
-          var hour = value.hour % 12;
-          if (hour == 0) hour = 12;
-          return hour.toString().padLeft(isPadded ? 2 : 1, '0');
-        },
-      ),
-      minute: (style) =>
-          value.minute.toString().padLeft(style.isPadded ? 2 : 1, '0'),
-      second: (style) => style.when(
-        second: (isPadded) =>
-            value.second.toString().padLeft(isPadded ? 2 : 1, '0'),
-        fractionalSecond: (digits) =>
-            (value.fractionalSecondsSinceMidnight.inFractionalSeconds *
-                    Fixed.ten.pow(digits))
-                .toInt()
-                .toString(),
-        millisecondsInDay: (minDigits) => value.fractionalSecondsSinceMidnight
-            .roundToMilliseconds()
-            .inMilliseconds
-            .toString()
-            .padLeft(minDigits, '0'),
-      ),
-      zone: (_) => throw UnimplementedError(),
-    );
-  }
-}
-
-@freezed
-class TimeStyle with _$TimeStyle {
-  // TODO(JonasWanke): customizable component formats
-
-  const factory TimeStyle(DateOrTimeFormatLength length) = _TimeStyleFormat;
-
-  const TimeStyle._();
-}
+//   @override
+//   String format(Time value) =>
+//       _format.format(Date.unixEpoch.at(value).asCoreDateTimeInUtc);
+// }

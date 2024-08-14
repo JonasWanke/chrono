@@ -21,8 +21,7 @@ import 'utils.dart';
 ///
 /// See also the following subclasses:
 ///
-/// - [Instant], which stores the passed time as [FractionalSeconds].
-/// - [UnixEpochNanoseconds], which stores the passed time as [Nanoseconds].
+/// - [Instant], which stores the passed time as [Nanoseconds].
 /// - [UnixEpochMicroseconds], which stores the passed time as [Microseconds].
 /// - [UnixEpochMilliseconds], which stores the passed time as [Milliseconds].
 /// - [UnixEpochSeconds], which stores the passed time as [Seconds].
@@ -48,14 +47,8 @@ class UnixEpochTimestamp<D extends TimeDuration>
     );
   }
 
-  UnixEpochNanoseconds roundToNanoseconds({
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    return UnixEpochNanoseconds(
-      durationSinceUnixEpoch.roundToNanoseconds(rounding: rounding),
-    );
-  }
-
+  Instant asInstant() =>
+      Instant.fromDurationSinceUnixEpoch(durationSinceUnixEpoch);
   UnixEpochMicroseconds roundToMicroseconds({
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
@@ -93,38 +86,33 @@ class UnixEpochTimestamp<D extends TimeDuration>
 
   @override
   int get hashCode => durationSinceUnixEpoch.hashCode;
-
-  @override
-  String toString() => '${dateTimeInUtc}Z';
 }
 
 // Fractional Seconds
 
-/// A point in time, represented as the [FractionalSeconds] that passed since
+/// A point in time, represented as the [Nanoseconds] that passed since
 /// the Unix epoch.
 ///
 /// See also:
 ///
 /// - [UnixEpochTimestamp], which is the superclass supporting arbitrary time
 ///   duration types.
-/// - [UnixEpochNanoseconds], which stores the passed time as [Nanoseconds].
 /// - [UnixEpochMicroseconds], which stores the passed time as [Microseconds].
 /// - [UnixEpochMilliseconds], which stores the passed time as [Milliseconds].
 /// - [UnixEpochSeconds], which stores the passed time as [Seconds].
-final class Instant extends UnixEpochTimestamp<FractionalSeconds> {
+final class Instant extends UnixEpochTimestamp<Nanoseconds> {
   Instant.fromDurationSinceUnixEpoch(TimeDuration duration)
-      : super(duration.asFractionalSeconds);
+      : super(duration.asNanoseconds);
 
   Instant.fromCore(core.DateTime dateTime)
-      : super(FractionalSeconds.microsecond * dateTime.microsecondsSinceEpoch);
+      : super(Nanoseconds.microsecond * dateTime.microsecondsSinceEpoch);
   Instant.now({Clock? clockOverride})
       : this.fromCore((clockOverride ?? clock).now());
 
   /// The UNIX epoch: 1970-01-01 at 00:00:00 in UTC.
   ///
   /// https://en.wikipedia.org/wiki/Unix_time
-  static final unixEpoch =
-      Instant.fromDurationSinceUnixEpoch(FractionalSeconds.zero);
+  static final unixEpoch = Instant.fromDurationSinceUnixEpoch(Nanoseconds(0));
 
   Instant operator +(TimeDuration duration) =>
       Instant.fromDurationSinceUnixEpoch(durationSinceUnixEpoch + duration);
@@ -132,11 +120,14 @@ final class Instant extends UnixEpochTimestamp<FractionalSeconds> {
       Instant.fromDurationSinceUnixEpoch(durationSinceUnixEpoch - duration);
 
   /// Returns `this - other`.
-  FractionalSeconds difference(Instant other) =>
+  Nanoseconds difference(Instant other) =>
       durationSinceUnixEpoch - other.durationSinceUnixEpoch;
+  @override
+  String toString() => '${dateTimeInUtc}Z';
 }
 
-/// Encodes an [Instant] as an ISO 8601 string, e.g., “2023-04-23T18:24:20.12Z”.
+/// Encodes an [Instant] as an ISO 8601 string, e.g.,
+/// “2023-04-23T18:24:20.123456789Z”.
 class InstantAsIsoStringJsonConverter
     extends JsonConverterWithParserResult<Instant, String> {
   const InstantAsIsoStringJsonConverter();
@@ -148,81 +139,25 @@ class InstantAsIsoStringJsonConverter
   String toJson(Instant object) => object.toString();
 }
 
-// Nanoseconds
+// TODO(JonasWanke): support InstantAsIntJsonConverter with truncation?
+// /// Encodes [Instant] as an integer number of nanoseconds that passed since the
+// /// Unix epoch.
+// ///
+// /// See also:
+// ///
+// /// - [Instant.unixEpoch], which is the Unix epoch.
+// /// - [InstantAsIsoStringJsonConverter], which encodes Unix epoch nanoseconds as
+// ///   a human-readable string.
+// @immutable
+// class InstantAsIntJsonConverter extends JsonConverter<Instant, int> {
+//   const InstantAsIntJsonConverter();
 
-/// A point in time, represented as the [Nanoseconds] that passed since the
-/// Unix epoch.
-///
-/// See also:
-///
-/// - [UnixEpochTimestamp], which is the superclass supporting arbitrary time
-///   duration types.
-/// - [Instant], which stores the passed time as [FractionalSeconds].
-/// - [UnixEpochMicroseconds], which stores the passed time as [Microseconds].
-/// - [UnixEpochMilliseconds], which stores the passed time as [Milliseconds].
-/// - [UnixEpochSeconds], which stores the passed time as [Seconds].
-final class UnixEpochNanoseconds extends UnixEpochTimestamp<Nanoseconds> {
-  UnixEpochNanoseconds(NanosecondsDuration duration)
-      : super(duration.asNanoseconds);
-
-  UnixEpochNanoseconds.fromCore(core.DateTime dateTime)
-      : super(Microseconds(dateTime.microsecondsSinceEpoch).asNanoseconds);
-  UnixEpochNanoseconds.now({Clock? clockOverride})
-      : this.fromCore((clockOverride ?? clock).now());
-
-  /// The UNIX epoch: 1970-01-01 at 00:00:00 in UTC.
-  ///
-  /// https://en.wikipedia.org/wiki/Unix_time
-  static final unixEpoch = UnixEpochNanoseconds(const Nanoseconds(0));
-
-  UnixEpochNanoseconds operator +(NanosecondsDuration duration) =>
-      UnixEpochNanoseconds(durationSinceUnixEpoch + duration);
-  UnixEpochNanoseconds operator -(NanosecondsDuration duration) =>
-      UnixEpochNanoseconds(durationSinceUnixEpoch - duration);
-
-  /// Returns `this - other`.
-  Nanoseconds difference(UnixEpochNanoseconds other) =>
-      durationSinceUnixEpoch - other.durationSinceUnixEpoch;
-}
-
-/// Encodes [UnixEpochNanoseconds] as an ISO 8601 string, e.g.,
-/// “2023-04-23T18:24:20.123456789Z”.
-///
-/// See also:
-///
-/// - [UnixEpochNanosecondsAsIntJsonConverter], which encodes the nanoseconds as
-///   an integer.
-class UnixEpochNanosecondsAsIsoStringJsonConverter
-    extends JsonConverterWithParserResult<UnixEpochNanoseconds, String> {
-  const UnixEpochNanosecondsAsIsoStringJsonConverter();
-
-  @override
-  Result<UnixEpochNanoseconds, FormatException> resultFromJson(String json) =>
-      Parser.parseUnixEpochNanoseconds(json);
-  @override
-  String toJson(UnixEpochNanoseconds object) => object.toString();
-}
-
-/// Encodes [UnixEpochNanoseconds] as an integer number of milliseconds that
-/// passed since the Unix epoch.
-///
-/// See also:
-///
-/// - [UnixEpochNanoseconds.unixEpoch], which is the Unix epoch.
-/// - [UnixEpochNanosecondsAsIsoStringJsonConverter], which encodes Unix epoch
-///   seconds as a human-readable string.
-@immutable
-class UnixEpochNanosecondsAsIntJsonConverter
-    extends JsonConverter<UnixEpochNanoseconds, int> {
-  const UnixEpochNanosecondsAsIntJsonConverter();
-
-  @override
-  UnixEpochNanoseconds fromJson(int json) =>
-      UnixEpochNanoseconds(Nanoseconds(json));
-  @override
-  int toJson(UnixEpochNanoseconds object) =>
-      object.durationSinceUnixEpoch.inNanoseconds;
-}
+//   @override
+//   Instant fromJson(int json) =>
+//       Instant.fromDurationSinceUnixEpoch(Nanoseconds(json));
+//   @override
+//   int toJson(Instant object) => object.durationSinceUnixEpoch.inNanoseconds;
+// }
 
 // Microseconds
 
@@ -233,8 +168,7 @@ class UnixEpochNanosecondsAsIntJsonConverter
 ///
 /// - [UnixEpochTimestamp], which is the superclass supporting arbitrary time
 ///   duration types.
-/// - [Instant], which stores the passed time as [FractionalSeconds].
-/// - [UnixEpochNanoseconds], which stores the passed time as [Nanoseconds].
+/// - [Instant], which stores the passed time as [Nanoseconds].
 /// - [UnixEpochMilliseconds], which stores the passed time as [Milliseconds].
 /// - [UnixEpochSeconds], which stores the passed time as [Seconds].
 final class UnixEpochMicroseconds extends UnixEpochTimestamp<Microseconds> {
@@ -259,6 +193,19 @@ final class UnixEpochMicroseconds extends UnixEpochTimestamp<Microseconds> {
   /// Returns `this - other`.
   Microseconds difference(UnixEpochMicroseconds other) =>
       durationSinceUnixEpoch - other.durationSinceUnixEpoch;
+  @override
+  String toString() {
+    final dateTime = dateTimeInUtc;
+    final hour = dateTime.time.hour.toString().padLeft(2, '0');
+    final minute = dateTime.time.minute.toString().padLeft(2, '0');
+    final second = dateTime.time.second.toString().padLeft(2, '0');
+    final microseconds = dateTime.time.fraction
+        .roundToMicroseconds()
+        .inMicroseconds
+        .toString()
+        .padLeft(6, '0');
+    return '${dateTime.date}T$hour:$minute:$second.${microseconds}Z';
+  }
 }
 
 /// Encodes [UnixEpochMicroseconds] as an ISO 8601 string, e.g.,
@@ -286,7 +233,7 @@ class UnixEpochMicrosecondsAsIsoStringJsonConverter
 ///
 /// - [UnixEpochMicroseconds.unixEpoch], which is the Unix epoch.
 /// - [UnixEpochMicrosecondsAsIsoStringJsonConverter], which encodes Unix epoch
-///   seconds as a human-readable string.
+///   microseconds as a human-readable string.
 @immutable
 class UnixEpochMicrosecondsAsIntJsonConverter
     extends JsonConverter<UnixEpochMicroseconds, int> {
@@ -309,8 +256,7 @@ class UnixEpochMicrosecondsAsIntJsonConverter
 ///
 /// - [UnixEpochTimestamp], which is the superclass supporting arbitrary time
 ///   duration types.
-/// - [Instant], which stores the passed time as [FractionalSeconds].
-/// - [UnixEpochNanoseconds], which stores the passed time as [Nanoseconds].
+/// - [Instant], which stores the passed time as [Nanoseconds].
 /// - [UnixEpochMicroseconds], which stores the passed time as [Microseconds].
 /// - [UnixEpochSeconds], which stores the passed time as [Seconds].
 final class UnixEpochMilliseconds extends UnixEpochTimestamp<Milliseconds> {
@@ -340,6 +286,20 @@ final class UnixEpochMilliseconds extends UnixEpochTimestamp<Milliseconds> {
   /// Returns `this - other`.
   Milliseconds difference(UnixEpochMilliseconds other) =>
       durationSinceUnixEpoch - other.durationSinceUnixEpoch;
+
+  @override
+  String toString() {
+    final dateTime = dateTimeInUtc;
+    final hour = dateTime.time.hour.toString().padLeft(2, '0');
+    final minute = dateTime.time.minute.toString().padLeft(2, '0');
+    final second = dateTime.time.second.toString().padLeft(2, '0');
+    final milliseconds = dateTime.time.fraction
+        .roundToMilliseconds()
+        .inMilliseconds
+        .toString()
+        .padLeft(3, '0');
+    return '${dateTime.date}T$hour:$minute:$second.${milliseconds}Z';
+  }
 }
 
 /// Encodes [UnixEpochMilliseconds] as an ISO 8601 string, e.g.,
@@ -367,7 +327,7 @@ class UnixEpochMillisecondsAsIsoStringJsonConverter
 ///
 /// - [UnixEpochMilliseconds.unixEpoch], which is the Unix epoch.
 /// - [UnixEpochMillisecondsAsIsoStringJsonConverter], which encodes Unix epoch
-///   seconds as a human-readable string.
+///   milliseconds as a human-readable string.
 @immutable
 class UnixEpochMillisecondsAsIntJsonConverter
     extends JsonConverter<UnixEpochMilliseconds, int> {
@@ -390,8 +350,7 @@ class UnixEpochMillisecondsAsIntJsonConverter
 ///
 /// - [UnixEpochTimestamp], which is the superclass supporting arbitrary time
 ///   duration types.
-/// - [Instant], which stores the passed time as [FractionalSeconds].
-/// - [UnixEpochNanoseconds], which stores the passed time as [Nanoseconds].
+/// - [Instant], which stores the passed time as [Nanoseconds].
 /// - [UnixEpochMicroseconds], which stores the passed time as [Microseconds].
 /// - [UnixEpochMilliseconds], which stores the passed time as [Milliseconds].
 final class UnixEpochSeconds extends UnixEpochTimestamp<Seconds> {
@@ -420,6 +379,15 @@ final class UnixEpochSeconds extends UnixEpochTimestamp<Seconds> {
   /// Returns `this - other`.
   Seconds difference(UnixEpochSeconds other) =>
       durationSinceUnixEpoch - other.durationSinceUnixEpoch;
+
+  @override
+  String toString() {
+    final dateTime = dateTimeInUtc;
+    final hour = dateTime.time.hour.toString().padLeft(2, '0');
+    final minute = dateTime.time.minute.toString().padLeft(2, '0');
+    final second = dateTime.time.second.toString().padLeft(2, '0');
+    return '${dateTime.date}T$hour:$minute:${second}Z';
+  }
 }
 
 /// Encodes [UnixEpochSeconds] as an ISO 8601 string, e.g.,

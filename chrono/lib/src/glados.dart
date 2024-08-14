@@ -1,6 +1,3 @@
-import 'dart:math' as math;
-
-import 'package:fixed/fixed.dart';
 import 'package:glados/glados.dart';
 
 import 'date/date.dart';
@@ -27,7 +24,6 @@ import 'unix_epoch_timestamp.dart';
 void setChronoGladosDefaults() {
   Any.setDefault(any.unixEpochTimestamp);
   Any.setDefault(any.instant);
-  Any.setDefault(any.unixEpochNanoseconds);
   Any.setDefault(any.unixEpochMicroseconds);
   Any.setDefault(any.unixEpochMilliseconds);
   Any.setDefault(any.unixEpochSeconds);
@@ -55,7 +51,6 @@ void setChronoGladosDefaults() {
   Any.setDefault(any.days);
   Any.setDefault(any.weeks);
   Any.setDefault(any.timeDuration);
-  Any.setDefault(any.fractionalSeconds);
   Any.setDefault(any.nanosecondsDuration);
   Any.setDefault(any.nanoseconds);
   Any.setDefault(any.microsecondsDuration);
@@ -80,7 +75,6 @@ extension ChronoAny on Any {
     return either(
       timeDuration.map(UnixEpochTimestamp.new),
       instant,
-      unixEpochNanoseconds,
       unixEpochMicroseconds,
       unixEpochMilliseconds,
       unixEpochSeconds,
@@ -88,9 +82,7 @@ extension ChronoAny on Any {
   }
 
   Generator<Instant> get instant =>
-      fractionalSeconds.map(Instant.fromDurationSinceUnixEpoch);
-  Generator<UnixEpochNanoseconds> get unixEpochNanoseconds =>
-      nanoseconds.map(UnixEpochNanoseconds.new);
+      nanoseconds.map(Instant.fromDurationSinceUnixEpoch);
   Generator<UnixEpochMicroseconds> get unixEpochMicroseconds =>
       microseconds.map(UnixEpochMicroseconds.new);
   Generator<UnixEpochMilliseconds> get unixEpochMilliseconds =>
@@ -129,9 +121,9 @@ extension ChronoAny on Any {
       intInRange(0, 24),
       intInRange(0, 60),
       intInRange(0, 60),
-      fractionalSeconds,
-      (hour, minute, second, fractionalSeconds) =>
-          Time.from(hour, minute, second, fractionalSeconds).unwrap(),
+      intInRange(0, Nanoseconds.perSecond),
+      (hour, minute, second, nanoseconds) =>
+          Time.from(hour, minute, second, Nanoseconds(nanoseconds)).unwrap(),
     );
   }
 
@@ -236,10 +228,10 @@ extension ChronoAny on Any {
   Generator<CompoundDuration> get compoundDuration {
     return combine2(
       compoundDaysDuration,
-      fractionalSeconds,
-      (monthsAndDays, fractionalSeconds) => CompoundDuration(
+      nanoseconds,
+      (monthsAndDays, nanoseconds) => CompoundDuration(
         monthsAndDays: monthsAndDays,
-        seconds: fractionalSeconds,
+        seconds: nanoseconds,
       ),
     );
   }
@@ -262,43 +254,10 @@ extension ChronoAny on Any {
   Generator<Days> get days => this.int.map(Days.new);
   Generator<Weeks> get weeks => this.int.map(Weeks.new);
 
-  Generator<TimeDuration> get timeDuration =>
-      either(fractionalSeconds, nanosecondsDuration);
-  Generator<FractionalSeconds> get fractionalSeconds {
-    return simple(
-      generate: (random, size) {
-        final scale = positiveInt(random, math.log(size).ceil()).value;
-        final minorUnits = bigIntInRange(
-          BigInt.zero,
-          BigInt.from(10).pow(scale),
-        )(random, size)
-            .value;
-        return FractionalSeconds(Fixed.fromBigInt(minorUnits, scale: scale));
-      },
-      shrink: (input) sync* {
-        if (input.isPositive) {
-          yield FractionalSeconds(
-            Fixed.fromBigInt(
-              input.inFractionalSeconds.minorUnits - BigInt.one,
-              scale: input.inFractionalSeconds.scale,
-            ),
-          );
-        }
-        if (input.inFractionalSeconds.scale > 1) {
-          yield FractionalSeconds(
-            Fixed.fromBigInt(
-              input.inFractionalSeconds.minorUnits ~/ BigInt.from(10),
-              scale: input.inFractionalSeconds.scale - 1,
-            ),
-          );
-        }
-      },
-    );
-  }
-
+  Generator<TimeDuration> get timeDuration => nanosecondsDuration;
   Generator<NanosecondsDuration> get nanosecondsDuration =>
       either(nanoseconds, microseconds, milliseconds, seconds, minutes, hours);
-  Generator<Nanoseconds> get nanoseconds => this.int.map(Nanoseconds.new);
+  Generator<Nanoseconds> get nanoseconds => bigInt.map(Nanoseconds.fromBigInt);
   Generator<MicrosecondsDuration> get microsecondsDuration =>
       either(microseconds, milliseconds, seconds, minutes, hours);
   Generator<Microseconds> get microseconds => this.int.map(Microseconds.new);
