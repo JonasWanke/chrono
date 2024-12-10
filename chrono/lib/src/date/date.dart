@@ -6,8 +6,8 @@ import 'package:dartx/dartx.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:oxidized/oxidized.dart';
 
+import '../codec.dart';
 import '../date_time/date_time.dart';
-import '../json.dart';
 import '../parser.dart';
 import '../time/time.dart';
 import '../utils.dart';
@@ -408,37 +408,35 @@ final class Date
 }
 
 /// Encodes a [Date] as an ISO 8601 string, e.g., “2023-04-23”.
-class DateAsIsoStringJsonConverter
-    extends JsonConverterWithParserResult<Date, String> {
-  const DateAsIsoStringJsonConverter();
+class DateAsIsoStringCodec extends CodecWithParserResult<Date, String> {
+  const DateAsIsoStringCodec();
 
   @override
-  Result<Date, FormatException> resultFromJson(String json) =>
-      Parser.parseDate(json);
+  String encode(Date input) => input.toString();
   @override
-  String toJson(Date object) => object.toString();
+  Result<Date, FormatException> decodeAsResult(String encoded) =>
+      Parser.parseDate(encoded);
 }
 
 /// Encodes a [Date] as an ordinal date ISO 8601 string, e.g., “2023-113”.
-class DateAsOrdinalDateIsoStringJsonConverter
-    extends JsonConverterWithParserResult<Date, String> {
-  const DateAsOrdinalDateIsoStringJsonConverter();
+class DateAsOrdinalDateIsoStringCodec
+    extends CodecWithParserResult<Date, String> {
+  const DateAsOrdinalDateIsoStringCodec();
 
   @override
-  Result<Date, FormatException> resultFromJson(String json) =>
-      Parser.parseOrdinalDate(json);
+  String encode(Date input) => input.toOrdinalDateString();
   @override
-  String toJson(Date object) => object.toOrdinalDateString();
+  Result<Date, FormatException> decodeAsResult(String encoded) =>
+      Parser.parseOrdinalDate(encoded);
 }
 
 /// Encodes a [Date] as a week date ISO 8601 string, e.g., “2023-W16-7”.
-class DateAsWeekDateIsoStringJsonConverter
-    extends JsonConverterWithParserResult<Date, String> {
-  const DateAsWeekDateIsoStringJsonConverter();
+class DateAsWeekDateIsoStringCodec extends CodecWithParserResult<Date, String> {
+  const DateAsWeekDateIsoStringCodec();
 
   @override
-  Result<Date, FormatException> resultFromJson(String json) =>
-      Parser.parseWeekDate(json);
+  String encode(Date input) => input.toWeekDateString();
   @override
-  String toJson(Date object) => object.toWeekDateString();
+  Result<Date, FormatException> decodeAsResult(String encoded) =>
+      Parser.parseWeekDate(encoded);
 }

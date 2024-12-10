@@ -2,8 +2,8 @@ import 'package:cldr/cldr.dart' as cldr;
 import 'package:clock/clock.dart';
 import 'package:oxidized/oxidized.dart';
 
+import '../codec.dart';
 import '../formatting.dart';
-import '../json.dart';
 import '../utils.dart';
 import 'date.dart';
 import 'duration.dart';
@@ -107,17 +107,18 @@ enum Weekday
   }
 }
 
+// TODO: String JSON converters, maybe lowercase and uppercase?
+
 /// Encodes a [Weekday] as an ISO 8601 weekday number: 1 for Monday, …, 7 for
 /// Sunday.
-class WeekdayAsIntJsonConverter
-    extends JsonConverterWithStringResult<Weekday, int> {
-  const WeekdayAsIntJsonConverter();
+class WeekdayAsIntCodec extends CodecWithStringResult<Weekday, int> {
+  const WeekdayAsIntCodec();
 
   @override
-  Result<Weekday, String> resultFromJson(int json) => Weekday.fromNumber(json);
-
+  int encode(Weekday input) => input.isoNumber;
   @override
-  int toJson(Weekday object) => object.isoNumber;
+  Result<Weekday, String> decodeAsResult(int encoded) =>
+      Weekday.fromNumber(encoded);
 }
 
 class LocalizedWeekdayFormatter extends LocalizedFormatter<Weekday> {

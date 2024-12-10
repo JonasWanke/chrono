@@ -1,17 +1,17 @@
+import 'dart:convert';
 import 'dart:core' as core;
 import 'dart:core';
 
 import 'package:chrono/chrono.dart';
 import 'package:glados/glados.dart';
-import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 
 void main() {
   setChronoGladosDefaults();
 
   group('Instant', () {
-    _testUnixEpochTimestampBasics(
-      jsonConverters: [const InstantAsIsoStringJsonConverter()],
+    _testUnixEpochTimestampBasics<Instant>(
+      codecs: const [InstantAsIsoStringCodec()],
     );
 
     Glados<Instant>().test('fromDurationSinceUnixEpoch', (timestamp) {
@@ -47,52 +47,11 @@ void main() {
     );
   });
 
-  group('UnixEpochNanoseconds', () {
-    _testUnixEpochTimestampBasics<UnixEpochNanoseconds>(
-      jsonConverters: [
-        const UnixEpochNanosecondsAsIsoStringJsonConverter(),
-        const UnixEpochNanosecondsAsIntJsonConverter(),
-      ],
-    );
-
-    Glados<UnixEpochNanoseconds>().test('constructor', (timestamp) {
-      expect(UnixEpochNanoseconds(timestamp.durationSinceUnixEpoch), timestamp);
-    });
-
-    Glados<core.DateTime>().test('core conversion', (dateTime) {
-      expect(
-        UnixEpochNanoseconds.fromCore(dateTime).asCoreDateTimeInLocalZone,
-        dateTime,
-      );
-
-      final dateTimeInUtc = dateTime.toUtc();
-      expect(
-        dateTimeInUtc,
-        UnixEpochNanoseconds.fromCore(dateTimeInUtc).asCoreDateTimeInUtc,
-      );
-    });
-
-    Glados<UnixEpochNanoseconds>().test('DateTime conversion', (timestamp) {
-      // TODO(JonasWanke): Add this test when conversion is no longer lossy.
-      // ignore: lines_longer_than_80_chars
-      // expect(timestamp, timestamp.dateTimeInLocalZone.inLocalZone.roundToNanoseconds());
-      expect(timestamp, timestamp.dateTimeInUtc.inUtc.roundToNanoseconds());
-    });
-
-    Glados2<UnixEpochNanoseconds, NanosecondsDuration>().test(
-      '+, -, and difference(…)',
-      (timestamp, duration) {
-        expect(timestamp + duration - duration, timestamp);
-        expect((timestamp + duration).difference(timestamp), duration);
-      },
-    );
-  });
-
   group('UnixEpochMicroseconds', () {
     _testUnixEpochTimestampBasics<UnixEpochMicroseconds>(
-      jsonConverters: [
-        const UnixEpochMicrosecondsAsIsoStringJsonConverter(),
-        const UnixEpochMicrosecondsAsIntJsonConverter(),
+      codecs: const [
+        UnixEpochMicrosecondsAsIsoStringCodec(),
+        UnixEpochMicrosecondsAsIntCodec(),
       ],
     );
 
@@ -133,9 +92,9 @@ void main() {
 
   group('UnixEpochMilliseconds', () {
     _testUnixEpochTimestampBasics<UnixEpochMilliseconds>(
-      jsonConverters: [
-        const UnixEpochMillisecondsAsIsoStringJsonConverter(),
-        const UnixEpochMillisecondsAsIntJsonConverter(),
+      codecs: const [
+        UnixEpochMillisecondsAsIsoStringCodec(),
+        UnixEpochMillisecondsAsIntCodec(),
       ],
     );
 
@@ -176,9 +135,9 @@ void main() {
 
   group('UnixEpochSeconds', () {
     _testUnixEpochTimestampBasics<UnixEpochSeconds>(
-      jsonConverters: [
-        const UnixEpochSecondsAsIsoStringJsonConverter(),
-        const UnixEpochSecondsAsIntJsonConverter(),
+      codecs: const [
+        UnixEpochSecondsAsIsoStringCodec(),
+        UnixEpochSecondsAsIntCodec(),
       ],
     );
 
@@ -217,17 +176,17 @@ void main() {
 
 @isTest
 void _testUnixEpochTimestampBasics<T extends UnixEpochTimestamp>({
-  required List<JsonConverter<T, dynamic>> jsonConverters,
+  required List<Codec<T, dynamic>> codecs,
 }) {
   // Inlines from [testDataClassBasics] because Dart doesn't support variance.
   Glados<T>().test('equality', (value) {
     expect(value == value, true);
     expect(value.compareTo(value), 0);
   });
-  group('JSON converters', () {
-    for (final jsonConverter in jsonConverters) {
-      Glados<T>().test(jsonConverter.runtimeType.toString(), (value) {
-        expect(jsonConverter.fromJson(jsonConverter.toJson(value)), value);
+  group('Codecs', () {
+    for (final codec in codecs) {
+      Glados<T>().test(codec.runtimeType.toString(), (value) {
+        expect(codec.decode(codec.encode(value)), value);
       });
     }
   });

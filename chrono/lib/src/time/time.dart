@@ -5,8 +5,8 @@ import 'package:clock/clock.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:oxidized/oxidized.dart';
 
+import '../codec.dart';
 import '../date_time/date_time.dart';
-import '../json.dart';
 import '../parser.dart';
 import '../rounding.dart';
 import '../utils.dart';
@@ -207,15 +207,14 @@ final class Time
 }
 
 /// Encodes a [Time] as an ISO 8601 string, e.g., “18:24:20.12”.
-class TimeAsIsoStringJsonConverter
-    extends JsonConverterWithParserResult<Time, String> {
-  const TimeAsIsoStringJsonConverter();
+class TimeAsIsoStringCodec extends CodecWithParserResult<Time, String> {
+  const TimeAsIsoStringCodec();
 
   @override
-  Result<Time, FormatException> resultFromJson(String json) =>
-      Parser.parseTime(json);
+  String encode(Time input) => input.toString();
   @override
-  String toJson(Time object) => object.toString();
+  Result<Time, FormatException> decodeAsResult(String encoded) =>
+      Parser.parseTime(encoded);
 }
 
 // class LocalizedTimeFormatter implements Formatter<Time> {

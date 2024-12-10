@@ -3,12 +3,11 @@ import 'dart:core';
 
 import 'package:cldr/cldr.dart' as cldr;
 import 'package:clock/clock.dart';
-import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
+import '../codec.dart';
 import '../formatting.dart';
-import '../json.dart';
 import '../parser.dart';
 import '../utils.dart';
 import 'date.dart';
@@ -206,31 +205,29 @@ final class Year
 /// https://en.wikipedia.org/wiki/ISO_8601#Years
 ///
 /// See also:
-/// - [YearAsIntJsonConverter], which encodes a year as an integer.
-class YearAsIsoStringJsonConverter
-    extends JsonConverterWithParserResult<Year, String> {
-  const YearAsIsoStringJsonConverter();
+/// - [YearAsIntCodec], which encodes a year as an integer.
+class YearAsIsoStringCodec extends CodecWithParserResult<Year, String> {
+  const YearAsIsoStringCodec();
 
   @override
-  Result<Year, FormatException> resultFromJson(String json) =>
-      Parser.parseYear(json);
+  String encode(Year input) => input.toString();
   @override
-  String toJson(Year object) => object.toString();
+  Result<Year, FormatException> decodeAsResult(String encoded) =>
+      Parser.parseYear(encoded);
 }
 
 /// Encodes a [Year] as an integer.
 ///
 /// See also:
-/// - [YearAsIsoStringJsonConverter], which encodes a year as a string.
+/// - [YearAsIsoStringCodec], which encodes a year as a string.
 @immutable
-class YearAsIntJsonConverter extends JsonConverter<Year, int> {
-  const YearAsIntJsonConverter();
+class YearAsIntCodec extends CodecAndJsonConverter<Year, int> {
+  const YearAsIntCodec();
 
   @override
-  Year fromJson(int json) => Year(json);
-
+  int encode(Year input) => input.number;
   @override
-  int toJson(Year object) => object.number;
+  Year decode(int encoded) => Year(encoded);
 }
 
 class LocalizedYearFormatter extends LocalizedFormatter<Year> {

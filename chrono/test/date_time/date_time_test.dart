@@ -8,9 +8,7 @@ import '../utils.dart';
 void main() {
   setChronoGladosDefaults();
 
-  testDataClassBasics(
-    jsonConverters: [const DateTimeAsIsoStringJsonConverter()],
-  );
+  testDataClassBasics(codecs: const [DateTimeAsIsoStringCodec()]);
 
   Glados<DateTime>().test('fromDurationSinceUnixEpoch', (dateTime) {
     expect(

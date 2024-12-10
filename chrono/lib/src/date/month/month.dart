@@ -5,8 +5,8 @@ import 'package:cldr/cldr.dart' as cldr;
 import 'package:clock/clock.dart';
 import 'package:oxidized/oxidized.dart';
 
+import '../../codec.dart';
 import '../../formatting.dart';
-import '../../json.dart';
 import '../../utils.dart';
 import '../date.dart';
 import '../duration.dart';
@@ -154,15 +154,14 @@ enum Month
 }
 
 /// Encodes a [Month] as an int: 1 for January, …, 12 for December.
-class MonthAsIntJsonConverter
-    extends JsonConverterWithStringResult<Month, int> {
+class MonthAsIntJsonConverter extends CodecWithStringResult<Month, int> {
   const MonthAsIntJsonConverter();
 
   @override
-  Result<Month, String> resultFromJson(int json) => Month.fromNumber(json);
-
+  int encode(Month input) => input.number;
   @override
-  int toJson(Month object) => object.number;
+  Result<Month, String> decodeAsResult(int encoded) =>
+      Month.fromNumber(encoded);
 }
 
 class LocalizedMonthFormatter extends LocalizedFormatter<Month> {

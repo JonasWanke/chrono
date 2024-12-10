@@ -2,12 +2,11 @@ import 'dart:core' as core;
 import 'dart:core';
 
 import 'package:clock/clock.dart';
-import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
+import 'codec.dart';
 import 'date_time/date_time.dart';
-import 'json.dart';
 import 'parser.dart';
 import 'rounding.dart';
 import 'time/duration.dart';
@@ -128,35 +127,34 @@ final class Instant extends UnixEpochTimestamp<Nanoseconds> {
 
 /// Encodes an [Instant] as an ISO 8601 string, e.g.,
 /// “2023-04-23T18:24:20.123456789Z”.
-class InstantAsIsoStringJsonConverter
-    extends JsonConverterWithParserResult<Instant, String> {
-  const InstantAsIsoStringJsonConverter();
+class InstantAsIsoStringCodec extends CodecWithParserResult<Instant, String> {
+  const InstantAsIsoStringCodec();
 
   @override
-  Result<Instant, FormatException> resultFromJson(String json) =>
-      Parser.parseInstant(json);
+  String encode(Instant input) => input.toString();
   @override
-  String toJson(Instant object) => object.toString();
+  Result<Instant, FormatException> decodeAsResult(String encoded) =>
+      Parser.parseInstant(encoded);
 }
 
-// TODO(JonasWanke): support InstantAsIntJsonConverter with truncation?
+// TODO(JonasWanke): support InstantAsIntCodec with truncation?
 // /// Encodes [Instant] as an integer number of nanoseconds that passed since the
 // /// Unix epoch.
 // ///
 // /// See also:
 // ///
 // /// - [Instant.unixEpoch], which is the Unix epoch.
-// /// - [InstantAsIsoStringJsonConverter], which encodes Unix epoch nanoseconds as
+// /// - [InstantAsIsoStringCodec], which encodes Unix epoch nanoseconds as
 // ///   a human-readable string.
 // @immutable
-// class InstantAsIntJsonConverter extends JsonConverter<Instant, int> {
-//   const InstantAsIntJsonConverter();
+// class InstantAsIntCodec extends CodecAndConverter<Instant, int> {
+//   const InstantAsIntCodec();
 
 //   @override
-//   Instant fromJson(int json) =>
-//       Instant.fromDurationSinceUnixEpoch(Nanoseconds(json));
+//   int encode(Instant input) => input.durationSinceUnixEpoch.inNanoseconds;
 //   @override
-//   int toJson(Instant object) => object.durationSinceUnixEpoch.inNanoseconds;
+//   Instant decode(int encoded) =>
+//       Instant.fromDurationSinceUnixEpoch(Nanoseconds(encoded));
 // }
 
 // Microseconds
@@ -213,17 +211,19 @@ final class UnixEpochMicroseconds extends UnixEpochTimestamp<Microseconds> {
 ///
 /// See also:
 ///
-/// - [UnixEpochMicrosecondsAsIntJsonConverter], which encodes the nanoseconds
+/// - [UnixEpochMicrosecondsAsIntCodec], which encodes the nanoseconds
 ///   as an integer.
-class UnixEpochMicrosecondsAsIsoStringJsonConverter
-    extends JsonConverterWithParserResult<UnixEpochMicroseconds, String> {
-  const UnixEpochMicrosecondsAsIsoStringJsonConverter();
+class UnixEpochMicrosecondsAsIsoStringCodec
+    extends CodecWithParserResult<UnixEpochMicroseconds, String> {
+  const UnixEpochMicrosecondsAsIsoStringCodec();
 
   @override
-  Result<UnixEpochMicroseconds, FormatException> resultFromJson(String json) =>
-      Parser.parseUnixEpochMicroseconds(json);
+  Result<UnixEpochMicroseconds, FormatException> decodeAsResult(
+    String encoded,
+  ) =>
+      Parser.parseUnixEpochMicroseconds(encoded);
   @override
-  String toJson(UnixEpochMicroseconds object) => object.toString();
+  String encode(UnixEpochMicroseconds input) => input.toString();
 }
 
 /// Encodes [UnixEpochMicroseconds] as an integer number of milliseconds that
@@ -232,19 +232,19 @@ class UnixEpochMicrosecondsAsIsoStringJsonConverter
 /// See also:
 ///
 /// - [UnixEpochMicroseconds.unixEpoch], which is the Unix epoch.
-/// - [UnixEpochMicrosecondsAsIsoStringJsonConverter], which encodes Unix epoch
+/// - [UnixEpochMicrosecondsAsIsoStringCodec], which encodes Unix epoch
 ///   microseconds as a human-readable string.
 @immutable
-class UnixEpochMicrosecondsAsIntJsonConverter
-    extends JsonConverter<UnixEpochMicroseconds, int> {
-  const UnixEpochMicrosecondsAsIntJsonConverter();
+class UnixEpochMicrosecondsAsIntCodec
+    extends CodecAndJsonConverter<UnixEpochMicroseconds, int> {
+  const UnixEpochMicrosecondsAsIntCodec();
 
   @override
-  UnixEpochMicroseconds fromJson(int json) =>
-      UnixEpochMicroseconds(Microseconds(json));
+  int encode(UnixEpochMicroseconds input) =>
+      input.durationSinceUnixEpoch.inMicroseconds;
   @override
-  int toJson(UnixEpochMicroseconds object) =>
-      object.durationSinceUnixEpoch.inMicroseconds;
+  UnixEpochMicroseconds decode(int encoded) =>
+      UnixEpochMicroseconds(Microseconds(encoded));
 }
 
 // Milliseconds
@@ -307,17 +307,19 @@ final class UnixEpochMilliseconds extends UnixEpochTimestamp<Milliseconds> {
 ///
 /// See also:
 ///
-/// - [UnixEpochMillisecondsAsIntJsonConverter], which encodes the nanoseconds
+/// - [UnixEpochMillisecondsAsIntCodec], which encodes the nanoseconds
 ///   as an integer.
-class UnixEpochMillisecondsAsIsoStringJsonConverter
-    extends JsonConverterWithParserResult<UnixEpochMilliseconds, String> {
-  const UnixEpochMillisecondsAsIsoStringJsonConverter();
+class UnixEpochMillisecondsAsIsoStringCodec
+    extends CodecWithParserResult<UnixEpochMilliseconds, String> {
+  const UnixEpochMillisecondsAsIsoStringCodec();
 
   @override
-  Result<UnixEpochMilliseconds, FormatException> resultFromJson(String json) =>
-      Parser.parseUnixEpochMilliseconds(json);
+  Result<UnixEpochMilliseconds, FormatException> decodeAsResult(
+    String encoded,
+  ) =>
+      Parser.parseUnixEpochMilliseconds(encoded);
   @override
-  String toJson(UnixEpochMilliseconds object) => object.toString();
+  String encode(UnixEpochMilliseconds input) => input.toString();
 }
 
 /// Encodes [UnixEpochMilliseconds] as an integer number of milliseconds that
@@ -326,19 +328,19 @@ class UnixEpochMillisecondsAsIsoStringJsonConverter
 /// See also:
 ///
 /// - [UnixEpochMilliseconds.unixEpoch], which is the Unix epoch.
-/// - [UnixEpochMillisecondsAsIsoStringJsonConverter], which encodes Unix epoch
+/// - [UnixEpochMillisecondsAsIsoStringCodec], which encodes Unix epoch
 ///   milliseconds as a human-readable string.
 @immutable
-class UnixEpochMillisecondsAsIntJsonConverter
-    extends JsonConverter<UnixEpochMilliseconds, int> {
-  const UnixEpochMillisecondsAsIntJsonConverter();
+class UnixEpochMillisecondsAsIntCodec
+    extends CodecAndJsonConverter<UnixEpochMilliseconds, int> {
+  const UnixEpochMillisecondsAsIntCodec();
 
   @override
-  UnixEpochMilliseconds fromJson(int json) =>
-      UnixEpochMilliseconds(Milliseconds(json));
+  int encode(UnixEpochMilliseconds input) =>
+      input.durationSinceUnixEpoch.inMilliseconds;
   @override
-  int toJson(UnixEpochMilliseconds object) =>
-      object.durationSinceUnixEpoch.inMilliseconds;
+  UnixEpochMilliseconds decode(int encoded) =>
+      UnixEpochMilliseconds(Milliseconds(encoded));
 }
 
 // Seconds
@@ -395,17 +397,17 @@ final class UnixEpochSeconds extends UnixEpochTimestamp<Seconds> {
 ///
 /// See also:
 ///
-/// - [UnixEpochSecondsAsIntJsonConverter], which encodes the nanoseconds as
+/// - [UnixEpochSecondsAsIntCodec], which encodes the nanoseconds as
 ///   an integer.
-class UnixEpochSecondsAsIsoStringJsonConverter
-    extends JsonConverterWithParserResult<UnixEpochSeconds, String> {
-  const UnixEpochSecondsAsIsoStringJsonConverter();
+class UnixEpochSecondsAsIsoStringCodec
+    extends CodecWithParserResult<UnixEpochSeconds, String> {
+  const UnixEpochSecondsAsIsoStringCodec();
 
   @override
-  Result<UnixEpochSeconds, FormatException> resultFromJson(String json) =>
-      Parser.parseUnixEpochSeconds(json);
+  Result<UnixEpochSeconds, FormatException> decodeAsResult(String encoded) =>
+      Parser.parseUnixEpochSeconds(encoded);
   @override
-  String toJson(UnixEpochSeconds object) => object.toString();
+  String encode(UnixEpochSeconds input) => input.toString();
 }
 
 /// Encodes [UnixEpochSeconds] as an integer number of seconds that passed since
@@ -414,16 +416,15 @@ class UnixEpochSecondsAsIsoStringJsonConverter
 /// See also:
 ///
 /// - [UnixEpochSeconds.unixEpoch], which is the Unix epoch.
-/// - [UnixEpochSecondsAsIsoStringJsonConverter], which encodes Unix epoch
+/// - [UnixEpochSecondsAsIsoStringCodec], which encodes Unix epoch
 ///   seconds as a human-readable string.
 @immutable
-class UnixEpochSecondsAsIntJsonConverter
-    extends JsonConverter<UnixEpochSeconds, int> {
-  const UnixEpochSecondsAsIntJsonConverter();
+class UnixEpochSecondsAsIntCodec
+    extends CodecAndJsonConverter<UnixEpochSeconds, int> {
+  const UnixEpochSecondsAsIntCodec();
 
   @override
-  UnixEpochSeconds fromJson(int json) => UnixEpochSeconds(Seconds(json));
+  int encode(UnixEpochSeconds input) => input.durationSinceUnixEpoch.inSeconds;
   @override
-  int toJson(UnixEpochSeconds object) =>
-      object.durationSinceUnixEpoch.inSeconds;
+  UnixEpochSeconds decode(int encoded) => UnixEpochSeconds(Seconds(encoded));
 }

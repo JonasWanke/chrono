@@ -7,10 +7,10 @@ void main() {
   setChronoGladosDefaults();
 
   testDataClassBasics(
-    jsonConverters: [
-      const DateAsIsoStringJsonConverter(),
-      const DateAsOrdinalDateIsoStringJsonConverter(),
-      const DateAsWeekDateIsoStringJsonConverter(),
+    codecs: const [
+      DateAsIsoStringCodec(),
+      DateAsOrdinalDateIsoStringCodec(),
+      DateAsWeekDateIsoStringCodec(),
     ],
   );
 

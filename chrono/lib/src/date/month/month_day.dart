@@ -5,7 +5,7 @@ import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
-import '../../json.dart';
+import '../../codec.dart';
 import '../../parser.dart';
 import '../../utils.dart';
 import '../date.dart';
@@ -75,13 +75,12 @@ final class MonthDay
 }
 
 /// Encodes a [MonthDay] as an ISO 8601 string, e.g., --04-23”.
-class MonthDayAsIsoStringJsonConverter
-    extends JsonConverterWithParserResult<MonthDay, String> {
-  const MonthDayAsIsoStringJsonConverter();
+class MonthDayAsIsoStringCodec extends CodecWithParserResult<MonthDay, String> {
+  const MonthDayAsIsoStringCodec();
 
   @override
-  Result<MonthDay, FormatException> resultFromJson(String json) =>
-      Parser.parseMonthDay(json);
+  String encode(MonthDay input) => input.toString();
   @override
-  String toJson(MonthDay object) => object.toString();
+  Result<MonthDay, FormatException> decodeAsResult(String encoded) =>
+      Parser.parseMonthDay(encoded);
 }

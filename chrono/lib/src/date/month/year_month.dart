@@ -5,7 +5,7 @@ import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
-import '../../json.dart';
+import '../../codec.dart';
 import '../../parser.dart';
 import '../../utils.dart';
 import '../date.dart';
@@ -121,13 +121,13 @@ final class YearMonth
 }
 
 /// Encodes a [YearMonth] as an ISO 8601 string, e.g., “2023-04”.
-class YearMonthAsIsoStringJsonConverter
-    extends JsonConverterWithParserResult<YearMonth, String> {
-  const YearMonthAsIsoStringJsonConverter();
+class YearMonthAsIsoStringCodec
+    extends CodecWithParserResult<YearMonth, String> {
+  const YearMonthAsIsoStringCodec();
 
   @override
-  Result<YearMonth, FormatException> resultFromJson(String json) =>
-      Parser.parseYearMonth(json);
+  String encode(YearMonth input) => input.toString();
   @override
-  String toJson(YearMonth object) => object.toString();
+  Result<YearMonth, FormatException> decodeAsResult(String encoded) =>
+      Parser.parseYearMonth(encoded);
 }

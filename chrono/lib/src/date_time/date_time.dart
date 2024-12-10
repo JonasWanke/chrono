@@ -6,9 +6,9 @@ import 'package:clock/clock.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:oxidized/oxidized.dart';
 
+import '../codec.dart';
 import '../date/date.dart';
 import '../date/duration.dart';
-import '../json.dart';
 import '../parser.dart';
 import '../rounding.dart';
 import '../time/duration.dart';
@@ -181,15 +181,14 @@ extension on TimeDuration {
 }
 
 /// Encodes a [DateTime] as an ISO 8601 string, e.g., “2023-04-23T18:24:20.12”.
-class DateTimeAsIsoStringJsonConverter
-    extends JsonConverterWithParserResult<DateTime, String> {
-  const DateTimeAsIsoStringJsonConverter();
+class DateTimeAsIsoStringCodec extends CodecWithParserResult<DateTime, String> {
+  const DateTimeAsIsoStringCodec();
 
   @override
-  Result<DateTime, FormatException> resultFromJson(String json) =>
-      Parser.parseDateTime(json);
+  String encode(DateTime input) => input.toString();
   @override
-  String toJson(DateTime object) => object.toString();
+  Result<DateTime, FormatException> decodeAsResult(String encoded) =>
+      Parser.parseDateTime(encoded);
 }
 
 // class LocalizedDateTimeFormatter extends LocalizedFormatter<DateTime> {

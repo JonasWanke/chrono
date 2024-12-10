@@ -6,9 +6,7 @@ import '../../utils.dart';
 void main() {
   setChronoGladosDefaults();
 
-  testDataClassBasics(
-    jsonConverters: [const YearMonthAsIsoStringJsonConverter()],
-  );
+  testDataClassBasics(codecs: const [YearMonthAsIsoStringCodec()]);
 
   // ignore: missing-test-assertion
   Glados<YearMonth>().test('length', (yearMonth) {

@@ -5,7 +5,7 @@ import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
-import '../../json.dart';
+import '../../codec.dart';
 import '../../parser.dart';
 import '../../utils.dart';
 import '../date.dart';
@@ -104,13 +104,13 @@ final class IsoYearWeek
 }
 
 /// Encodes a [IsoYearWeek] as an ISO 8601 string, e.g., “2023-W16”.
-class IsoYearWeekAsIsoStringJsonConverter
-    extends JsonConverterWithParserResult<IsoYearWeek, String> {
-  const IsoYearWeekAsIsoStringJsonConverter();
+class IsoYearWeekAsIsoStringCodec
+    extends CodecWithParserResult<IsoYearWeek, String> {
+  const IsoYearWeekAsIsoStringCodec();
 
   @override
-  Result<IsoYearWeek, FormatException> resultFromJson(String json) =>
-      Parser.parseIsoYearWeek(json);
+  String encode(IsoYearWeek input) => input.toString();
   @override
-  String toJson(IsoYearWeek object) => object.toString();
+  Result<IsoYearWeek, FormatException> decodeAsResult(String encoded) =>
+      Parser.parseIsoYearWeek(encoded);
 }
