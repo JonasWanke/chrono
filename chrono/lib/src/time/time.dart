@@ -13,6 +13,9 @@ import '../utils.dart';
 import 'duration.dart';
 
 /// A specific time of a day, e.g., 18:24:20.
+///
+/// This class doesn't store or care about timezones, each day is exactly
+/// 24 hours long.
 @immutable
 final class Time
     with ComparisonOperatorsFromComparable<Time>
