@@ -8,14 +8,6 @@
       "args": ["run", "build_runner", "watch", "--delete-conflicting-outputs"],
       "problemMatcher": [],
       "label": "Chrono: build_runner watch"
-    },
-    {
-      "type": "dart",
-      "command": "dart",
-      "cwd": "cldr",
-      "args": ["run", "build_runner", "watch", "--delete-conflicting-outputs"],
-      "problemMatcher": [],
-      "label": "CLDR: build_runner watch"
     }
   ]
 }
