@@ -205,7 +205,8 @@ final class Time
     final hour = this.hour.toString().padLeft(2, '0');
     final minute = this.minute.toString().padLeft(2, '0');
     final second = this.second.toString().padLeft(2, '0');
-    final nanoseconds = nanoseconds.inNanoseconds.toString().padLeft(9, '0');
+    final nanoseconds =
+        this.nanoseconds.inNanoseconds.toString().padLeft(9, '0');
     return '$hour:$minute:$second.$nanoseconds';
   }
 }
