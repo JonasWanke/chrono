@@ -179,6 +179,20 @@ final class Date
   factory Date.todayInUtc({Clock? clock}) =>
       DateTime.nowInUtc(clock: clock).date;
 
+  static final _streamEverySecond =
+      Stream<void>.periodic(1.seconds).asBroadcastStream();
+  static Stream<Date> streamInLocalZone({Clock? clock}) {
+    return _streamEverySecond
+        .map((_) => Date.todayInLocalZone(clock: clock))
+        .distinct();
+  }
+
+  static Stream<Date> streamInUtc({Clock? clock}) {
+    return _streamEverySecond
+        .map((_) => Date.todayInUtc(clock: clock))
+        .distinct();
+  }
+
   final YearMonth yearMonth;
   Year get year => yearMonth.year;
   Month get month => yearMonth.month;
