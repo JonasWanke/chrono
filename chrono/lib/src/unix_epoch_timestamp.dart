@@ -137,25 +137,25 @@ class InstantAsIsoStringCodec extends CodecWithParserResult<Instant, String> {
       Parser.parseInstant(encoded);
 }
 
-// TODO(JonasWanke): support InstantAsIntCodec with truncation?
-// /// Encodes [Instant] as an integer number of nanoseconds that passed since the
-// /// Unix epoch.
-// ///
-// /// See also:
-// ///
-// /// - [Instant.unixEpoch], which is the Unix epoch.
-// /// - [InstantAsIsoStringCodec], which encodes Unix epoch nanoseconds as
-// ///   a human-readable string.
-// @immutable
-// class InstantAsIntCodec extends CodecAndConverter<Instant, int> {
-//   const InstantAsIntCodec();
+/// Encodes [Instant] as an integer number of nanoseconds that passed since the
+/// Unix epoch.
+///
+/// See also:
+///
+/// - [Instant.unixEpoch], which is the Unix epoch.
+/// - [InstantAsIsoStringCodec], which encodes Unix epoch nanoseconds as
+///   a human-readable string.
+@immutable
+class InstantAsIntCodec extends CodecAndJsonConverter<Instant, int> {
+  const InstantAsIntCodec();
 
-//   @override
-//   int encode(Instant input) => input.durationSinceUnixEpoch.inNanoseconds;
-//   @override
-//   Instant decode(int encoded) =>
-//       Instant.fromDurationSinceUnixEpoch(Nanoseconds(encoded));
-// }
+  @override
+  int encode(Instant input) =>
+      input.durationSinceUnixEpoch.inNanoseconds.toInt();
+  @override
+  Instant decode(int encoded) =>
+      Instant.fromDurationSinceUnixEpoch(Nanoseconds(encoded));
+}
 
 // Microseconds
 

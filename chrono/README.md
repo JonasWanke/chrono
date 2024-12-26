@@ -37,8 +37,7 @@ A timestamp is a unique point on the UTC timeline, stored as the duration since 
 Chrono provides these classes:
 
 - [`UnixEpochTimestamp<D>`], generic over a [`TimeDuration`] type
-  - [`Instant`]: a subclass with arbitrary precision
-  - [`UnixEpochNanoseconds`]: a subclass with nanosecond precision
+  - [`Instant`]: a subclass with nanosecond precision
   - [`UnixEpochMicroseconds`]: a subclass with microsecond precision
   - [`UnixEpochMilliseconds`]: a subclass with millisecond precision
   - [`UnixEpochSeconds`]: a subclass with second precision
@@ -86,7 +85,7 @@ An ISO 8601 calendar date without timezone information, e.g., April 23, 2023.
 
 An ISO 8601 time without timezone information, e.g., 18:24:20.123456.
 
-Since fractional seconds are represented using the fixed-point number [`Fixed`] class of the package [<kbd>fixed</kbd>], there's basically no limit to the precision.
+The maximum precision is nanoseconds.
 
 Chrono does not support leap seconds:
 It assumes that all minutes are 60 seconds long.
@@ -104,15 +103,14 @@ Chrono offers different classes for each category (listed by inheritance):
 
 - [`Duration`]: abstract base class
   - [`TimeDuration`]: time-based durations: hours, minutes, seconds, milliseconds, etc.
-    - [`FractionalSeconds`]: fractional number of seconds with unlimited precision (using [`Fixed`])
     - [`Hours`], [`Minutes`], [`Seconds`], [`Milliseconds`], [`Microseconds`], [`Nanoseconds`]: a whole number of hours/etc.
   - [`DateDuration`]: day- and month-based durations
     - [`FixedDaysDuration`]: day-based durations, can be [`Days`] or [`Weeks`]
     - [`MonthsDuration`]: month-based durations, can be [`Months`] or [`Years`]
     - [`CompoundDaysDuration`]: [`Months`] + [`Days`]
-  - [`CompoundDuration`]: [`Months`] + [`Days`] + [`FractionalSeconds`]
+  - [`CompoundDuration`]: [`Months`] + [`Days`] + [`Nanoseconds`]
 
-The [`Duration`] class from Dart Core corresponds to [`TimeDuration`]/[`FractionalSeconds`], but limited to microsecond precision.
+The [`Duration`] class from Dart Core corresponds to [`TimeDuration`], but limited to microsecond precision.
 
 Some duration classes also have a corresponding `…Duration` class, e.g., [`Minutes`] and [`MinutesDuration`].
 [`MinutesDuration`] is an abstract base class for all time-based durations consisting of a whole number of minutes.
@@ -126,7 +124,7 @@ To convert this to [`Minutes`], call `asMinutes`.
 
 [`CompoundDuration`] and [`CompoundDaysDuration`] can represent values with mixed signs, e.g., -1 month and 1 day.
 
-When performing additions and subtractions with compound durations, first the [`Months`] are evaluated, then the [`Days`], and finally the [`FractionalSeconds`].
+When performing additions and subtractions with compound durations, first the [`Months`] are evaluated, then the [`Days`], and finally the [`Nanoseconds`].
 For example, adding 1 month and -1 day to 2023-08-31 results in 2023-09-29:
 
 1. First, 1 month is added, resulting in 2023-09-30.
@@ -147,8 +145,7 @@ These are all converters and how they encode February 3, 2001, at 4:05:06.00700
 |                           Converter class | Encoding example                   |
 | ----------------------------------------: | :--------------------------------- |
 |               [`InstantAsIsoStringCodec`] | `"2001-02-03T04:05:06.007008009Z"` |
-|  [`UnixEpochNanosecondsAsIsoStringCodec`] | `"2001-02-03T04:05:06.007008009Z"` |
-|        [`UnixEpochNanosecondsAsIntCodec`] | `981173106007008009`               |
+|                     [`InstantAsIntCodec`] | `981173106007008009`               |
 | [`UnixEpochMicrosecondsAsIsoStringCodec`] | `"2001-02-03T04:05:06.007008Z"`    |
 |       [`UnixEpochMicrosecondsAsIntCodec`] | `981173106007008`                  |
 | [`UnixEpochMillisecondsAsIsoStringCodec`] | `"2001-02-03T04:05:06.007Z"`       |
@@ -258,7 +255,6 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 [`Days`]: https://pub.dev/documentation/chrono/latest/chrono/Days-class.html
 [`Duration`]: https://pub.dev/documentation/chrono/latest/chrono/Duration-class.html
 [`FixedDaysDuration`]: https://pub.dev/documentation/chrono/latest/chrono/FixedDaysDuration-class.html
-[`FractionalSeconds`]: https://pub.dev/documentation/chrono/latest/chrono/FractionalSeconds-class.html
 [`Hours`]: https://pub.dev/documentation/chrono/latest/chrono/Hours-class.html
 [`Instant`]: https://pub.dev/documentation/chrono/latest/chrono/Instant-class.html
 [`InstantAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/InstantAsIsoStringCodec-class.html
@@ -283,9 +279,6 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 [`UnixEpochMilliseconds`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochMilliseconds-class.html
 [`UnixEpochMillisecondsAsIntCodec`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochMillisecondsAsIntCodec-class.html
 [`UnixEpochMillisecondsAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochMillisecondsAsIsoStringCodec-class.html
-[`UnixEpochNanoseconds`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochNanoseconds-class.html
-[`UnixEpochNanosecondsAsIntCodec`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochNanosecondsAsIntCodec-class.html
-[`UnixEpochNanosecondsAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochNanosecondsAsIsoStringCodec-class.html
 [`UnixEpochSeconds`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochSeconds-class.html
 [`UnixEpochSecondsAsIntCodec`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochSecondsAsIntCodec-class.html
 [`UnixEpochSecondsAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochSecondsAsIsoStringCodec-class.html
@@ -306,11 +299,6 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 
 [<kbd>clock</kbd>]: https://pub.dev/packages/clock
 [`Clock`]: https://pub.dev/documentation/clock/latest/clock/Clock-class.html
-
-<!-- fixed -->
-
-[<kbd>fixed</kbd>]: https://pub.dev/packages/fixed
-[`Fixed`]: https://pub.dev/documentation/fixed/latest/fixed/Fixed-class.html
 
 <!-- glados -->
 
