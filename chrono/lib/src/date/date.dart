@@ -33,6 +33,8 @@ final class Date
     implements Comparable<Date> {
   static Result<Date, String> from(Year year, Month month, int day) =>
       fromYearMonthAndDay(YearMonth(year, month), day);
+  static Result<Date, String> fromRaw(int year, int month, int day) =>
+      Month.fromNumber(month).andThen((month) => from(Year(year), month, day));
 
   static Result<Date, String> fromYearMonthAndDay(
     YearMonth yearMonth,
