@@ -197,7 +197,7 @@ final class UnixEpochMicroseconds extends UnixEpochTimestamp<Microseconds> {
     final hour = dateTime.time.hour.toString().padLeft(2, '0');
     final minute = dateTime.time.minute.toString().padLeft(2, '0');
     final second = dateTime.time.second.toString().padLeft(2, '0');
-    final microseconds = dateTime.time.fraction
+    final microseconds = dateTime.time.nanoseconds
         .roundToMicroseconds()
         .inMicroseconds
         .toString()
@@ -293,7 +293,7 @@ final class UnixEpochMilliseconds extends UnixEpochTimestamp<Milliseconds> {
     final hour = dateTime.time.hour.toString().padLeft(2, '0');
     final minute = dateTime.time.minute.toString().padLeft(2, '0');
     final second = dateTime.time.second.toString().padLeft(2, '0');
-    final milliseconds = dateTime.time.fraction
+    final milliseconds = dateTime.time.nanoseconds
         .roundToMilliseconds()
         .inMilliseconds
         .toString()

@@ -25,6 +25,8 @@ import 'year.dart';
 ///
 /// The date is represented by a [YearMonth] (= [Year] + [Month]) and a [day]
 /// of the month.
+///
+/// This class does not store any time or timezone information.
 @immutable
 final class Date
     with ComparisonOperatorsFromComparable<Date>
