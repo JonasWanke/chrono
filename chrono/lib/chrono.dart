@@ -1,5 +1,3 @@
-import 'chrono.dart';
-
 export 'src/core_extensions.dart';
 export 'src/date/date.dart';
 export 'src/date/duration.dart';
