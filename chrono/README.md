@@ -104,10 +104,10 @@ Chrono offers different classes for each category (listed by inheritance):
 - [`Duration`]: abstract base class
   - [`TimeDuration`]: time-based durations: hours, minutes, seconds, milliseconds, etc.
     - [`Hours`], [`Minutes`], [`Seconds`], [`Milliseconds`], [`Microseconds`], [`Nanoseconds`]: a whole number of hours/etc.
-  - [`DateDuration`]: day- and month-based durations
-    - [`FixedDaysDuration`]: day-based durations, can be [`Days`] or [`Weeks`]
+  - [`CalendarDuration`]: day- and month-based durations
+    - [`DaysDuration`]: day-based durations, can be [`Days`] or [`Weeks`]
     - [`MonthsDuration`]: month-based durations, can be [`Months`] or [`Years`]
-    - [`CompoundDaysDuration`]: [`Months`] + [`Days`]
+    - [`CompoundCalendarDuration`]: [`Months`] + [`Days`]
   - [`CompoundDuration`]: [`Months`] + [`Days`] + [`Nanoseconds`]
 
 The [`Duration`] class from Dart Core corresponds to [`TimeDuration`], but limited to microsecond precision.
@@ -122,7 +122,7 @@ To convert this to [`Minutes`], call `asMinutes`.
 
 ### Compound Durations
 
-[`CompoundDuration`] and [`CompoundDaysDuration`] can represent values with mixed signs, e.g., -1 month and 1 day.
+[`CompoundDuration`] and [`CompoundCalendarDuration`] can represent values with mixed signs, e.g., -1 month and 1 day.
 
 When performing additions and subtractions with compound durations, first the [`Months`] are evaluated, then the [`Days`], and finally the [`Nanoseconds`].
 For example, adding 1 month and -1 day to 2023-08-31 results in 2023-09-29:
@@ -218,43 +218,43 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 
 ## Comparison to other languages
 
-| Dart: `chrono`                             | Java/Kotlin     | Rust                               |
-| :----------------------------------------- | :-------------- | :--------------------------------- |
-| [`UnixEpochTimestamp<D>`]                  | —               | —                                  |
-| [`Instant`]                                | —               | —                                  |
-| [`UnixEpochNanoseconds`]                   | `Instant`       | `std::time::{Instant, SystemTime}` |
-| [`UnixEpochMicroseconds`]                  | —               | —                                  |
-| [`UnixEpochMilliseconds`]                  | —               | —                                  |
-| [`UnixEpochSeconds`]                       | —               | —                                  |
-| [`DateTime`]                               | `LocalDateTime` | `chrono::NaiveDateTime`            |
-| [`Date`]                                   | `LocalDate`     | `chrono::NaiveDate`                |
-| [`Year`]                                   | `Year`          | —                                  |
-| [`YearMonth`]                              | `YearMonth`     | —                                  |
-| [`Month`]                                  | `Month`         | `chrono::Month`                    |
-| [`MonthDay`]                               | `MonthDay`      | —                                  |
-| [`YearWeek`]                               | —               | `chrono::IsoWeek`                  |
-| [`Weekday`]                                | `DayOfWeek`     | `chrono::Weekday`                  |
-| [`Time`]                                   | `LocalTime`     | `chrono::NaiveTime`                |
-| [`DateDuration`]                           | `Period`        | —                                  |
-| [`MonthsDuration`], [`Months`], [`Years`]  | —               | `chrono::Months`                   |
-| [`FixedDaysDuration`], [`Days`], [`Weeks`] | —               | `chrono::Days`                     |
-| [`TimeDuration`]                           | `Duration`      | `std::time::Duration`              |
-| [`Clock`] (from [<kbd>clock</kbd>])        | `Clock`         | —                                  |
+| Dart: `chrono`                            | Java/Kotlin     | Rust                               |
+| :---------------------------------------- | :-------------- | :--------------------------------- |
+| [`UnixEpochTimestamp<D>`]                 | —               | —                                  |
+| [`Instant`]                               | —               | —                                  |
+| [`UnixEpochNanoseconds`]                  | `Instant`       | `std::time::{Instant, SystemTime}` |
+| [`UnixEpochMicroseconds`]                 | —               | —                                  |
+| [`UnixEpochMilliseconds`]                 | —               | —                                  |
+| [`UnixEpochSeconds`]                      | —               | —                                  |
+| [`DateTime`]                              | `LocalDateTime` | `chrono::NaiveDateTime`            |
+| [`Date`]                                  | `LocalDate`     | `chrono::NaiveDate`                |
+| [`Year`]                                  | `Year`          | —                                  |
+| [`YearMonth`]                             | `YearMonth`     | —                                  |
+| [`Month`]                                 | `Month`         | `chrono::Month`                    |
+| [`MonthDay`]                              | `MonthDay`      | —                                  |
+| [`YearWeek`]                              | —               | `chrono::IsoWeek`                  |
+| [`Weekday`]                               | `DayOfWeek`     | `chrono::Weekday`                  |
+| [`Time`]                                  | `LocalTime`     | `chrono::NaiveTime`                |
+| [`CalendarDuration`]                      | `Period`        | —                                  |
+| [`MonthsDuration`], [`Months`], [`Years`] | —               | `chrono::Months`                   |
+| [`DaysDuration`], [`Days`], [`Weeks`]     | —               | `chrono::Days`                     |
+| [`TimeDuration`]                          | `Duration`      | `std::time::Duration`              |
+| [`Clock`] (from [<kbd>clock</kbd>])       | `Clock`         | —                                  |
 
 <!-- chrono -->
 
-[`CompoundDaysDuration`]: https://pub.dev/documentation/chrono/latest/chrono/CompoundDaysDuration-class.html
+[`CalendarDuration`]: https://pub.dev/documentation/chrono/latest/chrono/CalendarDuration-class.html
+[`CompoundCalendarDuration`]: https://pub.dev/documentation/chrono/latest/chrono/CompoundCalendarDuration-class.html
 [`CompoundDuration`]: https://pub.dev/documentation/chrono/latest/chrono/CompoundDuration-class.html
 [`Date`]: https://pub.dev/documentation/chrono/latest/chrono/Date-class.html
 [`DateAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/DateAsIsoStringCodec-class.html
 [`DateAsOrdinalDateIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/DateAsOrdinalDateIsoStringCodec-class.html
 [`DateAsWeekDateIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/DateAsWeekDateIsoStringCodec-class.html
-[`DateDuration`]: https://pub.dev/documentation/chrono/latest/chrono/DateDuration-class.html
 [`DateTime`]: https://pub.dev/documentation/chrono/latest/chrono/DateTime-class.html
 [`DateTimeAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/DateTimeAsIsoStringCodec-class.html
 [`Days`]: https://pub.dev/documentation/chrono/latest/chrono/Days-class.html
+[`DaysDuration`]: https://pub.dev/documentation/chrono/latest/chrono/DaysDuration-class.html
 [`Duration`]: https://pub.dev/documentation/chrono/latest/chrono/Duration-class.html
-[`FixedDaysDuration`]: https://pub.dev/documentation/chrono/latest/chrono/FixedDaysDuration-class.html
 [`Hours`]: https://pub.dev/documentation/chrono/latest/chrono/Hours-class.html
 [`Instant`]: https://pub.dev/documentation/chrono/latest/chrono/Instant-class.html
 [`InstantAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/InstantAsIsoStringCodec-class.html

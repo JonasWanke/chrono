@@ -33,7 +33,7 @@ void main() {
   });
 
   // Arithmetic with `MonthsDuration` isn't always round-trippable.
-  Glados2<Date, FixedDaysDuration>().test(
+  Glados2<Date, DaysDuration>().test(
     '+, -, and differenceInDays(…)',
     (date, duration) {
       expect(date + duration - duration, date);

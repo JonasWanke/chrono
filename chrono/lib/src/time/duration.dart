@@ -12,8 +12,8 @@ import '../utils.dart';
 ///
 /// See also:
 ///
-/// - [DaysDuration], which covers durations based on an integer number of days
-///   or months.
+/// - [CalendarDuration], which covers durations based on an integer number of
+///   days or months.
 /// - [Duration], which is the base class for all durations.
 /// - [Nanoseconds], which is the subclass with the highest precision.
 abstract class TimeDuration extends Duration
@@ -254,7 +254,7 @@ abstract class TimeDuration extends Duration
       duration * rounding.round(dividedByTimeDuration(duration));
 
   Days roundToMultipleOfNormalDays(
-    FixedDaysDuration duration, {
+    DaysDuration duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
     return duration.asDays *

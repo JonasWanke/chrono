@@ -7,10 +7,10 @@ import '../time/duration.dart';
 ///
 /// See also:
 ///
-/// - [DaysDuration], which covers durations based on an integer number of days
+/// - [CalendarDuration], which covers durations based on an integer number of days
 ///   or months.
 /// - [TimeDuration], which covers durations based on a fixed time like seconds.
-/// - [CompoundDuration], which combines [DaysDuration] and [TimeDuration].
+/// - [CompoundDuration], which combines [CalendarDuration] and [TimeDuration].
 @immutable
 abstract class Duration {
   const Duration();
@@ -58,22 +58,22 @@ abstract class Duration {
 /// [Days], and [Nanoseconds].
 final class CompoundDuration extends Duration {
   CompoundDuration({
-    DaysDuration? monthsAndDays,
+    CalendarDuration? monthsAndDays,
     MonthsDuration? months,
-    FixedDaysDuration? days,
+    DaysDuration? days,
     TimeDuration? seconds,
   })  : assert(
           monthsAndDays == null || (months == null && days == null),
           'Cannot specify both `monthsAndDays` and `months`/`days`.',
         ),
-        monthsAndDays = monthsAndDays?.asCompoundDaysDuration ??
-            CompoundDaysDuration(
+        monthsAndDays = monthsAndDays?.asCompoundCalendarDuration ??
+            CompoundCalendarDuration(
               months: months?.asMonths ?? const Months(0),
               days: days?.asDays ?? const Days(0),
             ),
         seconds = seconds?.asNanoseconds ?? Nanoseconds(0);
 
-  final CompoundDaysDuration monthsAndDays;
+  final CompoundCalendarDuration monthsAndDays;
   Months get months => monthsAndDays.months;
   Days get days => monthsAndDays.days;
   // TODO(JonasWanke): Rename, maybe to `time` or `nanoseconds`

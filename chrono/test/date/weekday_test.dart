@@ -15,7 +15,7 @@ void main() {
     expect(Weekday.fromNumber(number), Ok<Weekday, String>(weekday));
   });
 
-  Glados2<Weekday, FixedDaysDuration>().test('+ and -', (weekday, duration) {
+  Glados2<Weekday, DaysDuration>().test('+ and -', (weekday, duration) {
     expect(weekday + duration - duration, weekday);
   });
   Glados<Weekday>().test('next and previous', (weekday) {
@@ -27,7 +27,7 @@ void main() {
     Weekday.values,
     (first, second) {
       final untilNextOrSame = first.untilNextOrSame(second);
-      expectInRange<FixedDaysDuration>(
+      expectInRange<DaysDuration>(
         untilNextOrSame,
         const Days(0),
         const Days(6),
@@ -35,7 +35,7 @@ void main() {
       expect(first == second, untilNextOrSame == const Days(0));
 
       final untilPreviousOrSame = first.untilPreviousOrSame(second);
-      expectInRange<FixedDaysDuration>(
+      expectInRange<DaysDuration>(
         untilPreviousOrSame,
         const Days(-6),
         const Days(0),

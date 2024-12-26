@@ -42,12 +42,12 @@ void setChronoGladosDefaults() {
 
   Any.setDefault(any.durationChrono);
   Any.setDefault(any.compoundDuration);
-  Any.setDefault(any.daysDuration);
-  Any.setDefault(any.compoundDaysDuration);
+  Any.setDefault(any.calendarDuration);
+  Any.setDefault(any.compoundCalendarDuration);
   Any.setDefault(any.monthsDuration);
   Any.setDefault(any.months);
   Any.setDefault(any.years);
-  Any.setDefault(any.fixedDaysDuration);
+  Any.setDefault(any.daysDuration);
   Any.setDefault(any.days);
   Any.setDefault(any.weeks);
   Any.setDefault(any.timeDuration);
@@ -224,10 +224,11 @@ extension ChronoAny on Any {
 
   Generator<Weekday> get weekday => choose(Weekday.values);
 
-  Generator<Duration> get durationChrono => either(daysDuration, timeDuration);
+  Generator<Duration> get durationChrono =>
+      either(calendarDuration, timeDuration);
   Generator<CompoundDuration> get compoundDuration {
     return combine2(
-      compoundDaysDuration,
+      compoundCalendarDuration,
       nanoseconds,
       (monthsAndDays, nanoseconds) => CompoundDuration(
         monthsAndDays: monthsAndDays,
@@ -236,13 +237,13 @@ extension ChronoAny on Any {
     );
   }
 
-  Generator<DaysDuration> get daysDuration =>
-      either(compoundDaysDuration, monthsDuration, fixedDaysDuration);
-  Generator<CompoundDaysDuration> get compoundDaysDuration {
+  Generator<CalendarDuration> get calendarDuration =>
+      either(compoundCalendarDuration, monthsDuration, daysDuration);
+  Generator<CompoundCalendarDuration> get compoundCalendarDuration {
     return combine2(
       months,
       days,
-      (months, days) => CompoundDaysDuration(months: months, days: days),
+      (months, days) => CompoundCalendarDuration(months: months, days: days),
     );
   }
 
@@ -250,7 +251,7 @@ extension ChronoAny on Any {
   Generator<Months> get months => this.int.map(Months.new);
   Generator<Years> get years => this.int.map(Years.new);
 
-  Generator<FixedDaysDuration> get fixedDaysDuration => either(days, weeks);
+  Generator<DaysDuration> get daysDuration => either(days, weeks);
   Generator<Days> get days => this.int.map(Days.new);
   Generator<Weeks> get weeks => this.int.map(Weeks.new);
 

@@ -13,38 +13,38 @@ import '../utils.dart';
 /// - [MonthsDuration], which represents an integer number of months or years.
 ///   - [Months], which represents an integer number of months.
 ///   - [Years], which represents an integer number of years.
-/// - [FixedDaysDuration], which represents an integer number of weeks or days.
+/// - [DaysDuration], which represents an integer number of weeks or days.
 ///   - [Weeks], which represents an integer number of weeks.
 ///   - [Days], which represents an integer number of days.
-/// - [CompoundDaysDuration], which combines [Months] and [Days].
+/// - [CompoundCalendarDuration], which combines [Months] and [Days].
 /// - [TimeDuration], which covers durations based on a fixed time like seconds.
 /// - [Duration], which is the base class for date and time durations.
-abstract class DaysDuration extends Duration {
-  const DaysDuration();
+abstract class CalendarDuration extends Duration {
+  const CalendarDuration();
 
-  CompoundDaysDuration get asCompoundDaysDuration;
+  CompoundCalendarDuration get asCompoundCalendarDuration;
   @override
   CompoundDuration get asCompoundDuration =>
-      CompoundDuration(monthsAndDays: asCompoundDaysDuration);
+      CompoundDuration(monthsAndDays: asCompoundCalendarDuration);
 
   @override
-  DaysDuration operator -();
+  CalendarDuration operator -();
   @override
-  DaysDuration operator *(int factor);
+  CalendarDuration operator *(int factor);
   @override
-  DaysDuration operator ~/(int divisor);
+  CalendarDuration operator ~/(int divisor);
   @override
-  DaysDuration operator %(int divisor);
+  CalendarDuration operator %(int divisor);
   @override
-  DaysDuration remainder(int divisor);
+  CalendarDuration remainder(int divisor);
 }
 
-/// [DaysDuration] subclass that can represent any days-based duration by
+/// [CalendarDuration] subclass that can represent any days-based duration by
 /// combining [Months] and [Days].
-final class CompoundDaysDuration extends DaysDuration {
-  CompoundDaysDuration({
+final class CompoundCalendarDuration extends CalendarDuration {
+  CompoundCalendarDuration({
     MonthsDuration months = const Months(0),
-    FixedDaysDuration days = const Days(0),
+    DaysDuration days = const Days(0),
   })  : months = months.asMonths,
         days = days.asDays;
 
@@ -52,33 +52,34 @@ final class CompoundDaysDuration extends DaysDuration {
   final Days days;
 
   @override
-  CompoundDaysDuration get asCompoundDaysDuration => this;
+  CompoundCalendarDuration get asCompoundCalendarDuration => this;
 
-  CompoundDaysDuration operator +(DaysDuration duration) {
-    final CompoundDaysDuration(:months, :days) =
-        duration.asCompoundDaysDuration;
-    return CompoundDaysDuration(
+  CompoundCalendarDuration operator +(CalendarDuration duration) {
+    final CompoundCalendarDuration(:months, :days) =
+        duration.asCompoundCalendarDuration;
+    return CompoundCalendarDuration(
       months: this.months + months,
       days: this.days + days,
     );
   }
 
-  CompoundDaysDuration operator -(DaysDuration duration) => this + (-duration);
+  CompoundCalendarDuration operator -(CalendarDuration duration) =>
+      this + (-duration);
   @override
-  CompoundDaysDuration operator -() =>
-      CompoundDaysDuration(months: -months, days: -days);
+  CompoundCalendarDuration operator -() =>
+      CompoundCalendarDuration(months: -months, days: -days);
   @override
-  CompoundDaysDuration operator *(int factor) =>
-      CompoundDaysDuration(months: months * factor, days: days * factor);
+  CompoundCalendarDuration operator *(int factor) =>
+      CompoundCalendarDuration(months: months * factor, days: days * factor);
   @override
-  CompoundDaysDuration operator ~/(int divisor) =>
-      CompoundDaysDuration(months: months ~/ divisor, days: days ~/ divisor);
+  CompoundCalendarDuration operator ~/(int divisor) => CompoundCalendarDuration(
+      months: months ~/ divisor, days: days ~/ divisor);
   @override
-  CompoundDaysDuration operator %(int divisor) =>
-      CompoundDaysDuration(months: months % divisor, days: days % divisor);
+  CompoundCalendarDuration operator %(int divisor) =>
+      CompoundCalendarDuration(months: months % divisor, days: days % divisor);
   @override
-  CompoundDaysDuration remainder(int divisor) {
-    return CompoundDaysDuration(
+  CompoundCalendarDuration remainder(int divisor) {
+    return CompoundCalendarDuration(
       months: months.remainder(divisor),
       days: days.remainder(divisor),
     );
@@ -89,7 +90,7 @@ final class CompoundDaysDuration extends DaysDuration {
 }
 
 /// Base class for [Months] and [Years].
-abstract class MonthsDuration extends DaysDuration
+abstract class MonthsDuration extends CalendarDuration
     with ComparisonOperatorsFromComparable<MonthsDuration>
     implements Comparable<MonthsDuration> {
   const MonthsDuration();
@@ -105,8 +106,8 @@ abstract class MonthsDuration extends DaysDuration
   }
 
   @override
-  CompoundDaysDuration get asCompoundDaysDuration =>
-      CompoundDaysDuration(months: asMonths);
+  CompoundCalendarDuration get asCompoundCalendarDuration =>
+      CompoundCalendarDuration(months: asMonths);
 
   bool get isPositive => inMonths > 0;
   bool get isNonPositive => inMonths <= 0;
@@ -287,10 +288,10 @@ final class Years extends MonthsDuration {
 }
 
 /// Base class for [Days] and [Weeks].
-abstract class FixedDaysDuration extends DaysDuration
-    with ComparisonOperatorsFromComparable<FixedDaysDuration>
-    implements Comparable<FixedDaysDuration> {
-  const FixedDaysDuration();
+abstract class DaysDuration extends CalendarDuration
+    with ComparisonOperatorsFromComparable<DaysDuration>
+    implements Comparable<DaysDuration> {
+  const DaysDuration();
 
   Days get asDays;
   int get inDays => asDays.inDays;
@@ -309,8 +310,8 @@ abstract class FixedDaysDuration extends DaysDuration
   }
 
   @override
-  CompoundDaysDuration get asCompoundDaysDuration =>
-      CompoundDaysDuration(days: asDays);
+  CompoundCalendarDuration get asCompoundCalendarDuration =>
+      CompoundCalendarDuration(days: asDays);
 
   bool get isPositive => inDays > 0;
   bool get isNonPositive => inDays <= 0;
@@ -318,19 +319,18 @@ abstract class FixedDaysDuration extends DaysDuration
   bool get isNonNegative => inDays >= 0;
 
   @override
-  FixedDaysDuration operator -();
+  DaysDuration operator -();
   @override
-  FixedDaysDuration operator *(int factor);
+  DaysDuration operator *(int factor);
   @override
-  FixedDaysDuration operator ~/(int divisor);
-  double dividedByFixedDaysDuration(FixedDaysDuration divisor) =>
-      inDays / divisor.inDays;
+  DaysDuration operator ~/(int divisor);
+  double dividedByDaysDuration(DaysDuration divisor) => inDays / divisor.inDays;
   @override
-  FixedDaysDuration operator %(int divisor);
+  DaysDuration operator %(int divisor);
   @override
-  FixedDaysDuration remainder(int divisor);
+  DaysDuration remainder(int divisor);
 
-  FixedDaysDuration get absolute => isNegative ? -this : this;
+  DaysDuration get absolute => isNegative ? -this : this;
 
   Weeks roundToWeeks({
     Rounding rounding = Rounding.nearestAwayFromZero,
@@ -338,11 +338,11 @@ abstract class FixedDaysDuration extends DaysDuration
       Weeks(rounding.round(inDays / Days.perWeek));
 
   @override
-  int compareTo(FixedDaysDuration other) => inDays.compareTo(other.inDays);
+  int compareTo(DaysDuration other) => inDays.compareTo(other.inDays);
 }
 
 /// An integer number of days.
-final class Days extends FixedDaysDuration {
+final class Days extends DaysDuration {
   const Days(this.inDays);
   const Days.fromJson(int json) : this(json);
 
@@ -370,9 +370,9 @@ final class Days extends FixedDaysDuration {
   @override
   Days get asDays => this;
 
-  Days operator +(FixedDaysDuration duration) =>
+  Days operator +(DaysDuration duration) =>
       Days(inDays + duration.asDays.inDays);
-  Days operator -(FixedDaysDuration duration) =>
+  Days operator -(DaysDuration duration) =>
       Days(inDays - duration.asDays.inDays);
   @override
   Days operator -() => Days(-inDays);
@@ -395,7 +395,7 @@ final class Days extends FixedDaysDuration {
 }
 
 /// An integer number of weeks.
-final class Weeks extends FixedDaysDuration {
+final class Weeks extends DaysDuration {
   const Weeks(this.inWeeks);
   const Weeks.fromJson(int json) : this(json);
 

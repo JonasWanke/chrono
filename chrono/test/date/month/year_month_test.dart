@@ -10,7 +10,7 @@ void main() {
 
   // ignore: missing-test-assertion
   Glados<YearMonth>().test('length', (yearMonth) {
-    expectInRange<FixedDaysDuration>(
+    expectInRange<DaysDuration>(
       yearMonth.length,
       const Days(28),
       const Days(31),

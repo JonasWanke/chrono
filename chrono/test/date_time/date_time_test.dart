@@ -24,7 +24,7 @@ void main() {
     expect(dateTimeInUtc, DateTime.fromCore(dateTimeInUtc).asCoreDateTimeInUtc);
   });
 
-  Glados3<DateTime, FixedDaysDuration, TimeDuration>().test(
+  Glados3<DateTime, DaysDuration, TimeDuration>().test(
     '+ and -',
     (dateTime, daysDuration, timeDuration) {
       expect(

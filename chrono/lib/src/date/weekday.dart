@@ -68,9 +68,9 @@ enum Weekday
   bool isCurrentInUtc({Clock? clock}) =>
       this == Weekday.currentInUtc(clock: clock);
 
-  Weekday operator +(FixedDaysDuration duration) =>
+  Weekday operator +(DaysDuration duration) =>
       values[(index + duration.asDays.inDays) % values.length];
-  Weekday operator -(FixedDaysDuration duration) => this + (-duration);
+  Weekday operator -(DaysDuration duration) => this + (-duration);
 
   /// The weekday after this one, wrapping around after Sunday.
   Weekday get next => this + const Days(1);

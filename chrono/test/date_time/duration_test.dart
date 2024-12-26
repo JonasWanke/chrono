@@ -8,6 +8,7 @@ void main() {
 
   group('CompoundDuration', () {
     Glados<CompoundDuration>().test('unary -', (duration) {
+      // ignore: unnecessary_parenthesis
       expect(-(-duration), duration);
     });
     Glados2<CompoundDuration, Duration>().test(
@@ -29,13 +30,13 @@ void main() {
   });
 
   group('equality', () {
-    Glados<DaysDuration>().test('DaysDuration', (duration) {
+    Glados<CalendarDuration>().test('CalendarDuration', (duration) {
       expect(duration.asCompoundDuration, duration);
     });
     Glados<MonthsDuration>().test('MonthsDuration', (duration) {
       expect(duration.asCompoundDuration, duration);
     });
-    Glados<FixedDaysDuration>().test('FixedDaysDuration', (duration) {
+    Glados<DaysDuration>().test('DaysDuration', (duration) {
       expect(duration.asCompoundDuration, duration);
     });
     Glados<TimeDuration>().test('TimeDuration', (duration) {

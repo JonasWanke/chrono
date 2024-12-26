@@ -288,9 +288,9 @@ final class Date
   ///
   /// - 2023-03-31 + 1 month = 2023-04-30, since April only has 30 days.
   /// - 2023-03-31 + 1 month and 1 day = 2023-05-01
-  Date operator +(DaysDuration duration) {
-    final CompoundDaysDuration(:months, :days) =
-        duration.asCompoundDaysDuration;
+  Date operator +(CalendarDuration duration) {
+    final CompoundCalendarDuration(:months, :days) =
+        duration.asCompoundCalendarDuration;
     final yearMonthWithMonths = yearMonth + months;
     final dateWithMonths = Date._unchecked(
       yearMonthWithMonths,
@@ -302,7 +302,7 @@ final class Date
         : Date.fromDaysSinceUnixEpoch(dateWithMonths.daysSinceUnixEpoch + days);
   }
 
-  Date operator -(DaysDuration duration) => this + (-duration);
+  Date operator -(CalendarDuration duration) => this + (-duration);
 
   /// The date after this one.
   Date get next => this + const Days(1);

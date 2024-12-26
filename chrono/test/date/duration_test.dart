@@ -7,9 +7,9 @@ import '../utils.dart';
 void main() {
   setChronoGladosDefaults();
 
-  group('CompoundDaysDuration', () {
-    _testDurationBasics<CompoundDaysDuration>();
-    Glados2<CompoundDaysDuration, DaysDuration>().test(
+  group('CompoundCalendarDuration', () {
+    _testDurationBasics<CompoundCalendarDuration>();
+    Glados2<CompoundCalendarDuration, CalendarDuration>().test(
       '+ and -',
       (first, second) => expect(first + second - second, first),
     );
@@ -65,11 +65,11 @@ void main() {
     });
   });
 
-  group('FixedDaysDuration', () {
-    Glados<FixedDaysDuration>().test('absolute', (duration) {
+  group('DaysDuration', () {
+    Glados<DaysDuration>().test('absolute', (duration) {
       expect(duration.absolute.isNonNegative, true);
     });
-    Glados<FixedDaysDuration>().test('splitWeeksDays', (duration) {
+    Glados<DaysDuration>().test('splitWeeksDays', (duration) {
       final (weeks, days) = duration.splitWeeksDays;
       expect(
         weeks.isNonNegative && days.isNonNegative ||
@@ -81,7 +81,7 @@ void main() {
   });
   group('Days', () {
     _testDurationBasics<Days>();
-    Glados2<Days, FixedDaysDuration>().test('+ and -', (first, second) {
+    Glados2<Days, DaysDuration>().test('+ and -', (first, second) {
       expect(first + second - second, first);
     });
   });
@@ -94,7 +94,8 @@ void main() {
 }
 
 @isTest
-void _testDurationBasics<T extends DaysDuration>() {
+void _testDurationBasics<T extends CalendarDuration>() {
+  // ignore: unnecessary_parenthesis
   Glados<T>().test('unary -', (duration) => expect(-(-duration), duration));
 
   Glados<T>().test('multiply with zero', (duration) {
