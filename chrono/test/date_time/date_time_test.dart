@@ -1,5 +1,3 @@
-import 'dart:core' as core;
-
 import 'package:chrono/chrono.dart';
 import 'package:glados/glados.dart';
 
@@ -8,23 +6,26 @@ import '../utils.dart';
 void main() {
   setChronoGladosDefaults();
 
-  testDataClassBasics(codecs: const [DateTimeAsIsoStringCodec()]);
+  testDataClassBasics(codecs: const [CDateTimeAsIsoStringCodec()]);
 
-  Glados<DateTime>().test('fromDurationSinceUnixEpoch', (dateTime) {
+  Glados<CDateTime>().test('fromDurationSinceUnixEpoch', (dateTime) {
     expect(
-      DateTime.fromDurationSinceUnixEpoch(dateTime.durationSinceUnixEpoch),
+      CDateTime.fromDurationSinceUnixEpoch(dateTime.durationSinceUnixEpoch),
       dateTime,
     );
   });
 
-  Glados<core.DateTime>().test('fromCore', (dateTime) {
-    expect(DateTime.fromCore(dateTime).asCoreDateTimeInLocalZone, dateTime);
+  Glados<DateTime>().test('fromCore', (dateTime) {
+    expect(CDateTime.fromCore(dateTime).asCoreDateTimeInLocalZone, dateTime);
 
     final dateTimeInUtc = dateTime.toUtc();
-    expect(dateTimeInUtc, DateTime.fromCore(dateTimeInUtc).asCoreDateTimeInUtc);
+    expect(
+      dateTimeInUtc,
+      CDateTime.fromCore(dateTimeInUtc).asCoreDateTimeInUtc,
+    );
   });
 
-  Glados3<DateTime, DaysDuration, TimeDuration>().test(
+  Glados3<CDateTime, DaysDuration, TimeDuration>().test(
     '+ and -',
     (dateTime, daysDuration, timeDuration) {
       expect(

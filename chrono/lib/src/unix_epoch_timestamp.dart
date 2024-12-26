@@ -1,6 +1,3 @@
-import 'dart:core' as core;
-import 'dart:core';
-
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
@@ -32,15 +29,15 @@ class UnixEpochTimestamp<D extends TimeDuration>
 
   final D durationSinceUnixEpoch;
 
-  DateTime get dateTimeInLocalZone =>
-      DateTime.fromCore(asCoreDateTimeInLocalZone);
-  DateTime get dateTimeInUtc =>
-      DateTime.fromDurationSinceUnixEpoch(durationSinceUnixEpoch);
+  CDateTime get dateTimeInLocalZone =>
+      CDateTime.fromCore(asCoreDateTimeInLocalZone);
+  CDateTime get dateTimeInUtc =>
+      CDateTime.fromDurationSinceUnixEpoch(durationSinceUnixEpoch);
 
-  core.DateTime get asCoreDateTimeInLocalZone => _getDateTime(isUtc: false);
-  core.DateTime get asCoreDateTimeInUtc => _getDateTime(isUtc: true);
-  core.DateTime _getDateTime({required bool isUtc}) {
-    return core.DateTime.fromMicrosecondsSinceEpoch(
+  DateTime get asCoreDateTimeInLocalZone => _getDateTime(isUtc: false);
+  DateTime get asCoreDateTimeInUtc => _getDateTime(isUtc: true);
+  DateTime _getDateTime({required bool isUtc}) {
+    return DateTime.fromMicrosecondsSinceEpoch(
       durationSinceUnixEpoch.roundToMicroseconds().inMicroseconds,
       isUtc: isUtc,
     );
@@ -103,7 +100,7 @@ final class Instant extends UnixEpochTimestamp<Nanoseconds> {
   Instant.fromDurationSinceUnixEpoch(TimeDuration duration)
       : super(duration.asNanoseconds);
 
-  Instant.fromCore(core.DateTime dateTime)
+  Instant.fromCore(DateTime dateTime)
       : super(Nanoseconds.microsecond * dateTime.microsecondsSinceEpoch);
   Instant.now({Clock? clockOverride})
       : this.fromCore((clockOverride ?? clock).now());
@@ -173,7 +170,7 @@ final class UnixEpochMicroseconds extends UnixEpochTimestamp<Microseconds> {
   UnixEpochMicroseconds(MicrosecondsDuration duration)
       : super(duration.asMicroseconds);
 
-  UnixEpochMicroseconds.fromCore(core.DateTime dateTime)
+  UnixEpochMicroseconds.fromCore(DateTime dateTime)
       : super(Microseconds(dateTime.microsecondsSinceEpoch));
   UnixEpochMicroseconds.now({Clock? clockOverride})
       : this.fromCore((clockOverride ?? clock).now());
@@ -264,7 +261,7 @@ final class UnixEpochMilliseconds extends UnixEpochTimestamp<Milliseconds> {
       : super(duration.asMilliseconds);
 
   UnixEpochMilliseconds.fromCore(
-    core.DateTime dateTime, {
+    DateTime dateTime, {
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) : super(
           Microseconds(dateTime.microsecondsSinceEpoch)
@@ -359,7 +356,7 @@ final class UnixEpochSeconds extends UnixEpochTimestamp<Seconds> {
   UnixEpochSeconds(SecondsDuration duration) : super(duration.asSeconds);
 
   UnixEpochSeconds.fromCore(
-    core.DateTime dateTime, {
+    DateTime dateTime, {
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) : super(
           Microseconds(dateTime.microsecondsSinceEpoch)

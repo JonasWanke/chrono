@@ -1,6 +1,3 @@
-import 'dart:core' as core;
-import 'dart:core';
-
 import 'package:chrono/chrono.dart';
 import 'package:glados/glados.dart';
 import 'package:meta/meta.dart';
@@ -20,7 +17,7 @@ void main() {
   group('Microseconds', () {
     _testDurationBasics<Microseconds>();
 
-    Glados<core.Duration>().test('fromCore(…) and asCoreDuration', (duration) {
+    Glados<Duration>().test('fromCore(…) and asCoreDuration', (duration) {
       expect(Microseconds.fromCore(duration).asCoreDuration, duration);
     });
 
@@ -68,6 +65,7 @@ void _testDurationBasics<T extends TimeDuration>() {
   });
 
   Glados<T>().test('unary -', (duration) {
+    // ignore: unnecessary_parenthesis
     expect(-(-duration), duration);
   });
 

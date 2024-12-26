@@ -1,6 +1,3 @@
-import 'dart:core' as core;
-import 'dart:core';
-
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';

@@ -1,5 +1,3 @@
-import 'dart:core' as core;
-
 import 'date/date.dart';
 import 'date/month/month.dart';
 import 'date/month/month_day.dart';
@@ -13,8 +11,8 @@ import 'date_time/date_time.dart';
 import 'time/duration.dart';
 import 'time/time.dart';
 
-extension CoreDateTimeChronoExtension on core.DateTime {
-  DateTime get chronoDateTime => DateTime.fromCore(this);
+extension DateTimeChronoExtension on DateTime {
+  CDateTime get chronoDateTime => CDateTime.fromCore(this);
   Date get chronoDate => Date.fromCore(this);
   Year get chronoYear => Year(year);
   Month get chronoMonth => Month.fromNumber(month).unwrap();
@@ -26,6 +24,6 @@ extension CoreDateTimeChronoExtension on core.DateTime {
   Time get chronoTime => chronoDateTime.time;
 }
 
-extension StopwatchChronoExtension on core.Stopwatch {
+extension StopwatchChronoExtension on Stopwatch {
   Microseconds get elapsedChrono => Microseconds(elapsedMicroseconds);
 }

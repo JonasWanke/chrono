@@ -1,6 +1,3 @@
-import 'dart:core' as core;
-import 'dart:core';
-
 import 'package:clock/clock.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:oxidized/oxidized.dart';
@@ -71,8 +68,9 @@ final class Time
   }
 
   factory Time.nowInLocalZone({Clock? clock}) =>
-      DateTime.nowInLocalZone(clock: clock).time;
-  factory Time.nowInUtc({Clock? clock}) => DateTime.nowInUtc(clock: clock).time;
+      CDateTime.nowInLocalZone(clock: clock).time;
+  factory Time.nowInUtc({Clock? clock}) =>
+      CDateTime.nowInUtc(clock: clock).time;
 
   // TODO(JonasWanke): comments
   static Result<Time, String>? lerpNullable(

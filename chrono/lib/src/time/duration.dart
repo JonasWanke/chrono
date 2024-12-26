@@ -1,6 +1,3 @@
-import 'dart:core' as core;
-import 'dart:core';
-
 import '../date/duration.dart';
 import '../date_time/duration.dart';
 import '../rounding.dart';
@@ -8,15 +5,15 @@ import '../utils.dart';
 
 // ignore_for_file: binary-expression-operand-order
 
-/// A [Duration] that is of a fixed length.
+/// A [CDuration] that is of a fixed length.
 ///
 /// See also:
 ///
 /// - [CalendarDuration], which covers durations based on an integer number of
 ///   days or months.
-/// - [Duration], which is the base class for all durations.
+/// - [CDuration], which is the base class for all durations.
 /// - [Nanoseconds], which is the subclass with the highest precision.
-abstract class TimeDuration extends Duration
+abstract class TimeDuration extends CDuration
     with ComparisonOperatorsFromComparable<TimeDuration>
     implements Comparable<TimeDuration> {
   const TimeDuration();
@@ -214,10 +211,10 @@ abstract class TimeDuration extends Duration
     );
   }
 
-  core.Duration roundToCoreDuration({
+  Duration roundToCoreDuration({
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
-    return core.Duration(
+    return Duration(
       microseconds: roundToMicroseconds(rounding: rounding).inMicroseconds,
     );
   }
@@ -470,8 +467,7 @@ abstract class MicrosecondsDuration extends NanosecondsDuration {
     return (hours, minutes, seconds, milliseconds, microseconds);
   }
 
-  core.Duration get asCoreDuration =>
-      core.Duration(microseconds: inMicroseconds);
+  Duration get asCoreDuration => Duration(microseconds: inMicroseconds);
 
   @override
   MicrosecondsDuration operator -();
@@ -492,7 +488,7 @@ abstract class MicrosecondsDuration extends NanosecondsDuration {
 final class Microseconds extends MicrosecondsDuration {
   const Microseconds(this.inMicroseconds);
 
-  Microseconds.fromCore(core.Duration duration)
+  Microseconds.fromCore(Duration duration)
       : inMicroseconds = duration.inMicroseconds;
 
   /// The number of microseconds in a millisecond.

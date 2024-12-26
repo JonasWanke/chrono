@@ -5,15 +5,18 @@ import '../time/duration.dart';
 
 /// Base class for date and time durations.
 ///
+/// This class is called `CDuration` to avoid conflicts with `Duration` from
+/// `dart:core`.
+///
 /// See also:
 ///
-/// - [CalendarDuration], which covers durations based on an integer number of days
-///   or months.
+/// - [CalendarDuration], which covers durations based on an integer number of
+///   days or months.
 /// - [TimeDuration], which covers durations based on a fixed time like seconds.
 /// - [CompoundDuration], which combines [CalendarDuration] and [TimeDuration].
 @immutable
-abstract class Duration {
-  const Duration();
+abstract class CDuration {
+  const CDuration();
 
   CompoundDuration get asCompoundDuration;
 
@@ -24,16 +27,16 @@ abstract class Duration {
         compoundDuration.seconds.inNanoseconds == BigInt.zero;
   }
 
-  Duration operator -();
-  Duration operator *(int factor);
-  Duration operator ~/(int divisor);
-  Duration operator %(int divisor);
-  Duration remainder(int divisor);
+  CDuration operator -();
+  CDuration operator *(int factor);
+  CDuration operator ~/(int divisor);
+  CDuration operator %(int divisor);
+  CDuration remainder(int divisor);
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! Duration) return false;
+    if (other is! CDuration) return false;
 
     final thisCompound = asCompoundDuration;
     final otherCompound = other.asCompoundDuration;
@@ -54,9 +57,9 @@ abstract class Duration {
   }
 }
 
-/// [Duration] subclass that can represent any duration by combining [Months],
+/// [CDuration] subclass that can represent any duration by combining [Months],
 /// [Days], and [Nanoseconds].
-final class CompoundDuration extends Duration {
+final class CompoundDuration extends CDuration {
   CompoundDuration({
     CalendarDuration? monthsAndDays,
     MonthsDuration? months,
@@ -82,7 +85,7 @@ final class CompoundDuration extends Duration {
   @override
   CompoundDuration get asCompoundDuration => this;
 
-  CompoundDuration operator +(Duration duration) {
+  CompoundDuration operator +(CDuration duration) {
     final CompoundDuration(:monthsAndDays, :seconds) =
         duration.asCompoundDuration;
     return CompoundDuration(
@@ -91,7 +94,7 @@ final class CompoundDuration extends Duration {
     );
   }
 
-  CompoundDuration operator -(Duration other) => this + -other;
+  CompoundDuration operator -(CDuration other) => this + -other;
   @override
   CompoundDuration operator -() =>
       CompoundDuration(monthsAndDays: -monthsAndDays, seconds: -seconds);

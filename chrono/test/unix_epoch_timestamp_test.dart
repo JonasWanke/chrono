@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:core' as core;
-import 'dart:core';
 
 import 'package:chrono/chrono.dart';
 import 'package:glados/glados.dart';
@@ -21,7 +19,7 @@ void main() {
       );
     });
 
-    Glados<core.DateTime>().test('core conversion', (dateTime) {
+    Glados<DateTime>().test('core conversion', (dateTime) {
       expect(Instant.fromCore(dateTime).asCoreDateTimeInLocalZone, dateTime);
 
       final dateTimeInUtc = dateTime.toUtc();

@@ -1,6 +1,3 @@
-import 'dart:core' as core;
-import 'dart:core';
-
 import 'package:clock/clock.dart';
 import 'package:dartx/dartx.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -161,12 +158,12 @@ final class Date
     );
   }
 
-  /// Creates a Chrono [Date] from a Dart Core [core.DateTime].
+  /// Creates a Chrono [Date] from a Dart Core [DateTime].
   ///
-  /// This uses the [core.DateTime.year], [core.DateTime.month], and
-  /// [core.DateTime.day] getters and ignores whether that [core.ÐateTime] is in
-  /// UTC or the local timezone.
-  Date.fromCore(core.DateTime dateTime)
+  /// This uses the [DateTime.year], [DateTime.month], and [DateTime.day]
+  /// getters and ignores whether that [ÐateTime] is in UTC or the local
+  /// timezone.
+  Date.fromCore(DateTime dateTime)
       : this._unchecked(
           YearMonth(
             Year(dateTime.year),
@@ -175,9 +172,9 @@ final class Date
           dateTime.day,
         );
   factory Date.todayInLocalZone({Clock? clock}) =>
-      DateTime.nowInLocalZone(clock: clock).date;
+      CDateTime.nowInLocalZone(clock: clock).date;
   factory Date.todayInUtc({Clock? clock}) =>
-      DateTime.nowInUtc(clock: clock).date;
+      CDateTime.nowInUtc(clock: clock).date;
 
   static final _streamEverySecond =
       Stream<void>.periodic(1.seconds).asBroadcastStream();
@@ -279,14 +276,14 @@ final class Date
       this == Date.todayInLocalZone(clock: clock);
   bool isTodayInUtc({Clock? clock}) => this == Date.todayInUtc(clock: clock);
 
-  /// A [DateTime] combining this [Date] and the given [time].
-  DateTime at(Time time) => DateTime(this, time);
+  /// A [CDateTime] combining this [Date] and the given [time].
+  CDateTime at(Time time) => CDateTime(this, time);
 
-  /// A [DateTime] at [Time.midnight] on this date.
-  DateTime get atMidnight => at(Time.midnight);
+  /// A [CDateTime] at [Time.midnight] on this date.
+  CDateTime get atMidnight => at(Time.midnight);
 
-  /// A [DateTime] at [Time.noon] on this date.
-  DateTime get atNoon => at(Time.noon);
+  /// A [CDateTime] at [Time.noon] on this date.
+  CDateTime get atNoon => at(Time.noon);
 
   /// Adds the given [duration] to this date.
   ///

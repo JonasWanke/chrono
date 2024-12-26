@@ -114,7 +114,8 @@ extension ChronoAny on Any {
     );
   }
 
-  Generator<DateTime> get dateTimeChrono => combine2(date, time, DateTime.new);
+  Generator<CDateTime> get dateTimeChrono =>
+      combine2(date, time, CDateTime.new);
   Generator<Month> get month => choose(Month.values);
   Generator<Time> get time {
     return combine4(
@@ -224,7 +225,7 @@ extension ChronoAny on Any {
 
   Generator<Weekday> get weekday => choose(Weekday.values);
 
-  Generator<Duration> get durationChrono =>
+  Generator<CDuration> get durationChrono =>
       either(calendarDuration, timeDuration);
   Generator<CompoundDuration> get compoundDuration {
     return combine2(

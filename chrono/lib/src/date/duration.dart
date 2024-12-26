@@ -3,7 +3,7 @@ import '../rounding.dart';
 import '../time/duration.dart';
 import '../utils.dart';
 
-/// A [Duration] based on an integer number of days or months.
+/// A [CDuration] based on an integer number of days or months.
 ///
 /// This is different to [TimeDuration] because days can be shorter or longer
 /// than 24 hours and months have a varying of days.
@@ -18,8 +18,8 @@ import '../utils.dart';
 ///   - [Days], which represents an integer number of days.
 /// - [CompoundCalendarDuration], which combines [Months] and [Days].
 /// - [TimeDuration], which covers durations based on a fixed time like seconds.
-/// - [Duration], which is the base class for date and time durations.
-abstract class CalendarDuration extends Duration {
+/// - [CDuration], which is the base class for date and time durations.
+abstract class CalendarDuration extends CDuration {
   const CalendarDuration();
 
   CompoundCalendarDuration get asCompoundCalendarDuration;

@@ -7,8 +7,6 @@ environment:
   sdk: ^3.6.0
 
 dependencies:
-  # cldr:
-  #   path: ../cldr
   clock: ^1.1.1
   dartx: ^1.1.0
   freezed_annotation: ^2.4.1

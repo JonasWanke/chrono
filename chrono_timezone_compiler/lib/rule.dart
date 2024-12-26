@@ -314,7 +314,7 @@ Seconds calculateRuleClauseEpochTime(
 ///
 /// Original: `rpytime`
 // TODO(JonasWanke): Return `UnixEpochSeconds`
-DateTime calculateRuleClauseDateTime(
+CDateTime calculateRuleClauseDateTime(
   Month ruleClauseMonth,
   DayCode ruleClauseDayCode,
   SecondsDuration ruleClauseTime,

@@ -1,7 +1,5 @@
 // Based on: https://github.com/eggert/tz/blob/0bb92ae8f46dc05a62a5904103d4cbfa761730b4/zic.c
 // File format explanation: https://data.iana.org/time-zones/tz-how-to.html
-import 'dart:core';
-import 'dart:core' as core;
 
 import 'package:chrono/chrono.dart';
 import 'package:chrono/src/utils.dart';
@@ -206,8 +204,8 @@ enum ZoneInformationLineCode {
 // TODO: Add a `LimitOr<T>` wrapper?
 // const minTime = Seconds(-1000000000000);
 // const maxTime = Seconds(1000000000000);
-final minDateTime = DateTime(const Year(-10000).firstDay, Time.midnight);
-final maxDateTime = DateTime(const Year(10000).firstDay, Time.midnight);
+final minDateTime = CDateTime(const Year(-10000).firstDay, Time.midnight);
+final maxDateTime = CDateTime(const Year(10000).firstDay, Time.midnight);
 
 /// The time specified by the -R option, defaulting to `MIN_TIME`.
 // TODO(JonasWanke): Make these configurable, see original `redundant_time_option`
@@ -326,14 +324,14 @@ final class UnixEpochSeconds
 
   final Seconds durationSinceUnixEpoch;
 
-  DateTime get dateTimeInLocalZone =>
-      DateTime.fromCore(asCoreDateTimeInLocalZone);
-  DateTime get dateTimeInUtc => DateTime.fromCore(asCoreDateTimeInUtc);
+  CDateTime get dateTimeInLocalZone =>
+      CDateTime.fromCore(asCoreDateTimeInLocalZone);
+  CDateTime get dateTimeInUtc => CDateTime.fromCore(asCoreDateTimeInUtc);
 
-  core.DateTime get asCoreDateTimeInLocalZone => _getDateTime(isUtc: false);
-  core.DateTime get asCoreDateTimeInUtc => _getDateTime(isUtc: true);
-  core.DateTime _getDateTime({required bool isUtc}) {
-    return core.DateTime.fromMicrosecondsSinceEpoch(
+  DateTime get asCoreDateTimeInLocalZone => _getDateTime(isUtc: false);
+  DateTime get asCoreDateTimeInUtc => _getDateTime(isUtc: true);
+  DateTime _getDateTime({required bool isUtc}) {
+    return DateTime.fromMicrosecondsSinceEpoch(
       durationSinceUnixEpoch.roundToMicroseconds().inMicroseconds,
       isUtc: isUtc,
     );

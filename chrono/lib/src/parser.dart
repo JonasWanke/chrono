@@ -52,7 +52,7 @@ final class Parser {
     );
   }
 
-  static Result<DateTime, FormatException> parseDateTime(String value) =>
+  static Result<CDateTime, FormatException> parseDateTime(String value) =>
       _parse(value, (it) => it._parseDateTime(subSecondDigits: 9));
   static Result<Date, FormatException> parseDate(String value) =>
       _parse(value, (it) => it._parseDate());
@@ -102,14 +102,14 @@ final class Parser {
         .map((it) => it.inUtc);
   }
 
-  Result<DateTime, FormatException> _parseDateTime({
+  Result<CDateTime, FormatException> _parseDateTime({
     required int subSecondDigits,
   }) {
     return _parseDate()
         .andAlso(() => _requireDesignator('T', 'time', isCaseSensitive: false))
         .andThen(
           (date) => _parseTime(subSecondDigits: subSecondDigits)
-              .map((it) => DateTime(date, it)),
+              .map((it) => CDateTime(date, it)),
         );
   }
 

@@ -16,21 +16,6 @@ The following features are _not_ implemented, but could be added in the future:
 - internationalization
 - leap second support
 
-## Usage
-
-Since Dart Core also provides classes called `DateTime` and `Duration`, you might have to add `import 'package:chrono/chrono.dart';` manually.
-If you want to use classes from both sources, you can use an import prefix:
-
-```dart
-import 'dart:core' as core;
-import 'package:chrono/chrono.dart';
-
-void main() {
-  final dartCoreDateTime = core.DateTime.now();
-  final chronoDateTime = DateTime.nowInLocalZone();
-}
-```
-
 ## Timestamps
 
 A timestamp is a unique point on the UTC timeline, stored as the duration since the [Unix epoch].
@@ -46,21 +31,21 @@ If you want to store the exact point in time when something happened, e.g., when
 The specific one is up to you, based on how precise you want to be.
 
 Past dates (e.g., birthdays) should rather be represented as a [`Date`].
-Future timestamps, e.g., for scheduling a meeting, should rather be represented as a [`DateTime`] and the corresponding timezone.
+Future timestamps, e.g., for scheduling a meeting, should rather be represented as a [`CDateTime`] and the corresponding timezone.
 
 ## Date and Time
 
-[`DateTime`] combines [`Date`] and [`Time`] without timezone information.
+[`CDateTime`] combines [`Date`] and [`Time`] without timezone information.
 This is also called plain or local time [in other languages](#comparison-to-other-languages).
 
 For example, April 23, 2023, at 18:24:20 happened at different moments in different time zones.
 In Chrono's classes, it would be represented as:
 
-![`DateTime` classes visualization](doc/DateTime%20classes%20visualization.svg)
+![date and time classes visualization](doc/DateTime%20classes%20visualization.svg)
 
 | Class         | Encoding                                  |
 | :------------ | :---------------------------------------- |
-| [`DateTime`]  | `2023-04-23T18:24:20`                     |
+| [`CDateTime`] | `2023-04-23T18:24:20`                     |
 | [`Date`]      | `2023-04-23`, `2023-113`, or `2023-W16-7` |
 | [`Year`]      | 2023                                      |
 | [`Month`]     | 4                                         |
@@ -101,7 +86,7 @@ Durations fall into three categories:
 One day is not always 24 hours long (due to daylight savings time changes), and one month is not always 30/31 days long (due to leap years and different month lengths).
 Chrono offers different classes for each category (listed by inheritance):
 
-- [`Duration`]: abstract base class
+- [`CDuration`]: abstract base class
   - [`TimeDuration`]: time-based durations: hours, minutes, seconds, milliseconds, etc.
     - [`Hours`], [`Minutes`], [`Seconds`], [`Milliseconds`], [`Microseconds`], [`Nanoseconds`]: a whole number of hours/etc.
   - [`CalendarDuration`]: day- and month-based durations
@@ -110,7 +95,7 @@ Chrono offers different classes for each category (listed by inheritance):
     - [`CompoundCalendarDuration`]: [`Months`] + [`Days`]
   - [`CompoundDuration`]: [`Months`] + [`Days`] + [`Nanoseconds`]
 
-The [`Duration`] class from Dart Core corresponds to [`TimeDuration`], but limited to microsecond precision.
+The [`CDuration`] class from Dart Core corresponds to [`TimeDuration`], but limited to microsecond precision.
 
 Some duration classes also have a corresponding `…Duration` class, e.g., [`Minutes`] and [`MinutesDuration`].
 [`MinutesDuration`] is an abstract base class for all time-based durations consisting of a whole number of minutes.
@@ -139,7 +124,7 @@ All timestamp, date, and time classes support JSON serialization.
 (Support for durations will be added in the future.)
 
 Because there are often multiple possibilities of how to encode a value, Chrono lets you choose the format:
-There are subclasses of [`JsonConverter`] for each class called `<Chrono type>As<JSON type>Codec`, e.g., [`DateTimeAsIsoStringCodec`].
+There are subclasses of [`JsonConverter`] for each class called `<Chrono type>As<JSON type>Codec`, e.g., [`CDateTimeAsIsoStringCodec`].
 These are all converters and how they encode February 3, 2001, at 4:05:06.007008009 UTC:
 
 |                           Converter class | Encoding example                   |
@@ -152,7 +137,7 @@ These are all converters and how they encode February 3, 2001, at 4:05:06.00700
 |       [`UnixEpochMillisecondsAsIntCodec`] | `981173106007`                     |
 |      [`UnixEpochSecondsAsIsoStringCodec`] | `"2001-02-03T04:05:06Z"`           |
 |            [`UnixEpochSecondsAsIntCodec`] | `981173106`                        |
-|              [`DateTimeAsIsoStringCodec`] | `"2001-02-03T04:05:06.007"`        |
+|             [`CDateTimeAsIsoStringCodec`] | `"2001-02-03T04:05:06.007"`        |
 |                  [`DateAsIsoStringCodec`] | `"2001-02-03"`                     |
 |       [`DateAsOrdinalDateIsoStringCodec`] | `"2001-034"`                       |
 |          [`DateAsWeekDateIsoStringCodec`] | `"2001-W05-6"`                     |
@@ -179,8 +164,8 @@ If you use [<kbd>json_serializable</kbd>], you can choose between the following 
      factory MyClass.fromJson(Map<String, dynamic> json) =>
          _$MyClassFromJson(json);
 
-     @DateTimeAsIsoStringCodec()
-     final DateTime value;
+     @CDateTimeAsIsoStringCodec()
+     final CDateTime value;
 
      Map<String, dynamic> toJson() => _$MyClassToJson(this);
    }
@@ -189,7 +174,7 @@ If you use [<kbd>json_serializable</kbd>], you can choose between the following 
 2. Specify the converter in the [`JsonSerializable`] annotation, so it applies to all fields in that class:
 
    ```dart
-   @JsonSerializable(converters: [DateTimeAsIsoStringCodec()])
+   @JsonSerializable(converters: [CDateTimeAsIsoStringCodec()])
    class MyClass {
      // ...
    }
@@ -198,7 +183,7 @@ If you use [<kbd>json_serializable</kbd>], you can choose between the following 
 3. Create a customized instance of [`JsonSerializable`] that you can reuse for all your classes:
 
    ```dart
-   const jsonSerializable = JsonSerializable(converters: [DateTimeAsIsoStringCodec()]);
+   const jsonSerializable = JsonSerializable(converters: [CDateTimeAsIsoStringCodec()]);
 
    @jsonSerializable
    class MyClass {
@@ -226,7 +211,7 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 | [`UnixEpochMicroseconds`]                 | —               | —                                  |
 | [`UnixEpochMilliseconds`]                 | —               | —                                  |
 | [`UnixEpochSeconds`]                      | —               | —                                  |
-| [`DateTime`]                              | `LocalDateTime` | `chrono::NaiveDateTime`            |
+| [`CDateTime`]                             | `LocalDateTime` | `chrono::NaiveDateTime`            |
 | [`Date`]                                  | `LocalDate`     | `chrono::NaiveDate`                |
 | [`Year`]                                  | `Year`          | —                                  |
 | [`YearMonth`]                             | `YearMonth`     | —                                  |
@@ -244,17 +229,17 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 <!-- chrono -->
 
 [`CalendarDuration`]: https://pub.dev/documentation/chrono/latest/chrono/CalendarDuration-class.html
+[`CDateTime`]: https://pub.dev/documentation/chrono/latest/chrono/CDateTime-class.html
+[`CDateTimeAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/CDateTimeAsIsoStringCodec-class.html
+[`CDuration`]: https://pub.dev/documentation/chrono/latest/chrono/CDuration-class.html
 [`CompoundCalendarDuration`]: https://pub.dev/documentation/chrono/latest/chrono/CompoundCalendarDuration-class.html
 [`CompoundDuration`]: https://pub.dev/documentation/chrono/latest/chrono/CompoundDuration-class.html
 [`Date`]: https://pub.dev/documentation/chrono/latest/chrono/Date-class.html
 [`DateAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/DateAsIsoStringCodec-class.html
 [`DateAsOrdinalDateIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/DateAsOrdinalDateIsoStringCodec-class.html
 [`DateAsWeekDateIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/DateAsWeekDateIsoStringCodec-class.html
-[`DateTime`]: https://pub.dev/documentation/chrono/latest/chrono/DateTime-class.html
-[`DateTimeAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/DateTimeAsIsoStringCodec-class.html
 [`Days`]: https://pub.dev/documentation/chrono/latest/chrono/Days-class.html
 [`DaysDuration`]: https://pub.dev/documentation/chrono/latest/chrono/DaysDuration-class.html
-[`Duration`]: https://pub.dev/documentation/chrono/latest/chrono/Duration-class.html
 [`Hours`]: https://pub.dev/documentation/chrono/latest/chrono/Hours-class.html
 [`Instant`]: https://pub.dev/documentation/chrono/latest/chrono/Instant-class.html
 [`InstantAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/InstantAsIsoStringCodec-class.html

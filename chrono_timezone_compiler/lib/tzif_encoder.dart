@@ -154,7 +154,7 @@ Future<void> encodeTzif(Zone zone, Map<String, Rule> rules) async {
   final rulesToDo = <(String, int)>{};
 
   RuleClause? prevrp;
-  (int, DateTime)? prevktime;
+  (int, CDateTime)? prevktime;
   for (final (i, (zoneRule, end)) in zone.allRules.indexed) {
     /// A guess that may well be corrected later.
     var save = const Seconds(0);
@@ -164,7 +164,7 @@ Future<void> encodeTzif(Zone zone, Map<String, Rule> rules) async {
     var startoff = stdoff;
     if (end != null && end.dateTime <= minDateTime) continue;
 
-    var startTime = DateTime.unixEpoch;
+    var startTime = CDateTime.unixEpoch;
     switch (zoneRule.type) {
       case NoneZoneRuleType():
         save = const Seconds(0);
@@ -206,11 +206,11 @@ Future<void> encodeTzif(Zone zone, Map<String, Rule> rules) async {
           // Mark which rules to do in the current year.
           // For those to do, calculate rpytime(rp, year).
           // The former TYPE field was also considered here.
-          final temps = <int, LimitOr<DateTime>>{};
+          final temps = <int, LimitOr<CDateTime>>{};
           for (final (ruleClauseIndex, ruleClause)
               in currentRule.clauses.indexed) {
             final y2038Boundary =
-                DateTime.fromDurationSinceUnixEpoch(const Seconds(1 << 31));
+                CDateTime.fromDurationSinceUnixEpoch(const Seconds(1 << 31));
             if (ruleClause.startYear > year || ruleClause.endYear < year) {
               continue;
             }
@@ -222,7 +222,7 @@ Future<void> encodeTzif(Zone zone, Map<String, Rule> rules) async {
             }
           }
           while (true) {
-            DateTime? untilTime;
+            CDateTime? untilTime;
             if (end != null) {
               // Turn `untilTime` into UT assuming the current `stdoff` and `save`
               // values.
@@ -234,7 +234,7 @@ Future<void> encodeTzif(Zone zone, Map<String, Rule> rules) async {
             // in the year.
 
             /// Original: `k`, `ktime`
-            (int, DateTime)? ktime;
+            (int, CDateTime)? ktime;
             late Seconds offset;
             for (var j = 0; j < currentRule.clauses.length; j++) {
               final r = currentRule.clauses[j];
@@ -242,7 +242,7 @@ Future<void> encodeTzif(Zone zone, Map<String, Rule> rules) async {
 
               offset = r.timeReference.getAdjustment(stdoff, save);
 
-              final DateTime jtime;
+              final CDateTime jtime;
               if (temps[j]! case LimitOrValue(:final value)) {
                 jtime = value - offset;
               } else {
@@ -1266,7 +1266,7 @@ final class _TimeRange {
   }
 }
 
-LimitOr<DateTime> rpytime(RuleClause clause, Year wantedYear) {
+LimitOr<CDateTime> rpytime(RuleClause clause, Year wantedYear) {
   // TODO(JonasWanke): cleanup
   return LimitOrValue(
     calculateRuleClauseDateTime(
@@ -1332,7 +1332,7 @@ const TZ_MAX_TIMES = 2000;
 
 // This must be at least 18 for Europe/Vilnius with 'zic -b fat'.
 const TZ_MAX_TYPES = 256;
-typedef attype = ({DateTime at, bool dontMerge, int type});
+typedef attype = ({CDateTime at, bool dontMerge, int type});
 var attypes = <attype>[];
 int get timecnt => attypes.length;
 var utoffs = <Seconds>[];
@@ -1346,7 +1346,7 @@ var chars = '';
 int get typecnt => utoffs.length;
 
 /// Original: `addtt`
-void addtt(DateTime startTime, int type) {
+void addtt(CDateTime startTime, int type) {
   attypes.add((at: startTime, dontMerge: false, type: type));
 }
 

@@ -11,7 +11,7 @@ void main() {
       // ignore: unnecessary_parenthesis
       expect(-(-duration), duration);
     });
-    Glados2<CompoundDuration, Duration>().test(
+    Glados2<CompoundDuration, CDuration>().test(
       '+ and -',
       (first, second) => expect(first + second - second, first),
     );

@@ -217,7 +217,7 @@ sealed class ZoneRule with _$ZoneRule {
 @freezed
 sealed class ZoneRuleEnd with _$ZoneRuleEnd {
   // TODO(JonasWanke): Use `LimitOr<DateTime>`?
-  const factory ZoneRuleEnd(DateTime dateTime, TimeReference timeReference) =
+  const factory ZoneRuleEnd(CDateTime dateTime, TimeReference timeReference) =
       _ZoneRuleEnd;
 }
 
