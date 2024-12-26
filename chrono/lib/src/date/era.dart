@@ -1,11 +1,9 @@
 import 'dart:core' as core;
 import 'dart:core';
 
-import 'package:cldr/cldr.dart' as cldr;
 import 'package:clock/clock.dart';
 import 'package:oxidized/oxidized.dart';
 
-import '../formatting.dart';
 import '../utils.dart';
 import 'year.dart';
 
@@ -54,18 +52,5 @@ enum Era
       Era.beforeCommon => 'Before the Common Era',
       Era.common => 'Common Era',
     };
-  }
-}
-
-class LocalizedEraFormatter extends LocalizedFormatter<Era> {
-  const LocalizedEraFormatter(super.localeData, this.style);
-
-  final cldr.EraStyle style;
-
-  @override
-  String format(Era value) {
-    final eraValue = localeData
-        .dates.calendars.gregorian.eras.eras[value.index]![style.width];
-    return style.useVariant ? eraValue.variantOrValue : eraValue.value;
   }
 }

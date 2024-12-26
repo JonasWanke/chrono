@@ -1,9 +1,7 @@
-import 'package:cldr/cldr.dart' as cldr;
 import 'package:clock/clock.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../codec.dart';
-import '../formatting.dart';
 import '../utils.dart';
 import 'date.dart';
 import 'duration.dart';
@@ -119,48 +117,4 @@ class WeekdayAsIntCodec extends CodecWithStringResult<Weekday, int> {
   @override
   Result<Weekday, String> decodeAsResult(int encoded) =>
       Weekday.fromNumber(encoded);
-}
-
-class LocalizedWeekdayFormatter extends LocalizedFormatter<Weekday> {
-  const LocalizedWeekdayFormatter(super.localeData, this.style);
-
-  final cldr.WeekdayStyle style;
-
-  @override
-  String format(Weekday value) {
-    final days = localeData.dates.calendars.gregorian.days;
-    String selectFrom(cldr.Days days) {
-      return switch (value) {
-        Weekday.monday => days.monday,
-        Weekday.tuesday => days.tuesday,
-        Weekday.wednesday => days.wednesday,
-        Weekday.thursday => days.thursday,
-        Weekday.friday => days.friday,
-        Weekday.saturday => days.saturday,
-        Weekday.sunday => days.sunday,
-      };
-    }
-
-    return style.when(
-      format: (width) => switch (width) {
-        cldr.DayFieldWidth.narrow => selectFrom(days.format.narrow),
-        cldr.DayFieldWidth.short => selectFrom(days.format.short),
-        cldr.DayFieldWidth.abbreviated => selectFrom(days.format.abbreviated),
-        cldr.DayFieldWidth.wide => selectFrom(days.format.wide),
-      },
-      // TODO(JonasWanke): use localized numbers
-      formatNumeric: (isPadded) => isPadded
-          ? value.isoNumber.toString().padLeft(2, '0')
-          : value.isoNumber.toString(),
-      standalone: (width) => switch (width) {
-        cldr.DayFieldWidth.narrow => selectFrom(days.standalone.narrow),
-        cldr.DayFieldWidth.short => selectFrom(days.standalone.short),
-        cldr.DayFieldWidth.abbreviated =>
-          selectFrom(days.standalone.abbreviated),
-        cldr.DayFieldWidth.wide => selectFrom(days.standalone.wide),
-      },
-      // TODO(JonasWanke): use localized numbers
-      standaloneNumeric: () => value.isoNumber.toString(),
-    );
-  }
 }

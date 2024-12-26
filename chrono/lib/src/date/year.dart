@@ -1,13 +1,11 @@
 import 'dart:core' as core;
 import 'dart:core';
 
-import 'package:cldr/cldr.dart' as cldr;
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../codec.dart';
-import '../formatting.dart';
 import '../parser.dart';
 import '../utils.dart';
 import 'date.dart';
@@ -228,28 +226,4 @@ class YearAsIntCodec extends CodecAndJsonConverter<Year, int> {
   int encode(Year input) => input.number;
   @override
   Year decode(int encoded) => Year(encoded);
-}
-
-class LocalizedYearFormatter extends LocalizedFormatter<Year> {
-  const LocalizedYearFormatter(super.localeData, this.style);
-
-  final cldr.YearStyle style;
-
-  @override
-  String format(Year value) {
-    // TODO(JonasWanke): use localized numbers
-    // TODO(JonasWanke): support negative years
-    // TODO(JonasWanke): support eras
-    return style.when(
-      calendarYear: (minDigits) =>
-          value.number.toString().padLeft(minDigits, '0'),
-      calendarYearTwoDigits: () =>
-          (value.number % 100).toString().padLeft(2, '0'),
-      weekBasedYear: (_) => throw UnimplementedError(),
-      weekBasedYearTwoDigits: () => throw UnimplementedError(),
-      extendedYear: (_) => throw UnimplementedError(),
-      cyclicYearName: (_) => throw UnimplementedError(),
-      relatedGregorianYear: (_) => throw UnimplementedError(),
-    );
-  }
 }

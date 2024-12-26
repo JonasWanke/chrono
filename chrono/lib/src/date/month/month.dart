@@ -1,12 +1,10 @@
 import 'dart:core' as core;
 import 'dart:core';
 
-import 'package:cldr/cldr.dart' as cldr;
 import 'package:clock/clock.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../../codec.dart';
-import '../../formatting.dart';
 import '../../utils.dart';
 import '../date.dart';
 import '../duration.dart';
@@ -162,27 +160,4 @@ class MonthAsIntJsonConverter extends CodecWithStringResult<Month, int> {
   @override
   Result<Month, String> decodeAsResult(int encoded) =>
       Month.fromNumber(encoded);
-}
-
-class LocalizedMonthFormatter extends LocalizedFormatter<Month> {
-  const LocalizedMonthFormatter(super.localeData, this.style);
-
-  final cldr.MonthStyle style;
-
-  @override
-  String format(Month value) {
-    final months = localeData.dates.calendars.gregorian.months;
-    return style.when(
-      format: (width) => months.format[width][value.number]!,
-      // TODO(JonasWanke): use localized numbers
-      formatNumeric: (isPadded) => isPadded
-          ? value.number.toString().padLeft(2, '0')
-          : value.number.toString(),
-      standalone: (width) => months.standalone[width][value.number]!,
-      // TODO(JonasWanke): use localized numbers
-      standaloneNumeric: (isPadded) => isPadded
-          ? value.number.toString().padLeft(2, '0')
-          : value.number.toString(),
-    );
-  }
 }

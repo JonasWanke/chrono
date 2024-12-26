@@ -221,32 +221,3 @@ class TimeAsIsoStringCodec extends CodecWithParserResult<Time, String> {
   Result<Time, FormatException> decodeAsResult(String encoded) =>
       Parser.parseTime(encoded);
 }
-
-// class LocalizedTimeFormatter implements Formatter<Time> {
-//   LocalizedTimeFormatter(Intl intl, TimeFormatStyle style)
-//       : _format = intl.datetimeFormat(
-//           DateTimeFormatOptions(
-//             calendar: Calendar.gregory,
-//             timeFormatStyle: style,
-//           ),
-//         );
-//   LocalizedTimeFormatter.components(
-//     Intl intl, {
-//     TimeStyle? hour,
-//     TimeStyle? minute,
-//     TimeStyle? second,
-//   }) : _format = intl.datetimeFormat(
-//           DateTimeFormatOptions(
-//             calendar: Calendar.gregory,
-//             hour: hour,
-//             minute: minute,
-//             second: second,
-//           ),
-//         );
-
-//   final DateTimeFormat _format;
-
-//   @override
-//   String format(Time value) =>
-//       _format.format(Date.unixEpoch.at(value).asCoreDateTimeInUtc);
-// }
