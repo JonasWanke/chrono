@@ -182,17 +182,17 @@ If you use [<kbd>json_serializable</kbd>], you can choose between the following 
      factory MyClass.fromJson(Map<String, dynamic> json) =>
          _$MyClassFromJson(json);
 
-     @DateTimeAsIsoStringJsonConverter()
+     @DateTimeAsIsoStringCodec()
      final DateTime value;
 
      Map<String, dynamic> toJson() => _$MyClassToJson(this);
    }
    ```
 
-2. Specify the converter in the [`JsonSerializable`] annotation so it applies to all fields in that class:
+2. Specify the converter in the [`JsonSerializable`] annotation, so it applies to all fields in that class:
 
    ```dart
-   @JsonSerializable(converters: [DateTimeAsIsoStringJsonConverter()])
+   @JsonSerializable(converters: [DateTimeAsIsoStringCodec()])
    class MyClass {
      // ...
    }
@@ -201,7 +201,7 @@ If you use [<kbd>json_serializable</kbd>], you can choose between the following 
 3. Create a customized instance of [`JsonSerializable`] that you can reuse for all your classes:
 
    ```dart
-   const jsonSerializable = JsonSerializable(converters: [DateTimeAsIsoStringJsonConverter()]);
+   const jsonSerializable = JsonSerializable(converters: [DateTimeAsIsoStringCodec()]);
 
    @jsonSerializable
    class MyClass {
