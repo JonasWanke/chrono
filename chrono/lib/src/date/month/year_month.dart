@@ -20,6 +20,8 @@ final class YearMonth
     with ComparisonOperatorsFromComparable<YearMonth>
     implements Comparable<YearMonth> {
   const YearMonth(this.year, this.month);
+  static Result<YearMonth, String> fromRaw(int year, int month) =>
+      Month.fromNumber(month).map((month) => YearMonth(Year(year), month));
 
   factory YearMonth.currentInLocalZone({Clock? clock}) =>
       Date.todayInLocalZone(clock: clock).yearMonth;

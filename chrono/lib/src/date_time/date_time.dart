@@ -32,6 +32,19 @@ final class DateTime
     with ComparisonOperatorsFromComparable<DateTime>
     implements Comparable<DateTime> {
   const DateTime(this.date, this.time);
+  static Result<DateTime, String> fromRaw(
+    int year,
+    int month,
+    int day, [
+    int hour = 0,
+    int minute = 0,
+    int second = 0,
+    Nanoseconds? nanoseconds,
+  ]) =>
+      Date.fromRaw(year, month, day).andThen(
+        (date) => Time.from(hour, minute, second, nanoseconds)
+            .map((time) => DateTime(date, time)),
+      );
 
   /// The UNIX epoch: 1970-01-01 at 00:00.
   ///

@@ -30,6 +30,13 @@ final class YearWeek
     return Ok(YearWeek._(weekBasedYear, week, config));
   }
 
+  static Result<YearWeek, String> fromRaw(
+    int weekBasedYear,
+    int week,
+    WeekConfig config,
+  ) =>
+      from(Year(weekBasedYear), week, config);
+
   const YearWeek._(this.weekBasedYear, this.week, this.config);
 
   factory YearWeek.currentInLocalZone(WeekConfig config, {Clock? clock}) =>

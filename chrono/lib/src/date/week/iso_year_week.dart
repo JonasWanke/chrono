@@ -27,6 +27,9 @@ final class IsoYearWeek
     return Ok(IsoYearWeek._(weekBasedYear, week));
   }
 
+  static Result<IsoYearWeek, String> fromRaw(int weekBasedYear, int week) =>
+      from(Year(weekBasedYear), week);
+
   const IsoYearWeek._(this.weekBasedYear, this.week);
 
   factory IsoYearWeek.currentInLocalZone({Clock? clock}) =>

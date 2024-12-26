@@ -29,6 +29,9 @@ final class MonthDay
     return Ok(MonthDay._(month, day));
   }
 
+  static Result<MonthDay, String> fromRaw(int month, int day) =>
+      Month.fromNumber(month).andThen((month) => from(month, day));
+
   const MonthDay._(this.month, this.day);
 
   factory MonthDay.todayInLocalZone({Clock? clock}) =>
