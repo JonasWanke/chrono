@@ -4,7 +4,7 @@ version: 0.1.0
 repository: https://github.com/JonasWanke/chrono
 
 environment:
-  sdk: ^3.4.0
+  sdk: ^3.6.0
 
 dependencies:
   cldr:

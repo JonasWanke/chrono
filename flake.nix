@@ -1,6 +1,8 @@
 {
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    # https://github.com/NixOS/nixpkgs/pull/364980
+    nixpkgs.url =
+      "github:nixos/nixpkgs?ref=711e659590895f1de0ada40dbdc1eb5bae98a179";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
