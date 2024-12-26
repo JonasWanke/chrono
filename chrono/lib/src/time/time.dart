@@ -24,7 +24,7 @@ final class Time
     int hour, [
     int minute = 0,
     int second = 0,
-    Nanoseconds? fraction,
+    Nanoseconds? nanoseconds,
   ]) {
     if (hour < 0 || hour >= Duration.hoursPerDay) {
       return Err('Invalid hour: $hour');
@@ -36,14 +36,14 @@ final class Time
       return Err('Invalid second: $second');
     }
 
-    final fractionError = _validateFraction(fraction);
-    if (fractionError != null) return Err(fractionError);
-    fraction ??= Nanoseconds(0);
+    final nanosecondsError = _validateNanoseconds(nanoseconds);
+    if (nanosecondsError != null) return Err(nanosecondsError);
+    nanoseconds ??= Nanoseconds(0);
 
-    return Ok(Time._(hour, minute, second, fraction));
+    return Ok(Time._(hour, minute, second, nanoseconds));
   }
 
-  const Time._(this.hour, this.minute, this.second, this.fraction);
+  const Time._(this.hour, this.minute, this.second, this.nanoseconds);
 
   static Result<Time, String> fromTimeSinceMidnight(
     TimeDuration timeSinceMidnight,
@@ -108,10 +108,10 @@ final class Time
     );
   }
 
-  static String? _validateFraction(Nanoseconds? fraction) {
-    if (fraction != null &&
-        (fraction.isNegative || fraction >= Nanoseconds.second)) {
-      return 'Invalid fraction of a second: $fraction';
+  static String? _validateNanoseconds(Nanoseconds? nanoseconds) {
+    if (nanoseconds != null &&
+        (nanoseconds.isNegative || nanoseconds >= Nanoseconds.second)) {
+      return 'Invalid nanoseconds within a second: $nanoseconds';
     }
     return null;
   }
@@ -122,7 +122,7 @@ final class Time
   final int hour;
   final int minute;
   final int second;
-  final Nanoseconds fraction;
+  final Nanoseconds nanoseconds;
 
   bool get isAm => hour < 12;
   bool get isPm => !isAm;
@@ -132,7 +132,8 @@ final class Time
   Hours get hoursSinceMidnight => Hours(hour);
   Minutes get minutesSinceMidnight => Minutes(minute) + hoursSinceMidnight;
   Seconds get secondsSinceMidnight => Seconds(second) + minutesSinceMidnight;
-  Nanoseconds get nanosecondsSinceMidnight => fraction + secondsSinceMidnight;
+  Nanoseconds get nanosecondsSinceMidnight =>
+      nanoseconds + secondsSinceMidnight;
 
   Result<Time, String> add(TimeDuration duration) {
     return Time.fromTimeSinceMidnight(
@@ -168,13 +169,13 @@ final class Time
     int? hour,
     int? minute,
     int? second,
-    Nanoseconds? fraction,
+    Nanoseconds? nanoseconds,
   }) {
     return Time.from(
       hour ?? this.hour,
       minute ?? this.minute,
       second ?? this.second,
-      fraction ?? this.fraction,
+      nanoseconds ?? nanoseconds,
     );
   }
 
@@ -183,7 +184,7 @@ final class Time
     if (hour != other.hour) return hour.compareTo(other.hour);
     if (minute != other.minute) return minute.compareTo(other.minute);
     if (second != other.second) return second.compareTo(other.second);
-    return fraction.compareTo(other.fraction);
+    return nanoseconds.compareTo(other.nanoseconds);
   }
 
   @override
@@ -193,19 +194,19 @@ final class Time
             hour == other.hour &&
             minute == other.minute &&
             second == other.second &&
-            fraction == other.fraction);
+            nanoseconds == other.nanoseconds);
   }
 
   @override
-  int get hashCode => Object.hash(hour, minute, second, fraction);
+  int get hashCode => Object.hash(hour, minute, second, nanoseconds);
 
   @override
   String toString() {
     final hour = this.hour.toString().padLeft(2, '0');
     final minute = this.minute.toString().padLeft(2, '0');
     final second = this.second.toString().padLeft(2, '0');
-    final fraction = this.fraction.inNanoseconds.toString().padLeft(9, '0');
-    return '$hour:$minute:$second.$fraction';
+    final nanoseconds = nanoseconds.inNanoseconds.toString().padLeft(9, '0');
+    return '$hour:$minute:$second.$nanoseconds';
   }
 }
 
