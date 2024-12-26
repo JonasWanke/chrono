@@ -98,11 +98,10 @@ abstract class MonthsDuration extends DaysDuration
   int get inMonths => asMonths.inMonths;
 
   /// Both are `>= 0` or both are `<= 0`.
-  (Years, Months) get asYearsAndMonths {
-    final thisMonths = asMonths;
-    final years = Years(thisMonths.inMonths ~/ Months.perYear);
-    final months = thisMonths - years.asMonths;
-    return (years, months);
+  (Years, Months) get splitYearsMonths {
+    final asMonths = this.asMonths;
+    final years = Years(asMonths.inMonths ~/ Months.perYear);
+    return (years, asMonths - years);
   }
 
   @override
@@ -303,11 +302,10 @@ abstract class FixedDaysDuration extends DaysDuration
   Nanoseconds get asNormalNanoseconds => asNormalHours.asNanoseconds;
 
   /// Both are `>= 0` or both are `<= 0`.
-  (Weeks, Days) get asWeeksAndDays {
-    final thisDays = asDays;
-    final weeks = Weeks(thisDays.inDays ~/ Days.perWeek);
-    final days = thisDays - weeks.asDays;
-    return (weeks, days);
+  (Weeks, Days) get splitWeeksDays {
+    final asDays = this.asDays;
+    final weeks = Weeks(asDays.inDays ~/ Days.perWeek);
+    return (weeks, asDays - weeks);
   }
 
   @override

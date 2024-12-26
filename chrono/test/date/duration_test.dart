@@ -19,9 +19,9 @@ void main() {
     Glados<MonthsDuration>().test('absolute', (duration) {
       expect(duration.absolute.isNonNegative, true);
     });
-    group('asYearsAndMonths', () {
+    group('splitYearsMonths', () {
       Glados<MonthsDuration>().test('glados', (duration) {
-        final (years, months) = duration.asYearsAndMonths;
+        final (years, months) = duration.splitYearsMonths;
         expect(
           years.isNonNegative && months.isNonNegative ||
               years.isNonPositive && months.isNonPositive,
@@ -30,23 +30,23 @@ void main() {
         expect(months + years, duration);
       });
       test('edge cases', () {
-        expect(const Months(13).asYearsAndMonths, const (Years(1), Months(1)));
+        expect(const Months(13).splitYearsMonths, const (Years(1), Months(1)));
         // ignore: use_named_constants
-        expect(const Months(12).asYearsAndMonths, const (Years(1), Months(0)));
-        expect(const Months(11).asYearsAndMonths, const (Years(0), Months(11)));
-        expect(const Months(1).asYearsAndMonths, const (Years(0), Months(1)));
-        expect(const Months(0).asYearsAndMonths, const (Years(0), Months(0)));
-        expect(const Months(-1).asYearsAndMonths, const (Years(0), Months(-1)));
+        expect(const Months(12).splitYearsMonths, const (Years(1), Months(0)));
+        expect(const Months(11).splitYearsMonths, const (Years(0), Months(11)));
+        expect(const Months(1).splitYearsMonths, const (Years(0), Months(1)));
+        expect(const Months(0).splitYearsMonths, const (Years(0), Months(0)));
+        expect(const Months(-1).splitYearsMonths, const (Years(0), Months(-1)));
         expect(
-          const Months(-11).asYearsAndMonths,
+          const Months(-11).splitYearsMonths,
           const (Years(0), Months(-11)),
         );
         expect(
-          const Months(-12).asYearsAndMonths,
+          const Months(-12).splitYearsMonths,
           const (Years(-1), Months(0)),
         );
         expect(
-          const Months(-13).asYearsAndMonths,
+          const Months(-13).splitYearsMonths,
           const (Years(-1), Months(-1)),
         );
       });
@@ -69,8 +69,8 @@ void main() {
     Glados<FixedDaysDuration>().test('absolute', (duration) {
       expect(duration.absolute.isNonNegative, true);
     });
-    Glados<FixedDaysDuration>().test('asWeeksAndDays', (duration) {
-      final (weeks, days) = duration.asWeeksAndDays;
+    Glados<FixedDaysDuration>().test('splitWeeksDays', (duration) {
+      final (weeks, days) = duration.splitWeeksDays;
       expect(
         weeks.isNonNegative && days.isNonNegative ||
             weeks.isNonPositive && days.isNonPositive,

@@ -335,7 +335,7 @@ final class Date
   /// The returned [Years], [Months]y and [Days] are all `>= 0` or all `<= 0`.
   (Years, Months, Days) untilInYearsMonthsDays(Date other) {
     final (monthsRaw, days) = untilInMonthsDays(other);
-    final (years, months) = monthsRaw.asYearsAndMonths;
+    final (years, months) = monthsRaw.splitYearsMonths;
     return (years, months, days);
   }
 

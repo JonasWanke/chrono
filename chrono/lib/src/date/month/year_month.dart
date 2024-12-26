@@ -63,7 +63,7 @@ final class YearMonth
       (lastDay.day - firstDay.nextOrSame(weekday).day) ~/ Days.perWeek + 1;
 
   YearMonth operator +(MonthsDuration duration) {
-    final (years, months) = duration.asYearsAndMonths;
+    final (years, months) = duration.splitYearsMonths;
 
     final rawNewMonth = this.month.number + months.inMonths;
     final (yearAdjustment, month) = switch (rawNewMonth) {

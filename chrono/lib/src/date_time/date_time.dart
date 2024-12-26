@@ -166,7 +166,7 @@ final class DateTime
 
 extension on TimeDuration {
   (Days, Time) toDaysAndTime() {
-    var (seconds, nanoseconds) = asSecondsAndNanoseconds;
+    var (seconds, nanoseconds) = splitSecondsNanos;
     if (seconds.isZero && nanoseconds.isNegative) {
       seconds = -const Seconds(1);
       nanoseconds += Nanoseconds.second;

@@ -51,15 +51,12 @@ abstract class TimeDuration extends Duration
   BigInt get inNanoseconds => asNanoseconds.inNanoseconds;
 
   (Microseconds, Nanoseconds) get splitMicrosNanos {
-    final inNanoseconds = this.inNanoseconds;
-    final microseconds =
-        inNanoseconds ~/ BigInt.from(Nanoseconds.perMicrosecond);
-    final nanoseconds =
-        inNanoseconds - microseconds * BigInt.from(Nanoseconds.perMicrosecond);
-    return (
-      Microseconds(microseconds.toInt()),
-      Nanoseconds.fromBigInt(nanoseconds)
+    final asNanoseconds = this.asNanoseconds;
+    final microseconds = Microseconds(
+      (asNanoseconds.inNanoseconds ~/ BigInt.from(Nanoseconds.perMicrosecond))
+          .toInt(),
     );
+    return (microseconds, asNanoseconds - microseconds);
   }
 
   (Milliseconds, Microseconds, Nanoseconds) get splitMillisMicrosNanos {
@@ -69,11 +66,12 @@ abstract class TimeDuration extends Duration
   }
 
   (Seconds, Nanoseconds) get splitSecondsNanos {
-    final inNanoseconds = this.inNanoseconds;
-    final seconds = inNanoseconds ~/ BigInt.from(Nanoseconds.perSecond);
-    final nanoseconds =
-        inNanoseconds - seconds * BigInt.from(Nanoseconds.perSecond);
-    return (Seconds(seconds.toInt()), Nanoseconds.fromBigInt(nanoseconds));
+    final asNanoseconds = this.asNanoseconds;
+    final seconds = Seconds(
+      (asNanoseconds.inNanoseconds ~/ BigInt.from(Nanoseconds.perSecond))
+          .toInt(),
+    );
+    return (seconds, asNanoseconds - seconds);
   }
 
   (Seconds, Milliseconds, Microseconds, Nanoseconds)
@@ -436,18 +434,18 @@ abstract class MicrosecondsDuration extends NanosecondsDuration {
   Nanoseconds get asNanoseconds => Nanoseconds.microsecond * inMicroseconds;
 
   (Milliseconds, Microseconds) get splitMillisMicros {
-    final inMicroseconds = this.inMicroseconds;
-    final milliseconds = inMicroseconds ~/ Microseconds.perMillisecond;
-    final microseconds =
-        inMicroseconds - milliseconds * Microseconds.perMillisecond;
-    return (Milliseconds(milliseconds), Microseconds(microseconds));
+    final asMicroseconds = this.asMicroseconds;
+    final milliseconds = Milliseconds(
+      asMicroseconds.inMicroseconds ~/ Microseconds.perMillisecond,
+    );
+    return (milliseconds, asMicroseconds - milliseconds);
   }
 
   (Seconds, Microseconds) get splitSecondsMicros {
-    final inMicroseconds = this.inMicroseconds;
-    final seconds = inMicroseconds ~/ Microseconds.perSecond;
-    final microseconds = inMicroseconds - seconds * Microseconds.perSecond;
-    return (Seconds(seconds), Microseconds(microseconds));
+    final asMicroseconds = this.asMicroseconds;
+    final seconds =
+        Seconds(asMicroseconds.inMicroseconds ~/ Microseconds.perSecond);
+    return (seconds, asMicroseconds - seconds);
   }
 
   (Seconds, Milliseconds, Microseconds) get splitSecondsMillisMicros {
@@ -604,10 +602,10 @@ abstract class MillisecondsDuration extends MicrosecondsDuration {
   Microseconds get asMicroseconds => Microseconds.millisecond * inMilliseconds;
 
   (Seconds, Milliseconds) get splitSecondsMillis {
-    final inMilliseconds = this.inMilliseconds;
-    final seconds = inMilliseconds ~/ Milliseconds.perSecond;
-    final microseconds = inMilliseconds - seconds * Milliseconds.perSecond;
-    return (Seconds(seconds), Milliseconds(microseconds));
+    final asMilliseconds = this.asMilliseconds;
+    final seconds =
+        Seconds(asMilliseconds.inMilliseconds ~/ Milliseconds.perSecond);
+    return (seconds, asMilliseconds - seconds);
   }
 
   (Minutes, Seconds, Milliseconds) get splitMinutesSecondsMillis {
@@ -743,8 +741,7 @@ abstract class SecondsDuration extends MillisecondsDuration {
   (Minutes, Seconds) get splitMinutesSeconds {
     final asSeconds = this.asSeconds;
     final minutes = Minutes(asSeconds.inSeconds ~/ Seconds.perMinute);
-    final seconds = asSeconds.remainder(Seconds.perMinute);
-    return (minutes, seconds);
+    return (minutes, asSeconds - minutes);
   }
 
   (Hours, Minutes, Seconds) get splitHoursMinutesSeconds {
@@ -862,8 +859,7 @@ abstract class MinutesDuration extends SecondsDuration {
   (Hours, Minutes) get splitHoursMinutes {
     final asMinutes = this.asMinutes;
     final hours = Hours(asMinutes.inMinutes ~/ Minutes.perHour);
-    final minutes = asMinutes.remainder(Minutes.perHour);
-    return (hours, minutes);
+    return (hours, asMinutes - hours);
   }
 
   @override

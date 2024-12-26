@@ -59,8 +59,8 @@ final class Time
       );
     }
 
-    final (asSeconds, nanoseconds) = timeSinceMidnight.asSecondsAndNanoseconds;
-    final (hours, minutes, seconds) = asSeconds.asHoursAndMinutesAndSeconds;
+    final (asSeconds, nanoseconds) = timeSinceMidnight.splitSecondsNanos;
+    final (hours, minutes, seconds) = asSeconds.splitHoursMinutesSeconds;
     final time = Time._(
       hours.inHours,
       minutes.inMinutes,
