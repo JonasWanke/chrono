@@ -72,8 +72,13 @@ final class CompoundCalendarDuration extends CalendarDuration {
   CompoundCalendarDuration operator *(int factor) =>
       CompoundCalendarDuration(months: months * factor, days: days * factor);
   @override
-  CompoundCalendarDuration operator ~/(int divisor) => CompoundCalendarDuration(
-      months: months ~/ divisor, days: days ~/ divisor);
+  CompoundCalendarDuration operator ~/(int divisor) {
+    return CompoundCalendarDuration(
+      months: months ~/ divisor,
+      days: days ~/ divisor,
+    );
+  }
+
   @override
   CompoundCalendarDuration operator %(int divisor) =>
       CompoundCalendarDuration(months: months % divisor, days: days % divisor);
@@ -260,7 +265,7 @@ final class Years extends MonthsDuration {
   Nanoseconds get asNormalLeapNanoseconds => asLeapDays.asNormalNanoseconds;
 
   @override
-  (Years, Months) get asYearsAndMonths => (this, const Months(0));
+  (Years, Months) get splitYearsMonths => (this, const Months(0));
   @override
   Months get asMonths => Months.year * inYears;
 
