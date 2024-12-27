@@ -242,6 +242,7 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 [`DaysDuration`]: https://pub.dev/documentation/chrono/latest/chrono/DaysDuration-class.html
 [`Hours`]: https://pub.dev/documentation/chrono/latest/chrono/Hours-class.html
 [`Instant`]: https://pub.dev/documentation/chrono/latest/chrono/Instant-class.html
+[`InstantAsIntCodec`]: https://pub.dev/documentation/chrono/latest/chrono/InstantAsIntCodec-class.html
 [`InstantAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/InstantAsIsoStringCodec-class.html
 [`Microseconds`]: https://pub.dev/documentation/chrono/latest/chrono/Microseconds-class.html
 [`Milliseconds`]: https://pub.dev/documentation/chrono/latest/chrono/Milliseconds-class.html
