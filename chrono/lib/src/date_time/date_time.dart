@@ -193,7 +193,8 @@ extension on TimeDuration {
   }
 }
 
-/// Encodes a [CDateTime] as an ISO 8601 string, e.g., “2023-04-23T18:24:20.12”.
+/// Encodes a [CDateTime] as an ISO 8601 string, e.g.,
+/// “2023-04-23T18:24:20.123456789”.
 class CDateTimeAsIsoStringCodec
     extends CodecWithParserResult<CDateTime, String> {
   const CDateTimeAsIsoStringCodec();
