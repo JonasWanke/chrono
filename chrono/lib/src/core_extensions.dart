@@ -24,6 +24,10 @@ extension DateTimeChronoExtension on DateTime {
   Time get asChronoTime => asChronoDateTime.time;
 }
 
+extension DurationChronoExtension on Duration {
+  Microseconds get asChronoDuration => Microseconds.fromCore(this);
+}
+
 extension StopwatchChronoExtension on Stopwatch {
   Microseconds get elapsedChrono => Microseconds(elapsedMicroseconds);
 }
