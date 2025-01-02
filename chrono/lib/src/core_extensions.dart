@@ -12,16 +12,16 @@ import 'time/duration.dart';
 import 'time/time.dart';
 
 extension DateTimeChronoExtension on DateTime {
-  CDateTime get chronoDateTime => CDateTime.fromCore(this);
-  Date get chronoDate => Date.fromCore(this);
-  Year get chronoYear => Year(year);
-  Month get chronoMonth => Month.fromNumber(month).unwrap();
-  YearMonth get chronoYearMonth => YearMonth(chronoYear, chronoMonth);
-  MonthDay get chronoMonthDay => MonthDay.from(chronoMonth, day).unwrap();
-  IsoYearWeek get chronoIsoYearWeek => chronoDate.isoYearWeek;
-  YearWeek chronoYearWeek(WeekConfig config) => chronoDate.yearWeek(config);
-  Weekday get chronoWeekday => Weekday.fromNumber(weekday).unwrap();
-  Time get chronoTime => chronoDateTime.time;
+  CDateTime get asChronoDateTime => CDateTime.fromCore(this);
+  Date get asChronoDate => Date.fromCore(this);
+  Year get asChronoYear => Year(year);
+  Month get asChronoMonth => Month.fromNumber(month).unwrap();
+  YearMonth get asChronoYearMonth => YearMonth(asChronoYear, asChronoMonth);
+  MonthDay get asChronoMonthDay => MonthDay.from(asChronoMonth, day).unwrap();
+  IsoYearWeek get asChronoIsoYearWeek => asChronoDate.isoYearWeek;
+  YearWeek asChronoYearWeek(WeekConfig config) => asChronoDate.yearWeek(config);
+  Weekday get asChronoWeekday => Weekday.fromNumber(weekday).unwrap();
+  Time get asChronoTime => asChronoDateTime.time;
 }
 
 extension StopwatchChronoExtension on Stopwatch {
