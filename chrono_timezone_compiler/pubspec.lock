@@ -257,7 +257,7 @@ packages:
     source: hosted
     version: "2.3.2"
   dartx:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: dartx
       sha256: "8b25435617027257d43e6508b5fe061012880ddfdaa75a71d607c3de2a13d244"
@@ -272,6 +272,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.3"
+  deranged:
+    dependency: transitive
+    description:
+      path: "../../deranged"
+      relative: true
+    source: path
+    version: "0.0.0"
   email_validator:
     dependency: transitive
     description:
