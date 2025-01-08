@@ -70,6 +70,14 @@ final class IsoYearWeek
         : IsoYearWeek._(weekBasedYear, week - 1);
   }
 
+  /// Returns `this - other` as a number of [Weeks].
+  Weeks difference(IsoYearWeek other) {
+    final (weeks, days) =
+        dates.start.differenceInDays(other.dates.start).splitWeeksDays;
+    assert(days.isZero);
+    return weeks;
+  }
+
   Result<IsoYearWeek, String> copyWith({Year? weekBasedYear, int? week}) {
     return IsoYearWeek.from(
       weekBasedYear ?? this.weekBasedYear,

@@ -78,6 +78,18 @@ final class YearWeek
         : YearWeek._(weekBasedYear, week - 1, config);
   }
 
+  /// Returns `this - other` as a number of [Weeks].
+  ///
+  /// Both [YearWeek]s must have the same [config].
+  Weeks difference(YearWeek other) {
+    assert(config == other.config);
+
+    final (weeks, days) =
+        dates.start.differenceInDays(other.dates.start).splitWeeksDays;
+    assert(days.isZero);
+    return weeks;
+  }
+
   Result<YearWeek, String> copyWith({
     Year? weekBasedYear,
     int? week,
