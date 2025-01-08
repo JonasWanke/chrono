@@ -1,5 +1,6 @@
 import 'package:clock/clock.dart' as cl;
 import 'package:clock/clock.dart';
+import 'package:deranged/deranged.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:oxidized/oxidized.dart';
 
@@ -175,6 +176,11 @@ final class CDateTime
 
   @override
   String toString() => '${date}T$time';
+}
+
+extension RangeOfCDateTimeExtension on Range<CDateTime> {
+  Nanoseconds get timeDuration => end.timeDifference(start);
+  CompoundDuration get compoundDuration => end.difference(start);
 }
 
 extension on TimeDuration {

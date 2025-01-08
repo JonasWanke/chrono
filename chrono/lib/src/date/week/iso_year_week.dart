@@ -1,8 +1,10 @@
 import 'package:clock/clock.dart';
+import 'package:deranged/deranged.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../../codec.dart';
+import '../../date_time/date_time.dart';
 import '../../parser.dart';
 import '../../utils.dart';
 import '../date.dart';
@@ -16,7 +18,7 @@ import '../year.dart';
 @immutable
 final class IsoYearWeek
     with ComparisonOperatorsFromComparable<IsoYearWeek>
-    implements Comparable<IsoYearWeek> {
+    implements Comparable<IsoYearWeek>, Step<IsoYearWeek> {
   static Result<IsoYearWeek, String> from(Year weekBasedYear, int week) {
     if (week < 1 || week > weekBasedYear.numberOfIsoWeeks) {
       return Err('Invalid week for year $weekBasedYear: $week');
@@ -42,16 +44,19 @@ final class IsoYearWeek
   bool isCurrentInUtc({Clock? clock}) =>
       this == IsoYearWeek.currentInUtc(clock: clock);
 
-  Date get firstDay =>
-      Date.fromIsoYearWeekAndWeekday(this, Weekday.values.first);
-  Date get lastDay => Date.fromIsoYearWeekAndWeekday(this, Weekday.values.last);
-  Iterable<Date> get days {
-    final firstDay = this.firstDay;
-    return Weekday.values.map((weekday) => firstDay + Days(weekday.index));
+  /// The [Date]s in this month.
+  RangeInclusive<Date> get dates {
+    return RangeInclusive(
+      Date.fromIsoYearWeekAndWeekday(this, Weekday.values.first),
+      Date.fromIsoYearWeekAndWeekday(this, Weekday.values.last),
+    );
   }
 
+  /// The [DateTime]s in this week.
+  Range<CDateTime> get dateTimes => dates.dateTimes;
+
   IsoYearWeek operator +(Weeks duration) {
-    final newDate = firstDay + duration;
+    final newDate = dates.start + duration;
     assert(newDate.weekday == Weekday.monday);
     return newDate.isoYearWeek;
   }
@@ -60,13 +65,13 @@ final class IsoYearWeek
 
   IsoYearWeek get next {
     return week == weekBasedYear.numberOfIsoWeeks
-        ? (weekBasedYear + const Years(1)).firstIsoWeek
+        ? (weekBasedYear + const Years(1)).isoWeeks.start
         : IsoYearWeek._(weekBasedYear, week + 1);
   }
 
   IsoYearWeek get previous {
     return week == 1
-        ? (weekBasedYear - const Years(1)).lastIsoWeek
+        ? (weekBasedYear - const Years(1)).isoWeeks.endInclusive
         : IsoYearWeek._(weekBasedYear, week - 1);
   }
 
@@ -94,6 +99,11 @@ final class IsoYearWeek
   }
 
   @override
+  IsoYearWeek stepBy(int count) => this + Weeks(count);
+  @override
+  int stepsUntil(IsoYearWeek other) => other.difference(this).inWeeks;
+
+  @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is IsoYearWeek &&
@@ -109,6 +119,24 @@ final class IsoYearWeek
     final week = this.week.toString().padLeft(2, '0');
     return '$weekBasedYear-W$week';
   }
+}
+
+extension RangeOfIsoYearWeekChrono on Range<IsoYearWeek> {
+  /// The [Date]s in these weeks.
+  RangeInclusive<Date> get dates => inclusive.dates;
+
+  /// The [DateTime]s in these weeks.
+  Range<CDateTime> get dateTimes =>
+      start.dateTimes.start.rangeUntil(end.dates.start.dateTimes.start);
+}
+
+extension RangeInclusiveOfIsoYearWeekChrono on RangeInclusive<IsoYearWeek> {
+  /// The [Date]s in these weeks.
+  RangeInclusive<Date> get dates =>
+      start.dates.start.rangeTo(endInclusive.dates.endInclusive);
+
+  /// The [DateTime]s in these weeks.
+  Range<CDateTime> get dateTimes => exclusive.dateTimes;
 }
 
 /// Encodes a [IsoYearWeek] as an ISO 8601 string, e.g., “2023-W16”.

@@ -1,8 +1,10 @@
 import 'package:clock/clock.dart';
+import 'package:deranged/deranged.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../codec.dart';
+import '../date_time/date_time.dart';
 import '../parser.dart';
 import '../utils.dart';
 import 'date.dart';
@@ -32,7 +34,7 @@ import 'weekday.dart';
 @immutable
 final class Year
     with ComparisonOperatorsFromComparable<Year>
-    implements Comparable<Year> {
+    implements Comparable<Year>, Step<Year> {
   const Year(this.number);
 
   /// The UNIX epoch: 1970.
@@ -76,35 +78,22 @@ final class Year
 
   Days get length => isLeapYear ? Days.leapYear : Days.normalYear;
 
-  /// The first month of this year.
-  YearMonth get firstMonth => YearMonth(this, Month.january);
-
-  /// The last month of this year.
-  YearMonth get lastMonth => YearMonth(this, Month.december);
-
-  /// An iterable of all months in this year.
-  Iterable<YearMonth> get months =>
-      Month.values.map((month) => YearMonth(this, month));
+  /// The [YearMonth]s of this year.
+  RangeInclusive<YearMonth> get months =>
+      YearMonth(this, Month.january).rangeTo(YearMonth(this, Month.december));
 
   int get numberOfIsoWeeks {
     // https://en.wikipedia.org/wiki/ISO_week_date#Weeks_per_year
-    final isLongWeek = lastDay.weekday == Weekday.thursday ||
-        previous.lastDay.weekday == Weekday.wednesday;
+    final isLongWeek = dates.endInclusive.weekday == Weekday.thursday ||
+        previous.dates.endInclusive.weekday == Weekday.wednesday;
     return isLongWeek ? 53 : 52;
   }
 
-  /// The first ISO week of this year.
-  IsoYearWeek get firstIsoWeek => IsoYearWeek.from(this, 1).unwrap();
-
-  /// The last ISO week of this year.
-  IsoYearWeek get lastIsoWeek =>
-      IsoYearWeek.from(this, numberOfIsoWeeks).unwrap();
-
-  /// An iterable of all weeks in this year.
-  Iterable<IsoYearWeek> get isoWeeks {
-    return Iterable.generate(
-      numberOfIsoWeeks,
-      (it) => IsoYearWeek.from(this, it + 1).unwrap(),
+  /// The [IsoYearWeek]s in this year.
+  RangeInclusive<IsoYearWeek> get isoWeeks {
+    return RangeInclusive(
+      IsoYearWeek.from(this, 1).unwrap(),
+      IsoYearWeek.from(this, numberOfIsoWeeks).unwrap(),
     );
   }
 
@@ -117,13 +106,13 @@ final class Year
   }
 
   Date firstDayOfWeekBasedYear(WeekConfig config) {
-    final weekDate = firstDay +
+    final weekDate = dates.start +
         Days.week -
-        Days(firstDay.weekday.number(firstDayOfWeek: config.firstDay) - 1);
+        Days(dates.start.weekday.number(firstDayOfWeek: config.firstDay) - 1);
     assert(weekDate.weekday == config.firstDay);
 
     final reference =
-        Date.fromYearMonthAndDay(firstMonth, config.minDaysInFirstWeek)
+        Date.fromYearMonthAndDay(months.start, config.minDaysInFirstWeek)
             .unwrap();
     return weekDate > reference ? weekDate - const Weeks(1) : weekDate;
   }
@@ -131,22 +120,19 @@ final class Year
   Date lastDayOfWeekBasedYear(WeekConfig config) =>
       next.firstDayOfWeekBasedYear(config) - const Days(1);
 
-  /// The first week of this year.
-  YearWeek firstWeek(WeekConfig config) =>
-      YearWeek.from(this, 1, config).unwrap();
+  /// The [YearWeek]s in this year.
+  RangeInclusive<YearWeek> weeks(WeekConfig config) {
+    return RangeInclusive(
+      YearWeek.from(this, 1, config).unwrap(),
+      YearWeek.from(this, numberOfWeeks(config), config).unwrap(),
+    );
+  }
 
-  /// The last week of this year.
-  YearWeek lastWeek(WeekConfig config) =>
-      YearWeek.from(this, numberOfWeeks(config), config).unwrap();
+  /// The [Date]s in this year.
+  RangeInclusive<Date> get dates => months.dates;
 
-  /// The first day of this year.
-  Date get firstDay => firstMonth.firstDay;
-
-  /// The last day of this year.
-  Date get lastDay => lastMonth.lastDay;
-
-  /// An iterable of all days in this year.
-  Iterable<Date> get days => months.expand((it) => it.days);
+  /// The [CDateTime]s in this year.
+  Range<CDateTime> get dateTimes => dates.dateTimes;
 
   Year operator +(Years duration) => Year(number + duration.inYears);
   Year operator -(Years duration) => Year(number - duration.inYears);
@@ -164,6 +150,11 @@ final class Year
   int compareTo(Year other) => number.compareTo(other.number);
 
   @override
+  Year stepBy(int count) => this + Years(count);
+  @override
+  int stepsUntil(Year other) => other.difference(this).inYears;
+
+  @override
   bool operator ==(Object other) =>
       identical(this, other) || (other is Year && number == other.number);
   @override
@@ -177,6 +168,46 @@ final class Year
       _ => number.toString().padLeft(4, '0'),
     };
   }
+}
+
+extension RangeOfYearChrono on Range<Year> {
+  /// The [YearMonth]s in these years.
+  RangeInclusive<YearMonth> get months => inclusive.months;
+
+  /// The [IsoYearWeek]s in these years.
+  RangeInclusive<IsoYearWeek> get isoWeeks => inclusive.isoWeeks;
+
+  /// The [YearWeek]s in these years.
+  RangeInclusive<YearWeek> weeks(WeekConfig config) => inclusive.weeks(config);
+
+  /// The [Date]s in these years.
+  RangeInclusive<Date> get dates => inclusive.dates;
+
+  /// The [DateTime]s in these years.
+  Range<CDateTime> get dateTimes =>
+      start.dateTimes.start.rangeUntil(end.dates.start.dateTimes.start);
+}
+
+extension RangeInclusiveOfYearChrono on RangeInclusive<Year> {
+  /// The [YearMonth]s in these years.
+  RangeInclusive<YearMonth> get months =>
+      start.months.start.rangeTo(endInclusive.months.endInclusive);
+
+  /// The [IsoYearWeek]s in these years.
+  RangeInclusive<IsoYearWeek> get isoWeeks =>
+      start.isoWeeks.start.rangeTo(endInclusive.isoWeeks.endInclusive);
+
+  /// The [YearWeek]s in these years.
+  RangeInclusive<YearWeek> weeks(WeekConfig config) => start
+      .weeks(config)
+      .start
+      .rangeTo(endInclusive.weeks(config).endInclusive);
+
+  /// The [Date]s in these years.
+  RangeInclusive<Date> get dates => months.dates;
+
+  /// The [DateTime]s in these years.
+  Range<CDateTime> get dateTimes => exclusive.dateTimes;
 }
 
 /// Encodes a year as an ISO 8601 string: `YYYY`, `-YYYY`, or `+YYYYY`.

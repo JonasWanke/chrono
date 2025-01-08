@@ -1,8 +1,10 @@
 import 'package:clock/clock.dart';
+import 'package:deranged/deranged.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../../codec.dart';
+import '../../date_time/date_time.dart';
 import '../../parser.dart';
 import '../../utils.dart';
 import '../date.dart';
@@ -15,7 +17,7 @@ import 'month.dart';
 @immutable
 final class YearMonth
     with ComparisonOperatorsFromComparable<YearMonth>
-    implements Comparable<YearMonth> {
+    implements Comparable<YearMonth>, Step<YearMonth> {
   const YearMonth(this.year, this.month);
   static Result<YearMonth, String> fromRaw(int year, int month) =>
       Month.fromNumber(month).map((month) => YearMonth(Year(year), month));
@@ -43,23 +45,22 @@ final class YearMonth
         : const Days(29);
   }
 
-  /// The first day of this month.
-  Date get firstDay => Date.fromYearMonthAndDay(this, 1).unwrap();
-
-  /// The last day of this month.
-  Date get lastDay => Date.fromYearMonthAndDay(this, length.inDays).unwrap();
-
-  /// An iterable of all days in this month.
-  Iterable<Date> get days {
-    return Iterable.generate(
-      length.inDays,
-      (it) => Date.fromYearMonthAndDay(this, it + 1).unwrap(),
+  /// The [Date]s in this month.
+  RangeInclusive<Date> get dates {
+    return RangeInclusive(
+      Date.fromYearMonthAndDay(this, 1).unwrap(),
+      Date.fromYearMonthAndDay(this, length.inDays).unwrap(),
     );
   }
 
+  /// The [DateTime]s in this month.
+  Range<CDateTime> get dateTimes => dates.dateTimes;
+
   /// How many times the given [weekday] occurs in this month.
   int weekdayCount(Weekday weekday) =>
-      (lastDay.day - firstDay.nextOrSame(weekday).day) ~/ Days.perWeek + 1;
+      (dates.endInclusive.day - dates.start.nextOrSame(weekday).day) ~/
+          Days.perWeek +
+      1;
 
   YearMonth operator +(MonthsDuration duration) {
     final (years, months) = duration.splitYearsMonths;
@@ -104,6 +105,11 @@ final class YearMonth
   }
 
   @override
+  YearMonth stepBy(int count) => this + Months(count);
+  @override
+  int stepsUntil(YearMonth other) => other.difference(this).inMonths;
+
+  @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is YearMonth && year == other.year && month == other.month);
@@ -117,6 +123,23 @@ final class YearMonth
     final month = this.month.number.toString().padLeft(2, '0');
     return '$year-$month';
   }
+}
+
+extension RangeOfYearMonthChrono on Range<YearMonth> {
+  /// The [Date]s in these months.
+  RangeInclusive<Date> get dates => inclusive.dates;
+
+  /// The [DateTime]s in these months.
+  Range<CDateTime> get dateTimes => dates.dateTimes;
+}
+
+extension RangeInclusiveOfYearMonthChrono on RangeInclusive<YearMonth> {
+  /// The [Date]s in these months.
+  RangeInclusive<Date> get dates =>
+      start.dates.start.rangeTo(endInclusive.dates.endInclusive);
+
+  /// The [DateTime]s in these months.
+  Range<CDateTime> get dateTimes => exclusive.dateTimes;
 }
 
 /// Encodes a [YearMonth] as an ISO 8601 string, e.g., “2023-04”.

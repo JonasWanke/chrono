@@ -1,11 +1,12 @@
 import 'package:clock/clock.dart';
+import 'package:deranged/deranged.dart';
 import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
+import '../../date_time/date_time.dart';
 import '../../utils.dart';
 import '../date.dart';
 import '../duration.dart';
-import '../weekday.dart';
 import '../year.dart';
 import 'week_config.dart';
 
@@ -15,7 +16,7 @@ import 'week_config.dart';
 @immutable
 final class YearWeek
     with ComparisonOperatorsFromComparable<YearWeek>
-    implements Comparable<YearWeek> {
+    implements Comparable<YearWeek>, Step<YearWeek> {
   static Result<YearWeek, String> from(
     Year weekBasedYear,
     int week,
@@ -50,16 +51,18 @@ final class YearWeek
   bool isCurrentInUtc({Clock? clock}) =>
       this == YearWeek.currentInUtc(config, clock: clock);
 
-  Date get firstDay =>
-      weekBasedYear.firstDayOfWeekBasedYear(config) + Weeks(week - 1);
-  Date get lastDay => firstDay + const Days(Days.perWeek - 1);
-  Iterable<Date> get days {
-    final firstDay = this.firstDay;
-    return Weekday.values.map((weekday) => firstDay + Days(weekday.index));
+  /// The [Date]s in this week.
+  RangeInclusive<Date> get dates {
+    final firstDay =
+        weekBasedYear.firstDayOfWeekBasedYear(config) + Weeks(week - 1);
+    return RangeInclusive(firstDay, firstDay + const Days(Days.perWeek - 1));
   }
 
+  /// The [DateTime]s in this week.
+  Range<CDateTime> get dateTimes => dates.dateTimes;
+
   YearWeek operator +(Weeks duration) {
-    final newDate = firstDay + duration;
+    final newDate = dates.start + duration;
     assert(newDate.weekday == config.firstDay);
     return newDate.yearWeek(config);
   }
@@ -68,13 +71,13 @@ final class YearWeek
 
   YearWeek get next {
     return week == weekBasedYear.numberOfWeeks(config)
-        ? (weekBasedYear + const Years(1)).firstWeek(config)
+        ? (weekBasedYear + const Years(1)).weeks(config).start
         : YearWeek._(weekBasedYear, week + 1, config);
   }
 
   YearWeek get previous {
     return week == 1
-        ? (weekBasedYear - const Years(1)).lastWeek(config)
+        ? (weekBasedYear - const Years(1)).weeks(config).endInclusive
         : YearWeek._(weekBasedYear, week - 1, config);
   }
 
@@ -113,6 +116,11 @@ final class YearWeek
   }
 
   @override
+  YearWeek stepBy(int count) => this + Weeks(count);
+  @override
+  int stepsUntil(YearWeek other) => other.difference(this).inWeeks;
+
+  @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is YearWeek &&
@@ -126,4 +134,21 @@ final class YearWeek
 
   @override
   String toString() => 'Week $week of $weekBasedYear with $config';
+}
+
+extension RangeOfYearWeekChrono on Range<YearWeek> {
+  /// The [Date]s in these weeks.
+  RangeInclusive<Date> get dates => inclusive.dates;
+
+  /// The [DateTime]s in these weeks.
+  Range<CDateTime> get dateTimes => dates.dateTimes;
+}
+
+extension RangeInclusiveOfYearWeekChrono on RangeInclusive<YearWeek> {
+  /// The [Date]s in these weeks.
+  RangeInclusive<Date> get dates =>
+      start.dates.start.rangeTo(endInclusive.dates.endInclusive);
+
+  /// The [DateTime]s in these weeks.
+  Range<CDateTime> get dateTimes => exclusive.dateTimes;
 }

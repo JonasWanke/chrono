@@ -1,5 +1,7 @@
+import 'dart:math';
+
 import 'package:clock/clock.dart';
-import 'package:dartx/dartx.dart';
+import 'package:deranged/deranged.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:oxidized/oxidized.dart';
 
@@ -27,7 +29,7 @@ import 'year.dart';
 @immutable
 final class Date
     with ComparisonOperatorsFromComparable<Date>
-    implements Comparable<Date> {
+    implements Comparable<Date>, Step<Date> {
   static Result<Date, String> from(Year year, Month month, int day) =>
       fromYearMonthAndDay(YearMonth(year, month), day);
   static Result<Date, String> fromRaw(int year, int month, int day) =>
@@ -177,7 +179,7 @@ final class Date
       CDateTime.nowInUtc(clock: clock).date;
 
   static final _streamEverySecond =
-      Stream<void>.periodic(1.seconds).asBroadcastStream();
+      Stream<void>.periodic(const Duration(seconds: 1)).asBroadcastStream();
   static Stream<Date> streamInLocalZone({Clock? clock}) {
     return _streamEverySecond
         .map((_) => Date.todayInLocalZone(clock: clock))
@@ -215,8 +217,8 @@ final class Date
     // Algorithm from https://en.wikipedia.org/wiki/ISO_week_date#Algorithms
     final weekOfYear = (dayOfYear - weekday.isoNumber + 10) ~/ Days.perWeek;
     return switch (weekOfYear) {
-      0 => year.previous.lastIsoWeek,
-      53 when year.numberOfIsoWeeks == 52 => year.next.firstIsoWeek,
+      0 => year.previous.isoWeeks.endInclusive,
+      53 when year.numberOfIsoWeeks == 52 => year.next.isoWeeks.start,
       _ => IsoYearWeek.from(year, weekOfYear).unwrap()
     };
   }
@@ -285,6 +287,9 @@ final class Date
   /// A [CDateTime] at [Time.noon] on this date.
   CDateTime get atNoon => at(Time.noon);
 
+  /// The [CDateTime]s in this date.
+  Range<CDateTime> get dateTimes => atMidnight.rangeUntil(next.atMidnight);
+
   /// Adds the given [duration] to this date.
   ///
   /// The calculation is done as follows:
@@ -305,7 +310,7 @@ final class Date
     final yearMonthWithMonths = yearMonth + months;
     final dateWithMonths = Date._unchecked(
       yearMonthWithMonths,
-      day.coerceAtMost(yearMonthWithMonths.length.inDays),
+      min(day, yearMonthWithMonths.length.inDays),
     );
 
     return days.inDays == 0
@@ -400,6 +405,11 @@ final class Date
   }
 
   @override
+  Date stepBy(int count) => this + Days(count);
+  @override
+  int stepsUntil(Date other) => other.differenceInDays(this).inDays;
+
+  @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is Date && yearMonth == other.yearMonth && day == other.day);
@@ -420,6 +430,16 @@ final class Date
   }
 
   String toWeekDateString() => '$isoYearWeek-${weekday.isoNumber}';
+}
+
+extension RangeOfDateChrono on Range<Date> {
+  /// The [CDateTime]s in these dates.
+  Range<CDateTime> get dateTimes => start.atMidnight.rangeUntil(end.atMidnight);
+}
+
+extension RangeInclusiveOfDateChrono on RangeInclusive<Date> {
+  /// The [CDateTime]s in these dates.
+  Range<CDateTime> get dateTimes => exclusive.dateTimes;
 }
 
 /// Encodes a [Date] as an ISO 8601 string, e.g., “2023-04-23”.

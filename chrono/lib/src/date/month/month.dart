@@ -1,4 +1,5 @@
 import 'package:clock/clock.dart';
+import 'package:deranged/deranged.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../../codec.dart';
@@ -96,13 +97,24 @@ enum Month
   /// The maximum number of days in this month.
   Days get maxLength => lengthInLeapYear;
 
-  MonthDay get firstDay => MonthDay.from(this, 1).unwrap();
-  MonthDay get lastDayInCommonYear =>
-      MonthDay.from(this, lengthInCommonYear.inDays).unwrap();
-  MonthDay get lastDayInLeapYear =>
-      MonthDay.from(this, lengthInLeapYear.inDays).unwrap();
-  MonthDay get minLastDay => lastDayInCommonYear;
-  MonthDay get maxLastDay => lastDayInLeapYear;
+  /// The [MonthDay]s in this month in a common (non-leap) year.
+  RangeInclusive<MonthDay> get daysInCommonYear {
+    return RangeInclusive(
+      MonthDay.from(this, 1).unwrap(),
+      MonthDay.from(this, lengthInCommonYear.inDays).unwrap(),
+    );
+  }
+
+  /// The [MonthDay]s in this month in a leap year.
+  RangeInclusive<MonthDay> get daysInLeapYear {
+    return RangeInclusive(
+      MonthDay.from(this, 1).unwrap(),
+      MonthDay.from(this, lengthInLeapYear.inDays).unwrap(),
+    );
+  }
+
+  MonthDay get minLastDay => daysInCommonYear.endInclusive;
+  MonthDay get maxLastDay => daysInLeapYear.endInclusive;
 
   Month operator +(MonthsDuration duration) =>
       values[(index + duration.asMonths.inMonths) % values.length];
