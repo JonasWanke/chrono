@@ -10,8 +10,16 @@ import 'date/year.dart';
 import 'date_time/date_time.dart';
 import 'time/duration.dart';
 import 'time/time.dart';
+import 'unix_epoch_timestamp.dart';
 
 extension DateTimeChronoExtension on DateTime {
+  Instant get asChronoInstant => Instant.fromCore(this);
+  UnixEpochMicroseconds get asChronoUnixEpochMicroseconds =>
+      UnixEpochMicroseconds.fromCore(this);
+  UnixEpochMilliseconds get asChronoUnixEpochMilliseconds =>
+      UnixEpochMilliseconds.fromCore(this);
+  UnixEpochSeconds get asChronoUnixEpochSeconds =>
+      UnixEpochSeconds.fromCore(this);
   CDateTime get asChronoDateTime => CDateTime.fromCore(this);
   Date get asChronoDate => Date.fromCore(this);
   Year get asChronoYear => Year(year);
