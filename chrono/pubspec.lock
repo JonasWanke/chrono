@@ -30,14 +30,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.11.3"
-  ansi_styles:
-    dependency: transitive
-    description:
-      name: ansi_styles
-      sha256: "9c656cc12b3c27b17dd982b2cc5c0cfdfbdabd7bc8f3ae5e8542d9867b47ce8a"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.3.2+1"
   ansicolor:
     dependency: transitive
     description:
@@ -102,14 +94,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.19.1"
-  color:
-    dependency: transitive
-    description:
-      name: color
-      sha256: ddcdf1b3badd7008233f5acffaf20ca9f5dc2cd0172b75f68f24526a5f5725cb
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.0"
   convert:
     dependency: transitive
     description:
@@ -167,14 +151,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.8"
-  dartx:
-    dependency: transitive
-    description:
-      name: dartx
-      sha256: "8b25435617027257d43e6508b5fe061012880ddfdaa75a71d607c3de2a13d244"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.2.0"
   deranged:
     dependency: "direct main"
     description:
@@ -184,14 +160,6 @@ packages:
       url: "https://github.com/JonasWanke/deranged.git"
     source: git
     version: "0.0.0"
-  email_validator:
-    dependency: transitive
-    description:
-      name: email_validator
-      sha256: e9a90f27ab2b915a27d7f9c2a7ddda5dd752d6942616ee83529b686fc086221b
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.17"
   equatable:
     dependency: transitive
     description:
@@ -216,14 +184,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.1"
-  freezed_annotation:
-    dependency: transitive
-    description:
-      name: freezed_annotation
-      sha256: c2e2d632dd9b8a2b7751117abcfc2b4888ecfe181bd9fca7170d9ef02e595fe2
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.4.4"
   frontend_server_client:
     dependency: transitive
     description:
@@ -280,14 +240,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.2"
-  intl:
-    dependency: transitive
-    description:
-      name: intl
-      sha256: d6f56758b7d3014a48af9701c085700aac781a92a87a62b1333b46d8879661cf
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.19.0"
   io:
     dependency: transitive
     description:
@@ -408,14 +360,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.0"
-  rxdart:
-    dependency: transitive
-    description:
-      name: rxdart
-      sha256: "0c7c0cedd93788d996e33041ffecda924cc54389199cde4e6a34b440f50044cb"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.27.7"
   shelf:
     dependency: transitive
     description:
@@ -504,12 +448,12 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
-  supernova:
+  supernova_lints:
     dependency: "direct dev"
     description:
-      path: supernova
-      ref: "6da7cfcf12aa2755ed9f7e1a59458c600ef3e1d0"
-      resolved-ref: "6da7cfcf12aa2755ed9f7e1a59458c600ef3e1d0"
+      path: supernova_lints
+      ref: "7ceb4c4aac709a32599ee5e698f7a8b35316c4a5"
+      resolved-ref: "7ceb4c4aac709a32599ee5e698f7a8b35316c4a5"
       url: "https://github.com/JonasWanke/supernova.git"
     source: git
     version: "0.0.0"
@@ -545,31 +489,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.12"
-  time:
-    dependency: transitive
-    description:
-      name: time
-      sha256: "370572cf5d1e58adcb3e354c47515da3f7469dac3a95b447117e728e7be6f461"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.5"
-  time_machine:
-    dependency: transitive
-    description:
-      path: "."
-      ref: "0a68b36272f437bd5c638f79ab2f5b4cecb5dbcb"
-      resolved-ref: "0a68b36272f437bd5c638f79ab2f5b4cecb5dbcb"
-      url: "https://github.com/JonasWanke/time_machine.git"
-    source: git
-    version: "0.9.17"
-  todo:
-    dependency: transitive
-    description:
-      name: todo
-      sha256: "1c092daccc5e42568109716001f91e7cdfdb744aa2f3950ae67e64978ea4d3dd"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.1"
   typed_data:
     dependency: transitive
     description:

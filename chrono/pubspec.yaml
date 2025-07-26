@@ -21,8 +21,8 @@ dependencies:
   oxidized: ^6.0.0
 
 dev_dependencies:
-  supernova:
+  supernova_lints:
     git:
       url: https://github.com/JonasWanke/supernova.git
-      path: supernova
-      ref: 6da7cfcf12aa2755ed9f7e1a59458c600ef3e1d0
+      path: supernova_lints
+      ref: 7ceb4c4aac709a32599ee5e698f7a8b35316c4a5
