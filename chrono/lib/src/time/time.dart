@@ -1,5 +1,5 @@
 import 'package:clock/clock.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../codec.dart';
