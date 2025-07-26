@@ -1,4 +1,5 @@
 import 'package:chrono/chrono.dart';
+import 'package:deranged/deranged.dart';
 import 'package:glados/glados.dart';
 
 void main() {
@@ -24,11 +25,11 @@ void main() {
     );
 
     const startYear = Year(-10000); // Year(-1000000);
-    final startDate = startYear.firstDay;
+    final startDate = startYear.dates.start;
     final startDateDaysSinceUnixEpoch = startDate.daysSinceUnixEpoch;
 
     final endYear = Year(-startYear.number);
-    final endDate = endYear.lastDay;
+    final endDate = endYear.dates.endInclusive;
 
     final totalNumberOfDays = endDate.daysSinceUnixEpoch -
         startDate.daysSinceUnixEpoch +
@@ -49,7 +50,7 @@ void main() {
 
     final startTime = Instant.now();
     for (var year = startYear; year <= endYear; year += const Years(1)) {
-      for (final date in year.days) {
+      for (final date in year.dates.iter) {
         final daysSinceEpoch = date.daysSinceUnixEpoch;
         expect(daysSinceEpoch, previous.daysSinceUnixEpoch + const Days(1));
         expect(date, Date.fromDaysSinceUnixEpoch(daysSinceEpoch));
