@@ -4,7 +4,7 @@ version: 0.1.0
 repository: https://github.com/JonasWanke/chrono
 
 environment:
-  sdk: ^3.6.0
+  sdk: ^3.8.0
 
 dependencies:
   clock: ^1.1.1
@@ -25,4 +25,4 @@ dev_dependencies:
     git:
       url: https://github.com/JonasWanke/supernova.git
       path: supernova_lints
-      ref: 7ceb4c4aac709a32599ee5e698f7a8b35316c4a5
+      ref: 1fa8535952fa7152f2bad30937e6b5bca4129bea

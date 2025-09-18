@@ -18,8 +18,8 @@ dependencies:
 dev_dependencies:
   build_runner: ^2.4.11
   freezed: ^2.5.3
-  supernova:
+  supernova_lints:
     git:
       url: https://github.com/JonasWanke/supernova.git
-      path: supernova
-      ref: 6da7cfcf12aa2755ed9f7e1a59458c600ef3e1d0
+      path: supernova_lints
+      ref: 1fa8535952fa7152f2bad30937e6b5bca4129bea
