@@ -11,7 +11,7 @@ import 'month_day.dart';
 /// A month in the ISO 8601 calendar, e.g., April.
 enum Month
     with ComparisonOperatorsFromComparable<Month>
-    implements Comparable<Month> {
+    implements Comparable<Month>, Step<Month> {
   january,
   february,
   march,
@@ -140,6 +140,11 @@ enum Month
 
   @override
   int compareTo(Month other) => index.compareTo(other.index);
+
+  @override
+  Month stepBy(int count) => this + Months(count);
+  @override
+  int stepsUntil(Month other) => (other.index - index) % values.length;
 
   @override
   String toString() {
