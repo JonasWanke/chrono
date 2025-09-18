@@ -12,8 +12,8 @@ import '../time/duration.dart';
 ///
 /// - [CalendarDuration], which covers durations based on an integer number of
 ///   days or months.
-/// - [TimeDuration], which covers durations based on a fixed time like seconds.
-/// - [CompoundDuration], which combines [CalendarDuration] and [TimeDuration].
+/// - [TimeDelta], which covers durations based on a fixed time like seconds.
+/// - [CompoundDuration], which combines [CalendarDuration] and [TimeDelta].
 @immutable
 abstract class CDuration {
   const CDuration();
@@ -24,7 +24,7 @@ abstract class CDuration {
     final compoundDuration = asCompoundDuration;
     return compoundDuration.months.inMonths == 0 &&
         compoundDuration.days.inDays == 0 &&
-        compoundDuration.seconds.inNanoseconds == BigInt.zero;
+        compoundDuration.time.isZero;
   }
 
   CDuration operator -();
@@ -42,8 +42,8 @@ abstract class CDuration {
     final otherCompound = other.asCompoundDuration;
     return thisCompound.months.inMonths == otherCompound.months.inMonths &&
         thisCompound.days.inDays == otherCompound.days.inDays &&
-        thisCompound.seconds.inNanoseconds ==
-            otherCompound.seconds.inNanoseconds;
+        thisCompound.time.totalSeconds == otherCompound.time.totalSeconds &&
+        thisCompound.time.subSecondNanos == otherCompound.time.subSecondNanos;
   }
 
   @override
@@ -52,58 +52,58 @@ abstract class CDuration {
     return Object.hash(
       compound.months.inMonths,
       compound.days.inDays,
-      compound.seconds.inNanoseconds,
+      compound.time.totalSeconds,
+      compound.time.subSecondNanos,
     );
   }
 }
 
 /// [CDuration] subclass that can represent any duration by combining [Months],
-/// [Days], and [Nanoseconds].
+/// [Days], and [TimeDelta].
 final class CompoundDuration extends CDuration {
   CompoundDuration({
     CalendarDuration? monthsAndDays,
     MonthsDuration? months,
     DaysDuration? days,
-    TimeDuration? seconds,
-  })  : assert(
-          monthsAndDays == null || (months == null && days == null),
-          'Cannot specify both `monthsAndDays` and `months`/`days`.',
-        ),
-        monthsAndDays = monthsAndDays?.asCompoundCalendarDuration ??
-            CompoundCalendarDuration(
-              months: months?.asMonths ?? const Months(0),
-              days: days?.asDays ?? const Days(0),
-            ),
-        seconds = seconds?.asNanoseconds ?? Nanoseconds(0);
+    this.time = const TimeDelta.raw(0, 0),
+  }) : assert(
+         monthsAndDays == null || (months == null && days == null),
+         'Cannot specify both `monthsAndDays` and `months`/`days`.',
+       ),
+       monthsAndDays =
+           monthsAndDays?.asCompoundCalendarDuration ??
+           CompoundCalendarDuration(
+             months: months?.asMonths ?? const Months(0),
+             days: days?.asDays ?? const Days(0),
+           );
 
   final CompoundCalendarDuration monthsAndDays;
   Months get months => monthsAndDays.months;
   Days get days => monthsAndDays.days;
-  // TODO(JonasWanke): Rename, maybe to `time` or `nanoseconds`
-  final Nanoseconds seconds;
+  final TimeDelta time;
 
   @override
   CompoundDuration get asCompoundDuration => this;
 
   CompoundDuration operator +(CDuration duration) {
-    final CompoundDuration(:monthsAndDays, :seconds) =
+    final CompoundDuration(:monthsAndDays, time: seconds) =
         duration.asCompoundDuration;
     return CompoundDuration(
       monthsAndDays: this.monthsAndDays + monthsAndDays,
-      seconds: this.seconds + seconds,
+      time: time + seconds,
     );
   }
 
   CompoundDuration operator -(CDuration other) => this + -other;
   @override
   CompoundDuration operator -() =>
-      CompoundDuration(monthsAndDays: -monthsAndDays, seconds: -seconds);
+      CompoundDuration(monthsAndDays: -monthsAndDays, time: -time);
 
   @override
   CompoundDuration operator *(int factor) {
     return CompoundDuration(
       monthsAndDays: monthsAndDays * factor,
-      seconds: seconds * factor,
+      time: time * factor,
     );
   }
 
@@ -111,7 +111,7 @@ final class CompoundDuration extends CDuration {
   CompoundDuration operator ~/(int divisor) {
     return CompoundDuration(
       monthsAndDays: monthsAndDays ~/ divisor,
-      seconds: seconds ~/ divisor,
+      time: time ~/ divisor,
     );
   }
 
@@ -119,7 +119,7 @@ final class CompoundDuration extends CDuration {
   CompoundDuration operator %(int divisor) {
     return CompoundDuration(
       monthsAndDays: monthsAndDays % divisor,
-      seconds: seconds % divisor,
+      time: time % divisor,
     );
   }
 
@@ -127,10 +127,10 @@ final class CompoundDuration extends CDuration {
   CompoundDuration remainder(int divisor) {
     return CompoundDuration(
       monthsAndDays: monthsAndDays.remainder(divisor),
-      seconds: seconds.remainder(divisor),
+      time: time.remainder(divisor),
     );
   }
 
   @override
-  String toString() => '$months, $days, $seconds';
+  String toString() => '$months, $days, $time';
 }

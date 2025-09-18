@@ -7,11 +7,11 @@ import 'package:oxidized/oxidized.dart';
 import '../codec.dart';
 import '../date/date.dart';
 import '../date/duration.dart';
+import '../instant.dart';
 import '../parser.dart';
 import '../rounding.dart';
 import '../time/duration.dart';
 import '../time/time.dart';
-import '../unix_epoch_timestamp.dart';
 import '../utils.dart';
 import 'duration.dart';
 
@@ -40,12 +40,15 @@ final class CDateTime
     int hour = 0,
     int minute = 0,
     int second = 0,
-    Nanoseconds? nanoseconds,
-  ]) =>
-      Date.fromRaw(year, month, day).andThen(
-        (date) => Time.from(hour, minute, second, nanoseconds)
-            .map((time) => CDateTime(date, time)),
-      );
+    int nanoseconds = 0,
+  ]) => Date.fromRaw(year, month, day).andThen(
+    (date) => Time.from(
+      hour,
+      minute,
+      second,
+      nanoseconds,
+    ).map((time) => CDateTime(date, time)),
+  );
 
   /// The UNIX epoch: 1970-01-01 at 00:00.
   ///
@@ -53,7 +56,7 @@ final class CDateTime
   static final unixEpoch = Date.unixEpoch.at(Time.midnight);
 
   /// The date corresponding to the given duration since the [unixEpoch].
-  factory CDateTime.fromDurationSinceUnixEpoch(TimeDuration sinceUnixEpoch) {
+  factory CDateTime.fromDurationSinceUnixEpoch(TimeDelta sinceUnixEpoch) {
     final (days, time) = sinceUnixEpoch.toDaysAndTime();
     final date = Date.fromDaysSinceUnixEpoch(days);
     return CDateTime(date, time);
@@ -65,26 +68,26 @@ final class CDateTime
   /// [DateTime.hour], etc. getters and ignores whether that [ÐateTime] is in
   /// UTC or the local timezone.
   CDateTime.fromCore(DateTime dateTime)
-      : date = Date.fromCore(dateTime),
-        time = Time.from(
-          dateTime.hour,
-          dateTime.minute,
-          dateTime.second,
-          Nanoseconds.millisecond * dateTime.millisecond +
-              Nanoseconds.microsecond * dateTime.microsecond,
-        ).unwrap();
+    : date = Date.fromCore(dateTime),
+      time = Time.from(
+        dateTime.hour,
+        dateTime.minute,
+        dateTime.second,
+        dateTime.millisecond,
+        dateTime.microsecond,
+      ).unwrap();
   CDateTime.nowInLocalZone({Clock? clock})
-      : this.fromCore((clock ?? cl.clock).now().toLocal());
+    : this.fromCore((clock ?? cl.clock).now().toLocal());
   CDateTime.nowInUtc({Clock? clock})
-      : this.fromCore((clock ?? cl.clock).now().toUtc());
+    : this.fromCore((clock ?? cl.clock).now().toUtc());
 
   final Date date;
   final Time time;
 
   /// The duration since the [unixEpoch].
-  Nanoseconds get durationSinceUnixEpoch {
-    return time.nanosecondsSinceMidnight +
-        date.daysSinceUnixEpoch.asNormalHours;
+  TimeDelta get durationSinceUnixEpoch {
+    return time.timeSinceMidnight +
+        TimeDelta(normalDays: date.daysSinceUnixEpoch.inDays);
   }
 
   Instant get inLocalZone => Instant.fromCore(asCoreDateTimeInLocalZone);
@@ -102,7 +105,7 @@ final class CDateTime
       time.minute,
       time.second,
       0,
-      time.nanoseconds.roundToMicroseconds().inMicroseconds,
+      (time.subSecondNanos / TimeDelta.nanosPerMicrosecond).round(),
     );
   }
 
@@ -110,9 +113,8 @@ final class CDateTime
     final compoundDuration = duration.asCompoundDuration;
     var newDate = date + compoundDuration.months + compoundDuration.days;
 
-    final (days, newTime) =
-        (time.nanosecondsSinceMidnight + compoundDuration.seconds)
-            .toDaysAndTime();
+    final (days, newTime) = (time.timeSinceMidnight + compoundDuration.time)
+        .toDaysAndTime();
     newDate += days;
     return CDateTime(newDate, newTime);
   }
@@ -127,32 +129,31 @@ final class CDateTime
     if (this < other) return -other.difference(this);
 
     var days = date.differenceInDays(other.date);
-    Nanoseconds nanoseconds;
+    TimeDelta timeDelta;
     if (time < other.time) {
       days -= const Days(1);
-      nanoseconds = time.difference(other.time) + const Days(1).asNormalHours;
+      timeDelta = time.difference(other.time) + TimeDelta(normalDays: 1);
     } else {
-      nanoseconds = time.difference(other.time);
+      timeDelta = time.difference(other.time);
     }
 
-    return CompoundDuration(days: days, seconds: nanoseconds);
+    return CompoundDuration(days: days, time: timeDelta);
   }
 
   /// Returns `this - other` as fractional seconds.
   ///
   /// The returned [CompoundDuration]'s days and seconds are both `>= 0` or both
   /// `<= 0`. The months will always be zero.
-  Nanoseconds timeDifference(CDateTime other) {
+  TimeDelta timeDifference(CDateTime other) {
     final difference = this.difference(other);
     assert(difference.months.isZero);
-    return difference.seconds + difference.days.asNormalHours;
+    return difference.time + TimeDelta(normalDays: difference.days.inDays);
   }
 
   CDateTime roundTimeToMultipleOf(
-    TimeDuration duration, {
+    TimeDelta duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) =>
-      date.at(time.roundToMultipleOf(duration, rounding: rounding));
+  }) => date.at(time.roundToMultipleOf(duration, rounding: rounding));
 
   CDateTime copyWith({Date? date, Time? time}) =>
       CDateTime(date ?? this.date, time ?? this.time);
@@ -179,23 +180,24 @@ final class CDateTime
 }
 
 extension RangeOfCDateTimeExtension on Range<CDateTime> {
-  Nanoseconds get timeDuration => end.timeDifference(start);
+  TimeDelta get timeDuration => end.timeDifference(start);
   CompoundDuration get compoundDuration => end.difference(start);
 }
 
-extension on TimeDuration {
+extension on TimeDelta {
   (Days, Time) toDaysAndTime() {
-    var (seconds, nanoseconds) = splitSecondsNanos;
-    if (seconds.isZero && nanoseconds.isNegative) {
-      seconds = -const Seconds(1);
-      nanoseconds += Nanoseconds.second;
+    var (seconds, nanos) = splitSecondsNanos();
+    if (seconds == 0 && nanos.isNegative) {
+      seconds = -1;
+      nanos += TimeDelta.nanosPerSecond;
     }
 
-    final days = seconds.roundToNormalDays(rounding: Rounding.down);
-    final secondsWithinDay = seconds - days.asNormalSeconds;
-    final time =
-        Time.fromTimeSinceMidnight(nanoseconds + secondsWithinDay).unwrap();
-    return (days, time);
+    final days = seconds ~/ TimeDelta.secondsPerNormalDay;
+    final secondsWithinDay = seconds - days * TimeDelta.secondsPerNormalDay;
+    final time = Time.fromTimeSinceMidnight(
+      TimeDelta(seconds: secondsWithinDay, nanos: nanos),
+    ).unwrap();
+    return (Days(days), time);
   }
 }
 

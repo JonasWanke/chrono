@@ -25,53 +25,57 @@ void main() {
     );
   });
 
-  Glados3<CDateTime, DaysDuration, TimeDuration>().test(
-    '+ and -',
-    (dateTime, daysDuration, timeDuration) {
-      expect(
-        dateTime + daysDuration + timeDuration - daysDuration - timeDuration,
-        dateTime,
-      );
-    },
-  );
+  Glados3<CDateTime, DaysDuration, TimeDelta>().test('+ and -', (
+    dateTime,
+    daysDuration,
+    timeDuration,
+  ) {
+    expect(
+      dateTime + daysDuration + timeDuration - daysDuration - timeDuration,
+      dateTime,
+    );
+  });
 
   test('difference(…)', () {
-    final base =
-        Date.from(const Year(2023), Month.october, 12).unwrap().at(Time.noon);
+    final base = Date.from(
+      const Year(2023),
+      Month.october,
+      12,
+    ).unwrap().at(Time.noon);
 
     expect(
-      (base + const Hours(5)).difference(base),
-      const Hours(5).asCompoundDuration,
+      (base + TimeDelta(hours: 5)).difference(base),
+      TimeDelta(hours: 5).asCompoundDuration,
     );
     expect(
       (base + const Days(1)).difference(base),
       const Days(1).asCompoundDuration,
     );
     expect(
-      (base + const Days(1) + const Hours(5)).difference(base),
-      CompoundDuration(days: const Days(1), seconds: const Hours(5)),
+      (base + const Days(1) + TimeDelta(hours: 5)).difference(base),
+      CompoundDuration(days: const Days(1), time: TimeDelta(hours: 5)),
     );
 
     expect(
-      (base - const Hours(5)).difference(base),
-      const Hours(-5).asCompoundDuration,
+      (base - TimeDelta(hours: 5)).difference(base),
+      TimeDelta(hours: -5).asCompoundDuration,
     );
     expect(
       (base - const Days(1)).difference(base),
       const Days(-1).asCompoundDuration,
     );
     expect(
-      (base - const Days(1) - const Hours(5)).difference(base),
-      CompoundDuration(days: const Days(-1), seconds: const Hours(-5)),
+      (base - const Days(1) - TimeDelta(hours: 5)).difference(base),
+      CompoundDuration(days: const Days(-1), time: TimeDelta(hours: -5)),
     );
 
     expect(
-      (base + const Days(1) - const Hours(5)).difference(base),
-      CompoundDuration(seconds: const Hours(24 - 5)),
+      (base + const Days(1) - TimeDelta(hours: 5)).difference(base),
+      CompoundDuration(time: TimeDelta(hours: 24 - 5)),
     );
     expect(
-      (base - const Days(1) + const Hours(5)).difference(base),
-      CompoundDuration(seconds: const Hours(-(24 - 5))),
+      (base - const Days(1) + TimeDelta(hours: 5)).difference(base),
+      CompoundDuration(time: TimeDelta(hours: -(24 - 5))),
     );
   });
 }

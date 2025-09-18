@@ -8,18 +8,12 @@ import 'date/week/year_week.dart';
 import 'date/weekday.dart';
 import 'date/year.dart';
 import 'date_time/date_time.dart';
+import 'instant.dart';
 import 'time/duration.dart';
 import 'time/time.dart';
-import 'unix_epoch_timestamp.dart';
 
 extension DateTimeChronoExtension on DateTime {
   Instant get asChronoInstant => Instant.fromCore(this);
-  UnixEpochMicroseconds get asChronoUnixEpochMicroseconds =>
-      UnixEpochMicroseconds.fromCore(this);
-  UnixEpochMilliseconds get asChronoUnixEpochMilliseconds =>
-      UnixEpochMilliseconds.fromCore(this);
-  UnixEpochSeconds get asChronoUnixEpochSeconds =>
-      UnixEpochSeconds.fromCore(this);
   CDateTime get asChronoDateTime => CDateTime.fromCore(this);
   Date get asChronoDate => Date.fromCore(this);
   Year get asChronoYear => Year(year);
@@ -33,9 +27,9 @@ extension DateTimeChronoExtension on DateTime {
 }
 
 extension DurationChronoExtension on Duration {
-  Microseconds get asChronoDuration => Microseconds.fromCore(this);
+  TimeDelta get asChronoTimeDelta => TimeDelta.fromCore(this);
 }
 
 extension StopwatchChronoExtension on Stopwatch {
-  Microseconds get elapsedChrono => Microseconds(elapsedMicroseconds);
+  TimeDelta get elapsedChrono => TimeDelta(micros: elapsedMicroseconds);
 }

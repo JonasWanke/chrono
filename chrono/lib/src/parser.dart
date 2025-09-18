@@ -11,9 +11,8 @@ import 'date/week/iso_year_week.dart';
 import 'date/weekday.dart';
 import 'date/year.dart';
 import 'date_time/date_time.dart';
-import 'time/duration.dart';
+import 'instant.dart';
 import 'time/time.dart';
-import 'unix_epoch_timestamp.dart';
 
 // Date and time strings only use ASCII, hence we don't need to worry about
 // proper Unicode handling.
@@ -21,46 +20,14 @@ final class Parser {
   Parser._(this._source);
 
   static Result<Instant, FormatException> parseInstant(String value) =>
-      _parse(value, (it) => it._parseInstant(subSecondDigits: 9));
-  static Result<UnixEpochMicroseconds, FormatException>
-      parseUnixEpochMicroseconds(String value) {
-    return _parse(
-      value,
-      (it) => it
-          ._parseInstant(subSecondDigits: 6)
-          .map((it) => it.roundToMicroseconds()),
-    );
-  }
-
-  static Result<UnixEpochMilliseconds, FormatException>
-      parseUnixEpochMilliseconds(String value) {
-    return _parse(
-      value,
-      (it) => it
-          ._parseInstant(subSecondDigits: 3)
-          .map((it) => it.roundToMilliseconds()),
-    );
-  }
-
-  static Result<UnixEpochSeconds, FormatException> parseUnixEpochSeconds(
-    String value,
-  ) {
-    return _parse(
-      value,
-      (it) =>
-          it._parseInstant(subSecondDigits: 0).map((it) => it.roundToSeconds()),
-    );
-  }
-
+      _parse(value, (it) => it._parseInstant());
   static Result<CDateTime, FormatException> parseDateTime(String value) =>
-      _parse(value, (it) => it._parseDateTime(subSecondDigits: 9));
+      _parse(value, (it) => it._parseDateTime());
   static Result<Date, FormatException> parseDate(String value) =>
       _parse(value, (it) => it._parseDate());
   static Result<Date, FormatException> parseWeekDate(String value) =>
       _parse(value, (it) => it._parseWeekDate());
-  static Result<Date, FormatException> parseOrdinalDate(
-    String value,
-  ) =>
+  static Result<Date, FormatException> parseOrdinalDate(String value) =>
       _parse(value, (it) => it._parseOrdinalDate());
   static Result<Year, FormatException> parseYear(String value) =>
       _parse(value, (it) => it._parseYear());
@@ -72,7 +39,7 @@ final class Parser {
       _parse(value, (it) => it._parseMonthDay());
 
   static Result<Time, FormatException> parseTime(String value) =>
-      _parse(value, (it) => it._parseTime(subSecondDigits: 9));
+      _parse(value, (it) => it._parseTime());
 
   static Result<T, FormatException> _parse<T extends Object>(
     String value,
@@ -87,10 +54,8 @@ final class Parser {
 
   // Date and Time
 
-  Result<Instant, FormatException> _parseInstant({
-    required int subSecondDigits,
-  }) {
-    return _parseDateTime(subSecondDigits: subSecondDigits)
+  Result<Instant, FormatException> _parseInstant() {
+    return _parseDateTime()
         .andAlso(
           () => _requireString(
             'Z',
@@ -102,26 +67,23 @@ final class Parser {
         .map((it) => it.inUtc);
   }
 
-  Result<CDateTime, FormatException> _parseDateTime({
-    required int subSecondDigits,
-  }) {
+  Result<CDateTime, FormatException> _parseDateTime() {
     return _parseDate()
         .andAlso(() => _requireDesignator('T', 'time', isCaseSensitive: false))
-        .andThen(
-          (date) => _parseTime(subSecondDigits: subSecondDigits)
-              .map((it) => CDateTime(date, it)),
-        );
+        .andThen((date) => _parseTime().map((it) => CDateTime(date, it)));
   }
 
   Result<Date, FormatException> _parseDate() {
     return _parseYearMonth()
         .andAlso(() => _requireSeparator({'-'}, 'month', 'day'))
         .andThen((yearMonth) {
-      return _parseDay(maxLength: yearMonth.length.inDays).andThen((day) {
-        return Date.fromYearMonthAndDay(yearMonth, day)
-            .mapErr(FormatException.new);
-      });
-    });
+          return _parseDay(maxLength: yearMonth.length.inDays).andThen((day) {
+            return Date.fromYearMonthAndDay(
+              yearMonth,
+              day,
+            ).mapErr(FormatException.new);
+          });
+        });
   }
 
   Result<Date, FormatException> _parseWeekDate() {
@@ -138,23 +100,23 @@ final class Parser {
     return _parseYear()
         .andAlso(() => _requireSeparator({'-'}, 'year', 'day of year'))
         .andThen((year) {
-      final dayOfYear = _parseInt(
-        'day of year',
-        minDigits: 3,
-        maxDigits: 3,
-        minValue: 1,
-        maxValue: year.length.inDays,
-      );
-      return dayOfYear.map((it) => Date.fromYearAndOrdinal(year, it).unwrap());
-    });
+          final dayOfYear = _parseInt(
+            'day of year',
+            minDigits: 3,
+            maxDigits: 3,
+            minValue: 1,
+            maxValue: year.length.inDays,
+          );
+          return dayOfYear.map(
+            (it) => Date.fromYearAndOrdinal(year, it).unwrap(),
+          );
+        });
   }
 
   Result<YearMonth, FormatException> _parseYearMonth() {
     return _parseYear()
         .andAlso(() => _requireSeparator({'-'}, 'year', 'month'))
-        .andThen(
-          (year) => _parseMonth().map((it) => YearMonth(year, it)),
-        );
+        .andThen((year) => _parseMonth().map((it) => YearMonth(year, it)));
   }
 
   Result<IsoYearWeek, FormatException> _parseIsoYearWeek() {
@@ -178,7 +140,7 @@ final class Parser {
         );
   }
 
-  Result<Time, FormatException> _parseTime({required int subSecondDigits}) {
+  Result<Time, FormatException> _parseTime() {
     Result<int, FormatException> parse(String label, {required int maxValue}) =>
         _parseInt(label, minDigits: 2, maxDigits: 2, maxValue: maxValue);
 
@@ -193,19 +155,23 @@ final class Parser {
               parse('second', maxValue: 59).map((it) => (hourMinute, it)),
         )
         .andThen((hourMinuteSecond) {
-      final hasFractionalSeconds = subSecondDigits == 0 || !_maybeConsume('.');
-      // ignore: omit_local_variable_types
-      final Result<Nanoseconds, FormatException> result = hasFractionalSeconds
-          ? Ok(Nanoseconds(0))
-          : _parseIntRaw('fractional second', maxDigits: subSecondDigits).map(
-              (it) => Nanoseconds(it.$1 * math.pow(10, 9 - it.$2).toInt()),
-            );
-      return result.map((it) => (hourMinuteSecond, it));
-    }).andThen((it) {
-      final (((hour, minute), second), fraction) = it;
-      return Time.from(hour, minute, second, fraction)
-          .mapErr(FormatException.new);
-    });
+          final result = _maybeConsume('.')
+              ? _parseIntRaw(
+                  'fractional second',
+                  maxDigits: 9,
+                ).map((it) => it.$1 * math.pow(10, 9 - it.$2).toInt())
+              : const Ok<int, FormatException>(0);
+          return result.map((it) => (hourMinuteSecond, it));
+        })
+        .andThen((it) {
+          final (((hour, minute), second), fraction) = it;
+          return Time.from(
+            hour,
+            minute,
+            second,
+            fraction,
+          ).mapErr(FormatException.new);
+        });
   }
 
   Result<Year, FormatException> _parseYear() {
@@ -471,8 +437,7 @@ final class Parser {
     int value,
     String Function() singular,
     String Function(int) plural,
-  ) =>
-      value == 1 ? singular() : plural(value);
+  ) => value == 1 ? singular() : plural(value);
 }
 
 T unwrapParserResult<T extends Object>(Result<T, FormatException> result) {

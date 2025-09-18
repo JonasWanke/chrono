@@ -12,21 +12,62 @@ import '../utils.dart';
 /// - [CalendarDuration], which covers durations based on an integer number of
 ///   days or months.
 /// - [CDuration], which is the base class for all durations.
-/// - [Nanoseconds], which is the subclass with the highest precision.
-abstract class TimeDuration extends CDuration
-    with ComparisonOperatorsFromComparable<TimeDuration>
-    implements Comparable<TimeDuration> {
-  const TimeDuration();
+class TimeDelta extends CDuration
+    with ComparisonOperatorsFromComparable<TimeDelta>
+    implements Comparable<TimeDelta> {
+  factory TimeDelta({
+    int normalLeapYears = 0,
+    int normalYears = 0,
+    int normalWeeks = 0,
+    int normalDays = 0,
+    int hours = 0,
+    int minutes = 0,
+    int seconds = 0,
+    int millis = 0,
+    int micros = 0,
+    int nanos = 0,
+  }) {
+    var totalSeconds =
+        normalLeapYears * secondsPerNormalLeapYear +
+        normalYears * secondsPerNormalYear +
+        normalWeeks * secondsPerNormalWeek +
+        normalDays * secondsPerNormalDay +
+        hours * secondsPerHour +
+        minutes * secondsPerMinute +
+        seconds +
+        millis ~/ millisPerSecond +
+        micros ~/ microsPerSecond +
+        nanos ~/ nanosPerSecond;
+    var subSecondNanos =
+        millis.remainder(millisPerSecond) +
+        micros.remainder(microsPerSecond) +
+        nanos.remainder(nanosPerSecond);
+    totalSeconds += subSecondNanos ~/ nanosPerSecond;
+    subSecondNanos = subSecondNanos.remainder(nanosPerSecond);
+    return TimeDelta.raw(totalSeconds, subSecondNanos);
+  }
+  const TimeDelta.raw(this.totalSeconds, this.subSecondNanos)
+    : assert(
+        totalSeconds >= 0 && subSecondNanos >= 0 ||
+            totalSeconds <= 0 && subSecondNanos <= 0,
+      ),
+      assert(
+        (subSecondNanos < 0 ? -subSecondNanos : subSecondNanos) <
+            nanosPerSecond,
+      );
+
+  factory TimeDelta.fromCore(Duration duration) =>
+      TimeDelta(micros: duration.inMicroseconds);
 
   // TODO(JonasWanke): add `lerp(…)`, `lerpNullable(…)` in other classes
   // TODO(JonasWanke): comments
-  static Nanoseconds? lerpNullable(
-    TimeDuration? a,
-    TimeDuration? b,
+  static TimeDelta? lerpNullable(
+    TimeDelta? a,
+    TimeDelta? b,
     double t, {
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
-    return switch ((a?.asNanoseconds, b?.asNanoseconds)) {
+    return switch ((a, b)) {
       (null, null) => null,
       (null, final b?) => b.timesDouble(t, rounding: rounding),
       (final a?, null) => a.timesDouble(1 - t, rounding: rounding),
@@ -34,244 +75,376 @@ abstract class TimeDuration extends CDuration
     };
   }
 
-  static Nanoseconds lerp(
-    TimeDuration a,
-    TimeDuration b,
+  static TimeDelta lerp(
+    TimeDelta a,
+    TimeDelta b,
     double t, {
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
-    return a.asNanoseconds.timesDouble(1 - t, rounding: rounding) +
-        b.asNanoseconds.timesDouble(t, rounding: rounding);
+    return a.timesDouble(1 - t, rounding: rounding) +
+        b.timesDouble(t, rounding: rounding);
   }
 
-  Nanoseconds get asNanoseconds;
-  BigInt get inNanoseconds => asNanoseconds.inNanoseconds;
+  // Nanos
 
-  (Microseconds, Nanoseconds) get splitMicrosNanos {
-    final asNanoseconds = this.asNanoseconds;
-    final microseconds = Microseconds(
-      (asNanoseconds.inNanoseconds ~/ BigInt.from(Nanoseconds.perMicrosecond))
-          .toInt(),
-    );
-    return (microseconds, asNanoseconds - microseconds);
+  /// The number of nanoseconds in a microsecond.
+  static const nanosPerMicrosecond = 1000;
+
+  /// The number of nanoseconds in a millisecond.
+  static const nanosPerMillisecond = nanosPerMicrosecond * microsPerMillisecond;
+
+  /// The number of nanoseconds in a second.
+  static const nanosPerSecond = nanosPerMicrosecond * microsPerSecond;
+
+  /// The number of nanoseconds in a minute.
+  static const nanosPerMinute = nanosPerMicrosecond * microsPerMinute;
+
+  /// The number of nanoseconds in an hour.
+  static const nanosPerHour = nanosPerMicrosecond * microsPerHour;
+
+  /// The number of nanoseconds in a normal day, i.e., a day with exactly
+  /// 24 hours (no daylight savings time changes and no leap seconds).
+  static const nanosPerNormalDay = nanosPerMicrosecond * microsPerNormalDay;
+
+  /// The number of nanoseconds in a normal week, i.e., a week where all days
+  /// are exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
+  static const nanosPerNormalWeek = nanosPerMicrosecond * microsPerNormalWeek;
+
+  /// The number of nanoseconds in a normal (non-leap) year (365 days), i.e., a
+  /// year where all days are exactly 24 hours long (no daylight savings time
+  /// changes and no leap seconds).
+  static const nanosPerNormalYear = nanosPerMicrosecond * microsPerNormalYear;
+
+  /// The number of nanoseconds in a leap year (366 days), i.e., a year where
+  /// all days are exactly 24 hours long (no daylight savings time changes and
+  /// no leap seconds).
+  static const nanosPerNormalLeapYear =
+      nanosPerMicrosecond * microsPerNormalLeapYear;
+
+  // Micros
+
+  /// The number of microseconds in a millisecond.
+  static const microsPerMillisecond = 1000;
+
+  /// The number of microseconds in a second.
+  static const microsPerSecond = microsPerMillisecond * millisPerSecond;
+
+  /// The number of microseconds in a minute.
+  static const microsPerMinute = microsPerMillisecond * millisPerMinute;
+
+  /// The number of microseconds in an hour.
+  static const microsPerHour = microsPerMillisecond * millisPerHour;
+
+  /// The number of microseconds in a normal day, i.e., a day with exactly
+  /// 24 hours (no daylight savings time changes and no leap seconds).
+  static const microsPerNormalDay = microsPerMillisecond * millisPerNormalDay;
+
+  /// The number of microseconds in a normal week, i.e., a week where all days
+  /// are exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
+  static const microsPerNormalWeek = microsPerMillisecond * millisPerNormalWeek;
+
+  /// The number of microseconds in a normal (non-leap) year (365 days), i.e., a
+  /// year where all days are exactly 24 hours long (no daylight savings time
+  /// changes and no leap seconds).
+  static const microsPerNormalYear = microsPerMillisecond * millisPerNormalYear;
+
+  /// The number of microseconds in a leap year (366 days), i.e., a year where
+  /// all days are exactly 24 hours long (no daylight savings time changes and
+  /// no leap seconds).
+  static const microsPerNormalLeapYear =
+      microsPerMillisecond * millisPerNormalLeapYear;
+
+  // Millis
+
+  /// The number of milliseconds in a second.
+  static const millisPerSecond = 1000;
+
+  /// The number of milliseconds in a minute.
+  static const millisPerMinute = millisPerSecond * secondsPerMinute;
+
+  /// The number of milliseconds in an hour.
+  static const millisPerHour = millisPerSecond * secondsPerHour;
+
+  /// The number of milliseconds in a normal day, i.e., a day with exactly
+  /// 24 hours (no daylight savings time changes and no leap seconds).
+  static const millisPerNormalDay = millisPerSecond * secondsPerNormalDay;
+
+  /// The number of milliseconds in a normal week, i.e., a week where all days
+  /// are exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
+  static const millisPerNormalWeek = millisPerSecond * secondsPerNormalDay;
+
+  /// The number of milliseconds in a normal (non-leap) year (365 days), i.e., a
+  /// year where all days are exactly 24 hours long (no daylight savings time
+  /// changes and no leap seconds).
+  static const millisPerNormalYear = millisPerSecond * secondsPerNormalYear;
+
+  /// The number of milliseconds in a leap year (366 days), i.e., a year where
+  /// all days are exactly 24 hours long (no daylight savings time changes and
+  /// no leap seconds).
+  static const millisPerNormalLeapYear =
+      millisPerSecond * secondsPerNormalLeapYear;
+
+  // Seconds
+
+  /// The number of seconds in a minute.
+  static const secondsPerMinute = 60;
+
+  /// The number of seconds in an hour.
+  static const secondsPerHour = secondsPerMinute * minutesPerHour;
+
+  /// The number of seconds in a normal day, i.e., a day with exactly 24 hours
+  /// (no daylight savings time changes and no leap seconds).
+  static const secondsPerNormalDay = secondsPerMinute * minutesPerNormalDay;
+
+  /// The number of seconds in a normal week, i.e., a week where all days are
+  /// exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
+  static const secondsPerNormalWeek = secondsPerMinute * minutesPerNormalWeek;
+
+  /// The number of seconds in a normal (non-leap) year (365 days), i.e., a year
+  /// where all days are exactly 24 hours long (no daylight savings time changes
+  /// and no leap seconds).
+  static const secondsPerNormalYear = secondsPerMinute * minutesPerNormalYear;
+
+  /// The number of seconds in a leap year (366 days), i.e., a year where all
+  /// days are exactly 24 hours long (no daylight savings time changes and no
+  /// leap seconds).
+  static const secondsPerNormalLeapYear =
+      secondsPerMinute * minutesPerNormalLeapYear;
+
+  // Minutes
+
+  /// The number of minutes in an hour.
+  static const minutesPerHour = 60;
+
+  /// The number of minutes in a normal day, i.e., a day with exactly 24 hours
+  /// (no daylight savings time changes and no leap seconds).
+  static const minutesPerNormalDay = minutesPerHour * hoursPerNormalDay;
+
+  /// The number of minutes in a normal week, i.e., a week where all days are
+  /// exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
+  static const minutesPerNormalWeek = minutesPerHour * hoursPerNormalWeek;
+
+  /// The number of minutes in a normal (non-leap) year (365 days), i.e., a year
+  /// where all days are exactly 24 hours long (no daylight savings time changes
+  /// and no leap seconds).
+  static const minutesPerNormalYear = minutesPerHour * hoursPerNormalYear;
+
+  /// The number of minutes in a leap year (366 days), i.e., a year where all
+  /// days are exactly 24 hours long (no daylight savings time changes and no
+  /// leap seconds).
+  static const minutesPerNormalLeapYear =
+      minutesPerHour * hoursPerNormalLeapYear;
+
+  // Hours
+
+  /// The number of hours in a normal day, i.e., a day with exactly 24 hours
+  /// no daylight savings time changes and no leap seconds).
+  static const hoursPerNormalDay = 24;
+
+  /// The number of hours in a normal week, i.e., a week where all days are
+  /// exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
+  static const hoursPerNormalWeek = hoursPerNormalDay * Days.perWeek;
+
+  /// The number of hours in a normal (non-leap) year (365 days), i.e., a year
+  /// where all days are exactly 24 hours long (no daylight savings time changes
+  /// and no leap seconds).
+  static const hoursPerNormalYear = hoursPerNormalDay * Days.perNormalYear;
+
+  /// The number of hours in a leap year (366 days), i.e., a year where all days
+  /// are exactly 24 hours long (no daylight savings time changes and no leap
+  /// seconds).
+  static const hoursPerNormalLeapYear = hoursPerNormalDay * Days.perLeapYear;
+
+  int get totalHours => totalSeconds ~/ secondsPerHour;
+  int get totalMinutes => totalSeconds ~/ secondsPerMinute;
+  final int totalSeconds;
+  int get totalMillis =>
+      totalSeconds * millisPerSecond + subSecondNanos ~/ nanosPerMillisecond;
+  int get totalMicros =>
+      totalSeconds * microsPerSecond + subSecondNanos ~/ nanosPerMicrosecond;
+  int get totalNanos => totalSeconds * nanosPerSecond + subSecondNanos;
+
+  final int subSecondNanos;
+
+  (int, int) splitMicrosNanos() {
+    final (micros, nanos) = _splitNanosInMicrosNanos();
+    return (totalSeconds * microsPerSecond + micros, nanos);
   }
 
-  (Milliseconds, Microseconds, Nanoseconds) get splitMillisMicrosNanos {
-    final (rawMicroseconds, nanoseconds) = splitMicrosNanos;
-    final (milliseconds, microseconds) = rawMicroseconds.splitMillisMicros;
-    return (milliseconds, microseconds, nanoseconds);
+  (int, int, int) splitMillisMicrosNanos() {
+    final (millis, micros, nanos) = _splitNanosInMillisMicrosNanos();
+    return (totalSeconds * millisPerSecond + millis, micros, nanos);
   }
 
-  (Seconds, Nanoseconds) get splitSecondsNanos {
-    final asNanoseconds = this.asNanoseconds;
-    final seconds = Seconds(
-      (asNanoseconds.inNanoseconds ~/ BigInt.from(Nanoseconds.perSecond))
-          .toInt(),
-    );
-    return (seconds, asNanoseconds - seconds);
+  (int, int) splitSecondsNanos() => (totalSeconds, subSecondNanos);
+
+  (int, int, int, int) splitSecondsMillisMicrosNanos() {
+    final (millis, micros, nanos) = _splitNanosInMillisMicrosNanos();
+    return (totalSeconds, millis, micros, nanos);
   }
 
-  (Seconds, Milliseconds, Microseconds, Nanoseconds)
-      get splitSecondsMillisMicrosNanos {
-    final (rawMilliseconds, microseconds, nanoseconds) = splitMillisMicrosNanos;
-    final (seconds, milliseconds) = rawMilliseconds.splitSecondsMillis;
-    return (seconds, milliseconds, microseconds, nanoseconds);
+  (int, int, int) splitMinutesSecondsNanos() {
+    final (minutes, seconds) = _splitSecondsInMinutesSeconds();
+    return (minutes, seconds, subSecondNanos);
   }
 
-  (Minutes, Seconds, Milliseconds, Microseconds, Nanoseconds)
-      get splitMinutesSecondsMillisMicrosNanos {
-    final (rawMilliseconds, microseconds, nanoseconds) = splitMillisMicrosNanos;
-    final (minutes, seconds, milliseconds) =
-        rawMilliseconds.splitMinutesSecondsMillis;
-    return (minutes, seconds, milliseconds, microseconds, nanoseconds);
+  (int, int, int, int, int) splitMinutesSecondsMillisMicrosNanos() {
+    final (minutes, seconds) = _splitSecondsInMinutesSeconds();
+    final (millis, micros, nanos) = _splitNanosInMillisMicrosNanos();
+    return (minutes, seconds, millis, micros, nanos);
   }
 
-  (Hours, Minutes, Seconds, Milliseconds, Microseconds, Nanoseconds)
-      get splitHoursMinutesSecondsMillisMicrosNanos {
-    final (rawMilliseconds, microseconds, nanoseconds) = splitMillisMicrosNanos;
-    final (hours, minutes, seconds, milliseconds) =
-        rawMilliseconds.splitHoursMinutesSecondsMillis;
-    return (hours, minutes, seconds, milliseconds, microseconds, nanoseconds);
+  (int, int, int, int) splitHoursMinutesSecondsNanos() {
+    final (hours, minutes, seconds) = _splitSecondsInHoursMinutesSeconds();
+    return (hours, minutes, seconds, subSecondNanos);
+  }
+
+  (int, int, int, int, int, int) splitHoursMinutesSecondsMillisMicrosNanos() {
+    final (hours, minutes, seconds) = _splitSecondsInHoursMinutesSeconds();
+    final (millis, micros, nanos) = _splitNanosInMillisMicrosNanos();
+    return (hours, minutes, seconds, millis, micros, nanos);
+  }
+
+  (int, int) _splitNanosInMicrosNanos() {
+    final micros = subSecondNanos ~/ nanosPerMicrosecond;
+    return (micros, subSecondNanos - micros * nanosPerMicrosecond);
+  }
+
+  (int, int, int) _splitNanosInMillisMicrosNanos() {
+    final (rawMicros, nanos) = _splitNanosInMicrosNanos();
+    final millis = rawMicros ~/ microsPerMillisecond;
+    return (millis, rawMicros - millis * microsPerMillisecond, nanos);
+  }
+
+  (int, int) _splitSecondsInMinutesSeconds() {
+    final minutes = totalSeconds ~/ secondsPerMinute;
+    final seconds = totalSeconds - minutes * secondsPerMinute;
+    return (minutes, seconds);
+  }
+
+  (int, int, int) _splitSecondsInHoursMinutesSeconds() {
+    final (rawMinutes, seconds) = _splitSecondsInMinutesSeconds();
+    final hours = totalMinutes ~/ minutesPerHour;
+    return (hours, rawMinutes - hours * minutesPerHour, seconds);
   }
 
   @override
-  CompoundDuration get asCompoundDuration =>
-      CompoundDuration(seconds: asNanoseconds);
+  CompoundDuration get asCompoundDuration => CompoundDuration(time: this);
 
-  bool get isPositive => inNanoseconds > BigInt.zero;
+  @override
+  bool get isZero => totalSeconds == 0 && subSecondNanos == 0;
+  bool get isPositive => totalSeconds > 0 || subSecondNanos > 0;
   bool get isNonPositive => !isPositive;
-  bool get isNegative => inNanoseconds.isNegative;
+  bool get isNegative => totalSeconds < 0 || subSecondNanos < 0;
   bool get isNonNegative => !isNegative;
 
-  @override
-  TimeDuration operator -();
+  TimeDelta operator +(TimeDelta other) {
+    return TimeDelta(
+      seconds: totalSeconds + other.totalSeconds,
+      nanos: subSecondNanos + other.subSecondNanos,
+    );
+  }
+
+  TimeDelta operator -(TimeDelta other) {
+    return TimeDelta(
+      seconds: totalSeconds - other.totalSeconds,
+      nanos: subSecondNanos - other.subSecondNanos,
+    );
+  }
 
   @override
-  TimeDuration operator *(int factor);
-  Nanoseconds timesDouble(
+  TimeDelta operator -() => TimeDelta.raw(-totalSeconds, -subSecondNanos);
+  TimeDelta get absolute => isNegative ? -this : this;
+
+  @override
+  TimeDelta operator *(int factor) =>
+      TimeDelta(seconds: totalSeconds * factor, nanos: subSecondNanos * factor);
+  // TODO(JonasWanke): avoid `totalNanos` to avoid overflows
+  TimeDelta timesDouble(
     double factor, {
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) =>
-      Nanoseconds(rounding.round(inNanoseconds.toDouble() * factor));
-  Nanoseconds timesBigInt(
-    BigInt factor, {
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) =>
-      Nanoseconds.fromBigInt(inNanoseconds * factor);
+  }) => TimeDelta(nanos: rounding.round(totalNanos * factor));
 
+  // TODO(JonasWanke): avoid `totalNanos` to avoid overflows
   @override
-  TimeDuration operator ~/(int divisor);
-  double dividedByTimeDuration(TimeDuration divisor) =>
-      inNanoseconds / divisor.inNanoseconds;
-  Nanoseconds dividedByInt(
-    int divisor, {
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) =>
-      dividedByBigInt(BigInt.from(divisor));
-  Nanoseconds dividedByBigInt(
-    BigInt divisor, {
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) =>
-      Nanoseconds(rounding.round(inNanoseconds / divisor));
-  Nanoseconds dividedByDouble(
-    double divisor, {
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) =>
-      Nanoseconds(rounding.round(inNanoseconds.toDouble() / divisor));
+  TimeDelta operator ~/(int divisor) => TimeDelta(nanos: totalNanos ~/ divisor);
+  // TODO(JonasWanke): avoid `totalNanos` to avoid overflows
+  double dividedByTimeDelta(TimeDelta divisor) =>
+      totalNanos / divisor.totalNanos;
+  // Nanoseconds dividedByInt(
+  //   int divisor, {
+  //   Rounding rounding = Rounding.nearestAwayFromZero,
+  // }) => Nanoseconds(rounding.round(inNanoseconds / divisor));
+  // Nanoseconds dividedByDouble(
+  //   double divisor, {
+  //   Rounding rounding = Rounding.nearestAwayFromZero,
+  // }) => Nanoseconds(rounding.round(inNanoseconds.toDouble() / divisor));
 
+  // TODO(JonasWanke): avoid `totalNanos` to avoid overflows
   @override
-  TimeDuration operator %(int divisor);
+  TimeDelta operator %(int divisor) => TimeDelta(nanos: totalNanos % divisor);
+  // TODO(JonasWanke): avoid `totalNanos` to avoid overflows
   @override
-  TimeDuration remainder(int divisor);
+  TimeDelta remainder(int divisor) =>
+      TimeDelta(nanos: totalNanos.remainder(divisor));
 
-  TimeDuration get absolute => isNegative ? -this : this;
-
-  Microseconds roundToMicroseconds({
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    return Microseconds(
-      rounding.round(inNanoseconds / BigInt.from(Nanoseconds.perMicrosecond)),
-    );
-  }
-
-  Milliseconds roundToMilliseconds({
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    return Milliseconds(
-      rounding.round(inNanoseconds / BigInt.from(Nanoseconds.perMillisecond)),
-    );
-  }
-
-  Seconds roundToSeconds({Rounding rounding = Rounding.nearestAwayFromZero}) {
-    return Seconds(
-      rounding.round(inNanoseconds / BigInt.from(Nanoseconds.perSecond)),
-    );
-  }
-
-  Minutes roundToMinutes({Rounding rounding = Rounding.nearestAwayFromZero}) {
-    return Minutes(
-      rounding.round(inNanoseconds / BigInt.from(Nanoseconds.perMinute)),
-    );
-  }
-
-  Hours roundToHours({Rounding rounding = Rounding.nearestAwayFromZero}) {
-    return Hours(
-      rounding.round(inNanoseconds / BigInt.from(Nanoseconds.perHour)),
-    );
-  }
-
-  Days roundToNormalDays({Rounding rounding = Rounding.nearestAwayFromZero}) {
-    return Days(
-      rounding.round(inNanoseconds / BigInt.from(Nanoseconds.perNormalDay)),
-    );
-  }
-
+  int roundToMicroseconds({Rounding rounding = Rounding.nearestAwayFromZero}) =>
+      rounding.round(totalNanos / nanosPerMicrosecond);
+  int roundToMilliseconds({Rounding rounding = Rounding.nearestAwayFromZero}) =>
+      rounding.round(totalNanos / nanosPerMillisecond);
+  int roundToSeconds({Rounding rounding = Rounding.nearestAwayFromZero}) =>
+      rounding.round(totalNanos / nanosPerSecond);
+  int roundToMinutes({Rounding rounding = Rounding.nearestAwayFromZero}) =>
+      rounding.round(totalNanos / nanosPerMinute);
+  int roundToHours({Rounding rounding = Rounding.nearestAwayFromZero}) =>
+      rounding.round(totalNanos / nanosPerHour);
+  Days roundToNormalDays({Rounding rounding = Rounding.nearestAwayFromZero}) =>
+      Days(rounding.round(totalNanos / nanosPerNormalDay));
   Weeks roundToNormalWeeks({
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    return Weeks(
-      rounding.round(inNanoseconds / BigInt.from(Nanoseconds.perNormalWeek)),
-    );
-  }
-
+  }) => Weeks(rounding.round(totalNanos / nanosPerNormalWeek));
   Years roundToNormalYears({
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    return Years(
-      rounding.round(inNanoseconds / BigInt.from(Nanoseconds.perNormalYear)),
-    );
-  }
-
+  }) => Years(rounding.round(totalNanos / nanosPerNormalYear));
   Years roundToNormalLeapYears({
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    return Years(
-      rounding
-          .round(inNanoseconds / BigInt.from(Nanoseconds.perNormalLeapYear)),
-    );
-  }
+  }) => Years(rounding.round(totalNanos / nanosPerNormalLeapYear));
 
   Duration roundToCoreDuration({
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    return Duration(
-      microseconds: roundToMicroseconds(rounding: rounding).inMicroseconds,
-    );
-  }
+  }) => Duration(microseconds: roundToMicroseconds(rounding: rounding));
 
-  Nanoseconds roundToMultipleOf(
-    TimeDuration duration, {
+  TimeDelta roundToMultipleOf(
+    TimeDelta duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) =>
-      duration.asNanoseconds * rounding.round(dividedByTimeDuration(duration));
-  Microseconds roundToMultipleOfMicroseconds(
-    MicrosecondsDuration duration, {
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) =>
-      duration.asMicroseconds * rounding.round(dividedByTimeDuration(duration));
-  Milliseconds roundToMultipleOfMilliseconds(
-    MillisecondsDuration duration, {
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) =>
-      duration.asMilliseconds * rounding.round(dividedByTimeDuration(duration));
-  Seconds roundToMultipleOfSeconds(
-    SecondsDuration duration, {
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) =>
-      duration.asSeconds * rounding.round(dividedByTimeDuration(duration));
-  Minutes roundToMultipleOfMinutes(
-    MinutesDuration duration, {
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) =>
-      duration.asMinutes * rounding.round(dividedByTimeDuration(duration));
-  Hours roundToMultipleOfHours(
-    Hours duration, {
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) =>
-      duration * rounding.round(dividedByTimeDuration(duration));
+  }) => duration * rounding.round(dividedByTimeDelta(duration));
 
   Days roundToMultipleOfNormalDays(
     DaysDuration duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
     return duration.asDays *
-        rounding.round(dividedByTimeDuration(duration.asNormalHours));
+        rounding.round(dividedByTimeDelta(duration.asTime));
   }
 
   Weeks roundToMultipleOfNormalWeeks(
     Weeks duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
-    return duration *
-        rounding.round(dividedByTimeDuration(duration.asNormalHours));
+    return duration * rounding.round(dividedByTimeDelta(duration.asTime));
   }
 
   Years roundToMultipleOfNormalYears(
     Years duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
-    return duration *
-        rounding.round(dividedByTimeDuration(duration.asNormalHours));
+    return duration * rounding.round(dividedByTimeDelta(duration.asNormalTime));
   }
 
   Years roundToMultipleOfNormalLeapYears(
@@ -279,736 +452,17 @@ abstract class TimeDuration extends CDuration
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
     return duration *
-        rounding.round(dividedByTimeDuration(duration.asNormalHours));
+        rounding.round(dividedByTimeDelta(duration.asNormalLeapTime));
   }
 
   /// Returns a [Future] that completes after this duration has passed.
-  Future<void> get wait =>
-      Future<void>.delayed(roundToMicroseconds().asCoreDuration);
+  Future<void> get wait => Future<void>.delayed(roundToCoreDuration());
 
   @override
-  int compareTo(TimeDuration other) =>
-      inNanoseconds.compareTo(other.inNanoseconds);
-}
+  int compareTo(TimeDelta other) {
+    final result = totalSeconds.compareTo(other.totalSeconds);
+    if (result != 0) return result;
 
-/// Base class for [Nanoseconds] and larger durations like [Microseconds].
-// TODO(JonasWanke): Remove
-abstract class NanosecondsDuration extends TimeDuration {
-  const NanosecondsDuration();
-
-  @override
-  NanosecondsDuration operator -();
-  @override
-  NanosecondsDuration operator *(int factor);
-  @override
-  NanosecondsDuration operator ~/(int divisor);
-  @override
-  NanosecondsDuration operator %(int divisor);
-  @override
-  NanosecondsDuration remainder(int divisor);
-
-  @override
-  NanosecondsDuration get absolute => isNegative ? -this : this;
-}
-
-/// An integer number of nanoseconds.
-final class Nanoseconds extends NanosecondsDuration {
-  Nanoseconds(int inNanoseconds) : inNanoseconds = BigInt.from(inNanoseconds);
-  const Nanoseconds.fromBigInt(this.inNanoseconds);
-
-  /// The number of nanoseconds in a microsecond.
-  static const perMicrosecond = 1000;
-
-  /// The nanoseconds in a microsecond.
-  static final microsecond = Nanoseconds(perMicrosecond);
-
-  /// The number of nanoseconds in a millisecond.
-  static const perMillisecond = perMicrosecond * Microseconds.perMillisecond;
-
-  /// The nanoseconds in a millisecond.
-  static final millisecond = Nanoseconds(perMillisecond);
-
-  /// The number of nanoseconds in a second.
-  static const perSecond = perMicrosecond * Microseconds.perSecond;
-
-  /// The nanoseconds in a second.
-  static final second = Nanoseconds(perSecond);
-
-  /// The number of nanoseconds in a minute.
-  static const perMinute = perMicrosecond * Microseconds.perMinute;
-
-  /// The nanoseconds in a minute.
-  static final minute = Nanoseconds(perMinute);
-
-  /// The number of nanoseconds in an hour.
-  static const perHour = perMicrosecond * Microseconds.perHour;
-
-  /// The nanoseconds in an hour.
-  static final hour = Nanoseconds(perHour);
-
-  /// The number of nanoseconds in a normal day, i.e., a day with exactly
-  /// 24 hours (no daylight savings time changes and no leap seconds).
-  static const perNormalDay = perMicrosecond * Microseconds.perNormalDay;
-
-  /// The nanoseconds in a normal day, i.e., a day with exactly 24 hours (no
-  /// daylight savings time changes and no leap seconds).
-  static final normalDay = Nanoseconds(perNormalDay);
-
-  /// The number of nanoseconds in a normal week, i.e., a week where all days
-  /// are exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static const perNormalWeek = perMicrosecond * Microseconds.perNormalWeek;
-
-  /// The nanoseconds in a normal week, i.e., a week where all days are exactly
-  /// 24 hours long (no daylight savings time changes and no leap seconds).
-  static final normalWeek = Nanoseconds(perNormalWeek);
-
-  /// The number of nanoseconds in a normal (non-leap) year (365 days), i.e., a
-  /// year where all days are exactly 24 hours long (no daylight savings time
-  /// changes and no leap seconds).
-  static const perNormalYear = perMicrosecond * Microseconds.perNormalYear;
-
-  /// The nanoseconds in a normal (non-leap) year (365 days), i.e., a year where
-  /// all days are exactly 24 hours long (no daylight savings time changes and
-  /// no leap seconds).
-  static final normalYear = Nanoseconds(perNormalYear);
-
-  /// The number of nanoseconds in a leap year (366 days), i.e., a year where
-  /// all days are exactly 24 hours long (no daylight savings time changes and
-  /// no leap seconds).
-  static const perNormalLeapYear =
-      perMicrosecond * Microseconds.perNormalLeapYear;
-
-  /// The nanoseconds in a leap year (366 days), i.e., a year where all days are
-  /// exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static final normalLeapYear = Nanoseconds(perNormalLeapYear);
-
-  @override
-  final BigInt inNanoseconds;
-
-  @override
-  Nanoseconds get asNanoseconds => this;
-
-  Nanoseconds operator +(TimeDuration duration) =>
-      Nanoseconds.fromBigInt(inNanoseconds + duration.inNanoseconds);
-  Nanoseconds operator -(TimeDuration duration) =>
-      Nanoseconds.fromBigInt(inNanoseconds - duration.inNanoseconds);
-  @override
-  Nanoseconds operator -() => Nanoseconds.fromBigInt(-inNanoseconds);
-  @override
-  Nanoseconds operator *(int factor) =>
-      Nanoseconds.fromBigInt(inNanoseconds * BigInt.from(factor));
-  @override
-  Nanoseconds operator ~/(int divisor) =>
-      Nanoseconds.fromBigInt(inNanoseconds ~/ BigInt.from(divisor));
-
-  @override
-  Nanoseconds operator %(int divisor) =>
-      Nanoseconds.fromBigInt(inNanoseconds % BigInt.from(divisor));
-  @override
-  Nanoseconds remainder(int divisor) =>
-      Nanoseconds.fromBigInt(inNanoseconds.remainder(BigInt.from(divisor)));
-
-  @override
-  Nanoseconds get absolute => isNegative ? -this : this;
-
-  @override
-  String toString() {
-    return inNanoseconds.abs() == BigInt.one
-        ? '$inNanoseconds nanosecond'
-        : '$inNanoseconds nanoseconds';
+    return subSecondNanos.compareTo(other.subSecondNanos);
   }
-}
-
-/// Base class for [Microseconds] and larger durations like [Milliseconds].
-abstract class MicrosecondsDuration extends NanosecondsDuration {
-  const MicrosecondsDuration();
-
-  Microseconds get asMicroseconds;
-  int get inMicroseconds => asMicroseconds.inMicroseconds;
-  @override
-  Nanoseconds get asNanoseconds => Nanoseconds.microsecond * inMicroseconds;
-
-  (Milliseconds, Microseconds) get splitMillisMicros {
-    final asMicroseconds = this.asMicroseconds;
-    final milliseconds = Milliseconds(
-      asMicroseconds.inMicroseconds ~/ Microseconds.perMillisecond,
-    );
-    return (milliseconds, asMicroseconds - milliseconds);
-  }
-
-  (Seconds, Microseconds) get splitSecondsMicros {
-    final asMicroseconds = this.asMicroseconds;
-    final seconds =
-        Seconds(asMicroseconds.inMicroseconds ~/ Microseconds.perSecond);
-    return (seconds, asMicroseconds - seconds);
-  }
-
-  (Seconds, Milliseconds, Microseconds) get splitSecondsMillisMicros {
-    final (rawMilliseconds, microseconds) = splitMillisMicros;
-    final (seconds, milliseconds) = rawMilliseconds.splitSecondsMillis;
-    return (seconds, milliseconds, microseconds);
-  }
-
-  (Minutes, Seconds, Milliseconds, Microseconds)
-      get splitMinutesSecondsMillisMicros {
-    final (rawMilliseconds, microseconds) = splitMillisMicros;
-    final (minutes, seconds, milliseconds) =
-        rawMilliseconds.splitMinutesSecondsMillis;
-    return (minutes, seconds, milliseconds, microseconds);
-  }
-
-  (Hours, Minutes, Seconds, Milliseconds, Microseconds)
-      get splitHoursMinutesSecondsMillisMicros {
-    final (rawMilliseconds, microseconds) = splitMillisMicros;
-    final (hours, minutes, seconds, milliseconds) =
-        rawMilliseconds.splitHoursMinutesSecondsMillis;
-    return (hours, minutes, seconds, milliseconds, microseconds);
-  }
-
-  Duration get asCoreDuration => Duration(microseconds: inMicroseconds);
-
-  @override
-  MicrosecondsDuration operator -();
-  @override
-  MicrosecondsDuration operator *(int factor);
-  @override
-  MicrosecondsDuration operator ~/(int divisor);
-  @override
-  MicrosecondsDuration operator %(int divisor);
-  @override
-  MicrosecondsDuration remainder(int divisor);
-
-  @override
-  MicrosecondsDuration get absolute => isNegative ? -this : this;
-}
-
-/// An integer number of microseconds.
-final class Microseconds extends MicrosecondsDuration {
-  const Microseconds(this.inMicroseconds);
-
-  Microseconds.fromCore(Duration duration)
-      : inMicroseconds = duration.inMicroseconds;
-
-  /// The number of microseconds in a millisecond.
-  static const perMillisecond = 1000;
-
-  /// The microseconds in a millisecond.
-  static const millisecond = Microseconds(perMillisecond);
-
-  /// The number of microseconds in a second.
-  static const perSecond = perMillisecond * Milliseconds.perSecond;
-
-  /// The microseconds in a second.
-  static const second = Microseconds(perSecond);
-
-  /// The number of microseconds in a minute.
-  static const perMinute = perMillisecond * Milliseconds.perMinute;
-
-  /// The microseconds in a minute.
-  static const minute = Microseconds(perMinute);
-
-  /// The number of microseconds in an hour.
-  static const perHour = perMillisecond * Milliseconds.perHour;
-
-  /// The microseconds in an hour.
-  static const hour = Microseconds(perHour);
-
-  /// The number of microseconds in a normal day, i.e., a day with exactly
-  /// 24 hours (no daylight savings time changes and no leap seconds).
-  static const perNormalDay = perMillisecond * Milliseconds.perNormalDay;
-
-  /// The microseconds in a normal day, i.e., a day with exactly 24 hours (no
-  /// daylight savings time changes and no leap seconds).
-  static const normalDay = Microseconds(perNormalDay);
-
-  /// The number of microseconds in a normal week, i.e., a week where all days
-  /// are exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static const perNormalWeek = perMillisecond * Milliseconds.perNormalWeek;
-
-  /// The microseconds in a normal week, i.e., a week where all days are exactly
-  /// 24 hours long (no daylight savings time changes and no leap seconds).
-  static const normalWeek = Microseconds(perNormalWeek);
-
-  /// The number of microseconds in a normal (non-leap) year (365 days), i.e., a
-  /// year where all days are exactly 24 hours long (no daylight savings time
-  /// changes and no leap seconds).
-  static const perNormalYear = perMillisecond * Milliseconds.perNormalYear;
-
-  /// The microseconds in a normal (non-leap) year (365 days), i.e., a year
-  /// where all days are exactly 24 hours long (no daylight savings time changes
-  /// and no leap seconds).
-  static const normalYear = Microseconds(perNormalYear);
-
-  /// The number of microseconds in a leap year (366 days), i.e., a year where
-  /// all days are exactly 24 hours long (no daylight savings time changes and
-  /// no leap seconds).
-  static const perNormalLeapYear =
-      perMillisecond * Milliseconds.perNormalLeapYear;
-
-  /// The microseconds in a leap year (366 days), i.e., a year where all days
-  /// are exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static const normalLeapYear = Microseconds(perNormalLeapYear);
-
-  @override
-  final int inMicroseconds;
-
-  @override
-  Microseconds get asMicroseconds => this;
-
-  Microseconds operator +(MicrosecondsDuration duration) =>
-      Microseconds(inMicroseconds + duration.inMicroseconds);
-  Microseconds operator -(MicrosecondsDuration duration) =>
-      Microseconds(inMicroseconds - duration.inMicroseconds);
-  @override
-  Microseconds operator -() => Microseconds(-inMicroseconds);
-  @override
-  Microseconds operator *(int factor) => Microseconds(inMicroseconds * factor);
-  @override
-  Microseconds operator ~/(int divisor) =>
-      Microseconds(inMicroseconds ~/ divisor);
-  @override
-  Microseconds operator %(int divisor) =>
-      Microseconds(inMicroseconds % divisor);
-  @override
-  Microseconds remainder(int divisor) =>
-      Microseconds(inMicroseconds.remainder(divisor));
-
-  @override
-  Microseconds get absolute => isNegative ? -this : this;
-
-  @override
-  String toString() {
-    return inMicroseconds.abs() == 1
-        ? '$inMicroseconds microsecond'
-        : '$inMicroseconds microseconds';
-  }
-}
-
-/// Base class for [Milliseconds] and larger durations like [Seconds].
-abstract class MillisecondsDuration extends MicrosecondsDuration {
-  const MillisecondsDuration();
-
-  Milliseconds get asMilliseconds;
-  int get inMilliseconds => asMilliseconds.inMilliseconds;
-  @override
-  Microseconds get asMicroseconds => Microseconds.millisecond * inMilliseconds;
-
-  (Seconds, Milliseconds) get splitSecondsMillis {
-    final asMilliseconds = this.asMilliseconds;
-    final seconds =
-        Seconds(asMilliseconds.inMilliseconds ~/ Milliseconds.perSecond);
-    return (seconds, asMilliseconds - seconds);
-  }
-
-  (Minutes, Seconds, Milliseconds) get splitMinutesSecondsMillis {
-    final (rawSeconds, milliseconds) = splitSecondsMillis;
-    final (minutes, seconds) = rawSeconds.splitMinutesSeconds;
-    return (minutes, seconds, milliseconds);
-  }
-
-  (Hours, Minutes, Seconds, Milliseconds) get splitHoursMinutesSecondsMillis {
-    final (rawSeconds, milliseconds) = splitSecondsMillis;
-    final (hours, minutes, seconds) = rawSeconds.splitHoursMinutesSeconds;
-    return (hours, minutes, seconds, milliseconds);
-  }
-
-  @override
-  MillisecondsDuration operator -();
-  @override
-  MillisecondsDuration operator *(int factor);
-  @override
-  MillisecondsDuration operator ~/(int divisor);
-  @override
-  MillisecondsDuration operator %(int divisor);
-  @override
-  MillisecondsDuration remainder(int divisor);
-
-  @override
-  MillisecondsDuration get absolute => isNegative ? -this : this;
-}
-
-/// An integer number of milliseconds.
-final class Milliseconds extends MillisecondsDuration {
-  const Milliseconds(this.inMilliseconds);
-
-  /// The number of milliseconds in a second.
-  static const perSecond = 1000;
-
-  /// The milliseconds in a second.
-  static const second = Milliseconds(perSecond);
-
-  /// The number of milliseconds in a minute.
-  static const perMinute = perSecond * Seconds.perMinute;
-
-  /// The milliseconds in a minute.
-  static const minute = Milliseconds(perMinute);
-
-  /// The number of milliseconds in an hour.
-  static const perHour = perSecond * Seconds.perHour;
-
-  /// The milliseconds in an hour.
-  static const hour = Milliseconds(perHour);
-
-  /// The number of milliseconds in a normal day, i.e., a day with exactly
-  /// 24 hours (no daylight savings time changes and no leap seconds).
-  static const perNormalDay = perSecond * Seconds.perNormalDay;
-
-  /// The milliseconds in a normal day, i.e., a day with exactly 24 hours (no
-  /// daylight savings time changes and no leap seconds).
-  static const normalDay = Milliseconds(perNormalDay);
-
-  /// The number of milliseconds in a normal week, i.e., a week where all days
-  /// are exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static const perNormalWeek = perSecond * Seconds.perNormalDay;
-
-  /// The milliseconds in a normal week, i.e., a week where all days are exactly
-  /// 24 hours long (no daylight savings time changes and no leap seconds).
-  static const normalWeek = Milliseconds(perNormalWeek);
-
-  /// The number of milliseconds in a normal (non-leap) year (365 days), i.e., a
-  /// year where all days are exactly 24 hours long (no daylight savings time
-  /// changes and no leap seconds).
-  static const perNormalYear = perSecond * Seconds.perNormalYear;
-
-  /// The milliseconds in a normal (non-leap) year (365 days), i.e., a year
-  /// where all days are exactly 24 hours long (no daylight savings time changes
-  /// and no leap seconds).
-  static const normalYear = Milliseconds(perNormalYear);
-
-  /// The number of milliseconds in a leap year (366 days), i.e., a year where
-  /// all days are exactly 24 hours long (no daylight savings time changes and
-  /// no leap seconds).
-  static const perNormalLeapYear = perSecond * Seconds.perNormalLeapYear;
-
-  /// The milliseconds in a leap year (366 days), i.e., a year where all days
-  /// are exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static const normalLeapYear = Milliseconds(perNormalLeapYear);
-
-  @override
-  final int inMilliseconds;
-
-  @override
-  Milliseconds get asMilliseconds => this;
-
-  Milliseconds operator +(MillisecondsDuration duration) =>
-      Milliseconds(inMilliseconds + duration.inMilliseconds);
-  Milliseconds operator -(MillisecondsDuration duration) =>
-      Milliseconds(inMilliseconds - duration.inMilliseconds);
-  @override
-  Milliseconds operator -() => Milliseconds(-inMilliseconds);
-  @override
-  Milliseconds operator *(int factor) => Milliseconds(inMilliseconds * factor);
-  @override
-  Milliseconds operator ~/(int divisor) =>
-      Milliseconds(inMilliseconds ~/ divisor);
-  @override
-  Milliseconds operator %(int divisor) =>
-      Milliseconds(inMilliseconds % divisor);
-  @override
-  Milliseconds remainder(int divisor) =>
-      Milliseconds(inMilliseconds.remainder(divisor));
-
-  @override
-  Milliseconds get absolute => isNegative ? -this : this;
-
-  @override
-  String toString() {
-    return inMilliseconds.abs() == 1
-        ? '$inMilliseconds millisecond'
-        : '$inMilliseconds milliseconds';
-  }
-}
-
-/// Base class for [Seconds] and larger durations like [Minutes].
-abstract class SecondsDuration extends MillisecondsDuration {
-  const SecondsDuration();
-
-  Seconds get asSeconds;
-  int get inSeconds => asSeconds.inSeconds;
-  @override
-  Milliseconds get asMilliseconds => Milliseconds.second * inSeconds;
-
-  (Minutes, Seconds) get splitMinutesSeconds {
-    final asSeconds = this.asSeconds;
-    final minutes = Minutes(asSeconds.inSeconds ~/ Seconds.perMinute);
-    return (minutes, asSeconds - minutes);
-  }
-
-  (Hours, Minutes, Seconds) get splitHoursMinutesSeconds {
-    final (asMinutes, seconds) = splitMinutesSeconds;
-    final (hours, minutes) = asMinutes.splitHoursMinutes;
-    return (hours, minutes, seconds);
-  }
-
-  @override
-  SecondsDuration operator -();
-  @override
-  SecondsDuration operator *(int factor);
-  @override
-  SecondsDuration operator ~/(int divisor);
-  @override
-  SecondsDuration operator %(int divisor);
-  @override
-  SecondsDuration remainder(int divisor);
-
-  @override
-  SecondsDuration get absolute => isNegative ? -this : this;
-}
-
-/// An integer number of seconds.
-final class Seconds extends SecondsDuration {
-  const Seconds(this.inSeconds);
-
-  /// The number of seconds in a minute.
-  static const perMinute = 60;
-
-  /// The seconds in a minute.
-  static const minute = Seconds(perMinute);
-
-  /// The number of seconds in an hour.
-  static const perHour = perMinute * Minutes.perHour;
-
-  /// The seconds in an hour.
-  static const hour = Seconds(perHour);
-
-  /// The number of seconds in a normal day, i.e., a day with exactly 24 hours
-  /// (no daylight savings time changes and no leap seconds).
-  static const perNormalDay = perMinute * Minutes.perNormalDay;
-
-  /// The seconds in a normal day, i.e., a day with exactly 24 hours (no
-  /// daylight savings time changes and no leap seconds).
-  static const normalDay = Seconds(perNormalDay);
-
-  /// The number of seconds in a normal week, i.e., a week where all days are
-  /// exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static const perNormalWeek = perMinute * Minutes.perNormalWeek;
-
-  /// The seconds in a normal week, i.e., a week where all days are exactly
-  /// 24 hours long (no daylight savings time changes and no leap seconds).
-  static const normalWeek = Seconds(perNormalWeek);
-
-  /// The number of seconds in a normal (non-leap) year (365 days), i.e., a year
-  /// where all days are exactly 24 hours long (no daylight savings time changes
-  /// and no leap seconds).
-  static const perNormalYear = perMinute * Minutes.perNormalYear;
-
-  /// The seconds in a normal (non-leap) year (365 days), i.e., a year where all
-  /// days are exactly 24 hours long (no daylight savings time changes and no
-  /// leap seconds).
-  static const normalYear = Seconds(perNormalYear);
-
-  /// The number of seconds in a leap year (366 days), i.e., a year where all
-  /// days are exactly 24 hours long (no daylight savings time changes and no
-  /// leap seconds).
-  static const perNormalLeapYear = perMinute * Minutes.perNormalLeapYear;
-
-  /// The seconds in a leap year (366 days), i.e., a year where all days are
-  /// exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static const normalLeapYear = Seconds(perNormalLeapYear);
-
-  @override
-  final int inSeconds;
-
-  @override
-  Seconds get asSeconds => this;
-
-  Seconds operator +(SecondsDuration duration) =>
-      Seconds(inSeconds + duration.inSeconds);
-  Seconds operator -(SecondsDuration duration) =>
-      Seconds(inSeconds - duration.inSeconds);
-  @override
-  Seconds operator -() => Seconds(-inSeconds);
-  @override
-  Seconds operator *(int factor) => Seconds(inSeconds * factor);
-  @override
-  Seconds operator ~/(int divisor) => Seconds(inSeconds ~/ divisor);
-  @override
-  Seconds operator %(int divisor) => Seconds(inSeconds % divisor);
-  @override
-  Seconds remainder(int divisor) => Seconds(inSeconds.remainder(divisor));
-
-  @override
-  Seconds get absolute => isNegative ? -this : this;
-
-  @override
-  String toString() =>
-      inSeconds.abs() == 1 ? '$inSeconds second' : '$inSeconds seconds';
-}
-
-/// Base class for [Minutes] and [Hours].
-abstract class MinutesDuration extends SecondsDuration {
-  const MinutesDuration();
-
-  Minutes get asMinutes;
-  int get inMinutes => asMinutes.inMinutes;
-  @override
-  Seconds get asSeconds => Seconds.minute * inMinutes;
-
-  (Hours, Minutes) get splitHoursMinutes {
-    final asMinutes = this.asMinutes;
-    final hours = Hours(asMinutes.inMinutes ~/ Minutes.perHour);
-    return (hours, asMinutes - hours);
-  }
-
-  @override
-  MinutesDuration operator -();
-  @override
-  MinutesDuration operator *(int factor);
-  @override
-  MinutesDuration operator ~/(int divisor);
-  @override
-  MinutesDuration operator %(int divisor);
-
-  @override
-  MinutesDuration get absolute => isNegative ? -this : this;
-}
-
-/// An integer number of minutes.
-final class Minutes extends MinutesDuration {
-  const Minutes(this.inMinutes);
-
-  /// The number of minutes in an hour.
-  static const perHour = 60;
-
-  /// The minutes in an hour.
-  static const hour = Minutes(perHour);
-
-  /// The number of minutes in a normal day, i.e., a day with exactly 24 hours
-  /// (no daylight savings time changes and no leap seconds).
-  static const perNormalDay = perHour * Hours.perNormalDay;
-
-  /// The minutes in a normal day, i.e., a day with exactly 24 hours (no
-  /// daylight savings time changes and no leap seconds).
-  static const normalDay = Minutes(perNormalDay);
-
-  /// The number of minutes in a normal week, i.e., a week where all days are
-  /// exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static const perNormalWeek = perHour * Hours.perNormalWeek;
-
-  /// The minutes in a normal week, i.e., a week where all days are exactly
-  /// 24 hours long (no daylight savings time changes and no leap seconds).
-  static const normalWeek = Minutes(perNormalWeek);
-
-  /// The number of minutes in a normal (non-leap) year (365 days), i.e., a year
-  /// where all days are exactly 24 hours long (no daylight savings time changes
-  /// and no leap seconds).
-  static const perNormalYear = perHour * Hours.perNormalYear;
-
-  /// The minutes in a normal (non-leap) year (365 days), i.e., a year where all
-  /// days are exactly 24 hours long (no daylight savings time changes and no
-  /// leap seconds).
-  static const normalYear = Minutes(perNormalYear);
-
-  /// The number of minutes in a leap year (366 days), i.e., a year where all
-  /// days are exactly 24 hours long (no daylight savings time changes and no
-  /// leap seconds).
-  static const perNormalLeapYear = perHour * Hours.perNormalLeapYear;
-
-  /// The minutes in a leap year (366 days), i.e., a year where all days are
-  /// exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static const normalLeapYear = Minutes(perNormalLeapYear);
-
-  @override
-  final int inMinutes;
-
-  @override
-  Minutes get asMinutes => this;
-
-  Minutes operator +(MinutesDuration duration) =>
-      Minutes(inMinutes + duration.inMinutes);
-  Minutes operator -(MinutesDuration duration) =>
-      Minutes(inMinutes - duration.inMinutes);
-  @override
-  Minutes operator -() => Minutes(-inMinutes);
-  @override
-  Minutes operator *(int factor) => Minutes(inMinutes * factor);
-  @override
-  Minutes operator ~/(int divisor) => Minutes(inMinutes ~/ divisor);
-  @override
-  Minutes operator %(int divisor) => Minutes(inMinutes % divisor);
-  @override
-  Minutes remainder(int divisor) => Minutes(inMinutes.remainder(divisor));
-
-  @override
-  Minutes get absolute => isNegative ? -this : this;
-
-  @override
-  String toString() =>
-      inMinutes.abs() == 1 ? '$inMinutes minute' : '$inMinutes minutes';
-}
-
-/// An integer number of hours.
-final class Hours extends MinutesDuration {
-  const Hours(this.inHours);
-
-  /// The number of hours in a normal day, i.e., a day with exactly 24 hours
-  /// no daylight savings time changes and no leap seconds).
-  static const perNormalDay = 24;
-
-  /// The hours in a normal day, i.e., a day with exactly 24 hours (no daylight
-  /// savings time changes and no leap seconds).
-  static const normalDay = Hours(perNormalDay);
-
-  /// The number of hours in a normal week, i.e., a week where all days are
-  /// exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static const perNormalWeek = perNormalDay * Days.perWeek;
-
-  /// The hours in a normal week, i.e., a week where all days are exactly
-  /// 24 hours long (no daylight savings time changes and no leap seconds).
-  static const normalWeek = Hours(perNormalWeek);
-
-  /// The number of hours in a normal (non-leap) year (365 days), i.e., a year
-  /// where all days are exactly 24 hours long (no daylight savings time changes
-  /// and no leap seconds).
-  static const perNormalYear = perNormalDay * Days.perNormalYear;
-
-  /// The hours in a normal (non-leap) year (365 days), i.e., a year where all
-  /// days are exactly 24 hours long (no daylight savings time changes and no
-  /// leap seconds).
-  static const normalYear = Hours(perNormalYear);
-
-  /// The number of hours in a leap year (366 days), i.e., a year where all days
-  /// are exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static const perNormalLeapYear = perNormalDay * Days.perLeapYear;
-
-  /// The hours in a leap year (366 days), i.e., a year where all days are
-  /// exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static const normalLeapYear = Hours(perNormalLeapYear);
-
-  final int inHours;
-
-  @override
-  Minutes get asMinutes => Minutes.hour * inHours;
-
-  Hours operator +(Hours duration) => Hours(inHours + duration.inHours);
-  Hours operator -(Hours duration) => Hours(inHours - duration.inHours);
-  @override
-  Hours operator -() => Hours(-inHours);
-  @override
-  Hours operator *(int factor) => Hours(inHours * factor);
-  @override
-  Hours operator ~/(int divisor) => Hours(inHours ~/ divisor);
-  @override
-  Hours operator %(int divisor) => Hours(inHours % divisor);
-  @override
-  Hours remainder(int divisor) => Hours(inHours.remainder(divisor));
-
-  @override
-  Hours get absolute => isNegative ? -this : this;
-
-  @override
-  String toString() => inHours.abs() == 1 ? '$inHours hour' : '$inHours hours';
 }

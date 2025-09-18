@@ -5,7 +5,7 @@ import '../utils.dart';
 
 /// A [CDuration] based on an integer number of days or months.
 ///
-/// This is different to [TimeDuration] because days can be shorter or longer
+/// This is different to [TimeDelta] because days can be shorter or longer
 /// than 24 hours and months have a varying of days.
 ///
 /// See also:
@@ -17,7 +17,7 @@ import '../utils.dart';
 ///   - [Weeks], which represents an integer number of weeks.
 ///   - [Days], which represents an integer number of days.
 /// - [CompoundCalendarDuration], which combines [Months] and [Days].
-/// - [TimeDuration], which covers durations based on a fixed time like seconds.
+/// - [TimeDelta], which covers durations based on a fixed time like seconds.
 /// - [CDuration], which is the base class for date and time durations.
 abstract class CalendarDuration extends CDuration {
   const CalendarDuration();
@@ -45,8 +45,8 @@ final class CompoundCalendarDuration extends CalendarDuration {
   CompoundCalendarDuration({
     MonthsDuration months = const Months(0),
     DaysDuration days = const Days(0),
-  })  : months = months.asMonths,
-        days = days.asDays;
+  }) : months = months.asMonths,
+       days = days.asDays;
 
   final Months months;
   final Days days;
@@ -134,9 +134,7 @@ abstract class MonthsDuration extends CalendarDuration
 
   MonthsDuration get absolute => isNegative ? -this : this;
 
-  Years roundToYears({
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) =>
+  Years roundToYears({Rounding rounding = Rounding.nearestAwayFromZero}) =>
       Years(rounding.round(inMonths / Months.perYear));
 
   @override
@@ -198,6 +196,9 @@ final class Years extends MonthsDuration {
 
   final int inYears;
 
+  TimeDelta get asNormalTime => TimeDelta(normalYears: inYears);
+  TimeDelta get asNormalLeapTime => TimeDelta(normalLeapYears: inYears);
+
   /// The days in this many normal (non-leap) years (365 days).
   Days get asNormalDays => Days.normalYear * inYears;
 
@@ -207,62 +208,62 @@ final class Years extends MonthsDuration {
   /// The hours in this many normal (non-leap) years (365 days), i.e., years
   /// where all days are exactly 24 hours long (no daylight savings time changes
   /// and no leap seconds).
-  Hours get asNormalHours => asNormalDays.asNormalHours;
+  int get asNormalHours => asNormalDays.asNormalHours;
 
   /// The hours in this many normal leap years (366 days), i.e., years where all
   /// days are exactly 24 hours long (no daylight savings time changes and no
   /// leap seconds).
-  Hours get asNormalLeapHours => asLeapDays.asNormalHours;
+  int get asNormalLeapHours => asLeapDays.asNormalHours;
 
   /// The minutes in this many normal (non-leap) years (365 days), i.e., years
   /// where all days are exactly 24 hours long (no daylight savings time changes
   /// and no leap seconds).
-  Minutes get asNormalMinutes => asNormalDays.asNormalMinutes;
+  int get asNormalMinutes => asNormalDays.asNormalMinutes;
 
   /// The minutes in this many normal leap years (366 days), i.e., years where
   /// all days are exactly 24 hours long (no daylight savings time changes and
   /// no leap seconds).
-  Minutes get asNormalLeapMinutes => asLeapDays.asNormalMinutes;
+  int get asNormalLeapMinutes => asLeapDays.asNormalMinutes;
 
   /// The seconds in this many normal (non-leap) years (365 days), i.e., years
   /// where all days are exactly 24 hours long (no daylight savings time changes
   /// and no leap seconds).
-  Seconds get asNormalSeconds => asNormalDays.asNormalSeconds;
+  int get asNormalSeconds => asNormalDays.asNormalSeconds;
 
   /// The seconds in this many normal leap years (366 days), i.e., years where
   /// all days are exactly 24 hours long (no daylight savings time changes and
   /// no leap seconds).
-  Seconds get asNormalLeapSeconds => asLeapDays.asNormalSeconds;
+  int get asNormalLeapSeconds => asLeapDays.asNormalSeconds;
 
   /// The milliseconds in this many normal (non-leap) years (365 days), i.e.,
   /// years where all days are exactly 24 hours long (no daylight savings time
   /// changes and no leap seconds).
-  Milliseconds get asNormalMilliseconds => asNormalDays.asNormalMilliseconds;
+  int get asNormalMillis => asNormalDays.asNormalMillis;
 
   /// The milliseconds in this many normal leap years (366 days), i.e., years
   /// where all days are exactly 24 hours long (no daylight savings time changes
   /// and no leap seconds).
-  Milliseconds get asNormalLeapMilliseconds => asLeapDays.asNormalMilliseconds;
+  int get asNormalLeapMillis => asLeapDays.asNormalMillis;
 
   /// The microseconds in this many normal (non-leap) years (365 days), i.e.,
   /// years where all days are exactly 24 hours long (no daylight savings time
   /// changes and no leap seconds).
-  Microseconds get asNormalMicroseconds => asNormalDays.asNormalMicroseconds;
+  int get asNormalMicros => asNormalDays.asNormalMicros;
 
   /// The microseconds in this many normal leap years (366 days), i.e., years
   /// where all days are exactly 24 hours long (no daylight savings time changes
   /// and no leap seconds).
-  Microseconds get asNormalLeapMicroseconds => asLeapDays.asNormalMicroseconds;
+  int get asNormalLeapMicros => asLeapDays.asNormalMicros;
 
   /// The nanoseconds in this many normal (non-leap) years (365 days), i.e.,
   /// years where all days are exactly 24 hours long (no daylight savings time
   /// changes and no leap seconds).
-  Nanoseconds get asNormalNanoseconds => asNormalDays.asNormalNanoseconds;
+  int get asNormalNanos => asNormalDays.asNormalNanos;
 
   /// The nanoseconds in this many normal leap years (366 days), i.e., years
   /// where all days are exactly 24 hours long (no daylight savings time changes
   /// and no leap seconds).
-  Nanoseconds get asNormalLeapNanoseconds => asLeapDays.asNormalNanoseconds;
+  int get asNormalLeapNanos => asLeapDays.asNormalNanos;
 
   @override
   (Years, Months) get splitYearsMonths => (this, const Months(0));
@@ -300,12 +301,13 @@ abstract class DaysDuration extends CalendarDuration
 
   Days get asDays;
   int get inDays => asDays.inDays;
-  Hours get asNormalHours => Hours.normalDay * inDays;
-  Minutes get asNormalMinutes => asNormalHours.asMinutes;
-  Seconds get asNormalSeconds => asNormalHours.asSeconds;
-  Milliseconds get asNormalMilliseconds => asNormalHours.asMilliseconds;
-  Microseconds get asNormalMicroseconds => asNormalHours.asMicroseconds;
-  Nanoseconds get asNormalNanoseconds => asNormalHours.asNanoseconds;
+  TimeDelta get asTime => TimeDelta(normalDays: inDays);
+  int get asNormalHours => TimeDelta.hoursPerNormalDay * inDays;
+  int get asNormalMinutes => TimeDelta.minutesPerNormalDay * inDays;
+  int get asNormalSeconds => TimeDelta.secondsPerNormalDay * inDays;
+  int get asNormalMillis => TimeDelta.millisPerNormalDay * inDays;
+  int get asNormalMicros => TimeDelta.microsPerNormalDay * inDays;
+  int get asNormalNanos => TimeDelta.nanosPerNormalDay * inDays;
 
   /// Both are `>= 0` or both are `<= 0`.
   (Weeks, Days) get splitWeeksDays {
@@ -337,9 +339,7 @@ abstract class DaysDuration extends CalendarDuration
 
   DaysDuration get absolute => isNegative ? -this : this;
 
-  Weeks roundToWeeks({
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) =>
+  Weeks roundToWeeks({Rounding rounding = Rounding.nearestAwayFromZero}) =>
       Weeks(rounding.round(inDays / Days.perWeek));
 
   @override

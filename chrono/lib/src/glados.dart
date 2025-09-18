@@ -12,9 +12,9 @@ import 'date/weekday.dart';
 import 'date/year.dart';
 import 'date_time/date_time.dart';
 import 'date_time/duration.dart';
+import 'instant.dart';
 import 'time/duration.dart';
 import 'time/time.dart';
-import 'unix_epoch_timestamp.dart';
 
 /// Sets all Glados generators for Chrono classes as defaults.
 ///
@@ -22,11 +22,7 @@ import 'unix_epoch_timestamp.dart';
 ///
 /// - [ChronoAny], which defines all these generators.
 void setChronoGladosDefaults() {
-  Any.setDefault(any.unixEpochTimestamp);
   Any.setDefault(any.instant);
-  Any.setDefault(any.unixEpochMicroseconds);
-  Any.setDefault(any.unixEpochMilliseconds);
-  Any.setDefault(any.unixEpochSeconds);
 
   Any.setDefault(any.date);
   Any.setDefault(any.dateTimeChrono);
@@ -50,18 +46,7 @@ void setChronoGladosDefaults() {
   Any.setDefault(any.daysDuration);
   Any.setDefault(any.days);
   Any.setDefault(any.weeks);
-  Any.setDefault(any.timeDuration);
-  Any.setDefault(any.nanosecondsDuration);
-  Any.setDefault(any.nanoseconds);
-  Any.setDefault(any.microsecondsDuration);
-  Any.setDefault(any.microseconds);
-  Any.setDefault(any.millisecondsDuration);
-  Any.setDefault(any.milliseconds);
-  Any.setDefault(any.secondsDuration);
-  Any.setDefault(any.seconds);
-  Any.setDefault(any.minutesDuration);
-  Any.setDefault(any.minutes);
-  Any.setDefault(any.hours);
+  Any.setDefault(any.timeDelta);
 }
 
 /// Glados generators for Chrono classes.
@@ -71,30 +56,16 @@ void setChronoGladosDefaults() {
 /// - [setChronoGladosDefaults], which registers all these generators as
 ///   default.
 extension ChronoAny on Any {
-  Generator<UnixEpochTimestamp> get unixEpochTimestamp {
-    return either(
-      timeDuration.map(UnixEpochTimestamp.new),
-      instant,
-      unixEpochMicroseconds,
-      unixEpochMilliseconds,
-      unixEpochSeconds,
-    );
-  }
-
   Generator<Instant> get instant =>
-      nanoseconds.map(Instant.fromDurationSinceUnixEpoch);
-  Generator<UnixEpochMicroseconds> get unixEpochMicroseconds =>
-      microseconds.map(UnixEpochMicroseconds.new);
-  Generator<UnixEpochMilliseconds> get unixEpochMilliseconds =>
-      milliseconds.map(UnixEpochMilliseconds.new);
-  Generator<UnixEpochSeconds> get unixEpochSeconds =>
-      seconds.map(UnixEpochSeconds.new);
+      timeDelta.map(Instant.fromDurationSinceUnixEpoch);
   Generator<Date> get date {
     return simple(
       generate: (random, size) {
         final yearMonth = this.yearMonth(random, size);
-        final day =
-            intInRange(1, yearMonth.value.length.inDays + 1)(random, size);
+        final day = intInRange(1, yearMonth.value.length.inDays + 1)(
+          random,
+          size,
+        );
         return (yearMonth, day);
       },
       shrink: (input) sync* {
@@ -103,28 +74,28 @@ extension ChronoAny on Any {
           final actualDay = day.value <= yearMonth.value.length.inDays
               ? day
               : day.shrink().firstWhere(
-                    (it) => it.value <= yearMonth.value.length.inDays,
-                  );
+                  (it) => it.value <= yearMonth.value.length.inDays,
+                );
           return (yearMonth, actualDay);
         });
         yield* day.shrink().map((it) => (yearMonth, it));
       },
-    ).map(
-      (it) => Date.fromYearMonthAndDay(it.$1.value, it.$2.value).unwrap(),
-    );
+    ).map((it) => Date.fromYearMonthAndDay(it.$1.value, it.$2.value).unwrap());
   }
 
   Generator<CDateTime> get dateTimeChrono =>
       combine2(date, time, CDateTime.new);
   Generator<Month> get month => choose(Month.values);
   Generator<Time> get time {
-    return combine4(
-      intInRange(0, 24),
-      intInRange(0, 60),
-      intInRange(0, 60),
-      intInRange(0, Nanoseconds.perSecond),
-      (hour, minute, second, nanoseconds) =>
-          Time.from(hour, minute, second, Nanoseconds(nanoseconds)).unwrap(),
+    return combine6(
+      intInRange(0, TimeDelta.hoursPerNormalDay),
+      intInRange(0, TimeDelta.minutesPerHour),
+      intInRange(0, TimeDelta.secondsPerMinute),
+      intInRange(0, TimeDelta.millisPerSecond),
+      intInRange(0, TimeDelta.microsPerMillisecond),
+      intInRange(0, TimeDelta.nanosPerMicrosecond),
+      (hour, minute, second, millis, micros, nanos) =>
+          Time.from(hour, minute, second, millis, micros, nanos).unwrap(),
     );
   }
 
@@ -146,8 +117,8 @@ extension ChronoAny on Any {
           final actualWeek = week.value <= weekBasedYear.value.numberOfIsoWeeks
               ? week
               : week.shrink().firstWhere(
-                    (it) => it.value <= weekBasedYear.value.numberOfIsoWeeks,
-                  );
+                  (it) => it.value <= weekBasedYear.value.numberOfIsoWeeks,
+                );
           return (weekBasedYear, actualWeek);
         });
         yield* week.shrink().map((it) => (weekBasedYear, it));
@@ -204,8 +175,10 @@ extension ChronoAny on Any {
     return simple(
       generate: (random, size) {
         final month = this.month(random, size);
-        final day =
-            intInRange(1, month.value.maxLength.inDays + 1)(random, size);
+        final day = intInRange(1, month.value.maxLength.inDays + 1)(
+          random,
+          size,
+        );
         return (month, day);
       },
       shrink: (input) sync* {
@@ -213,9 +186,9 @@ extension ChronoAny on Any {
         yield* month.shrink().map((month) {
           final actualWeek = day.value <= month.value.maxLength.inDays
               ? day
-              : day
-                  .shrink()
-                  .firstWhere((it) => it.value <= month.value.maxLength.inDays);
+              : day.shrink().firstWhere(
+                  (it) => it.value <= month.value.maxLength.inDays,
+                );
           return (month, actualWeek);
         });
         yield* day.shrink().map((it) => (month, it));
@@ -226,15 +199,13 @@ extension ChronoAny on Any {
   Generator<Weekday> get weekday => choose(Weekday.values);
 
   Generator<CDuration> get durationChrono =>
-      either(calendarDuration, timeDuration);
+      either(calendarDuration, timeDelta);
   Generator<CompoundDuration> get compoundDuration {
     return combine2(
       compoundCalendarDuration,
-      nanoseconds,
-      (monthsAndDays, nanoseconds) => CompoundDuration(
-        monthsAndDays: monthsAndDays,
-        seconds: nanoseconds,
-      ),
+      timeDelta,
+      (monthsAndDays, time) =>
+          CompoundDuration(monthsAndDays: monthsAndDays, time: time),
     );
   }
 
@@ -256,20 +227,41 @@ extension ChronoAny on Any {
   Generator<Days> get days => this.int.map(Days.new);
   Generator<Weeks> get weeks => this.int.map(Weeks.new);
 
-  Generator<TimeDuration> get timeDuration => nanosecondsDuration;
-  Generator<NanosecondsDuration> get nanosecondsDuration =>
-      either(nanoseconds, microseconds, milliseconds, seconds, minutes, hours);
-  Generator<Nanoseconds> get nanoseconds => bigInt.map(Nanoseconds.fromBigInt);
-  Generator<MicrosecondsDuration> get microsecondsDuration =>
-      either(microseconds, milliseconds, seconds, minutes, hours);
-  Generator<Microseconds> get microseconds => this.int.map(Microseconds.new);
-  Generator<MillisecondsDuration> get millisecondsDuration =>
-      either(milliseconds, seconds, minutes, hours);
-  Generator<Milliseconds> get milliseconds => this.int.map(Milliseconds.new);
-  Generator<SecondsDuration> get secondsDuration =>
-      either(seconds, minutes, hours);
-  Generator<Seconds> get seconds => this.int.map(Seconds.new);
-  Generator<MinutesDuration> get minutesDuration => either(minutes, hours);
-  Generator<Minutes> get minutes => this.int.map(Minutes.new);
-  Generator<Hours> get hours => this.int.map(Hours.new);
+  Generator<TimeDelta> get timeDelta {
+    return combine10(
+      this.int,
+      this.int,
+      this.int,
+      this.int,
+      this.int,
+      this.int,
+      this.int,
+      this.int,
+      this.int,
+      this.int,
+      (
+        normalLeapYears,
+        normalYears,
+        normalWeeks,
+        normalDays,
+        hours,
+        minutes,
+        seconds,
+        millis,
+        micros,
+        nanos,
+      ) => TimeDelta(
+        normalLeapYears: normalLeapYears,
+        normalYears: normalYears,
+        normalWeeks: normalWeeks,
+        normalDays: normalDays,
+        hours: hours,
+        minutes: minutes,
+        seconds: seconds,
+        millis: millis,
+        micros: micros,
+        nanos: nanos,
+      ),
+    );
+  }
 }
