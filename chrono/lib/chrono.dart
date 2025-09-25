@@ -13,6 +13,8 @@ export 'src/date_time/date_time.dart';
 export 'src/date_time/duration.dart';
 export 'src/glados.dart';
 export 'src/instant.dart';
+export 'src/offset/fixed.dart';
+export 'src/offset/time_zone.dart';
 export 'src/rounding.dart';
 export 'src/time/duration.dart';
 export 'src/time/time.dart';

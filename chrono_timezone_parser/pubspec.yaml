@@ -19,14 +19,9 @@ dependencies:
   oxidized: ^6.0.0
 
 dev_dependencies:
-  build_runner: ^2.4.8
-  freezed: ^2.4.6
   supernova_lints:
     git:
       url: https://github.com/JonasWanke/supernova.git
       path: supernova_lints
       ref: 1fa8535952fa7152f2bad30937e6b5bca4129bea
   test: ^1.26.3
-
-dependency_overrides:
-  http: ^1.0.0

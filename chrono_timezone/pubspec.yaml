@@ -1,0 +1,26 @@
+name: chrono_timezone
+version: 0.0.0
+homepage: https://github.com/JonasWanke/chrono
+
+environment:
+  sdk: ^3.8.0
+
+dependencies:
+  chrono:
+    path: ../chrono
+  collection: ^1.19.1
+  deranged: # ^0.0.0
+    # path: ../../deranged
+    git:
+      url: https://github.com/JonasWanke/deranged.git
+      ref: 5c4686fdf389919fb01790ea5f73e454bf79d00f
+  meta: ^1.3.0
+  oxidized: ^6.0.0
+
+dev_dependencies:
+  supernova_lints:
+    git:
+      url: https://github.com/JonasWanke/supernova.git
+      path: supernova_lints
+      ref: 1fa8535952fa7152f2bad30937e6b5bca4129bea
+  test: ^1.26.3

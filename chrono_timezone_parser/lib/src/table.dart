@@ -19,6 +19,85 @@ class Table {
   /// [zonesets] or [links].
   List<TableZoneInfo>? getZoneset(String zoneName) =>
       zonesets[zoneName] ?? zonesets[links[zoneName]];
+
+  /// Computes a fixed timespan set for the timezone with the given name.
+  ///
+  /// Returns `null` if the table doesn’t contain a time zone with that name.
+  FixedTimespanSet? timespans(String zoneName) {
+    final zoneset = getZoneset(zoneName);
+    if (zoneset == null) return null;
+
+    final builder = FixedTimespanSetBuilder();
+    for (final (i, zoneInfo) in zoneset.indexed) {
+      var dstOffsetSeconds = 0;
+      final useUntil = i != zoneset.length - 1;
+      final utcOffsetSeconds = zoneInfo.offsetSeconds;
+
+      var insertStartTransition = i > 0;
+      String? startZoneId;
+      var startUtcOffset = zoneInfo.offsetSeconds;
+      var startDstOffset = 0;
+
+      switch (zoneInfo.saving) {
+        case Saving_None():
+          startZoneId = builder.addFixedSaving(
+            zoneInfo,
+            utcOffsetSeconds: utcOffsetSeconds,
+            dstOffsetSeconds: 0,
+            insertStartTransition: insertStartTransition,
+          );
+          dstOffsetSeconds = 0;
+          insertStartTransition = false;
+
+        case Saving_OneOff(:final timeSpec):
+          dstOffsetSeconds = timeSpec.asSeconds();
+          startZoneId = builder.addFixedSaving(
+            zoneInfo,
+            utcOffsetSeconds: utcOffsetSeconds,
+            dstOffsetSeconds: dstOffsetSeconds,
+            insertStartTransition: insertStartTransition,
+          );
+          insertStartTransition = false;
+
+        case Saving_Multiple(:final name):
+          final result = builder.addMultipleSaving(
+            zoneInfo,
+            rulesets[name]!,
+            dstOffsetSeconds: dstOffsetSeconds,
+            useUntil: useUntil,
+            utcOffsetSeconds: utcOffsetSeconds,
+            insertStartTransition: insertStartTransition,
+            startZoneId: startZoneId,
+            startUtcOffset: startUtcOffset,
+            startDstOffset: startDstOffset,
+          );
+          dstOffsetSeconds = result.dstOffsetSeconds;
+          startZoneId = result.startZoneId;
+          startUtcOffset = result.startUtcOffset;
+          startDstOffset = result.startDstOffset;
+      }
+
+      if (insertStartTransition && startZoneId != null) {
+        builder.rest.add((
+          builder.startTime!,
+          FixedTimespan(
+            startZoneId,
+            utcOffsetSeconds: startUtcOffset,
+            dstOffsetSeconds: startDstOffset,
+          ),
+        ));
+      }
+
+      if (useUntil) {
+        builder.startTime =
+            zoneInfo.endTime!.toTimestamp() -
+            utcOffsetSeconds -
+            dstOffsetSeconds;
+      }
+    }
+
+    return builder.build();
+  }
 }
 
 /// A builder for [Table] values based on various line definitions.
@@ -210,7 +289,7 @@ class TableRuleInfo {
 /// name in the map – this is just the value.
 class TableZoneInfo {
   const TableZoneInfo({
-    required this.offset,
+    required this.offsetSeconds,
     required this.saving,
     required this.format,
     required this.endTime,
@@ -218,7 +297,7 @@ class TableZoneInfo {
 
   factory TableZoneInfo.from(ZoneInfo info) {
     return TableZoneInfo(
-      offset: info.utcOffset.asSeconds(),
+      offsetSeconds: info.utcOffset.asSeconds(),
       saving: info.saving,
       format: Format(info.format),
       endTime: info.time,
@@ -227,7 +306,7 @@ class TableZoneInfo {
 
   /// The number of seconds that need to be added to UTC to get the standard
   /// time in this zone.
-  final int offset;
+  final int offsetSeconds;
 
   /// The name of all the rules that should apply in the time zone, or the
   /// amount of daylight-saving time to add.
@@ -257,13 +336,15 @@ sealed class Format {
       );
     } else if (template.contains('%s')) {
       return Format_Placeholder(template);
+    } else if (template.contains('%z')) {
+      return const Format_Offset();
     } else {
       return Format_Constant(template);
     }
   }
   const Format._();
 
-  String format(int dstOffset, String? letters);
+  String format(int utcOffsetSeconds, int dstOffsetSeconds, String? letters);
 }
 
 /// A constant format, which remains the same throughout both standard and DST
@@ -275,7 +356,8 @@ class Format_Constant extends Format {
   final String value;
 
   @override
-  String format(int dstOffset, String? letters) => value;
+  String format(int utcOffsetSeconds, int dstOffsetSeconds, String? letters) =>
+      value;
 }
 
 /// An alternate format, such as “PST/PDT”, which changes between standard and
@@ -292,8 +374,8 @@ class Format_Alternative extends Format {
   final String dst;
 
   @override
-  String format(int dstOffset, String? letters) =>
-      dstOffset == 0 ? standard : dst;
+  String format(int utcOffsetSeconds, int dstOffsetSeconds, String? letters) =>
+      dstOffsetSeconds == 0 ? standard : dst;
 }
 
 /// A format with a placeholder `%s`, which uses [TableRuleInfo.letters] to
@@ -305,6 +387,32 @@ class Format_Placeholder extends Format {
   final String pattern;
 
   @override
-  String format(int dstOffset, String? letters) =>
+  String format(int utcOffsetSeconds, int dstOffsetSeconds, String? letters) =>
       pattern.replaceAll('%s', letters ?? '');
+}
+
+/// The special `%z` placeholder that gets formatted as a numeric offset.
+// ignore: camel_case_types
+class Format_Offset extends Format {
+  const Format_Offset() : super._();
+
+  @override
+  String format(int utcOffsetSeconds, int dstOffsetSeconds, String? letters) {
+    final offsetSeconds = utcOffsetSeconds + dstOffsetSeconds;
+    final (sign, off) = offsetSeconds < 0
+        ? ('-', -offsetSeconds)
+        : ('+', offsetSeconds);
+
+    final minutesRaw = off ~/ TimeDelta.secondsPerMinute;
+    final seconds = off % TimeDelta.secondsPerMinute;
+    final minutes = minutesRaw % TimeDelta.minutesPerHour;
+    final hours = minutesRaw ~/ TimeDelta.minutesPerHour;
+    assert(
+      seconds == 0,
+      'Numeric names are not used if the offset has fractional minutes.',
+    );
+
+    String format(int number) => number.toString().padLeft(2, '0');
+    return minutes == 0 ? format(hours) : '${format(hours)}:${format(minutes)}';
+  }
 }

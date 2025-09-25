@@ -1,0 +1,22 @@
+name: chrono_timezone_builder
+version: 0.0.0
+homepage: https://github.com/JonasWanke/chrono
+publish_to: none
+
+environment:
+  sdk: ^3.8.0
+
+dependencies:
+  chrono:
+    path: ../chrono
+  chrono_timezone_parser:
+    path: ../chrono_timezone_parser
+  collection: ^1.19.1
+  dart_style: ^3.1.1
+
+dev_dependencies:
+  supernova_lints:
+    git:
+      url: https://github.com/JonasWanke/supernova.git
+      path: supernova_lints
+      ref: 1fa8535952fa7152f2bad30937e6b5bca4129bea
