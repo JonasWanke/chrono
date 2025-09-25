@@ -567,9 +567,10 @@ class Saving_None extends Saving {
   int get hashCode => 0;
 }
 
-/// This amount of time should be saved while this timespan is in effect. (This
-/// is the equivalent to there being a single one-off rule with the given amount
-/// of time to save).
+/// This amount of time should be saved while this timespan is in effect.
+///
+/// This is the equivalent to there being a single one-off rule with the given
+/// amount of time to save.
 // ignore: camel_case_types
 class Saving_OneOff extends Saving {
   const Saving_OneOff(this.timeSpec);
@@ -611,7 +612,7 @@ sealed class ChangeTime {
 
   /// Convert this change time to an absolute timestamp, as the number of
   /// seconds since the Unix epoch that the change occurs at.
-  int toTimestamp() {
+  int toTimestamp(int utcOffsetSeconds, int dstOffsetSeconds) {
     int timeToTimestamp(Date date, int hour, int minute, int second) {
       return date.daysSinceUnixEpoch.inDays * TimeDelta.secondsPerNormalDay +
           hour * TimeDelta.secondsPerHour +
@@ -621,15 +622,18 @@ sealed class ChangeTime {
 
     return switch (this) {
       ChangeTime_UntilYear(year: YearSpec_Number(:final year)) =>
-        timeToTimestamp(year.dates.start, 0, 0, 0),
+        timeToTimestamp(year.dates.start, 0, 0, 0) -
+            (utcOffsetSeconds + dstOffsetSeconds),
       ChangeTime_UntilMonth(year: YearSpec_Number(:final year), :final month) =>
-        timeToTimestamp(YearMonth(year, month).dates.start, 0, 0, 0),
+        timeToTimestamp(YearMonth(year, month).dates.start, 0, 0, 0) -
+            (utcOffsetSeconds + dstOffsetSeconds),
       ChangeTime_UntilDay(
         year: YearSpec_Number(:final year),
         :final month,
         :final day,
       ) =>
-        timeToTimestamp(day.toConcreteDay(YearMonth(year, month)), 0, 0, 0),
+        timeToTimestamp(day.toConcreteDay(YearMonth(year, month)), 0, 0, 0) -
+            (utcOffsetSeconds + dstOffsetSeconds),
       ChangeTime_UntilTime(
         year: YearSpec_Number(:final year),
         :final month,
@@ -653,11 +657,16 @@ sealed class ChangeTime {
               (hours, minutes, seconds),
           };
           return timeToTimestamp(
-            day.toConcreteDay(YearMonth(year, month)),
-            hours,
-            minutes,
-            seconds,
-          );
+                day.toConcreteDay(YearMonth(year, month)),
+                hours,
+                minutes,
+                seconds,
+              ) -
+              switch (time.timeType) {
+                TimeType.utc => 0,
+                TimeType.standard => utcOffsetSeconds,
+                TimeType.wall => utcOffsetSeconds + dstOffsetSeconds,
+              };
         }(),
       _ => throw Exception('Cannot convert non-number year spec to timestamp.'),
     };

@@ -23,7 +23,10 @@ class FixedTimespanSet {
   /// 2. The actual timespan to transition into.
   final List<(int, FixedTimespan)> rest;
 
-  void _optimise() {
+  @useResult
+  FixedTimespanSet optimize() =>
+      FixedTimespanSet(first, List.of(rest)).._optimize();
+  void _optimize() {
     var fromI = 0;
     var toI = 0;
 
@@ -53,13 +56,20 @@ class FixedTimespanSet {
       rest.removeAt(0);
     }
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is FixedTimespanSet &&
+        other.first == first &&
+        const DeepCollectionEquality().equals(other.rest, rest);
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(first, const DeepCollectionEquality().hash(rest));
 }
 
 /// An individual timespan with a fixed offset.
-///
-/// This mimics the `FixedTimespan` struct in `datetime::cal::zone`, except
-/// instead of “total offset” and “is DST” fields, it has separate UTC and
-/// DST fields. Also, the name is an owned `String` here instead of a slice.
 @immutable
 class FixedTimespan {
   const FixedTimespan(
@@ -79,6 +89,23 @@ class FixedTimespan {
 
   /// The total offset in effect during this timespan.
   int get totalOffsetSeconds => utcOffsetSeconds + dstOffsetSeconds;
+
+  @override
+  bool operator ==(Object other) {
+    return other is FixedTimespan &&
+        other.name == name &&
+        other.utcOffsetSeconds == utcOffsetSeconds &&
+        other.dstOffsetSeconds == dstOffsetSeconds;
+  }
+
+  @override
+  int get hashCode => Object.hash(name, utcOffsetSeconds, dstOffsetSeconds);
+
+  @override
+  String toString() {
+    return 'FixedTimespan($name, utcOffset: $utcOffsetSeconds s, '
+        'dstOffset: $dstOffsetSeconds s)';
+  }
 }
 
 class FixedTimespanSetBuilder {
@@ -145,10 +172,10 @@ class FixedTimespanSetBuilder {
 
       while (true) {
         if (useUntil) {
-          _untilTime =
-              timespan.endTime!.toTimestamp() -
-              utcOffsetSeconds -
-              dstOffsetSeconds;
+          _untilTime = timespan.endTime!.toTimestamp(
+            utcOffsetSeconds,
+            dstOffsetSeconds,
+          );
         }
 
         // Find the minimum rule and its start time based on the current
@@ -164,17 +191,12 @@ class FixedTimespanSetBuilder {
         );
         if (earliest == null) break;
         final (pos, earliestAt) = earliest;
-
-        final earliestRule = activatedRules.removeAt(pos);
-
         if (useUntil && earliestAt >= _untilTime) break;
 
+        final earliestRule = activatedRules.removeAt(pos);
         dstOffsetSeconds = earliestRule.timeToAdd;
 
-        if (insertStartTransition && earliestAt == startTime!) {
-          insertStartTransition = false;
-        }
-
+        insertStartTransition &= earliestAt != startTime!;
         if (insertStartTransition) {
           if (earliestAt < startTime!) {
             startUtcOffset = timespan.offsetSeconds;
@@ -225,9 +247,8 @@ class FixedTimespanSetBuilder {
     rest.sortBy((it) => it.$1);
     final first =
         _first ?? rest.firstWhere((it) => it.$2.dstOffsetSeconds == 0).$2;
-    return FixedTimespanSet(first, rest).._optimise();
+    return FixedTimespanSet(first, rest).._optimize();
   }
 }
 
-// TODO(JonasWanke): tests
 // TODO(JonasWanke): add OffsetComponents

@@ -4,7 +4,11 @@ import '../chrono_timezone_parser.dart';
 
 /// A **table** of all the data in one or more zoneinfo files.
 class Table {
-  Table({required this.rulesets, required this.zonesets, required this.links});
+  const Table({
+    required this.rulesets,
+    required this.zonesets,
+    this.links = const {},
+  });
 
   /// Mapping of ruleset names to rulesets.
   final Map<String, List<TableRuleInfo>> rulesets;
@@ -89,10 +93,10 @@ class Table {
       }
 
       if (useUntil) {
-        builder.startTime =
-            zoneInfo.endTime!.toTimestamp() -
-            utcOffsetSeconds -
-            dstOffsetSeconds;
+        builder.startTime = zoneInfo.endTime!.toTimestamp(
+          utcOffsetSeconds,
+          dstOffsetSeconds,
+        );
       }
     }
 
@@ -103,7 +107,9 @@ class Table {
 /// A builder for [Table] values based on various line definitions.
 class TableBuilder {
   /// The table that’s being built up.
-  final _table = Table(rulesets: {}, zonesets: {}, links: {});
+  final _rulesets = <String, List<TableRuleInfo>>{};
+  final _zonesets = <String, List<TableZoneInfo>>{};
+  final _links = <String, String>{};
 
   /// If the last line was a zone definition, then this holds its name.
   /// `None` otherwise. This is so continuation lines can be added to the
@@ -132,15 +138,15 @@ class TableBuilder {
   /// zone refers to a ruleset that hasn’t been defined yet.
   void addZoneLine(Zone zoneLine) {
     if (zoneLine.info.saving case Saving_Multiple(:final name)) {
-      if (!_table.rulesets.containsKey(name)) {
+      if (!_rulesets.containsKey(name)) {
         throw TableBuildException.unknownRuleset(name);
       }
     }
 
-    if (_table.zonesets.containsKey(zoneLine.name)) {
+    if (_zonesets.containsKey(zoneLine.name)) {
       throw TableBuildException.duplicateZone(zoneLine.name);
     }
-    _table.zonesets[zoneLine.name] = [TableZoneInfo.from(zoneLine.info)];
+    _zonesets[zoneLine.name] = [TableZoneInfo.from(zoneLine.info)];
     _currentZonesetName = zoneLine.name;
   }
 
@@ -149,7 +155,7 @@ class TableBuilder {
   /// Returns an error if the builder wasn’t expecting a continuation line
   /// (meaning, the previous line wasn’t a zone line)
   void addContinuationLine(ZoneInfo continuationLine) {
-    final zoneset = _table.zonesets[_currentZonesetName];
+    final zoneset = _zonesets[_currentZonesetName];
     if (zoneset == null) {
       throw TableBuildException.surpriseContinuationLine();
     }
@@ -160,7 +166,7 @@ class TableBuilder {
   /// Adds a new line describing one entry in a ruleset, creating that set
   /// if it didn’t exist already.
   void addRuleLine(Rule ruleLine) {
-    final ruleset = _table.rulesets.putIfAbsent(ruleLine.name, () => []);
+    final ruleset = _rulesets.putIfAbsent(ruleLine.name, () => []);
 
     ruleset.add(TableRuleInfo.from(ruleLine));
     _currentZonesetName = null;
@@ -170,16 +176,17 @@ class TableBuilder {
   ///
   /// Returns an error if there was already a link with that name.
   void addLinkLine(Link linkLine) {
-    if (_table.links.containsKey(linkLine.newName)) {
+    if (_links.containsKey(linkLine.newName)) {
       throw TableBuildException.duplicateLink(linkLine.newName);
     }
 
-    _table.links[linkLine.newName] = linkLine.existingName;
+    _links[linkLine.newName] = linkLine.existingName;
     _currentZonesetName = null;
   }
 
   /// Returns the table after it’s finished being built.
-  Table build() => _table;
+  Table build() =>
+      Table(rulesets: _rulesets, zonesets: _zonesets, links: _links);
 }
 
 /// Something that can go wrong while constructing a [Table].
@@ -271,15 +278,15 @@ class TableRuleInfo {
     };
   }
 
-  int absoluteDateTime(Year year, int utcOffset, int dstOffset) {
-    final offset = switch (timeType) {
+  int absoluteDateTime(Year year, int utcOffsetSeconds, int dstOffsetSeconds) {
+    final offsetSeconds = switch (timeType) {
       TimeType.utc => 0,
-      TimeType.standard => utcOffset,
-      TimeType.wall => utcOffset + dstOffset,
+      TimeType.standard => utcOffsetSeconds,
+      TimeType.wall => utcOffsetSeconds + dstOffsetSeconds,
     };
 
     final changetime = ChangeTime_UntilDay(YearSpec_Number(year), month, day);
-    return changetime.toTimestamp() + time - offset;
+    return changetime.toTimestamp(0, 0) + time - offsetSeconds;
   }
 }
 
