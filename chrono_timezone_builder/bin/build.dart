@@ -87,6 +87,14 @@ ${_zoneNameToLowerCamelCase(zone)}(
 
   const Tz(this.tzId, this.timespans);
 
+  factory Tz.fromJson(String json) {
+    final tz = nameToTz[json];
+    if (tz == null) {
+      throw ArgumentError.value(json, 'json', 'Unknown time zone ID');
+    }
+    return tz;
+  }
+
   static const nameToTz = {''');
   for (final zone in zonesAndLinks) {
     final variant = _zoneNameToLowerCamelCase(table.links[zone] ?? zone);
@@ -104,6 +112,8 @@ ${_zoneNameToLowerCamelCase(zone)}(
 
   final String tzId;
   final FixedTimespanSet timespans;
+
+  String toJson() => tzId;
 
   // First, search for a timespan that the local datetime falls into, then, if
   // it exists, check the two surrounding timespans (if they exist) to see if
