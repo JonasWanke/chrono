@@ -5,8 +5,8 @@ import '../chrono_timezone.dart';
 
 /// An [Offset] that applies for a period of time.
 ///
-/// For example, [Tz.US__Eastern] is composed of at least two
-/// [FixedTimespan]s: `EST` and `EDT`, that are variously in effect.
+/// For example, [Tz.us_eastern] is composed of at least two [FixedTimespan]s:
+/// `EST` and `EDT`, that are variously in effect.
 @immutable
 class FixedTimespan {
   const FixedTimespan(this.name, {required this.offsetSeconds});
@@ -31,15 +31,20 @@ class FixedTimespan {
 }
 
 @immutable
-class TzOffset implements Offset, OffsetName {
+class TzOffset implements Offset {
   const TzOffset(this.tz, this.offset);
 
   final Tz tz;
   final FixedTimespan offset;
 
-  @override
+  /// The IANA TZDB identifier (e.g., "America/New_York").
   String get tzId => tz.name;
-  @override
+
+  /// The abbreviation to use in a longer timestamp (e.g., "EST").
+  ///
+  /// This takes into account any special offsets that may be in effect. For
+  /// example, at a given instant, the time zone with ID *America/New_York* may
+  /// be either *EST* or *EDT*.
   String get abbreviation => offset.name;
 
   static MappedLocalTime<TzOffset> mapMappedLocalTime(
@@ -68,44 +73,6 @@ class TzOffset implements Offset, OffsetName {
 
   @override
   String toString() => offset.toString();
-}
-
-/// Timezone offset name information.
-///
-/// This interface exposes display names that describe an offset in various
-/// situations.
-///
-// TODO(JonasWanke): migrate to Dart
-/// ```rust
-/// # extern crate chrono;
-/// # extern crate chrono_tz;
-/// use chrono::{Duration, Offset, TimeZone};
-/// use chrono_tz::Europe::London;
-/// use chrono_tz::OffsetName;
-///
-/// # fn main() {
-/// let london_time = London.ymd(2016, 2, 10).and_hms(12, 0, 0);
-/// assert_eq!(london_time.offset().tz_id(), "Europe/London");
-/// // London is normally on GMT
-/// assert_eq!(london_time.offset().abbreviation(), "GMT");
-///
-/// let london_summer_time = London.ymd(2016, 5, 10).and_hms(12, 0, 0);
-/// // The TZ ID remains constant year round
-/// assert_eq!(london_summer_time.offset().tz_id(), "Europe/London");
-/// // During the summer, this becomes British Summer Time
-/// assert_eq!(london_summer_time.offset().abbreviation(), "BST");
-/// # }
-/// ```
-abstract interface class OffsetName {
-  /// The IANA TZDB identifier (e.g., "America/New_York").
-  String get tzId;
-
-  /// The abbreviation to use in a longer timestamp (e.g., "EST").
-  ///
-  /// This takes into account any special offsets that may be in effect. For
-  /// example, at a given instant, the time zone with ID *America/New_York* may
-  /// be either *EST* or *EDT*.
-  String get abbreviation;
 }
 
 /// Represents the span of time that a given rule is valid for.

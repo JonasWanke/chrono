@@ -230,5 +230,4 @@ class FixedTimespanSetBuilder {
 }
 
 // TODO(JonasWanke): tests
-// TODO(JonasWanke): remove OffsetName
 // TODO(JonasWanke): add OffsetComponents
