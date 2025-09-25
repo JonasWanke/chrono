@@ -52,7 +52,7 @@ enum Tz implements TimeZone {''');
     final timespans = table.timespans(zone)!;
     buffer.writeln('''
 /// $zone
-${_convertBadChars(zone)}(
+${_zoneNameToLowerCamelCase(zone)}(
     '$zone',
     FixedTimespanSet(FixedTimespan('${timespans.first.name}', offsetSeconds: ${timespans.first.totalOffsetSeconds}), [
     ''');
@@ -75,14 +75,14 @@ ${_convertBadChars(zone)}(
 
   static const nameToTz = {''');
   for (final zone in zonesAndLinks) {
-    final variant = _convertBadChars(table.links[zone] ?? zone);
+    final variant = _zoneNameToLowerCamelCase(table.links[zone] ?? zone);
     buffer.write("'$zone': $variant,");
   }
   buffer.writeln('''
 };
   static const lowercaseNameToTz = {''');
   for (final zone in zonesAndLinks) {
-    final variant = _convertBadChars(table.links[zone] ?? zone);
+    final variant = _zoneNameToLowerCamelCase(table.links[zone] ?? zone);
     buffer.write("'${zone.toLowerCase()}': $variant,");
   }
   buffer.write('''
@@ -151,19 +151,22 @@ int? _binarySearch(int length, Ordering Function(int index) compare) {
   return buffer.toString();
 }
 
-/// Convert all '/' to '_', all '+' to 'Plus' and '-' to 'Minus', unless it's a
-/// hyphen, in which case remove it.
-///
-/// This is so the names can be used as Dart identifiers.
-String _convertBadChars(String name) {
-  name = name.replaceAll('/', '__').replaceAll('+', 'Plus');
-  final index = name.indexOf('-');
-  if (index < 0) return name;
+/// Also converts all '/' to '_', all '+' to 'Plus' and '-' to 'Minus', unless
+/// it's a hyphen, in which case remove it.
+String _zoneNameToLowerCamelCase(String name) {
+  name = name
+      .replaceAll('+', '_Plus_')
+      .replaceAll(RegExp(r'-(?=\d)'), '_Minus_')
+      .replaceAll('-', '_');
 
-  return name.replaceAll(
-    '-',
-    index < name.length - 1 && RegExp(r'\d').hasMatch(name[index + 1])
-        ? 'Minus'
-        : '',
-  );
+  return name
+      .split('/')
+      .map((it) {
+        it = it
+            .split('_')
+            .map((it) => it[0].toUpperCase() + it.substring(1).toLowerCase())
+            .join();
+        return it[0].toLowerCase() + it.substring(1);
+      })
+      .join('_');
 }
