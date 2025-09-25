@@ -145,17 +145,17 @@ ${_zoneNameToLowerCamelCase(zone)}(
   }
 }
 
-int? _binarySearch(int length, Ordering Function(int index) compare) {
+int? _binarySearch(int length, int Function(int index) compare) {
   var min = 0;
   var max = length;
   while (min < max) {
     final mid = min + ((max - min) >> 1);
     switch (compare(mid)) {
-      case Ordering.less:
+      case < 0:
         min = mid + 1;
-      case Ordering.equal:
+      case 0:
         return mid;
-      case Ordering.greater:
+      case > 0:
         max = mid;
     }
   }

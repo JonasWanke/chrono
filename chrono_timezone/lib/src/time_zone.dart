@@ -86,7 +86,7 @@ class TzOffset implements Offset {
 /// > the clock goes from 01:59:59 to 01:00:00. This is an arbitrary choice, and
 /// > I could not find a source to confirm whether or not this is correct.
 @immutable
-class Span {
+class Span implements Comparable<int> {
   const Span(this.begin, this.end);
 
   final int? begin;
@@ -102,22 +102,20 @@ class Span {
     };
   }
 
-  // TODO(JonasWanke): implement `Comparable<int>`
-  Ordering compareTo(int x) {
+  @override
+  int compareTo(int x) {
     return switch ((begin, end)) {
-      (final a?, final b?) when a <= x && x < b => Ordering.equal,
-      (final a?, final b?) when a <= x && b <= x => Ordering.less,
-      (final _?, final _?) => Ordering.greater,
-      (final a?, null) when a <= x => Ordering.equal,
-      (final _?, null) => Ordering.greater,
-      (null, final b?) when b <= x => Ordering.less,
-      (null, final _?) => Ordering.equal,
-      (null, null) => Ordering.equal,
+      (final a?, final b?) when a <= x && x < b => 0,
+      (final a?, final b?) when a <= x && b <= x => -1,
+      (final _?, final _?) => 1,
+      (final a?, null) when a <= x => 0,
+      (final _?, null) => 1,
+      (null, final b?) when b <= x => -1,
+      (null, final _?) => 0,
+      (null, null) => 0,
     };
   }
 }
-
-enum Ordering { less, equal, greater }
 
 @immutable
 class FixedTimespanSet {
