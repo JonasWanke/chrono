@@ -5,6 +5,8 @@ import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
 
 Future<void> main() async {
+  final version = await _detectIanaDbVersion();
+
   final tableBuilder = TableBuilder();
   for (final file in timeZoneFiles) {
     final lines = await File('tz/$file').readAsLines();
@@ -18,15 +20,25 @@ Future<void> main() async {
     languageVersion: DartFormatter.latestLanguageVersion,
   );
 
-  // TODO(JonasWanke): add TZDB version to generated file
-
   await File(
     'lib/src/time_zones.dart',
-  ).writeAsString(formatter.format(_buildTimezoneFile(table)));
+  ).writeAsString(formatter.format(_buildTimezoneFile(version, table)));
+}
+
+Future<String> _detectIanaDbVersion() async {
+  for (final line in await File('tz/NEWS').readAsLines()) {
+    if (!line.startsWith('Release ')) continue;
+
+    return line.substring(8).split(' - ').first;
+  }
+
+  throw const FormatException(
+    'Could not detect IANA Time Zone Database version from tz/NEWS',
+  );
 }
 
 // The timezone file contains the `Tz` enum with all time zones and their data.
-String _buildTimezoneFile(Table table) {
+String _buildTimezoneFile(String version, Table table) {
   final buffer = StringBuffer('''
 // ignore_for_file: constant_identifier_names
 
@@ -36,6 +48,8 @@ library;
 import 'package:chrono/chrono.dart';
 
 import '../chrono_timezone.dart';
+
+const ianaTzdbVersion = '$version';
 
 enum Tz implements TimeZone {''');
 
