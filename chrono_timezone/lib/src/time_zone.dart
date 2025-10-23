@@ -2,6 +2,7 @@ import 'package:chrono/chrono.dart';
 import 'package:meta/meta.dart';
 
 import '../chrono_timezone.dart';
+import 'utils.dart';
 
 /// An [Offset] that applies for a period of time.
 ///
@@ -31,14 +32,15 @@ class FixedTimespan {
 }
 
 @immutable
-class TzOffset implements Offset {
-  const TzOffset(this.tz, this.offset);
+class TzOffset implements Offset<Tz> {
+  const TzOffset(this.timeZone, this.offset);
 
-  final Tz tz;
+  @override
+  final Tz timeZone;
   final FixedTimespan offset;
 
   /// The IANA TZDB identifier (e.g., "America/New_York").
-  String get tzId => tz.name;
+  String get tzId => timeZone.name;
 
   /// The abbreviation to use in a longer timestamp (e.g., "EST").
   ///
@@ -67,9 +69,9 @@ class TzOffset implements Offset {
 
   @override
   bool operator ==(Object other) =>
-      other is TzOffset && other.tz == tz && other.offset == offset;
+      other is TzOffset && other.timeZone == timeZone && other.offset == offset;
   @override
-  int get hashCode => Object.hash(tz, offset);
+  int get hashCode => Object.hash(timeZone, offset);
 
   @override
   String toString() => offset.toString();
@@ -157,74 +159,84 @@ class FixedTimespanSet {
   }
 }
 
-// /// Represents the information of a gap.
-// ///
-// /// This returns useful information that can be used when converting a local [`NaiveDateTime`]
-// /// to a timezone-aware [`DateTime`] with [`TimeZone::from_local_datetime`] and a gap
-// /// ([`LocalResult::None`]) is found.
-// pub struct GapInfo {
-//     /// When available it contains information about the beginning of the gap.
-//     ///
-//     /// The time represents the first instant in which the gap starts.
-//     /// This means that it is the first instant that when used with [`TimeZone::from_local_datetime`]
-//     /// it will return [`LocalResult::None`].
-//     ///
-//     /// The offset represents the offset of the first instant before the gap.
-//     pub begin: Option<(NaiveDateTime, TzOffset)>,
-//     /// When available it contains the first instant after the gap.
-//     pub end: Option<DateTime<Tz>>,
-// }
+/// Represents the information of a gap.
+///
+/// This returns useful information that can be used when converting a local
+/// [CDateTime] to a timezone-aware [ZonedDateTime] with
+/// [TimeZone.fromLocalDateTime] and a gap ([MappedLocalTime_None]) is found.
+@immutable
+class GapInfo {
+  const GapInfo(this.begin, this.end);
 
-// impl GapInfo {
-//     /// Return information about a gap.
-//     ///
-//     /// It returns `None` if `local` is not in a gap for the current timezone.
-//     ///
-//     /// If `local` is at the limits of the known timestamps the fields `begin` or `end` in
-//     /// [`GapInfo`] will be `None`.
-//     pub fn new(local: &NaiveDateTime, tz: &Tz) -> Option<Self> {
-//         let timestamp = local.and_utc().timestamp();
-//         let timespans = tz.timespans();
-//         let index = binary_search(0, timespans.len(), |i| {
-//             timespans.local_span(i).cmp(timestamp)
-//         });
+  /// Return information about a gap.
+  ///
+  /// It returns `null` if [local] is not in a gap for the current timezone.
+  ///
+  /// If [local] is at the limits of the known timestamps, the fields [begin] or
+  /// [end] in [GapInfo] will be `null`.
+  static GapInfo? of(CDateTime local, Tz tz) {
+    final timestamp = local.andUtc().durationSinceUnixEpoch.totalSeconds;
+    final timespans = tz.timespans;
+    final endIndex = binarySearch(
+      timespans.length,
+      (it) => timespans.localSpan(it).compareTo(timestamp),
+    );
 
-//         let Err(end_idx) = index else {
-//             return None;
-//         };
+    if (endIndex == null) return null;
 
-//         let begin = match end_idx {
-//             0 => None,
-//             _ => {
-//                 let start_idx = end_idx - 1;
+    final begin = endIndex == 0
+        ? null
+        : () {
+            final startIndex = endIndex - 1;
+            final end = timespans.localSpan(startIndex).end;
+            if (end == null) return null;
 
-//                 timespans
-//                     .local_span(start_idx)
-//                     .end
-//                     .and_then(|start_time| DateTime::from_timestamp(start_time, 0))
-//                     .map(|start_time| {
-//                         (
-//                             start_time.naive_local(),
-//                             TzOffset::new(*tz, timespans.get(start_idx)),
-//                         )
-//                     })
-//             }
-//         };
+            return (
+              ZonedDateTime.fromDurationSinceUnixEpoch(
+                TimeDelta(seconds: end),
+              ).localDateTime,
+              TzOffset(tz, timespans.get(startIndex)),
+            );
+          }();
 
-//         let end = match end_idx {
-//             _ if end_idx >= timespans.len() => None,
-//             _ => {
-//                 timespans
-//                     .local_span(end_idx)
-//                     .begin
-//                     .and_then(|end_time| DateTime::from_timestamp(end_time, 0))
-//                     .and_then(|date_time| {
-//                         // we create the DateTime from a timestamp that exists in the timezone
-//                         tz.from_local_datetime(&date_time.naive_local()).single()
-//                     })
-//             }
-//         };
+    final end = endIndex >= timespans.length
+        ? null
+        : () {
+            final begin = timespans.localSpan(endIndex).begin;
+            if (begin == null) return null;
 
-//         Some(Self { begin, end })
-//     }
-// }
+            // We create the ZonedDateTime from a timestamp that exists in the
+            // timezone.
+            return tz
+                .fromLocalDateTime(
+                  ZonedDateTime.fromDurationSinceUnixEpoch(
+                    TimeDelta(seconds: begin),
+                  ).localDateTime,
+                )
+                .single;
+          }();
+
+    return GapInfo(begin, end);
+  }
+
+  /// When available, it contains information about the beginning of the gap.
+  ///
+  /// The time represents the first instant in which the gap starts.
+  /// This means that it is the first instant that, when used with
+  /// [TimeZone.fromLocalDateTime], will return [MappedLocalTime_None].
+  ///
+  /// The offset represents the offset of the first instant before the gap.
+  final (CDateTime, TzOffset)? begin;
+
+  /// When available, it contains the first instant after the gap.
+  final ZonedDateTime<Tz>? end;
+
+  @override
+  bool operator ==(Object other) =>
+      other is GapInfo && other.begin == begin && other.end == end;
+  @override
+  int get hashCode => Object.hash(begin, end);
+
+  @override
+  String toString() => 'GapInfo($begin, $end)';
+}

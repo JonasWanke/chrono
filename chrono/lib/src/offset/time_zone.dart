@@ -1,6 +1,8 @@
 import 'package:meta/meta.dart';
 
 import '../../chrono.dart';
+import '../zoned/zoned_date_time.dart';
+import 'utc.dart' show Utc;
 
 /// The result of mapping a local time to a concrete instant in a given time
 /// zone.
@@ -175,23 +177,81 @@ class MappedLocalTime_None<T> extends MappedLocalTime<T> {
 }
 
 /// The offset from the local time to UTC.
-abstract interface class Offset {
+@immutable
+abstract interface class Offset<Tz extends TimeZone<Tz>> {
   /// Returns the fixed offset from UTC to the local time stored.
   FixedOffset fix();
+
+  Tz get timeZone;
 }
 
 /// The time zone.
 ///
 /// The methods here are the primary constructors for the [ZonedDateTime] type.
-// TODO(JonasWanke): add them
-abstract interface class TimeZone {
+@immutable
+abstract class TimeZone<Tz extends TimeZone<Tz>> {
+  const TimeZone();
+
+  /// Make a new `DateTime` from year, month, day, time components and current time zone.
+  ///
+  /// This assumes the proleptic Gregorian calendar, with the year 0 being 1 BCE.
+  ///
+  /// Returns `MappedLocalTime::None` on invalid input data.
+  MappedLocalTime<ZonedDateTime<Tz>> with_ymd_and_hms(
+    int year,
+    int month,
+    int day,
+    int hour,
+    int minute,
+    int second,
+  ) {
+    return fromLocalDateTime(
+      Date.fromRaw(
+        year,
+        month,
+        day,
+      ).unwrap().at(Time.from(hour, minute, second).unwrap()),
+    );
+  }
+
+  /// Makes a new [ZonedDateTime] from the duration passed since January 1, 1970
+  /// 0:00:00 UTC (aka "UNIX timestamp").
+  // TODO(JonasWanke): add `withDurationSinceUnixEpochRaw(…)` with leap second support
+  ZonedDateTime<Tz> withDurationSinceUnixEpoch(TimeDelta duration) {
+    return fromUtcDateTime(
+      ZonedDateTime.fromDurationSinceUnixEpoch(duration).utcDateTime,
+    );
+  }
+
   // TODO(JonasWanke): add
   // /// Reconstructs the time zone from the offset.
   // TimeZone fromOffset(offset: &Self::Offset) -> Self;
 
-  /// Creates the offset(s) for given local `NaiveDateTime` if possible.
-  MappedLocalTime<Offset> offsetFromLocalDateTime(CDateTime local);
+  /// Creates the offset(s) for given local [CDateTime], if possible.
+  MappedLocalTime<Offset<Tz>> offsetFromLocalDateTime(CDateTime local);
 
-  /// Creates the offset for given UTC `NaiveDateTime`. This cannot fail.
-  Offset offsetFromUtcDateTime(CDateTime utc);
+  /// Converts the local [CDateTime] to the timezone-aware [ZonedDateTime], if
+  /// possible.
+  MappedLocalTime<ZonedDateTime<Tz>> fromLocalDateTime(CDateTime local) {
+    return offsetFromLocalDateTime(local).andThen(
+      (offset) => ZonedDateTime.fromUtcDateTimeAndOffset(
+        local.subOffset(offset.fix()),
+        offset,
+      ),
+    );
+  }
+
+  /// Creates the offset for given UTC [CDateTime].
+  Offset<Tz> offsetFromUtcDateTime(CDateTime utc);
+
+  /// Converts the UTC [CDateTime] to the local time.
+  ///
+  /// The UTC is continuous and thus this cannot fail (but can give the
+  /// duplicate local time).
+  ZonedDateTime<Tz> fromUtcDateTime(CDateTime utc) {
+    return ZonedDateTime.fromUtcDateTimeAndOffset(
+      utc,
+      offsetFromUtcDateTime(utc),
+    );
+  }
 }

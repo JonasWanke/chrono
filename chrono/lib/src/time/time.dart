@@ -3,7 +3,9 @@ import 'package:meta/meta.dart';
 import 'package:oxidized/oxidized.dart';
 
 import '../codec.dart';
+import '../date/duration.dart';
 import '../date_time/date_time.dart';
+import '../offset/fixed.dart';
 import '../parser.dart';
 import '../rounding.dart';
 import '../utils.dart';
@@ -113,6 +115,7 @@ final class Time
   final int minute;
   final int second;
   final int subSecondNanos;
+  // TODO(JonasWanke): store only `secondsSinceMidnight` & `subSecondNanos`
 
   bool get isAm => hour < 12;
   bool get isPm => !isAm;
@@ -132,6 +135,42 @@ final class Time
   }
 
   Result<Time, String> subtract(TimeDelta duration) => add(-duration);
+
+  /// Adds given [FixedOffset] to the current time, and returns the number of
+  /// days that should be added to a date as a result of the offset (either
+  /// `-1`, `0`, or `1` because the offset is always less than 24h).
+  ///
+  // TODO(JonasWanke): support leap seconds
+  // This method is similar to [overflowingAddSigned], but preserves leap
+  // seconds.
+  @useResult
+  (Time, Days) overflowingAddOffset(FixedOffset offset) {
+    final rawSeconds = secondsSinceMidnight + offset.localMinusUtcSeconds;
+    final seconds = rawSeconds % TimeDelta.secondsPerNormalDay;
+    final days = Days((rawSeconds - seconds) ~/ TimeDelta.secondsPerNormalDay);
+    final (hour, minute, second, _) = TimeDelta(
+      seconds: seconds,
+    ).splitHoursMinutesSecondsNanos();
+    return (Time.from(hour, minute, second, subSecondNanos).unwrap(), days);
+  }
+
+  /// Subtracts given [FixedOffset] from the current time, and returns the
+  /// number of days that should be added to a date as a result of the offset
+  /// (either `-1`, `0`, or `1` because the offset is always less than 24h).
+  ///
+  // TODO(JonasWanke): support leap seconds
+  // This method is similar to [overflowingSubSigned], but preserves leap
+  // seconds.
+  @useResult
+  (Time, Days) overflowingSubOffset(FixedOffset offset) {
+    final rawSeconds = secondsSinceMidnight - offset.localMinusUtcSeconds;
+    final seconds = rawSeconds % TimeDelta.secondsPerNormalDay;
+    final days = Days((rawSeconds - seconds) ~/ TimeDelta.secondsPerNormalDay);
+    final (hour, minute, second, _) = TimeDelta(
+      seconds: seconds,
+    ).splitHoursMinutesSecondsNanos();
+    return (Time.from(hour, minute, second, subSecondNanos).unwrap(), days);
+  }
 
   /// Returns `this - other`.
   TimeDelta difference(Time other) =>

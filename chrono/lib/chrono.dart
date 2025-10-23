@@ -15,6 +15,8 @@ export 'src/glados.dart';
 export 'src/instant.dart';
 export 'src/offset/fixed.dart';
 export 'src/offset/time_zone.dart';
+export 'src/offset/utc.dart';
 export 'src/rounding.dart';
 export 'src/time/duration.dart';
 export 'src/time/time.dart';
+export 'src/zoned/zoned_date_time.dart';

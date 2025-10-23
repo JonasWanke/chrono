@@ -9,7 +9,7 @@ import '../../chrono.dart';
 /// `DateTime<FixedOffset>` instances. See the [`east_opt`](#method.east_opt) and
 /// [`west_opt`](#method.west_opt) methods for examples.
 @immutable
-class FixedOffset implements Offset, TimeZone {
+class FixedOffset extends TimeZone<FixedOffset> implements Offset<FixedOffset> {
   /// Makes a new [FixedOffset] for the Eastern Hemisphere with given timezone
   /// difference.
   ///
@@ -41,13 +41,16 @@ class FixedOffset implements Offset, TimeZone {
   int get utcMinusLocalSeconds => -localMinusUtcSeconds;
 
   @override
+  FixedOffset get timeZone => this;
+
+  @override
   FixedOffset fix() => this;
 
   @override
-  MappedLocalTime<Offset> offsetFromLocalDateTime(CDateTime local) =>
+  MappedLocalTime<FixedOffset> offsetFromLocalDateTime(CDateTime local) =>
       MappedLocalTime_Single(this);
   @override
-  Offset offsetFromUtcDateTime(CDateTime local) => this;
+  FixedOffset offsetFromUtcDateTime(CDateTime local) => this;
 
   @override
   bool operator ==(Object other) =>

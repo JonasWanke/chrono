@@ -48,10 +48,11 @@ library;
 import 'package:chrono/chrono.dart';
 
 import '../chrono_timezone.dart';
+import 'utils.dart';
 
 const ianaTzdbVersion = '$version';
 
-enum Tz implements TimeZone {''');
+enum Tz implements TimeZone<Tz> {''');
 
   final zonesAndLinks = table.zonesets.keys
       .followedBy(table.links.keys)
@@ -115,13 +116,38 @@ ${_zoneNameToLowerCamelCase(zone)}(
 
   String toJson() => tzId;
 
+  @override
+  MappedLocalTime<ZonedDateTime<Tz>> with_ymd_and_hms(
+    int year,
+    int month,
+    int day,
+    int hour,
+    int minute,
+    int second,
+  ) {
+    return fromLocalDateTime(
+      Date.fromRaw(
+        year,
+        month,
+        day,
+      ).unwrap().at(Time.from(hour, minute, second).unwrap()),
+    );
+  }
+
+  @override
+  ZonedDateTime<Tz> withDurationSinceUnixEpoch(TimeDelta duration) {
+    return fromUtcDateTime(
+      ZonedDateTime.fromDurationSinceUnixEpoch(duration).utcDateTime,
+    );
+  }
+
   // First, search for a timespan that the local datetime falls into, then, if
   // it exists, check the two surrounding timespans (if they exist) to see if
   // there is any ambiguity.
   @override
   MappedLocalTime<TzOffset> offsetFromLocalDateTime(CDateTime local) {
     final timestamp = local.inUtc.durationSinceUnixEpoch.totalSeconds;
-    final index = _binarySearch(
+    final index = binarySearch(
       timespans.length,
       (index) => timespans.localSpan(index).compareTo(timestamp),
     );
@@ -142,34 +168,38 @@ ${_zoneNameToLowerCamelCase(zone)}(
     });
   }
 
+  @override
+  MappedLocalTime<ZonedDateTime<Tz>> fromLocalDateTime(CDateTime local) {
+    return offsetFromLocalDateTime(local).andThen(
+      (offset) => ZonedDateTime.fromUtcDateTimeAndOffset(
+        local.subOffset(offset.fix()),
+        offset,
+      ),
+    );
+  }
+
   // Binary search for the required timespan. Any int is guaranteed to fall
   // within exactly one timespan, no matter what (so the `!` is safe).
   @override
   TzOffset offsetFromUtcDateTime(CDateTime utc) {
     final timestamp = utc.inUtc.durationSinceUnixEpoch.totalSeconds;
-    final index = _binarySearch(
+    final index = binarySearch(
       timespans.length,
       (index) => timespans.utcSpan(index).compareTo(timestamp),
     )!;
     return TzOffset(this, timespans.get(index));
   }
-}
 
-int? _binarySearch(int length, int Function(int index) compare) {
-  var min = 0;
-  var max = length;
-  while (min < max) {
-    final mid = min + ((max - min) >> 1);
-    switch (compare(mid)) {
-      case < 0:
-        min = mid + 1;
-      case 0:
-        return mid;
-      case > 0:
-        max = mid;
-    }
+  @override
+  ZonedDateTime<Tz> fromUtcDateTime(CDateTime utc) {
+    return ZonedDateTime.fromUtcDateTimeAndOffset(
+      utc,
+      offsetFromUtcDateTime(utc),
+    );
   }
-  return null;
+
+  @override
+  String toString() => tzId;
 }
 ''');
   return buffer.toString();

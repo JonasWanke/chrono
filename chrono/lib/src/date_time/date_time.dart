@@ -8,11 +8,15 @@ import '../codec.dart';
 import '../date/date.dart';
 import '../date/duration.dart';
 import '../instant.dart';
+import '../offset/fixed.dart';
+import '../offset/time_zone.dart';
+import '../offset/utc.dart';
 import '../parser.dart';
 import '../rounding.dart';
 import '../time/duration.dart';
 import '../time/time.dart';
 import '../utils.dart';
+import '../zoned/zoned_date_time.dart';
 import 'duration.dart';
 
 /// A date and time in the ISO 8601 calendar represented using [Date] and
@@ -53,8 +57,10 @@ final class CDateTime
   /// The UNIX epoch: 1970-01-01 at 00:00.
   ///
   /// https://en.wikipedia.org/wiki/Unix_time
+  // TODO(JonasWanke): remove in favor of `zonedDateTime.unixEpoch`
   static final unixEpoch = Date.unixEpoch.at(Time.midnight);
 
+  // TODO(JonasWanke): remove in favor of `zonedDateTime.fromDurationSinceUnixEpoch(…)`
   /// The date corresponding to the given duration since the [unixEpoch].
   factory CDateTime.fromDurationSinceUnixEpoch(TimeDelta sinceUnixEpoch) {
     final (days, time) = sinceUnixEpoch.toDaysAndTime();
@@ -85,6 +91,7 @@ final class CDateTime
   final Time time;
 
   /// The duration since the [unixEpoch].
+  // TODO(JonasWanke): remove in favor of `zonedDateTime.durationSinceUnixEpoch`
   TimeDelta get durationSinceUnixEpoch {
     return time.timeSinceMidnight +
         TimeDelta(normalDays: date.daysSinceUnixEpoch.inDays);
@@ -93,6 +100,18 @@ final class CDateTime
   Instant get inLocalZone => Instant.fromCore(asCoreDateTimeInLocalZone);
   Instant get inUtc =>
       Instant.fromDurationSinceUnixEpoch(durationSinceUnixEpoch);
+
+  /// Converts the [CDateTime] into a timezone-aware [ZonedDateTime] with the
+  /// provided [TimeZone] [Tz].
+  @useResult
+  MappedLocalTime<ZonedDateTime<Tz>> andLocalTimezone<Tz extends TimeZone<Tz>>(
+    Tz tz,
+  ) => tz.fromLocalDateTime(this);
+
+  /// Converts the [CDateTime] into the timezone-aware [DateTime] of [Utc].
+  @useResult
+  ZonedDateTime<Utc> andUtc() =>
+      ZonedDateTime.fromUtcDateTimeAndOffset(this, const Utc());
 
   DateTime get asCoreDateTimeInLocalZone => _getDartDateTime(isUtc: false);
   DateTime get asCoreDateTimeInUtc => _getDartDateTime(isUtc: true);
@@ -120,6 +139,24 @@ final class CDateTime
   }
 
   CDateTime operator -(CDuration duration) => this + (-duration);
+
+  /// Adds the given [FixedOffset] to the current [CDateTime].
+  ///
+  /// This method is similar to [+], but preserves leap seconds.
+  @useResult
+  CDateTime addOffset(FixedOffset offset) {
+    final (time, days) = this.time.overflowingAddOffset(offset);
+    return CDateTime(date + days, time);
+  }
+
+  /// Subtracts the given [FixedOffset] from the current [CDateTime].
+  ///
+  /// This method is similar to [-], but preserves leap seconds.
+  @useResult
+  CDateTime subOffset(FixedOffset offset) {
+    final (time, days) = this.time.overflowingSubOffset(offset);
+    return CDateTime(date + days, time);
+  }
 
   /// Returns `this - other` as days and fractional seconds.
   ///

@@ -406,12 +406,12 @@ class Format_Offset extends Format {
   @override
   String format(int utcOffsetSeconds, int dstOffsetSeconds, String? letters) {
     final offsetSeconds = utcOffsetSeconds + dstOffsetSeconds;
-    final (sign, off) = offsetSeconds < 0
+    final (sign, offset) = offsetSeconds < 0
         ? ('-', -offsetSeconds)
         : ('+', offsetSeconds);
 
-    final minutesRaw = off ~/ TimeDelta.secondsPerMinute;
-    final seconds = off % TimeDelta.secondsPerMinute;
+    final minutesRaw = offset ~/ TimeDelta.secondsPerMinute;
+    final seconds = offset % TimeDelta.secondsPerMinute;
     final minutes = minutesRaw % TimeDelta.minutesPerHour;
     final hours = minutesRaw ~/ TimeDelta.minutesPerHour;
     assert(
@@ -420,6 +420,8 @@ class Format_Offset extends Format {
     );
 
     String format(int number) => number.toString().padLeft(2, '0');
-    return minutes == 0 ? format(hours) : '${format(hours)}:${format(minutes)}';
+    return minutes == 0
+        ? '$sign${format(hours)}'
+        : '$sign${format(hours)}:${format(minutes)}';
   }
 }
