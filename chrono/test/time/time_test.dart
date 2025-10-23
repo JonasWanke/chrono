@@ -9,14 +9,14 @@ void main() {
   testDataClassBasics(codecs: const [TimeAsIsoStringCodec()]);
 
   Glados<Time>().test('fromTimeSinceMidnight', (time) {
-    expect(Time.fromTimeSinceMidnight(time.timeSinceMidnight).unwrap(), time);
+    expect(Time.fromTimeSinceMidnight(time.timeSinceMidnight), time);
   });
 
   Glados2<Time, TimeDelta>().test('+, -, and difference(…)', (time, timeDelta) {
-    final timePlusDuration = time.add(timeDelta).unwrapOrNull();
+    final timePlusDuration = time.addChecked(timeDelta);
     if (timePlusDuration == null) return;
 
-    expect(timePlusDuration.subtract(timeDelta).unwrap(), time);
+    expect(timePlusDuration - timeDelta, time);
     expect(timePlusDuration.difference(time), timeDelta);
   });
 }

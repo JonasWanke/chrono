@@ -1,7 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:deranged/deranged.dart';
 import 'package:meta/meta.dart';
-import 'package:oxidized/oxidized.dart';
 
 import '../codec.dart';
 import '../date_time/date_time.dart';
@@ -84,7 +83,8 @@ final class Year
 
   int get numberOfIsoWeeks {
     // https://en.wikipedia.org/wiki/ISO_week_date#Weeks_per_year
-    final isLongWeek = dates.endInclusive.weekday == Weekday.thursday ||
+    final isLongWeek =
+        dates.endInclusive.weekday == Weekday.thursday ||
         previous.dates.endInclusive.weekday == Weekday.wednesday;
     return isLongWeek ? 53 : 52;
   }
@@ -92,28 +92,30 @@ final class Year
   /// The [IsoYearWeek]s in this year.
   RangeInclusive<IsoYearWeek> get isoWeeks {
     return RangeInclusive(
-      IsoYearWeek.from(this, 1).unwrap(),
-      IsoYearWeek.from(this, numberOfIsoWeeks).unwrap(),
+      IsoYearWeek.from(this, 1),
+      IsoYearWeek.from(this, numberOfIsoWeeks),
     );
   }
 
   int numberOfWeeks(WeekConfig config) {
     return 1 +
-        lastDayOfWeekBasedYear(config)
-                .differenceInDays(firstDayOfWeekBasedYear(config))
-                .inDays ~/
+        lastDayOfWeekBasedYear(
+              config,
+            ).differenceInDays(firstDayOfWeekBasedYear(config)).inDays ~/
             Days.perWeek;
   }
 
   Date firstDayOfWeekBasedYear(WeekConfig config) {
-    final weekDate = dates.start +
+    final weekDate =
+        dates.start +
         Days.week -
         Days(dates.start.weekday.number(firstDayOfWeek: config.firstDay) - 1);
     assert(weekDate.weekday == config.firstDay);
 
-    final reference =
-        Date.fromYearMonthAndDay(months.start, config.minDaysInFirstWeek)
-            .unwrap();
+    final reference = Date.fromYearMonthAndDay(
+      months.start,
+      config.minDaysInFirstWeek,
+    );
     return weekDate > reference ? weekDate - const Weeks(1) : weekDate;
   }
 
@@ -123,8 +125,8 @@ final class Year
   /// The [YearWeek]s in this year.
   RangeInclusive<YearWeek> weeks(WeekConfig config) {
     return RangeInclusive(
-      YearWeek.from(this, 1, config).unwrap(),
-      YearWeek.from(this, numberOfWeeks(config), config).unwrap(),
+      YearWeek.from(this, 1, config),
+      YearWeek.from(this, numberOfWeeks(config), config),
     );
   }
 
@@ -232,14 +234,13 @@ extension RangeInclusiveOfYearChrono on RangeInclusive<Year> {
 ///
 /// See also:
 /// - [YearAsIntCodec], which encodes a year as an integer.
-class YearAsIsoStringCodec extends CodecWithParserResult<Year, String> {
+class YearAsIsoStringCodec extends CodecAndJsonConverter<Year, String> {
   const YearAsIsoStringCodec();
 
   @override
   String encode(Year input) => input.toString();
   @override
-  Result<Year, FormatException> decodeAsResult(String encoded) =>
-      Parser.parseYear(encoded);
+  Year decode(String encoded) => Parser.parseYear(encoded);
 }
 
 /// Encodes a [Year] as an integer.

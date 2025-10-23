@@ -2,10 +2,6 @@ import 'dart:convert';
 
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
-import 'package:oxidized/oxidized.dart';
-
-import 'parser.dart';
-import 'utils.dart';
 
 @immutable
 abstract class CodecAndJsonConverter<S extends Object, T> extends Codec<S, T>
@@ -35,25 +31,4 @@ class _FunctionBasedConverter<S, T> extends Converter<S, T> {
 
   @override
   T convert(S input) => _convert(input);
-}
-
-@immutable
-abstract class CodecWithParserResult<S extends Object, T>
-    extends CodecAndJsonConverter<S, T> {
-  const CodecWithParserResult();
-
-  Result<S, FormatException> decodeAsResult(T encoded);
-  @override
-  S decode(T encoded) => unwrapParserResult(decodeAsResult(encoded));
-}
-
-@immutable
-abstract class CodecWithStringResult<S extends Object, T>
-    extends CodecAndJsonConverter<S, T> {
-  const CodecWithStringResult();
-
-  Result<S, String> decodeAsResult(T encoded);
-  @override
-  S decode(T encoded) =>
-      decodeAsResult(encoded).unwrapOrThrowAsFormatException();
 }

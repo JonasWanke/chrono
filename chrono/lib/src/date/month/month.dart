@@ -1,6 +1,5 @@
 import 'package:clock/clock.dart';
 import 'package:deranged/deranged.dart';
-import 'package:oxidized/oxidized.dart';
 
 import '../../codec.dart';
 import '../../utils.dart';
@@ -28,23 +27,36 @@ enum Month
   /// Returns the month with the given [index].
   ///
   /// The index must be in the range 0 for January, …, 11 for December. For any
-  /// other number, an error is returned.
-  static Result<Month, String> fromIndex(int index) {
-    if (index < minIndex || index > maxIndex) {
-      return Err('Invalid month index: $index');
-    }
-    return Ok(values[index - minIndex]);
+  /// other number, a [RangeError] is thrown.
+  factory Month.fromIndex(int index) {
+    RangeError.checkValueInInterval(index, minIndex, maxIndex, 'index');
+    return values[index - minIndex];
+  }
+
+  /// Returns the month with the given [index].
+  ///
+  /// The index must be in the range 0 for January, …, 11 for December. For any
+  /// other number, `null` is returned.
+  static Month? fromIndexOrNull(int index) =>
+      minIndex <= index && index <= maxIndex ? values[index - minIndex] : null;
+
+  /// Returns the month with the given [number].
+  ///
+  /// The number must be in the range 1 for January, …, 12 for December. For any
+  /// other number, a [RangeError] is thrown.
+  factory Month.fromNumber(int number) {
+    RangeError.checkValueInInterval(number, minNumber, maxNumber, 'number');
+    return values[number - minNumber];
   }
 
   /// Returns the month with the given [number].
   ///
   /// The number must be in the range 1 for January, …, 12 for December. For any
-  /// other number, an error is returned.
-  static Result<Month, String> fromNumber(int number) {
-    if (number < minNumber || number > maxNumber) {
-      return Err('Invalid month number: $number');
-    }
-    return Ok(values[number - minNumber]);
+  /// other number, `null` is returned.
+  static Month? fromNumberOrNull(int number) {
+    return minNumber <= number && number <= maxNumber
+        ? values[number - minNumber]
+        : null;
   }
 
   static Month currentInLocalZone({Clock? clock}) =>
@@ -100,16 +112,16 @@ enum Month
   /// The [MonthDay]s in this month in a common (non-leap) year.
   RangeInclusive<MonthDay> get daysInCommonYear {
     return RangeInclusive(
-      MonthDay.from(this, 1).unwrap(),
-      MonthDay.from(this, lengthInCommonYear.inDays).unwrap(),
+      MonthDay.from(this, 1),
+      MonthDay.from(this, lengthInCommonYear.inDays),
     );
   }
 
   /// The [MonthDay]s in this month in a leap year.
   RangeInclusive<MonthDay> get daysInLeapYear {
     return RangeInclusive(
-      MonthDay.from(this, 1).unwrap(),
-      MonthDay.from(this, lengthInLeapYear.inDays).unwrap(),
+      MonthDay.from(this, 1),
+      MonthDay.from(this, lengthInLeapYear.inDays),
     );
   }
 
@@ -166,12 +178,11 @@ enum Month
 }
 
 /// Encodes a [Month] as an int: 1 for January, …, 12 for December.
-class MonthAsIntJsonConverter extends CodecWithStringResult<Month, int> {
+class MonthAsIntJsonConverter extends CodecAndJsonConverter<Month, int> {
   const MonthAsIntJsonConverter();
 
   @override
   int encode(Month input) => input.number;
   @override
-  Result<Month, String> decodeAsResult(int encoded) =>
-      Month.fromNumber(encoded);
+  Month decode(int encoded) => Month.fromNumber(encoded);
 }

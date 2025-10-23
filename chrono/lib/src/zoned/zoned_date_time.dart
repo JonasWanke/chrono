@@ -70,8 +70,8 @@ class ZonedDateTime<Tz extends TimeZone<Tz>> {
   @useResult
   ZonedDateTime<FixedOffset> toFixedOffset() => withTimezone(offset.fix());
 
-  /// Turn this `DateTime` into a `DateTime<Utc>`, dropping the offset and associated timezone
-  /// information.
+  /// Turn this [ZonedDateTime] into a `ZonedDateTime<Utc>`, dropping the offset
+  /// and associated timezone information.
   @useResult
   ZonedDateTime<Utc> toUtc() =>
       ZonedDateTime.fromUtcDateTimeAndOffset(utcDateTime, const Utc());
@@ -118,7 +118,7 @@ extension on TimeDelta {
     final secondsWithinDay = seconds - days * TimeDelta.secondsPerNormalDay;
     final time = Time.fromTimeSinceMidnight(
       TimeDelta(seconds: secondsWithinDay, nanos: nanos),
-    ).unwrap();
+    );
     return (Days(days), time);
   }
 }

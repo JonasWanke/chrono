@@ -1,8 +1,5 @@
 import 'dart:math' as math;
 
-import 'package:meta/meta.dart';
-import 'package:oxidized/oxidized.dart';
-
 import 'date/date.dart';
 import 'date/month/month.dart';
 import 'date/month/month_day.dart';
@@ -13,40 +10,37 @@ import 'date/year.dart';
 import 'date_time/date_time.dart';
 import 'instant.dart';
 import 'time/time.dart';
+import 'utils.dart';
 
 // Date and time strings only use ASCII, hence we don't need to worry about
 // proper Unicode handling.
 final class Parser {
   Parser._(this._source);
 
-  static Result<Instant, FormatException> parseInstant(String value) =>
+  static Instant parseInstant(String value) =>
       _parse(value, (it) => it._parseInstant());
-  static Result<CDateTime, FormatException> parseDateTime(String value) =>
+  static CDateTime parseDateTime(String value) =>
       _parse(value, (it) => it._parseDateTime());
-  static Result<Date, FormatException> parseDate(String value) =>
-      _parse(value, (it) => it._parseDate());
-  static Result<Date, FormatException> parseWeekDate(String value) =>
+  static Date parseDate(String value) => _parse(value, (it) => it._parseDate());
+  static Date parseWeekDate(String value) =>
       _parse(value, (it) => it._parseWeekDate());
-  static Result<Date, FormatException> parseOrdinalDate(String value) =>
+  static Date parseOrdinalDate(String value) =>
       _parse(value, (it) => it._parseOrdinalDate());
-  static Result<Year, FormatException> parseYear(String value) =>
-      _parse(value, (it) => it._parseYear());
-  static Result<YearMonth, FormatException> parseYearMonth(String value) =>
+  static Year parseYear(String value) => _parse(value, (it) => it._parseYear());
+  static YearMonth parseYearMonth(String value) =>
       _parse(value, (it) => it._parseYearMonth());
-  static Result<IsoYearWeek, FormatException> parseIsoYearWeek(String value) =>
+  static IsoYearWeek parseIsoYearWeek(String value) =>
       _parse(value, (it) => it._parseIsoYearWeek());
-  static Result<MonthDay, FormatException> parseMonthDay(String value) =>
+  static MonthDay parseMonthDay(String value) =>
       _parse(value, (it) => it._parseMonthDay());
 
-  static Result<Time, FormatException> parseTime(String value) =>
-      _parse(value, (it) => it._parseTime());
+  static Time parseTime(String value) => _parse(value, (it) => it._parseTime());
 
-  static Result<T, FormatException> _parse<T extends Object>(
-    String value,
-    Result<T, FormatException> Function(Parser) parse,
-  ) {
+  static T _parse<T extends Object>(String value, T Function(Parser) parse) {
     final parser = Parser._(value);
-    return parse(parser).andAlso(parser._requireEnd);
+    final result = parse(parser);
+    parser._requireEnd();
+    return result;
   }
 
   final String _source;
@@ -54,142 +48,108 @@ final class Parser {
 
   // Date and Time
 
-  Result<Instant, FormatException> _parseInstant() {
-    return _parseDateTime()
-        .andAlso(
-          () => _requireString(
-            'Z',
-            isCaseSensitive: false,
-            messageStart: () =>
-                'Expected “Z” or “z” to mark this date/time as UTC, but',
-          ),
-        )
-        .map((it) => it.inUtc);
+  Instant _parseInstant() {
+    final dateTime = _parseDateTime();
+
+    _requireString(
+      'Z',
+      isCaseSensitive: false,
+      messageStart: () =>
+          'Expected “Z” or “z” to mark this date/time as UTC, but',
+    );
+    return dateTime.inUtc;
   }
 
-  Result<CDateTime, FormatException> _parseDateTime() {
-    return _parseDate()
-        .andAlso(() => _requireDesignator('T', 'time', isCaseSensitive: false))
-        .andThen((date) => _parseTime().map((it) => CDateTime(date, it)));
+  CDateTime _parseDateTime() {
+    final date = _parseDate();
+    _requireDesignator('T', 'time', isCaseSensitive: false);
+    final time = _parseTime();
+    return CDateTime(date, time);
   }
 
-  Result<Date, FormatException> _parseDate() {
-    return _parseYearMonth()
-        .andAlso(() => _requireSeparator({'-'}, 'month', 'day'))
-        .andThen((yearMonth) {
-          return _parseDay(maxLength: yearMonth.length.inDays).andThen((day) {
-            return Date.fromYearMonthAndDay(
-              yearMonth,
-              day,
-            ).mapErr(FormatException.new);
-          });
-        });
+  Date _parseDate() {
+    final yearMonth = _parseYearMonth();
+    _requireSeparator({'-'}, 'month', 'day');
+    final day = _parseDay(maxLength: yearMonth.length.inDays);
+    return Date.fromYearMonthAndDay(yearMonth, day);
   }
 
-  Result<Date, FormatException> _parseWeekDate() {
-    return _parseIsoYearWeek()
-        .andAlso(() => _requireSeparator({'-'}, 'week number', 'weekday'))
-        .andThen(
-          (yearWeek) => _parseWeekday().map(
-            (weekday) => Date.fromIsoYearWeekAndWeekday(yearWeek, weekday),
-          ),
-        );
+  Date _parseWeekDate() {
+    final isoYearWeek = _parseIsoYearWeek();
+    _requireSeparator({'-'}, 'week number', 'weekday');
+    final weekday = _parseWeekday();
+    return Date.fromIsoYearWeekAndWeekday(isoYearWeek, weekday);
   }
 
-  Result<Date, FormatException> _parseOrdinalDate() {
-    return _parseYear()
-        .andAlso(() => _requireSeparator({'-'}, 'year', 'day of year'))
-        .andThen((year) {
-          final dayOfYear = _parseInt(
-            'day of year',
-            minDigits: 3,
-            maxDigits: 3,
-            minValue: 1,
-            maxValue: year.length.inDays,
-          );
-          return dayOfYear.map(
-            (it) => Date.fromYearAndOrdinal(year, it).unwrap(),
-          );
-        });
+  Date _parseOrdinalDate() {
+    final year = _parseYear();
+    _requireSeparator({'-'}, 'year', 'day of year');
+    final dayOfYear = _parseInt(
+      'day of year',
+      minDigits: 3,
+      maxDigits: 3,
+      minValue: 1,
+      maxValue: year.length.inDays,
+    );
+    return Date.fromYearAndOrdinal(year, dayOfYear);
   }
 
-  Result<YearMonth, FormatException> _parseYearMonth() {
-    return _parseYear()
-        .andAlso(() => _requireSeparator({'-'}, 'year', 'month'))
-        .andThen((year) => _parseMonth().map((it) => YearMonth(year, it)));
+  YearMonth _parseYearMonth() {
+    final year = _parseYear();
+    _requireSeparator({'-'}, 'year', 'month');
+    final month = _parseMonth();
+    return YearMonth(year, month);
   }
 
-  Result<IsoYearWeek, FormatException> _parseIsoYearWeek() {
-    return _parseYear()
-        .andAlso(() => _requireSeparator({'-'}, 'year', 'week number'))
-        .andThen(
-          (year) => _parseWeek(year.numberOfIsoWeeks).andThen(
-            (it) => IsoYearWeek.from(year, it).mapErr(FormatException.new),
-          ),
-        );
+  IsoYearWeek _parseIsoYearWeek() {
+    final year = _parseYear();
+    _requireSeparator({'-'}, 'year', 'week number');
+    final week = _parseWeek(year.numberOfIsoWeeks);
+    return IsoYearWeek.from(year, week);
   }
 
-  Result<MonthDay, FormatException> _parseMonthDay() {
-    return _requireDesignator('--', 'month')
-        .andThen((_) => _parseMonth())
-        .andAlso(() => _requireSeparator({'-'}, 'month', 'day'))
-        .andThen(
-          (month) => _parseDay(maxLength: month.maxLength.inDays).andThen(
-            (it) => MonthDay.from(month, it).mapErr(FormatException.new),
-          ),
-        );
+  MonthDay _parseMonthDay() {
+    _requireDesignator('--', 'month');
+    final month = _parseMonth();
+    _requireSeparator({'-'}, 'month', 'day');
+    final day = _parseDay(maxLength: month.maxLength.inDays);
+    return MonthDay.from(month, day);
   }
 
-  Result<Time, FormatException> _parseTime() {
-    Result<int, FormatException> parse(String label, {required int maxValue}) =>
+  Time _parseTime() {
+    int parse(String label, {required int maxValue}) =>
         _parseInt(label, minDigits: 2, maxDigits: 2, maxValue: maxValue);
 
-    return parse('hour', maxValue: 23)
-        .andAlso(() => _requireSeparator({':'}, 'hour', 'minute'))
-        .andThen(
-          (hour) => parse('minute', maxValue: 59).map((it) => (hour, it)),
-        )
-        .andAlso(() => _requireSeparator({':'}, 'minute', 'second'))
-        .andThen(
-          (hourMinute) =>
-              parse('second', maxValue: 59).map((it) => (hourMinute, it)),
-        )
-        .andThen((hourMinuteSecond) {
-          final result = _maybeConsume('.')
-              ? _parseIntRaw(
-                  'fractional second',
-                  maxDigits: 9,
-                ).map((it) => it.$1 * math.pow(10, 9 - it.$2).toInt())
-              : const Ok<int, FormatException>(0);
-          return result.map((it) => (hourMinuteSecond, it));
-        })
-        .andThen((it) {
-          final (((hour, minute), second), fraction) = it;
-          return Time.from(
-            hour,
-            minute,
-            second,
-            fraction,
-          ).mapErr(FormatException.new);
-        });
+    final hour = parse('hour', maxValue: 23);
+    _requireSeparator({':'}, 'hour', 'minute');
+    final minute = parse('minute', maxValue: 59);
+    _requireSeparator({':'}, 'minute', 'second');
+    final second = parse('second', maxValue: 59);
+    final fraction = _maybeConsume('.')
+        ? _parseIntRaw(
+            'fractional second',
+            maxDigits: 9,
+          ).let((it) => it.$1 * math.pow(10, 9 - it.$2).toInt())
+        : 0;
+    return Time.from(hour, minute, second, 0, 0, fraction);
   }
 
-  Result<Year, FormatException> _parseYear() {
-    final Result<int, FormatException> value;
+  Year _parseYear() {
+    final int value;
     switch (_peek()) {
       case '+':
         _offset++;
         value = _parseInt('year', minDigits: 4);
       case '-':
         _offset++;
-        value = _parseInt('year', minDigits: 4).map((it) => -it);
+        value = -_parseInt('year', minDigits: 4);
       default:
         value = _parseInt('year', minDigits: 4, maxDigits: 4);
     }
-    return value.map(Year.new);
+    return Year(value);
   }
 
-  Result<Month, FormatException> _parseMonth() {
+  Month _parseMonth() {
     final value = _parseInt(
       'month',
       minDigits: 2,
@@ -197,22 +157,21 @@ final class Parser {
       minValue: Month.minNumber,
       maxValue: Month.maxNumber,
     );
-    return value.map((it) => Month.fromNumber(it).unwrap());
+    return Month.fromNumber(value);
   }
 
-  Result<int, FormatException> _parseWeek(int numberOfWeeksInYear) {
-    return _requireDesignator('W', 'week number').andThen(
-      (_) => _parseInt(
-        'week number',
-        minDigits: 2,
-        maxDigits: 2,
-        minValue: 1,
-        maxValue: numberOfWeeksInYear,
-      ),
+  int _parseWeek(int numberOfWeeksInYear) {
+    _requireDesignator('W', 'week number');
+    return _parseInt(
+      'week number',
+      minDigits: 2,
+      maxDigits: 2,
+      minValue: 1,
+      maxValue: numberOfWeeksInYear,
     );
   }
 
-  Result<int, FormatException> _parseDay({required int maxLength}) {
+  int _parseDay({required int maxLength}) {
     return _parseInt(
       'day',
       minDigits: 2,
@@ -222,18 +181,19 @@ final class Parser {
     );
   }
 
-  Result<Weekday, FormatException> _parseWeekday() {
-    return _parseInt(
+  Weekday _parseWeekday() {
+    final number = _parseInt(
       'weekday',
       maxDigits: 1,
       minValue: Weekday.minNumber,
       maxValue: Weekday.maxNumber,
-    ).map((it) => Weekday.fromNumber(it).unwrap());
+    );
+    return Weekday.fromNumber(number);
   }
 
   // Utils
 
-  Result<int, FormatException> _parseInt(
+  int _parseInt(
     String label, {
     int minDigits = 1,
     int? maxDigits,
@@ -246,10 +206,10 @@ final class Parser {
       maxDigits: maxDigits,
       minValue: minValue,
       maxValue: maxValue,
-    ).map((it) => it.$1);
+    ).$1;
   }
 
-  Result<(int, int), FormatException> _parseIntRaw(
+  (int, int) _parseIntRaw(
     String label, {
     int minDigits = 1,
     int? maxDigits,
@@ -279,7 +239,7 @@ final class Parser {
             ? 'reached the end of the input string'
             : 'there are only $it characters left',
       );
-      return _error(
+      _error(
         'Tried parsing the $label as an integer with '
         '${digitConstraintsString()}, but $remainingCharsString.',
         _offset,
@@ -295,7 +255,7 @@ final class Parser {
       final digit = character.codeUnitAt(0) - '0'.codeUnitAt(0);
       if (digit < 0 || digit > 9) {
         if (digitCount() < minDigits) {
-          return _error(
+          _error(
             'Tried parsing the $label as an integer with '
             '${digitConstraintsString()}, but found the following character: '
             '“$character”.',
@@ -312,18 +272,17 @@ final class Parser {
       final range = maxValue == null
           ? '$label ≥ $minValue'
           : '$minValue ≤ $label ≤ $maxValue';
-      return _error('Expected $range, but got $label = $value.', _offset);
+      _error('Expected $range, but got $label = $value.', _offset);
     }
-    return Ok((value, digitCount()));
+    return (value, digitCount());
   }
 
-  @useResult
-  Result<Unit, FormatException> _requireDesignator(
+  void _requireDesignator(
     String designator,
     String label, {
     bool isCaseSensitive = true,
   }) {
-    return _requireString(
+    _requireString(
       designator,
       isCaseSensitive: isCaseSensitive,
       messageStart: () {
@@ -336,13 +295,12 @@ final class Parser {
     );
   }
 
-  @useResult
-  Result<Unit, FormatException> _requireString(
+  void _requireString(
     String string, {
     bool isCaseSensitive = true,
     required String Function() messageStart,
   }) {
-    return _require(
+    _require(
       length: string.length,
       isValid: (it) => isCaseSensitive
           ? it == string
@@ -351,15 +309,14 @@ final class Parser {
     );
   }
 
-  @useResult
-  Result<Unit, FormatException> _requireSeparator(
+  void _requireSeparator(
     Set<String> validCharacters,
     String left,
     String right,
   ) {
     assert(validCharacters.every((it) => it.length == 1));
 
-    return _require(
+    _require(
       isValid: (it) => validCharacters.contains(it),
       messageStart: () {
         final charactersMessage = _plural(
@@ -372,40 +329,35 @@ final class Parser {
     );
   }
 
-  @useResult
-  Result<Unit, FormatException> _require({
+  void _require({
     int length = 1,
     required bool Function(String string) isValid,
     required String Function() messageStart,
   }) {
     if (_offset >= _source.length) {
-      return _error(
-        '${messageStart()} reached the end of the input string.',
-        _offset,
-      );
+      _error('${messageStart()} reached the end of the input string.', _offset);
     }
 
     final actual = _peek(length: length)!;
     if (!isValid(actual)) {
-      return _error(
+      _error(
         '${messageStart()} found the following string: “$actual”.',
         _offset,
       );
     }
 
     _offset += length;
-    return const Ok(unit);
   }
 
-  Result<Unit, FormatException> _requireEnd() {
-    if (_offset == _source.length) return const Ok(unit);
+  void _requireEnd() {
+    if (_offset == _source.length) return;
 
     final remainingCount = _plural(
       _source.length - _offset,
       () => 'one remaining character',
       (it) => '$it remaining characters',
     );
-    return _error(
+    _error(
       'Expected the end of the input string, but found $remainingCount: '
       '“${_source.substring(_offset)}”.',
       _offset,
@@ -425,12 +377,8 @@ final class Parser {
         : null;
   }
 
-  @useResult
-  Result<T, FormatException> _error<T extends Object>(
-    String message,
-    int offset,
-  ) {
-    return Err(FormatException(message, _source, offset));
+  Never _error<T extends Object>(String message, int offset) {
+    throw FormatException(message, _source, offset);
   }
 
   String _plural(
@@ -438,16 +386,4 @@ final class Parser {
     String Function() singular,
     String Function(int) plural,
   ) => value == 1 ? singular() : plural(value);
-}
-
-T unwrapParserResult<T extends Object>(Result<T, FormatException> result) {
-  return switch (result) {
-    Ok(:final value) => value,
-    Err(:final error) => throw error,
-  };
-}
-
-extension<T extends Object, E extends Object> on Result<T, E> {
-  Result<T, E> andAlso<U extends Object>(Result<U, E> Function() op) =>
-      andThen((it) => op().map((_) => it));
 }

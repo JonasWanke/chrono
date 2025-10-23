@@ -1,6 +1,5 @@
 import 'package:chrono/chrono.dart';
 import 'package:glados/glados.dart';
-import 'package:oxidized/oxidized.dart';
 
 import '../utils.dart';
 
@@ -12,7 +11,7 @@ void main() {
   testAll('`number` and `fromNumber(…)`', Weekday.values, (weekday) {
     final number = weekday.isoNumber;
     expect(number, inInclusiveRange(1, 7));
-    expect(Weekday.fromNumber(number), Ok<Weekday, String>(weekday));
+    expect(Weekday.fromNumber(number), weekday);
   });
 
   Glados2<Weekday, DaysDuration>().test('+ and -', (weekday, duration) {

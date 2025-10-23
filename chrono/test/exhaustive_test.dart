@@ -31,7 +31,8 @@ void main() {
     final endYear = Year(-startYear.number);
     final endDate = endYear.dates.endInclusive;
 
-    final totalNumberOfDays = endDate.daysSinceUnixEpoch -
+    final totalNumberOfDays =
+        endDate.daysSinceUnixEpoch -
         startDate.daysSinceUnixEpoch +
         const Days(1);
     // expect(totalNumberOfDays, 730485366);
@@ -62,15 +63,12 @@ void main() {
               ? 1
               : previous.dayOfYear + 1,
         );
-        expect(date, Date.fromYearAndOrdinal(year, dayOfYear).unwrap());
+        expect(date, Date.fromYearAndOrdinal(year, dayOfYear));
 
         final weekday = date.weekday;
         expect(previous.weekday.next, weekday);
         expect(weekday.previous, previous.weekday);
-        expect(
-          date,
-          Date.fromIsoYearWeekAndWeekday(date.isoYearWeek, weekday),
-        );
+        expect(date, Date.fromIsoYearWeekAndWeekday(date.isoYearWeek, weekday));
 
         previous = (
           daysSinceUnixEpoch: daysSinceEpoch,

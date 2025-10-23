@@ -1,7 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:deranged/deranged.dart';
 import 'package:meta/meta.dart';
-import 'package:oxidized/oxidized.dart';
 
 import '../../date_time/date_time.dart';
 import '../../utils.dart';
@@ -17,25 +16,20 @@ import 'week_config.dart';
 final class YearWeek
     with ComparisonOperatorsFromComparable<YearWeek>
     implements Comparable<YearWeek>, Step<YearWeek> {
-  static Result<YearWeek, String> from(
-    Year weekBasedYear,
-    int week,
-    WeekConfig config,
-  ) {
-    if (week < 1 || week > weekBasedYear.numberOfWeeks(config)) {
-      return Err('Invalid week for year $weekBasedYear: $week');
-    }
-    return Ok(YearWeek._(weekBasedYear, week, config));
-  }
-
-  static Result<YearWeek, String> fromRaw(
-    int weekBasedYear,
-    int week,
-    WeekConfig config,
-  ) =>
-      from(Year(weekBasedYear), week, config);
-
-  const YearWeek._(this.weekBasedYear, this.week, this.config);
+  YearWeek.from(Year weekBasedYear, int week, WeekConfig config)
+    : this._unchecked(
+        weekBasedYear,
+        RangeError.checkValueInInterval(
+          week,
+          1,
+          weekBasedYear.numberOfWeeks(config),
+          'Invalid week for year $weekBasedYear.',
+        ),
+        config,
+      );
+  YearWeek.fromRaw(int weekBasedYear, int week, WeekConfig config)
+    : this.from(Year(weekBasedYear), week, config);
+  const YearWeek._unchecked(this.weekBasedYear, this.week, this.config);
 
   factory YearWeek.currentInLocalZone(WeekConfig config, {Clock? clock}) =>
       Date.todayInLocalZone(clock: clock).yearWeek(config);
@@ -72,13 +66,13 @@ final class YearWeek
   YearWeek get next {
     return week == weekBasedYear.numberOfWeeks(config)
         ? (weekBasedYear + const Years(1)).weeks(config).start
-        : YearWeek._(weekBasedYear, week + 1, config);
+        : YearWeek._unchecked(weekBasedYear, week + 1, config);
   }
 
   YearWeek get previous {
     return week == 1
         ? (weekBasedYear - const Years(1)).weeks(config).endInclusive
-        : YearWeek._(weekBasedYear, week - 1, config);
+        : YearWeek._unchecked(weekBasedYear, week - 1, config);
   }
 
   /// Returns `this - other` as a number of [Weeks].
@@ -87,17 +81,14 @@ final class YearWeek
   Weeks difference(YearWeek other) {
     assert(config == other.config);
 
-    final (weeks, days) =
-        dates.start.differenceInDays(other.dates.start).splitWeeksDays;
+    final (weeks, days) = dates.start
+        .differenceInDays(other.dates.start)
+        .splitWeeksDays;
     assert(days.isZero);
     return weeks;
   }
 
-  Result<YearWeek, String> copyWith({
-    Year? weekBasedYear,
-    int? week,
-    WeekConfig? config,
-  }) {
+  YearWeek copyWith({Year? weekBasedYear, int? week, WeekConfig? config}) {
     return YearWeek.from(
       weekBasedYear ?? this.weekBasedYear,
       week ?? this.week,

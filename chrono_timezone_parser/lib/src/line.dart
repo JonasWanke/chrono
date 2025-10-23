@@ -880,19 +880,13 @@ sealed class DaySpec {
   /// month it should occur in.
   Date toConcreteDay(YearMonth yearMonth) {
     return switch (this) {
-      DaySpec_Ordinal(:final day) => Date.fromYearMonthAndDay(
-        yearMonth,
-        day,
-      ).unwrap(),
+      DaySpec_Ordinal(:final day) => Date.fromYearMonthAndDay(yearMonth, day),
       DaySpec_Last(:final weekday) =>
         yearMonth.dates.endInclusive.previousOrSame(weekday),
       DaySpec_LastOnOrBefore(:final weekday, :final day) =>
-        Date.fromYearMonthAndDay(
-          yearMonth,
-          day,
-        ).unwrap().previousOrSame(weekday),
+        Date.fromYearMonthAndDay(yearMonth, day).previousOrSame(weekday),
       DaySpec_FirstOnOrAfter(:final weekday, :final day) =>
-        Date.fromYearMonthAndDay(yearMonth, day).unwrap().nextOrSame(weekday),
+        Date.fromYearMonthAndDay(yearMonth, day).nextOrSame(weekday),
     };
   }
 }

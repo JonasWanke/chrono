@@ -1,7 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:deranged/deranged.dart';
 import 'package:meta/meta.dart';
-import 'package:oxidized/oxidized.dart';
 
 import '../../codec.dart';
 import '../../date_time/date_time.dart';
@@ -19,8 +18,8 @@ final class YearMonth
     with ComparisonOperatorsFromComparable<YearMonth>
     implements Comparable<YearMonth>, Step<YearMonth> {
   const YearMonth(this.year, this.month);
-  static Result<YearMonth, String> fromRaw(int year, int month) =>
-      Month.fromNumber(month).map((month) => YearMonth(Year(year), month));
+  YearMonth.fromRaw(int year, int month)
+    : this(Year(year), Month.fromNumber(month));
 
   factory YearMonth.currentInLocalZone({Clock? clock}) =>
       Date.todayInLocalZone(clock: clock).yearMonth;
@@ -48,8 +47,8 @@ final class YearMonth
   /// The [Date]s in this month.
   RangeInclusive<Date> get dates {
     return RangeInclusive(
-      Date.fromYearMonthAndDay(this, 1).unwrap(),
-      Date.fromYearMonthAndDay(this, length.inDays).unwrap(),
+      Date.fromYearMonthAndDay(this, 1),
+      Date.fromYearMonthAndDay(this, length.inDays),
     );
   }
 
@@ -72,10 +71,7 @@ final class YearMonth
       _ => (const Years(0), rawNewMonth),
     };
 
-    return YearMonth(
-      year + years + yearAdjustment,
-      Month.fromNumber(month).unwrap(),
-    );
+    return YearMonth(year + years + yearAdjustment, Month.fromNumber(month));
   }
 
   YearMonth operator -(MonthsDuration duration) => this + (-duration);
@@ -144,12 +140,11 @@ extension RangeInclusiveOfYearMonthChrono on RangeInclusive<YearMonth> {
 
 /// Encodes a [YearMonth] as an ISO 8601 string, e.g., “2023-04”.
 class YearMonthAsIsoStringCodec
-    extends CodecWithParserResult<YearMonth, String> {
+    extends CodecAndJsonConverter<YearMonth, String> {
   const YearMonthAsIsoStringCodec();
 
   @override
   String encode(YearMonth input) => input.toString();
   @override
-  Result<YearMonth, FormatException> decodeAsResult(String encoded) =>
-      Parser.parseYearMonth(encoded);
+  YearMonth decode(String encoded) => Parser.parseYearMonth(encoded);
 }
