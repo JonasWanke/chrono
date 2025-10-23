@@ -17,12 +17,12 @@ extension DateTimeChronoExtension on DateTime {
   CDateTime get asChronoDateTime => CDateTime.fromCore(this);
   Date get asChronoDate => Date.fromCore(this);
   Year get asChronoYear => Year(year);
-  Month get asChronoMonth => Month.fromNumber(month).unwrap();
+  Month get asChronoMonth => Month.fromNumber(month);
   YearMonth get asChronoYearMonth => YearMonth(asChronoYear, asChronoMonth);
-  MonthDay get asChronoMonthDay => MonthDay.from(asChronoMonth, day).unwrap();
+  MonthDay get asChronoMonthDay => MonthDay.from(asChronoMonth, day);
   IsoYearWeek get asChronoIsoYearWeek => asChronoDate.isoYearWeek;
   YearWeek asChronoYearWeek(WeekConfig config) => asChronoDate.yearWeek(config);
-  Weekday get asChronoWeekday => Weekday.fromNumber(weekday).unwrap();
+  Weekday get asChronoWeekday => Weekday.fromNumber(weekday);
   Time get asChronoTime => asChronoDateTime.time;
 }
 

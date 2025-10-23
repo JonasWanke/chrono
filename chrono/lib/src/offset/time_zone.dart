@@ -1,8 +1,6 @@
 import 'package:meta/meta.dart';
 
 import '../../chrono.dart';
-import '../zoned/zoned_date_time.dart';
-import 'utc.dart' show Utc;
 
 /// The result of mapping a local time to a concrete instant in a given time
 /// zone.
@@ -206,11 +204,7 @@ abstract class TimeZone<Tz extends TimeZone<Tz>> {
     int second,
   ) {
     return fromLocalDateTime(
-      Date.fromRaw(
-        year,
-        month,
-        day,
-      ).unwrap().at(Time.from(hour, minute, second).unwrap()),
+      Date.fromRaw(year, month, day).at(Time.from(hour, minute, second)),
     );
   }
 

@@ -37,11 +37,7 @@ void main() {
   });
 
   test('difference(…)', () {
-    final base = Date.from(
-      const Year(2023),
-      Month.october,
-      12,
-    ).unwrap().at(Time.noon);
+    final base = Date.from(const Year(2023), Month.october, 12).at(Time.noon);
 
     expect(
       (base + TimeDelta(hours: 5)).difference(base),

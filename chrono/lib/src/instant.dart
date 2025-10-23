@@ -1,6 +1,5 @@
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
-import 'package:oxidized/oxidized.dart';
 
 import 'codec.dart';
 import 'date_time/date_time.dart';
@@ -93,14 +92,13 @@ final class Instant
 ///   milliseconds since the Unix epoch.
 /// - [InstantAsSecondsIntCodec], which encodes the rounded number of
 ///   seconds since the Unix epoch.
-class InstantAsIsoStringCodec extends CodecWithParserResult<Instant, String> {
+class InstantAsIsoStringCodec extends CodecAndJsonConverter<Instant, String> {
   const InstantAsIsoStringCodec();
 
   @override
   String encode(Instant input) => input.toString();
   @override
-  Result<Instant, FormatException> decodeAsResult(String encoded) =>
-      Parser.parseInstant(encoded);
+  Instant decode(String encoded) => Parser.parseInstant(encoded);
 }
 
 /// Encodes [Instant] as an integer number of nanoseconds that passed since the

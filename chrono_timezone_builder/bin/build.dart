@@ -130,7 +130,7 @@ ${_zoneNameToLowerCamelCase(zone)}(
         year,
         month,
         day,
-      ).unwrap().at(Time.from(hour, minute, second).unwrap()),
+      ).at(Time.from(hour, minute, second)),
     );
   }
 

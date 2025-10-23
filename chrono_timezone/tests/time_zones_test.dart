@@ -195,39 +195,39 @@ void main() {
 
   test('ambiguous_time', () {
     final ambiguous = Tz.europe_london.with_ymd_and_hms(2016, 10, 30, 1, 0, 0);
-    final earliestUtc = CDateTime.fromRaw(2016, 10, 30).unwrap();
+    final earliestUtc = CDateTime.fromRaw(2016, 10, 30);
     expect(ambiguous.earliest!, Tz.europe_london.fromUtcDateTime(earliestUtc));
-    final latestUtc = CDateTime.fromRaw(2016, 10, 30, 1).unwrap();
+    final latestUtc = CDateTime.fromRaw(2016, 10, 30, 1);
     expect(ambiguous.latest!, Tz.europe_london.fromUtcDateTime(latestUtc));
   });
 
   test('ambiguous_time_2', () {
     final ambiguous = Tz.europe_london.with_ymd_and_hms(2016, 10, 30, 1, 30, 0);
-    final earliestUtc = CDateTime.fromRaw(2016, 10, 30, 0, 30).unwrap();
+    final earliestUtc = CDateTime.fromRaw(2016, 10, 30, 0, 30);
     expect(ambiguous.earliest!, Tz.europe_london.fromUtcDateTime(earliestUtc));
-    final latestUtc = CDateTime.fromRaw(2016, 10, 30, 1, 30).unwrap();
+    final latestUtc = CDateTime.fromRaw(2016, 10, 30, 1, 30);
     expect(ambiguous.latest!, Tz.europe_london.fromUtcDateTime(latestUtc));
   });
 
   test('ambiguous_time_3', () {
     final ambiguous = Tz.europe_moscow.with_ymd_and_hms(2014, 10, 26, 1, 30, 0);
-    final earliestUtc = CDateTime.fromRaw(2014, 10, 25, 1, 30).unwrap();
+    final earliestUtc = CDateTime.fromRaw(2014, 10, 25, 1, 30);
     expect(
       ambiguous.earliest!.toFixedOffset(),
       Tz.europe_moscow.fromUtcDateTime(earliestUtc).toFixedOffset(),
     );
-    final latestUtc = CDateTime.fromRaw(2014, 10, 25, 2, 30).unwrap();
+    final latestUtc = CDateTime.fromRaw(2014, 10, 25, 2, 30);
     expect(ambiguous.latest!, Tz.europe_moscow.fromUtcDateTime(latestUtc));
   });
 
   test('ambiguous_time_4', () {
     final ambiguous = Tz.europe_moscow.with_ymd_and_hms(2014, 10, 26, 1, 0, 0);
-    final earliestUtc = CDateTime.fromRaw(2014, 10, 25, 1).unwrap();
+    final earliestUtc = CDateTime.fromRaw(2014, 10, 25, 1);
     expect(
       ambiguous.earliest!.toFixedOffset(),
       Tz.europe_moscow.fromUtcDateTime(earliestUtc).toFixedOffset(),
     );
-    final latestUtc = CDateTime.fromRaw(2014, 10, 25, 2).unwrap();
+    final latestUtc = CDateTime.fromRaw(2014, 10, 25, 2);
     expect(ambiguous.latest!, Tz.europe_moscow.fromUtcDateTime(latestUtc));
   });
 
@@ -305,32 +305,32 @@ void main() {
     testGapInfo(
       'Europe/London',
       Tz.europe_london,
-      CDateTime.fromRaw(2024, 3, 31, 1).unwrap(),
-      CDateTime.fromRaw(2024, 3, 31, 2).unwrap(),
+      CDateTime.fromRaw(2024, 3, 31, 1),
+      CDateTime.fromRaw(2024, 3, 31, 2),
     );
     testGapInfo(
       'Europe/Dublin',
       Tz.europe_dublin,
-      CDateTime.fromRaw(2024, 3, 31, 1).unwrap(),
-      CDateTime.fromRaw(2024, 3, 31, 2).unwrap(),
+      CDateTime.fromRaw(2024, 3, 31, 1),
+      CDateTime.fromRaw(2024, 3, 31, 2),
     );
     testGapInfo(
       'Australia/Adelaide',
       Tz.australia_adelaide,
-      CDateTime.fromRaw(2024, 10, 6, 2).unwrap(),
-      CDateTime.fromRaw(2024, 10, 6, 3).unwrap(),
+      CDateTime.fromRaw(2024, 10, 6, 2),
+      CDateTime.fromRaw(2024, 10, 6, 3),
     );
     testGapInfo(
       'Samoa skips a day',
       Tz.pacific_apia,
-      CDateTime.fromRaw(2011, 12, 30).unwrap(),
-      CDateTime.fromRaw(2011, 12, 31).unwrap(),
+      CDateTime.fromRaw(2011, 12, 30),
+      CDateTime.fromRaw(2011, 12, 31),
     );
     testGapInfo(
       'Libya 2013',
       Tz.libya,
-      CDateTime.fromRaw(2013, 3, 29, 1).unwrap(),
-      CDateTime.fromRaw(2013, 3, 29, 2).unwrap(),
+      CDateTime.fromRaw(2013, 3, 29, 1),
+      CDateTime.fromRaw(2013, 3, 29, 2),
     );
   });
 
@@ -343,7 +343,7 @@ void main() {
         16,
         59,
         59,
-      ).unwrap().andUtc().withTimezone(Tz.antarctica_casey).offset.toString(),
+      ).andUtc().withTimezone(Tz.antarctica_casey).offset.toString(),
       '+11',
     );
 
@@ -353,7 +353,7 @@ void main() {
         2,
         21,
         17,
-      ).unwrap().andUtc().withTimezone(Tz.antarctica_casey).offset.toString(),
+      ).andUtc().withTimezone(Tz.antarctica_casey).offset.toString(),
       '+08',
     );
   });

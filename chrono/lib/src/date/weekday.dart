@@ -1,5 +1,4 @@
 import 'package:clock/clock.dart';
-import 'package:oxidized/oxidized.dart';
 
 import '../codec.dart';
 import '../utils.dart';
@@ -23,23 +22,36 @@ enum Weekday
   /// Returns the weekday with the given [index].
   ///
   /// The index must be in the range 0 for Monday, …, 6 for Sunday. For any
-  /// other number, an error is returned.
-  static Result<Weekday, String> fromIndex(int index) {
-    if (index < minIndex || index > maxIndex) {
-      return Err('Invalid weekday index: $index');
-    }
-    return Ok(values[index - Weekday.minIndex]);
+  /// other number, a [RangeError] is thrown.
+  factory Weekday.fromIndex(int index) {
+    RangeError.checkValueInInterval(index, minIndex, maxIndex, 'index');
+    return values[index - minIndex];
+  }
+
+  /// Returns the weekday with the given [index].
+  ///
+  /// The index must be in the range 0 for Monday, …, 6 for Sunday. For any
+  /// other number, `null` is returned.
+  static Weekday? fromIndexOrNull(int index) =>
+      minIndex <= index && index <= maxIndex ? values[index - minIndex] : null;
+
+  /// Returns the weekday with the given [number].
+  ///
+  /// The number must be in the range 1 for Monday, …, 7 for Sunday. For any
+  /// other number, a [RangeError] is thrown.
+  factory Weekday.fromNumber(int number) {
+    RangeError.checkValueInInterval(number, minNumber, maxNumber, 'number');
+    return values[number - minNumber];
   }
 
   /// Returns the weekday with the given [number].
   ///
   /// The number must be in the range 1 for Monday, …, 7 for Sunday. For any
-  /// other number, an error is returned.
-  static Result<Weekday, String> fromNumber(int number) {
-    if (number < minNumber || number > maxNumber) {
-      return Err('Invalid weekday number: $number');
-    }
-    return Ok(values[number - Weekday.minNumber]);
+  /// other number, `null` is returned.
+  static Weekday? fromNumberOrNull(int number) {
+    return minNumber <= number && number <= maxNumber
+        ? values[number - minNumber]
+        : null;
   }
 
   factory Weekday.currentInLocalZone({Clock? clock}) =>
@@ -109,12 +121,11 @@ enum Weekday
 
 /// Encodes a [Weekday] as an ISO 8601 weekday number: 1 for Monday, …, 7 for
 /// Sunday.
-class WeekdayAsIntCodec extends CodecWithStringResult<Weekday, int> {
+class WeekdayAsIntCodec extends CodecAndJsonConverter<Weekday, int> {
   const WeekdayAsIntCodec();
 
   @override
   int encode(Weekday input) => input.isoNumber;
   @override
-  Result<Weekday, String> decodeAsResult(int encoded) =>
-      Weekday.fromNumber(encoded);
+  Weekday decode(int encoded) => Weekday.fromNumber(encoded);
 }

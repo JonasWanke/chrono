@@ -2,7 +2,6 @@ import 'package:clock/clock.dart' as cl;
 import 'package:clock/clock.dart';
 import 'package:deranged/deranged.dart';
 import 'package:meta/meta.dart';
-import 'package:oxidized/oxidized.dart';
 
 import '../codec.dart';
 import '../date/date.dart';
@@ -37,7 +36,7 @@ final class CDateTime
     with ComparisonOperatorsFromComparable<CDateTime>
     implements Comparable<CDateTime> {
   const CDateTime(this.date, this.time);
-  static Result<CDateTime, String> fromRaw(
+  CDateTime.fromRaw(
     int year,
     int month,
     int day, [
@@ -45,14 +44,10 @@ final class CDateTime
     int minute = 0,
     int second = 0,
     int nanoseconds = 0,
-  ]) => Date.fromRaw(year, month, day).andThen(
-    (date) => Time.from(
-      hour,
-      minute,
-      second,
-      nanoseconds,
-    ).map((time) => CDateTime(date, time)),
-  );
+  ]) : this(
+         Date.fromRaw(year, month, day),
+         Time.from(hour, minute, second, nanoseconds),
+       );
 
   /// The UNIX epoch: 1970-01-01 at 00:00.
   ///
@@ -81,7 +76,7 @@ final class CDateTime
         dateTime.second,
         dateTime.millisecond,
         dateTime.microsecond,
-      ).unwrap();
+      );
   CDateTime.nowInLocalZone({Clock? clock})
     : this.fromCore((clock ?? cl.clock).now().toLocal());
   CDateTime.nowInUtc({Clock? clock})
@@ -229,11 +224,11 @@ extension on TimeDelta {
       nanos += TimeDelta.nanosPerSecond;
     }
 
-    final days = seconds ~/ TimeDelta.secondsPerNormalDay;
+    final days = (seconds / TimeDelta.secondsPerNormalDay).floor();
     final secondsWithinDay = seconds - days * TimeDelta.secondsPerNormalDay;
     final time = Time.fromTimeSinceMidnight(
       TimeDelta(seconds: secondsWithinDay, nanos: nanos),
-    ).unwrap();
+    );
     return (Days(days), time);
   }
 }
@@ -241,12 +236,11 @@ extension on TimeDelta {
 /// Encodes a [CDateTime] as an ISO 8601 string, e.g.,
 /// “2023-04-23T18:24:20.123456789”.
 class CDateTimeAsIsoStringCodec
-    extends CodecWithParserResult<CDateTime, String> {
+    extends CodecAndJsonConverter<CDateTime, String> {
   const CDateTimeAsIsoStringCodec();
 
   @override
   String encode(CDateTime input) => input.toString();
   @override
-  Result<CDateTime, FormatException> decodeAsResult(String encoded) =>
-      Parser.parseDateTime(encoded);
+  CDateTime decode(String encoded) => Parser.parseDateTime(encoded);
 }

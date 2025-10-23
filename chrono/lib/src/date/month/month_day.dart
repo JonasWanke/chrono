@@ -1,6 +1,5 @@
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
-import 'package:oxidized/oxidized.dart';
 
 import '../../codec.dart';
 import '../../parser.dart';
@@ -19,17 +18,20 @@ import 'month.dart';
 final class MonthDay
     with ComparisonOperatorsFromComparable<MonthDay>
     implements Comparable<MonthDay> {
-  static Result<MonthDay, String> from(Month month, int day) {
-    if (day < 1 || day > month.maxLength.inDays) {
-      return Err('Invalid day for $month: $day');
-    }
-    return Ok(MonthDay._(month, day));
-  }
-
-  static Result<MonthDay, String> fromRaw(int month, int day) =>
-      Month.fromNumber(month).andThen((month) => from(month, day));
-
-  const MonthDay._(this.month, this.day);
+  MonthDay.from(Month month, int day)
+    : this._unchecked(
+        month,
+        RangeError.checkValueInInterval(
+          day,
+          1,
+          month.maxLength.inDays,
+          'day',
+          'Invalid day for $month.',
+        ),
+      );
+  MonthDay.fromRaw(int month, int day)
+    : this.from(Month.fromNumber(month), day);
+  const MonthDay._unchecked(this.month, this.day);
 
   factory MonthDay.todayInLocalZone({Clock? clock}) =>
       Date.todayInLocalZone(clock: clock).monthDay;
@@ -46,7 +48,7 @@ final class MonthDay
   bool isTodayInUtc({Clock? clock}) =>
       this == MonthDay.todayInUtc(clock: clock);
 
-  Result<MonthDay, String> copyWith({Month? month, int? day}) =>
+  MonthDay copyWith({Month? month, int? day}) =>
       MonthDay.from(month ?? this.month, day ?? this.day);
 
   @override
@@ -75,12 +77,11 @@ final class MonthDay
 }
 
 /// Encodes a [MonthDay] as an ISO 8601 string, e.g., --04-23”.
-class MonthDayAsIsoStringCodec extends CodecWithParserResult<MonthDay, String> {
+class MonthDayAsIsoStringCodec extends CodecAndJsonConverter<MonthDay, String> {
   const MonthDayAsIsoStringCodec();
 
   @override
   String encode(MonthDay input) => input.toString();
   @override
-  Result<MonthDay, FormatException> decodeAsResult(String encoded) =>
-      Parser.parseMonthDay(encoded);
+  MonthDay decode(String encoded) => Parser.parseMonthDay(encoded);
 }

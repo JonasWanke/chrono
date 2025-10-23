@@ -1,6 +1,5 @@
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
-import 'package:oxidized/oxidized.dart';
 
 import '../codec.dart';
 import '../date/duration.dart';
@@ -19,54 +18,68 @@ import 'duration.dart';
 final class Time
     with ComparisonOperatorsFromComparable<Time>
     implements Comparable<Time> {
-  static Result<Time, String> from(
+  Time.from(
     int hour, [
     int minute = 0,
     int second = 0,
     int millis = 0,
     int micros = 0,
     int nanos = 0,
-  ]) {
-    if (hour < 0 || hour >= TimeDelta.hoursPerNormalDay) {
-      return Err('Invalid hour: $hour');
-    }
-    if (minute < 0 || minute >= TimeDelta.minutesPerHour) {
-      return Err('Invalid minute: $minute');
-    }
-    if (second < 0 || second >= TimeDelta.secondsPerMinute) {
-      return Err('Invalid second: $second');
-    }
-    final actualNanos =
-        millis * TimeDelta.nanosPerMillisecond +
-        micros * TimeDelta.nanosPerMicrosecond +
-        nanos;
-    if (actualNanos < 0 || actualNanos >= TimeDelta.nanosPerSecond) {
-      return Err('Invalid millis + micros + nanos: $actualNanos');
-    }
+  ]) : this._unchecked(
+         RangeError.checkValueInInterval(
+           hour,
+           0,
+           TimeDelta.hoursPerNormalDay - 1,
+           'hour',
+         ),
+         RangeError.checkValueInInterval(
+           minute,
+           0,
+           TimeDelta.minutesPerHour - 1,
+           'minute',
+         ),
+         RangeError.checkValueInInterval(
+           second,
+           0,
+           TimeDelta.secondsPerMinute - 1,
+           'second',
+         ),
+         RangeError.checkValueInInterval(
+           millis * TimeDelta.nanosPerMillisecond +
+               micros * TimeDelta.nanosPerMicrosecond +
+               nanos,
+           0,
+           TimeDelta.nanosPerSecond - 1,
+           'millis, micros, and nanos',
+         ),
+       );
 
-    return Ok(Time._(hour, minute, second, actualNanos));
-  }
+  const Time._unchecked(
+    this.hour,
+    this.minute,
+    this.second,
+    this.subSecondNanos,
+  );
 
-  const Time._(this.hour, this.minute, this.second, this.subSecondNanos);
-
-  static Result<Time, String> fromTimeSinceMidnight(
-    TimeDelta timeSinceMidnight,
-  ) {
+  factory Time.fromTimeSinceMidnight(TimeDelta timeSinceMidnight) {
     if (timeSinceMidnight.isNegative) {
-      return Err(
-        'Time since midnight must not be negative, but was: $timeSinceMidnight',
+      throw ArgumentError.value(
+        timeSinceMidnight,
+        'timeSinceMidnight',
+        'Time since midnight must not be negative.',
       );
     }
     if (timeSinceMidnight >= TimeDelta(normalDays: 1)) {
-      return Err(
-        'Time since midnight must not be ≥ a day, but was: $timeSinceMidnight',
+      throw ArgumentError.value(
+        timeSinceMidnight,
+        'timeSinceMidnight',
+        'Time since midnight must not be ≥ a day.',
       );
     }
 
     final (hours, minutes, seconds, nanos) = timeSinceMidnight
         .splitHoursMinutesSecondsNanos();
-    final time = Time._(hours, minutes, seconds, nanos);
-    return Ok(time);
+    return Time._unchecked(hours, minutes, seconds, nanos);
   }
 
   factory Time.nowInLocalZone({Clock? clock}) =>
@@ -75,7 +88,7 @@ final class Time
       CDateTime.nowInUtc(clock: clock).time;
 
   // TODO(JonasWanke): comments
-  static Result<Time, String>? lerpNullable(
+  static Time? lerpNullable(
     Time? a,
     Time? b,
     double t, {
@@ -92,24 +105,28 @@ final class Time
     return Time.fromTimeSinceMidnight(duration);
   }
 
-  static Result<Time, String> lerp(
+  factory Time.lerp(
     Time a,
     Time b,
     double t, {
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    return Time.fromTimeSinceMidnight(
-      TimeDelta.lerp(
-        a.timeSinceMidnight,
-        b.timeSinceMidnight,
-        t,
-        rounding: rounding,
-      ),
-    );
-  }
+  }) => Time.fromTimeSinceMidnight(
+    TimeDelta.lerp(
+      a.timeSinceMidnight,
+      b.timeSinceMidnight,
+      t,
+      rounding: rounding,
+    ),
+  );
 
-  static final Time midnight = Time.from(0).unwrap();
-  static final Time noon = Time.from(12).unwrap();
+  static const Time midnight = Time._unchecked(0, 0, 0, 0);
+  static const Time noon = Time._unchecked(12, 0, 0, 0);
+  static const Time _dayEnd = Time._unchecked(
+    TimeDelta.hoursPerNormalDay - 1,
+    TimeDelta.minutesPerHour - 1,
+    TimeDelta.secondsPerMinute - 1,
+    TimeDelta.nanosPerSecond - 1,
+  );
 
   final int hour;
   final int minute;
@@ -130,11 +147,38 @@ final class Time
   TimeDelta get timeSinceMidnight =>
       TimeDelta.raw(secondsSinceMidnight, subSecondNanos);
 
-  Result<Time, String> add(TimeDelta duration) {
-    return Time.fromTimeSinceMidnight(timeSinceMidnight + duration);
+  Time operator +(TimeDelta duration) =>
+      Time.fromTimeSinceMidnight(timeSinceMidnight + duration);
+  Time operator -(TimeDelta duration) => this + (-duration);
+
+  Time? addChecked(TimeDelta duration) {
+    final result = timeSinceMidnight + duration;
+    if (result.isNegative || result >= TimeDelta(normalDays: 1)) return null;
+    return Time.fromTimeSinceMidnight(result);
   }
 
-  Result<Time, String> subtract(TimeDelta duration) => add(-duration);
+  Time? subtractChecked(TimeDelta duration) => addChecked(-duration);
+
+  Time addSaturating(TimeDelta duration) {
+    final result = timeSinceMidnight + duration;
+    if (result.isNegative) {
+      return midnight;
+    } else if (result >= TimeDelta(normalDays: 1)) {
+      return _dayEnd;
+    } else {
+      return Time.fromTimeSinceMidnight(result);
+    }
+  }
+
+  Time subtractSaturating(TimeDelta duration) => addSaturating(-duration);
+
+  Time addWrapping(TimeDelta duration) {
+    return Time.fromTimeSinceMidnight(
+      (timeSinceMidnight + duration) % TimeDelta(normalDays: 1).totalNanos,
+    );
+  }
+
+  Time subtractWrapping(TimeDelta duration) => addWrapping(-duration);
 
   /// Adds given [FixedOffset] to the current time, and returns the number of
   /// days that should be added to a date as a result of the offset (either
@@ -151,7 +195,7 @@ final class Time
     final (hour, minute, second, _) = TimeDelta(
       seconds: seconds,
     ).splitHoursMinutesSecondsNanos();
-    return (Time.from(hour, minute, second, subSecondNanos).unwrap(), days);
+    return (Time.from(hour, minute, second, subSecondNanos), days);
   }
 
   /// Subtracts given [FixedOffset] from the current time, and returns the
@@ -169,7 +213,7 @@ final class Time
     final (hour, minute, second, _) = TimeDelta(
       seconds: seconds,
     ).splitHoursMinutesSecondsNanos();
-    return (Time.from(hour, minute, second, subSecondNanos).unwrap(), days);
+    return (Time.from(hour, minute, second, subSecondNanos), days);
   }
 
   /// Returns `this - other`.
@@ -180,23 +224,21 @@ final class Time
     TimeDelta duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
-    return Time.fromTimeSinceMidnight(
-      timeSinceMidnight.roundToMultipleOf(duration, rounding: rounding),
-    ).unwrapOrElse((_) {
+    final timeSinceMidnight = this.timeSinceMidnight.roundToMultipleOf(
+      duration,
+      rounding: rounding,
+    );
+    if (timeSinceMidnight >= TimeDelta(normalDays: 1)) {
       // Rounding could round up the value to, e.g., 24 hours. In that case, we
       // floor the value to return the closest value in our range.
       return Time.fromTimeSinceMidnight(
         timeSinceMidnight.roundToMultipleOf(duration, rounding: Rounding.down),
-      ).unwrap();
-    });
+      );
+    }
+    return Time.fromTimeSinceMidnight(timeSinceMidnight);
   }
 
-  Result<Time, String> copyWith({
-    int? hour,
-    int? minute,
-    int? second,
-    int? subSecondNanos,
-  }) {
+  Time copyWith({int? hour, int? minute, int? second, int? subSecondNanos}) {
     return Time.from(
       hour ?? this.hour,
       minute ?? this.minute,
@@ -237,12 +279,11 @@ final class Time
 }
 
 /// Encodes a [Time] as an ISO 8601 string, e.g., “18:24:20.12”.
-class TimeAsIsoStringCodec extends CodecWithParserResult<Time, String> {
+class TimeAsIsoStringCodec extends CodecAndJsonConverter<Time, String> {
   const TimeAsIsoStringCodec();
 
   @override
   String encode(Time input) => input.toString();
   @override
-  Result<Time, FormatException> decodeAsResult(String encoded) =>
-      Parser.parseTime(encoded);
+  Time decode(String encoded) => Parser.parseTime(encoded);
 }

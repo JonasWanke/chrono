@@ -10,9 +10,9 @@ void main() {
 
   // ignore: missing-test-assertion
   test('known values', () {
-    MonthDay.from(Month.january, 1).unwrap();
-    MonthDay.from(Month.february, 28).unwrap();
-    MonthDay.from(Month.february, 29).unwrap();
-    MonthDay.from(Month.december, 31).unwrap();
+    MonthDay.from(Month.january, 1);
+    MonthDay.from(Month.february, 28);
+    MonthDay.from(Month.february, 29);
+    MonthDay.from(Month.december, 31);
   });
 }

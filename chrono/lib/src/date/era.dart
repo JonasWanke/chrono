@@ -1,5 +1,4 @@
 import 'package:clock/clock.dart';
-import 'package:oxidized/oxidized.dart';
 
 import '../utils.dart';
 import 'year.dart';
@@ -14,17 +13,22 @@ enum Era
   /// Returns the era with the given [index].
   ///
   /// The index must be 0 for Before the Common Era or 1 for Common Era. For any
-  /// other number, an error is returned.
-  static Result<Era, String> fromIndex(int index) {
-    if (index < minIndex || index > maxIndex) {
-      return Err('Invalid era index: $index');
-    }
-    return Ok(values[index - minIndex]);
+  /// other number, a [RangeError] is thrown.
+  factory Era.fromIndex(int index) {
+    RangeError.checkValueInInterval(index, minIndex, maxIndex, 'index');
+    return values[index - minIndex];
   }
 
-  static Era currentInLocalZone({Clock? clock}) =>
+  /// Returns the era with the given [index].
+  ///
+  /// The index must be 0 for Before the Common Era or 1 for Common Era. For any
+  /// other number, `null` is returned.
+  static Era? fromIndexOrNull(int index) =>
+      minIndex <= index && index <= maxIndex ? values[index - minIndex] : null;
+
+  factory Era.currentInLocalZone({Clock? clock}) =>
       Year.currentInLocalZone(clock: clock).era;
-  static Era currentInUtc({Clock? clock}) =>
+  factory Era.currentInUtc({Clock? clock}) =>
       Year.currentInUtc(clock: clock).era;
 
   static const minIndex = 0; // Era.beforeCommon.index
@@ -35,10 +39,10 @@ enum Era
   bool isCurrentInUtc({Clock? clock}) => this == Era.currentInUtc(clock: clock);
 
   /// The era after this one or `null`.
-  Era? get next => fromIndex(index + 1).unwrapOrNull();
+  Era? get next => Era.fromIndexOrNull(index + 1);
 
   /// The era before this one or `null`.
-  Era? get previous => fromIndex(index - 1).unwrapOrNull();
+  Era? get previous => Era.fromIndexOrNull(index - 1);
 
   @override
   int compareTo(Era other) => index.compareTo(other.index);

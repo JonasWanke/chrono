@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:clock/clock.dart';
 import 'package:deranged/deranged.dart';
 import 'package:meta/meta.dart';
-import 'package:oxidized/oxidized.dart';
 
 import '../codec.dart';
 import '../date_time/date_time.dart';
@@ -30,33 +29,34 @@ import 'year.dart';
 final class Date
     with ComparisonOperatorsFromComparable<Date>
     implements Comparable<Date>, Step<Date> {
-  static Result<Date, String> from(Year year, Month month, int day) =>
-      fromYearMonthAndDay(YearMonth(year, month), day);
-  static Result<Date, String> fromRaw(int year, int month, int day) =>
-      Month.fromNumber(month).andThen((month) => from(Year(year), month, day));
-
-  static Result<Date, String> fromYearMonthAndDay(
-    YearMonth yearMonth,
-    int day,
-  ) {
-    if (day < 1 || day > yearMonth.length.inDays) {
-      return Err('Invalid day for $yearMonth: $day');
-    }
-    return Ok(Date._unchecked(yearMonth, day));
-  }
-
-  static Result<Date, String> fromYearAndMonthDay(
-    Year year,
-    MonthDay monthDay,
-  ) =>
-      from(year, monthDay.month, monthDay.day);
+  Date.from(Year year, Month month, int day)
+    : this.fromYearMonthAndDay(YearMonth(year, month), day);
+  Date.fromRaw(int year, int month, int day)
+    : this.from(Year(year), Month.fromNumber(month), day);
+  Date.fromYearMonthAndDay(YearMonth yearMonth, int day)
+    : this._unchecked(
+        yearMonth,
+        RangeError.checkValueInInterval(
+          day,
+          1,
+          yearMonth.length.inDays,
+          'day',
+          'Invalid day for $yearMonth.',
+        ),
+      );
+  Date.fromYearAndMonthDay(Year year, MonthDay monthDay)
+    : this.from(year, monthDay.month, monthDay.day);
 
   /// Creates a date from a [Year] and a one-based ordinal day of the year,
   /// e.g., the 113th day of 2023.
-  static Result<Date, String> fromYearAndOrdinal(Year year, int dayOfYear) {
-    if (dayOfYear < 1 || dayOfYear > year.length.inDays) {
-      return Err('Invalid day of year for year $year: $dayOfYear');
-    }
+  factory Date.fromYearAndOrdinal(Year year, int dayOfYear) {
+    RangeError.checkValueInInterval(
+      dayOfYear,
+      1,
+      year.length.inDays,
+      'dayOfYear',
+      'Invalid day of year for year $year.',
+    );
 
     int firstDayOfYear(Month month) {
       final firstDayOfYearList = year.isCommonYear
@@ -65,29 +65,26 @@ final class Date
       return firstDayOfYearList[month.index];
     }
 
-    final rawMonth = YearMonth(
-      year,
-      Month.fromIndex((dayOfYear - 1) ~/ 31).unwrap(),
-    );
+    final rawMonth = YearMonth(year, Month.fromIndex((dayOfYear - 1) ~/ 31));
     final monthEnd =
         firstDayOfYear(rawMonth.month) + rawMonth.length.inDays - 1;
     final month = dayOfYear > monthEnd ? rawMonth.next : rawMonth;
 
     final dayOfMonth = dayOfYear - firstDayOfYear(month.month) + 1;
-    return Ok(Date._unchecked(month, dayOfMonth));
+    return Date._unchecked(month, dayOfMonth);
   }
 
   /// Creates a date from a year week and weekday, e.g., Sunday in the 16th week
   /// of 2023.
-  static Date fromIsoYearWeekAndWeekday(
+  factory Date.fromIsoYearWeekAndWeekday(
     IsoYearWeek isoYearWeek,
     Weekday weekday,
   ) {
     // https://en.wikipedia.org/wiki/ISO_week_date#Calculating_an_ordinal_or_month_date_from_a_week_date
-    final january4 =
-        Date.from(isoYearWeek.weekBasedYear, Month.january, 4).unwrap();
+    final january4 = Date.from(isoYearWeek.weekBasedYear, Month.january, 4);
 
-    final rawDayOfYear = Days.perWeek * isoYearWeek.week +
+    final rawDayOfYear =
+        Days.perWeek * isoYearWeek.week +
         weekday.isoNumber -
         (january4.weekday.isoNumber + 3);
     final Year year;
@@ -105,7 +102,7 @@ final class Date
         dayOfYear = rawDayOfYear;
       }
     }
-    return Date.fromYearAndOrdinal(year, dayOfYear).unwrap();
+    return Date.fromYearAndOrdinal(year, dayOfYear);
   }
 
   const Date._unchecked(this.yearMonth, this.day);
@@ -113,8 +110,10 @@ final class Date
   /// The UNIX epoch: 1970-01-01.
   ///
   /// https://en.wikipedia.org/wiki/Unix_time
-  static const unixEpoch =
-      Date._unchecked(YearMonth(Year.unixEpoch, Month.january), 1);
+  static const unixEpoch = Date._unchecked(
+    YearMonth(Year.unixEpoch, Month.january),
+    1,
+  );
 
   /// The date corresponding to the given number of days since the [unixEpoch].
   factory Date.fromDaysSinceUnixEpoch(Days sinceUnixEpoch) {
@@ -122,7 +121,8 @@ final class Date
     var daysSinceUnixEpoch = sinceUnixEpoch.inDays;
     daysSinceUnixEpoch += 719468;
 
-    final era = (daysSinceUnixEpoch >= 0
+    final era =
+        (daysSinceUnixEpoch >= 0
             ? daysSinceUnixEpoch
             : daysSinceUnixEpoch - 146096) ~/
         146097;
@@ -130,7 +130,8 @@ final class Date
     final dayOfEra = daysSinceUnixEpoch % 146097;
     assert(0 <= dayOfEra && dayOfEra <= 146096);
 
-    final yearOfEra = (dayOfEra -
+    final yearOfEra =
+        (dayOfEra -
             dayOfEra ~/ 1460 +
             dayOfEra ~/ 36524 -
             dayOfEra ~/ 146096) ~/
@@ -154,10 +155,7 @@ final class Date
         : (shiftedYear + 1, shiftedMonth - 9);
     assert(1 <= month && month <= 12);
 
-    return Date._unchecked(
-      YearMonth(Year(year), Month.fromNumber(month).unwrap()),
-      day,
-    );
+    return Date._unchecked(YearMonth(Year(year), Month.fromNumber(month)), day);
   }
 
   /// Creates a Chrono [Date] from a Dart Core [DateTime].
@@ -166,20 +164,18 @@ final class Date
   /// getters and ignores whether that [ÐateTime] is in UTC or the local
   /// timezone.
   Date.fromCore(DateTime dateTime)
-      : this._unchecked(
-          YearMonth(
-            Year(dateTime.year),
-            Month.fromNumber(dateTime.month).unwrap(),
-          ),
-          dateTime.day,
-        );
+    : this._unchecked(
+        YearMonth(Year(dateTime.year), Month.fromNumber(dateTime.month)),
+        dateTime.day,
+      );
   factory Date.todayInLocalZone({Clock? clock}) =>
       CDateTime.nowInLocalZone(clock: clock).date;
   factory Date.todayInUtc({Clock? clock}) =>
       CDateTime.nowInUtc(clock: clock).date;
 
-  static final _streamEverySecond =
-      Stream<void>.periodic(const Duration(seconds: 1)).asBroadcastStream();
+  static final _streamEverySecond = Stream<void>.periodic(
+    const Duration(seconds: 1),
+  ).asBroadcastStream();
   static Stream<Date> streamInLocalZone({Clock? clock}) {
     return _streamEverySecond
         .map((_) => Date.todayInLocalZone(clock: clock))
@@ -203,15 +199,16 @@ final class Date
   int get dayOfYear {
     // https://en.wikipedia.org/wiki/Ordinal_date#Zeller-like
     final isJanuaryOrFebruary = this.month <= Month.february;
-    final month =
-        isJanuaryOrFebruary ? this.month.number + 12 : this.month.number;
+    final month = isJanuaryOrFebruary
+        ? this.month.number + 12
+        : this.month.number;
     final marchBased = (153 * ((month - 3) % 12) + 2) ~/ 5 + day;
     return isJanuaryOrFebruary
         ? marchBased - 306
         : marchBased + 59 + (year.isLeapYear ? 1 : 0);
   }
 
-  MonthDay get monthDay => MonthDay.from(month, day).unwrap();
+  MonthDay get monthDay => MonthDay.from(month, day);
 
   IsoYearWeek get isoYearWeek {
     // Algorithm from https://en.wikipedia.org/wiki/ISO_week_date#Algorithms
@@ -219,7 +216,7 @@ final class Date
     return switch (weekOfYear) {
       0 => year.previous.isoWeeks.endInclusive,
       53 when year.numberOfIsoWeeks == 52 => year.next.isoWeeks.start,
-      _ => IsoYearWeek.from(year, weekOfYear).unwrap()
+      _ => IsoYearWeek.from(year, weekOfYear),
     };
   }
 
@@ -240,13 +237,11 @@ final class Date
       weekBasedYear = year;
       week = 1 + diff.inDays ~/ Days.perWeek;
     }
-    return YearWeek.from(weekBasedYear, week, config).unwrap();
+    return YearWeek.from(weekBasedYear, week, config);
   }
 
-  Weekday get weekday {
-    return Weekday.fromIndex((daysSinceUnixEpoch.inDays + 3) % Days.perWeek)
-        .unwrap();
-  }
+  Weekday get weekday =>
+      Weekday.fromIndex((daysSinceUnixEpoch.inDays + 3) % Days.perWeek);
 
   /// Is this the 1st, 2nd, 3rd, 4th, or 5th occurrence of its [weekday] during
   /// this month?
@@ -382,12 +377,7 @@ final class Date
   Date previousOrSame(Weekday weekday) =>
       this + this.weekday.untilPreviousOrSame(weekday);
 
-  Result<Date, String> copyWith({
-    YearMonth? yearMonth,
-    Year? year,
-    Month? month,
-    int? day,
-  }) {
+  Date copyWith({YearMonth? yearMonth, Year? year, Month? month, int? day}) {
     assert(yearMonth == null || (year == null && month == null));
 
     return Date.fromYearMonthAndDay(
@@ -443,35 +433,32 @@ extension RangeInclusiveOfDateChrono on RangeInclusive<Date> {
 }
 
 /// Encodes a [Date] as an ISO 8601 string, e.g., “2023-04-23”.
-class DateAsIsoStringCodec extends CodecWithParserResult<Date, String> {
+class DateAsIsoStringCodec extends CodecAndJsonConverter<Date, String> {
   const DateAsIsoStringCodec();
 
   @override
   String encode(Date input) => input.toString();
   @override
-  Result<Date, FormatException> decodeAsResult(String encoded) =>
-      Parser.parseDate(encoded);
+  Date decode(String encoded) => Parser.parseDate(encoded);
 }
 
 /// Encodes a [Date] as an ordinal date ISO 8601 string, e.g., “2023-113”.
 class DateAsOrdinalDateIsoStringCodec
-    extends CodecWithParserResult<Date, String> {
+    extends CodecAndJsonConverter<Date, String> {
   const DateAsOrdinalDateIsoStringCodec();
 
   @override
   String encode(Date input) => input.toOrdinalDateString();
   @override
-  Result<Date, FormatException> decodeAsResult(String encoded) =>
-      Parser.parseOrdinalDate(encoded);
+  Date decode(String encoded) => Parser.parseOrdinalDate(encoded);
 }
 
 /// Encodes a [Date] as a week date ISO 8601 string, e.g., “2023-W16-7”.
-class DateAsWeekDateIsoStringCodec extends CodecWithParserResult<Date, String> {
+class DateAsWeekDateIsoStringCodec extends CodecAndJsonConverter<Date, String> {
   const DateAsWeekDateIsoStringCodec();
 
   @override
   String encode(Date input) => input.toWeekDateString();
   @override
-  Result<Date, FormatException> decodeAsResult(String encoded) =>
-      Parser.parseWeekDate(encoded);
+  Date decode(String encoded) => Parser.parseWeekDate(encoded);
 }

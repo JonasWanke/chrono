@@ -39,11 +39,18 @@ class TimeDelta extends CDuration
         micros ~/ microsPerSecond +
         nanos ~/ nanosPerSecond;
     var subSecondNanos =
-        millis.remainder(millisPerSecond) +
-        micros.remainder(microsPerSecond) +
+        millis.remainder(millisPerSecond) * nanosPerMillisecond +
+        micros.remainder(microsPerSecond) * nanosPerMicrosecond +
         nanos.remainder(nanosPerSecond);
     totalSeconds += subSecondNanos ~/ nanosPerSecond;
     subSecondNanos = subSecondNanos.remainder(nanosPerSecond);
+    if (totalSeconds > 0 && subSecondNanos < 0) {
+      totalSeconds -= 1;
+      subSecondNanos += nanosPerSecond;
+    } else if (totalSeconds < 0 && subSecondNanos > 0) {
+      totalSeconds += 1;
+      subSecondNanos -= nanosPerSecond;
+    }
     return TimeDelta.raw(totalSeconds, subSecondNanos);
   }
   const TimeDelta.raw(this.totalSeconds, this.subSecondNanos)
@@ -371,9 +378,15 @@ class TimeDelta extends CDuration
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) => TimeDelta(nanos: rounding.round(totalNanos * factor));
 
-  // TODO(JonasWanke): avoid `totalNanos` to avoid overflows
   @override
-  TimeDelta operator ~/(int divisor) => TimeDelta(nanos: totalNanos ~/ divisor);
+  TimeDelta operator ~/(int divisor) {
+    final totalSeconds = this.totalSeconds ~/ divisor;
+    final carry = this.totalSeconds - totalSeconds * divisor;
+    final subSecondNanos =
+        (carry * nanosPerSecond + this.subSecondNanos) ~/ divisor;
+    return TimeDelta(seconds: totalSeconds, nanos: subSecondNanos);
+  }
+
   // TODO(JonasWanke): avoid `totalNanos` to avoid overflows
   double dividedByTimeDelta(TimeDelta divisor) =>
       totalNanos / divisor.totalNanos;

@@ -80,7 +80,7 @@ extension ChronoAny on Any {
         });
         yield* day.shrink().map((it) => (yearMonth, it));
       },
-    ).map((it) => Date.fromYearMonthAndDay(it.$1.value, it.$2.value).unwrap());
+    ).map((it) => Date.fromYearMonthAndDay(it.$1.value, it.$2.value));
   }
 
   Generator<CDateTime> get dateTimeChrono =>
@@ -95,7 +95,7 @@ extension ChronoAny on Any {
       intInRange(0, TimeDelta.microsPerMillisecond),
       intInRange(0, TimeDelta.nanosPerMicrosecond),
       (hour, minute, second, millis, micros, nanos) =>
-          Time.from(hour, minute, second, millis, micros, nanos).unwrap(),
+          Time.from(hour, minute, second, millis, micros, nanos),
     );
   }
 
@@ -123,7 +123,7 @@ extension ChronoAny on Any {
         });
         yield* week.shrink().map((it) => (weekBasedYear, it));
       },
-    ).map((it) => IsoYearWeek.from(it.$1.value, it.$2.value).unwrap());
+    ).map((it) => IsoYearWeek.from(it.$1.value, it.$2.value));
   }
 
   Generator<WeekConfig> get weekConfig {
@@ -133,7 +133,7 @@ extension ChronoAny on Any {
       (firstDay, minDaysInFirstWeek) => WeekConfig.from(
         firstDay: firstDay,
         minDaysInFirstWeek: minDaysInFirstWeek,
-      ).unwrap(),
+      ),
     );
   }
 
@@ -166,9 +166,7 @@ extension ChronoAny on Any {
         });
         yield* week.shrink().map((it) => (config, weekBasedYear, it));
       },
-    ).map(
-      (it) => YearWeek.from(it.$2.value, it.$3.value, it.$1.value).unwrap(),
-    );
+    ).map((it) => YearWeek.from(it.$2.value, it.$3.value, it.$1.value));
   }
 
   Generator<MonthDay> get monthDay {
@@ -193,7 +191,7 @@ extension ChronoAny on Any {
         });
         yield* day.shrink().map((it) => (month, it));
       },
-    ).map((it) => MonthDay.from(it.$1.value, it.$2.value).unwrap());
+    ).map((it) => MonthDay.from(it.$1.value, it.$2.value));
   }
 
   Generator<Weekday> get weekday => choose(Weekday.values);
