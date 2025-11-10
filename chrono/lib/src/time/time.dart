@@ -132,6 +132,7 @@ final class Time
   final int minute;
   final int second;
   final int subSecondNanos;
+  TimeDelta get subSecond => TimeDelta(nanos: subSecondNanos);
   // TODO(JonasWanke): store only `secondsSinceMidnight` & `subSecondNanos`
 
   bool get isAm => hour < 12;
