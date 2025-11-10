@@ -39,8 +39,8 @@ class TimeDelta extends CDuration
         micros ~/ microsPerSecond +
         nanos ~/ nanosPerSecond;
     var subSecondNanos =
-        millis.remainder(millisPerSecond) * nanosPerMillisecond +
-        micros.remainder(microsPerSecond) * nanosPerMicrosecond +
+        millis.remainder(millisPerSecond) * nanosPerMilli +
+        micros.remainder(microsPerSecond) * nanosPerMicro +
         nanos.remainder(nanosPerSecond);
     totalSeconds += subSecondNanos ~/ nanosPerSecond;
     subSecondNanos = subSecondNanos.remainder(nanosPerSecond);
@@ -95,73 +95,72 @@ class TimeDelta extends CDuration
   // Nanos
 
   /// The number of nanoseconds in a microsecond.
-  static const nanosPerMicrosecond = 1000;
+  static const nanosPerMicro = 1000;
 
   /// The number of nanoseconds in a millisecond.
-  static const nanosPerMillisecond = nanosPerMicrosecond * microsPerMillisecond;
+  static const nanosPerMilli = nanosPerMicro * microsPerMilli;
 
   /// The number of nanoseconds in a second.
-  static const nanosPerSecond = nanosPerMicrosecond * microsPerSecond;
+  static const nanosPerSecond = nanosPerMicro * microsPerSecond;
 
   /// The number of nanoseconds in a minute.
-  static const nanosPerMinute = nanosPerMicrosecond * microsPerMinute;
+  static const nanosPerMinute = nanosPerMicro * microsPerMinute;
 
   /// The number of nanoseconds in an hour.
-  static const nanosPerHour = nanosPerMicrosecond * microsPerHour;
+  static const nanosPerHour = nanosPerMicro * microsPerHour;
 
   /// The number of nanoseconds in a normal day, i.e., a day with exactly
   /// 24 hours (no daylight savings time changes and no leap seconds).
-  static const nanosPerNormalDay = nanosPerMicrosecond * microsPerNormalDay;
+  static const nanosPerNormalDay = nanosPerMicro * microsPerNormalDay;
 
   /// The number of nanoseconds in a normal week, i.e., a week where all days
   /// are exactly 24 hours long (no daylight savings time changes and no leap
   /// seconds).
-  static const nanosPerNormalWeek = nanosPerMicrosecond * microsPerNormalWeek;
+  static const nanosPerNormalWeek = nanosPerMicro * microsPerNormalWeek;
 
   /// The number of nanoseconds in a normal (non-leap) year (365 days), i.e., a
   /// year where all days are exactly 24 hours long (no daylight savings time
   /// changes and no leap seconds).
-  static const nanosPerNormalYear = nanosPerMicrosecond * microsPerNormalYear;
+  static const nanosPerNormalYear = nanosPerMicro * microsPerNormalYear;
 
   /// The number of nanoseconds in a leap year (366 days), i.e., a year where
   /// all days are exactly 24 hours long (no daylight savings time changes and
   /// no leap seconds).
-  static const nanosPerNormalLeapYear =
-      nanosPerMicrosecond * microsPerNormalLeapYear;
+  static const nanosPerNormalLeapYear = nanosPerMicro * microsPerNormalLeapYear;
 
   // Micros
 
   /// The number of microseconds in a millisecond.
-  static const microsPerMillisecond = 1000;
+  static const microsPerMilli = 1000;
 
   /// The number of microseconds in a second.
-  static const microsPerSecond = microsPerMillisecond * millisPerSecond;
+  static const microsPerSecond = microsPerMilli * millisPerSecond;
 
   /// The number of microseconds in a minute.
-  static const microsPerMinute = microsPerMillisecond * millisPerMinute;
+  static const microsPerMinute = microsPerMilli * millisPerMinute;
 
   /// The number of microseconds in an hour.
-  static const microsPerHour = microsPerMillisecond * millisPerHour;
+  static const microsPerHour = microsPerMilli * millisPerHour;
 
   /// The number of microseconds in a normal day, i.e., a day with exactly
   /// 24 hours (no daylight savings time changes and no leap seconds).
-  static const microsPerNormalDay = microsPerMillisecond * millisPerNormalDay;
+  static const microsPerNormalDay = microsPerMilli * millisPerNormalDay;
 
   /// The number of microseconds in a normal week, i.e., a week where all days
   /// are exactly 24 hours long (no daylight savings time changes and no leap
   /// seconds).
-  static const microsPerNormalWeek = microsPerMillisecond * millisPerNormalWeek;
+  static const microsPerNormalWeek = microsPerMilli * millisPerNormalWeek;
 
   /// The number of microseconds in a normal (non-leap) year (365 days), i.e., a
   /// year where all days are exactly 24 hours long (no daylight savings time
   /// changes and no leap seconds).
-  static const microsPerNormalYear = microsPerMillisecond * millisPerNormalYear;
+  static const microsPerNormalYear = microsPerMilli * millisPerNormalYear;
 
   /// The number of microseconds in a leap year (366 days), i.e., a year where
   /// all days are exactly 24 hours long (no daylight savings time changes and
   /// no leap seconds).
   static const microsPerNormalLeapYear =
-      microsPerMillisecond * millisPerNormalLeapYear;
+      microsPerMilli * millisPerNormalLeapYear;
 
   // Millis
 
@@ -272,9 +271,9 @@ class TimeDelta extends CDuration
   int get totalMinutes => totalSeconds ~/ secondsPerMinute;
   final int totalSeconds;
   int get totalMillis =>
-      totalSeconds * millisPerSecond + subSecondNanos ~/ nanosPerMillisecond;
+      totalSeconds * millisPerSecond + subSecondNanos ~/ nanosPerMilli;
   int get totalMicros =>
-      totalSeconds * microsPerSecond + subSecondNanos ~/ nanosPerMicrosecond;
+      totalSeconds * microsPerSecond + subSecondNanos ~/ nanosPerMicro;
   int get totalNanos => totalSeconds * nanosPerSecond + subSecondNanos;
 
   final int subSecondNanos;
@@ -319,14 +318,14 @@ class TimeDelta extends CDuration
   }
 
   (int, int) _splitNanosInMicrosNanos() {
-    final micros = subSecondNanos ~/ nanosPerMicrosecond;
-    return (micros, subSecondNanos - micros * nanosPerMicrosecond);
+    final micros = subSecondNanos ~/ nanosPerMicro;
+    return (micros, subSecondNanos - micros * nanosPerMicro);
   }
 
   (int, int, int) _splitNanosInMillisMicrosNanos() {
     final (rawMicros, nanos) = _splitNanosInMicrosNanos();
-    final millis = rawMicros ~/ microsPerMillisecond;
-    return (millis, rawMicros - millis * microsPerMillisecond, nanos);
+    final millis = rawMicros ~/ microsPerMilli;
+    return (millis, rawMicros - millis * microsPerMilli, nanos);
   }
 
   (int, int) _splitSecondsInMinutesSeconds() {
@@ -407,10 +406,10 @@ class TimeDelta extends CDuration
   TimeDelta remainder(int divisor) =>
       TimeDelta(nanos: totalNanos.remainder(divisor));
 
-  int roundToMicroseconds({Rounding rounding = Rounding.nearestAwayFromZero}) =>
-      rounding.round(totalNanos / nanosPerMicrosecond);
-  int roundToMilliseconds({Rounding rounding = Rounding.nearestAwayFromZero}) =>
-      rounding.round(totalNanos / nanosPerMillisecond);
+  int roundToMicros({Rounding rounding = Rounding.nearestAwayFromZero}) =>
+      rounding.round(totalNanos / nanosPerMicro);
+  int roundToMillis({Rounding rounding = Rounding.nearestAwayFromZero}) =>
+      rounding.round(totalNanos / nanosPerMilli);
   int roundToSeconds({Rounding rounding = Rounding.nearestAwayFromZero}) =>
       rounding.round(totalNanos / nanosPerSecond);
   int roundToMinutes({Rounding rounding = Rounding.nearestAwayFromZero}) =>
@@ -431,7 +430,7 @@ class TimeDelta extends CDuration
 
   Duration roundToCoreDuration({
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) => Duration(microseconds: roundToMicroseconds(rounding: rounding));
+  }) => Duration(microseconds: roundToMicros(rounding: rounding));
 
   TimeDelta roundToMultipleOf(
     TimeDelta duration, {

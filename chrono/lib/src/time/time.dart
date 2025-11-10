@@ -45,8 +45,8 @@ final class Time
            'second',
          ),
          RangeError.checkValueInInterval(
-           millis * TimeDelta.nanosPerMillisecond +
-               micros * TimeDelta.nanosPerMicrosecond +
+           millis * TimeDelta.nanosPerMilli +
+               micros * TimeDelta.nanosPerMicro +
                nanos,
            0,
            TimeDelta.nanosPerSecond - 1,

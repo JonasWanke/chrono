@@ -92,10 +92,9 @@ extension ChronoAny on Any {
       intInRange(0, TimeDelta.minutesPerHour),
       intInRange(0, TimeDelta.secondsPerMinute),
       intInRange(0, TimeDelta.millisPerSecond),
-      intInRange(0, TimeDelta.microsPerMillisecond),
-      intInRange(0, TimeDelta.nanosPerMicrosecond),
-      (hour, minute, second, millis, micros, nanos) =>
-          Time.from(hour, minute, second, millis, micros, nanos),
+      intInRange(0, TimeDelta.microsPerMilli),
+      intInRange(0, TimeDelta.nanosPerMicro),
+      Time.from,
     );
   }
 

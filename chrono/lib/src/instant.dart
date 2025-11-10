@@ -44,7 +44,7 @@ final class Instant
   DateTime get asCoreDateTimeInUtc => _getDateTime(isUtc: true);
   DateTime _getDateTime({required bool isUtc}) {
     return DateTime.fromMicrosecondsSinceEpoch(
-      durationSinceUnixEpoch.roundToMicroseconds(),
+      durationSinceUnixEpoch.roundToMicros(),
       isUtc: isUtc,
     );
   }
@@ -148,7 +148,7 @@ class InstantAsMicrosIntCodec extends CodecAndJsonConverter<Instant, int> {
 
   @override
   int encode(Instant input) =>
-      input.durationSinceUnixEpoch.roundToMicroseconds(rounding: rounding);
+      input.durationSinceUnixEpoch.roundToMicros(rounding: rounding);
   @override
   Instant decode(int encoded) =>
       Instant.fromDurationSinceUnixEpoch(TimeDelta(micros: encoded));
@@ -176,7 +176,7 @@ class InstantAsMillisIntCodec extends CodecAndJsonConverter<Instant, int> {
 
   @override
   int encode(Instant input) =>
-      input.durationSinceUnixEpoch.roundToMilliseconds(rounding: rounding);
+      input.durationSinceUnixEpoch.roundToMillis(rounding: rounding);
   @override
   Instant decode(int encoded) =>
       Instant.fromDurationSinceUnixEpoch(TimeDelta(millis: encoded));

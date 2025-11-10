@@ -119,7 +119,7 @@ final class CDateTime
       time.minute,
       time.second,
       0,
-      (time.subSecondNanos / TimeDelta.nanosPerMicrosecond).round(),
+      (time.subSecondNanos / TimeDelta.nanosPerMicro).round(),
     );
   }
 
