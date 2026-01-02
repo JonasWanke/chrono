@@ -7,7 +7,7 @@ void main() {
   setChronoGladosDefaults();
 
   testDataClassBasics(
-    codecs: const [
+    preciseCodecs: const [
       DateAsIsoStringCodec(),
       DateAsOrdinalDateIsoStringCodec(),
       DateAsWeekDateIsoStringCodec(),

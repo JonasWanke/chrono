@@ -7,7 +7,7 @@ void main() {
   setChronoGladosDefaults();
 
   testDataClassBasics<Year>(
-    codecs: const [YearAsIsoStringCodec(), YearAsIntCodec()],
+    preciseCodecs: const [YearAsIsoStringCodec(), YearAsIntCodec()],
   );
 
   Glados<Year>().test('isLeapYear and isCommonYear', (year) {

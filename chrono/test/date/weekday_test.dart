@@ -6,7 +6,7 @@ import '../utils.dart';
 void main() {
   setChronoGladosDefaults();
 
-  testDataClassBasics(codecs: [const WeekdayAsIntCodec()]);
+  testDataClassBasics(preciseCodecs: [const WeekdayAsIntCodec()]);
 
   testAll('`number` and `fromNumber(…)`', Weekday.values, (weekday) {
     final number = weekday.isoNumber;

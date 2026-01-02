@@ -6,7 +6,7 @@ import '../utils.dart';
 void main() {
   setChronoGladosDefaults();
 
-  testDataClassBasics(codecs: const [TimeAsIsoStringCodec()]);
+  testDataClassBasics(preciseCodecs: const [TimeAsIsoStringCodec()]);
 
   Glados<Time>().test('fromTimeSinceMidnight', (time) {
     expect(Time.fromTimeSinceMidnight(time.timeSinceMidnight), time);

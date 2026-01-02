@@ -7,9 +7,12 @@ void main() {
   setChronoGladosDefaults();
 
   group('TimeDelta', () {
-    Glados<TimeDelta>().test('equality', (value) {
-      expect(value == value, true);
-      expect(value.compareTo(value), 0);
+    testDataClassBasics<TimeDelta>(
+      preciseCodecs: [const TimeDeltaAsMapCodec()],
+    );
+
+    group('Imprecise codecs', () {
+      testCodecStartingFromEncoded(const TimeDeltaAsSecondsIntCodec());
     });
 
     Glados2<TimeDelta, TimeDelta>().test(

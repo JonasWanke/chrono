@@ -1,3 +1,6 @@
+import 'package:meta/meta.dart';
+
+import '../codec.dart';
 import '../date/duration.dart';
 import '../date_time/duration.dart';
 import '../rounding.dart';
@@ -477,4 +480,67 @@ class TimeDelta extends CDuration
 
     return subSecondNanos.compareTo(other.subSecondNanos);
   }
+
+  @override
+  String toString() {
+    // TODO(JonasWanke): ISO 8601
+    final buffer = StringBuffer('TimeDelta(');
+    var isFirst = true;
+
+    void writePart(int value, String suffix) {
+      if (!isFirst) buffer.write(', ');
+      buffer.write('$value $suffix');
+      isFirst = false;
+    }
+
+    final (hours, minutes, seconds, millis, micros, nanos) =
+        splitHoursMinutesSecondsMillisMicrosNanos();
+    if (hours != 0) writePart(hours, 'h');
+    if (minutes != 0) writePart(minutes, 'm');
+    if (seconds != 0) writePart(seconds, 's');
+    if (millis != 0) writePart(millis, 'ms');
+    if (micros != 0) writePart(micros, 'µs');
+    if (nanos != 0) writePart(nanos, 'ns');
+
+    buffer.write(')');
+    return buffer.toString();
+  }
+}
+
+// TODO(JonasWanke): `TimeDeltaAsIsoStringCodec`, `TimeDeltaAsMillisIntCodec`,
+// `TimeDeltaAsMicrosIntCodec`, `TimeDeltaAsNanosIntCodec`
+
+/// Encodes [TimeDelta] as a map: `{'seconds': <seconds>, 'nanos': <nanos>}`.
+@immutable
+class TimeDeltaAsMapCodec
+    extends CodecAndJsonConverter<TimeDelta, Map<String, dynamic>> {
+  const TimeDeltaAsMapCodec();
+
+  @override
+  Map<String, dynamic> encode(TimeDelta input) => {
+    'seconds': input.totalSeconds,
+    'nanos': input.subSecondNanos,
+  };
+  @override
+  TimeDelta decode(Map<String, dynamic> encoded) {
+    return TimeDelta(
+      seconds: encoded['seconds']! as int,
+      nanos: encoded['nanos']! as int,
+    );
+  }
+}
+
+/// Encodes [TimeDelta] as a (rounded) integer number of seconds.
+@immutable
+class TimeDeltaAsSecondsIntCodec extends CodecAndJsonConverter<TimeDelta, int> {
+  const TimeDeltaAsSecondsIntCodec({
+    this.rounding = Rounding.nearestAwayFromZero,
+  });
+
+  final Rounding rounding;
+
+  @override
+  int encode(TimeDelta input) => input.roundToSeconds(rounding: rounding);
+  @override
+  TimeDelta decode(int encoded) => TimeDelta(seconds: encoded);
 }

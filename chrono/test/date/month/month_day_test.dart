@@ -6,7 +6,7 @@ import '../../utils.dart';
 void main() {
   setChronoGladosDefaults();
 
-  testDataClassBasics(codecs: const [MonthDayAsIsoStringCodec()]);
+  testDataClassBasics(preciseCodecs: const [MonthDayAsIsoStringCodec()]);
 
   // ignore: missing-test-assertion
   test('known values', () {

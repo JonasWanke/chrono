@@ -6,7 +6,7 @@ import '../utils.dart';
 void main() {
   setChronoGladosDefaults();
 
-  testDataClassBasics(codecs: const [CDateTimeAsIsoStringCodec()]);
+  testDataClassBasics(preciseCodecs: const [CDateTimeAsIsoStringCodec()]);
 
   Glados<CDateTime>().test('fromDurationSinceUnixEpoch', (dateTime) {
     expect(
