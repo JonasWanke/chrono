@@ -309,6 +309,23 @@ class TimeDelta extends CDuration
     return (minutes, seconds, millis, micros, nanos);
   }
 
+  (int, int) splitHoursMinutes({
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    final (hours, minutes, _) = TimeDelta(
+      minutes: roundToMinutes(rounding: rounding),
+    )._splitSecondsInHoursMinutesSeconds();
+    return (hours, minutes);
+  }
+
+  (int, int, int) splitHoursMinutesSeconds({
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    return TimeDelta(
+      seconds: roundToSeconds(rounding: rounding),
+    )._splitSecondsInHoursMinutesSeconds();
+  }
+
   (int, int, int, int) splitHoursMinutesSecondsNanos() {
     final (hours, minutes, seconds) = _splitSecondsInHoursMinutesSeconds();
     return (hours, minutes, seconds, subSecondNanos);
