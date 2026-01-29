@@ -526,13 +526,13 @@ class TimeDelta extends CDuration
 
 extension IntToTimeDeltaExtension on int {
   /// Creates a [TimeDelta] representing this many nanoseconds.
-  TimeDelta get nanoseconds => TimeDelta(nanos: this);
+  TimeDelta get nanos => TimeDelta(nanos: this);
 
   /// Creates a [TimeDelta] representing this many microseconds.
-  TimeDelta get microseconds => TimeDelta(micros: this);
+  TimeDelta get micros => TimeDelta(micros: this);
 
   /// Creates a [TimeDelta] representing this many milliseconds.
-  TimeDelta get milliseconds => TimeDelta(millis: this);
+  TimeDelta get millis => TimeDelta(millis: this);
 
   /// Creates a [TimeDelta] representing this many seconds.
   TimeDelta get seconds => TimeDelta(seconds: this);
