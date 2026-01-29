@@ -506,7 +506,7 @@ class TimeDelta extends CDuration
   }
 }
 
-extension IntToTimeDeltaExtension on int {
+extension IntToTimeDeltaChrono on int {
   /// Creates a [TimeDelta] representing this many nanoseconds.
   TimeDelta get nanos => TimeDelta(nanos: this);
 
@@ -536,6 +536,10 @@ extension IntToTimeDeltaExtension on int {
 
   /// Creates a [TimeDelta] representing this many normal leap years.
   TimeDelta get normalLeapYears => TimeDelta(normalLeapYears: this);
+}
+
+extension IterableOfTimeDeltaChrono on Iterable<TimeDelta> {
+  TimeDelta get sum => fold(TimeDelta(), (sum, it) => sum + it);
 }
 
 // TODO(JonasWanke): `TimeDeltaAsIsoStringCodec`, `TimeDeltaAsMillisIntCodec`,
