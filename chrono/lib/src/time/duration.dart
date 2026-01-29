@@ -481,29 +481,7 @@ class TimeDelta extends CDuration
   }
 
   @override
-  String toString() {
-    // TODO(JonasWanke): ISO 8601
-    final buffer = StringBuffer('TimeDelta(');
-    var isFirst = true;
-
-    void writePart(int value, String suffix) {
-      if (!isFirst) buffer.write(', ');
-      buffer.write('$value $suffix');
-      isFirst = false;
-    }
-
-    final (hours, minutes, seconds, millis, micros, nanos) =
-        splitHoursMinutesSecondsMillisMicrosNanos();
-    if (hours != 0) writePart(hours, 'h');
-    if (minutes != 0) writePart(minutes, 'm');
-    if (seconds != 0) writePart(seconds, 's');
-    if (millis != 0) writePart(millis, 'ms');
-    if (micros != 0) writePart(micros, 'µs');
-    if (nanos != 0) writePart(nanos, 'ns');
-
-    buffer.write(')');
-    return buffer.toString();
-  }
+  String toString() => const TimeDeltaAsSimpleStringCodec().encode(this);
 }
 
 extension IntToTimeDeltaChrono on int {
@@ -542,8 +520,93 @@ extension IterableOfTimeDeltaChrono on Iterable<TimeDelta> {
   TimeDelta get sum => fold(TimeDelta(), (sum, it) => sum + it);
 }
 
-// TODO(JonasWanke): `TimeDeltaAsIsoStringCodec`, `TimeDeltaAsMillisIntCodec`,
-// `TimeDeltaAsMicrosIntCodec`, `TimeDeltaAsNanosIntCodec`
+// TODO(JonasWanke): `TimeDeltaAsMillisIntCodec`, `TimeDeltaAsMicrosIntCodec`,
+// `TimeDeltaAsNanosIntCodec`
+
+/// Encodes a [TimeDelta] as an ISO 8601 string, e.g., “PT123.456S”.
+class TimeDeltaAsIsoStringCodec
+    extends CodecAndJsonConverter<TimeDelta, String> {
+  const TimeDeltaAsIsoStringCodec();
+
+  @override
+  String encode(TimeDelta input) {
+    final (value, sign) = input.isNegative ? (-input, '-') : (input, '');
+    final buffer = StringBuffer(sign);
+    buffer.write('PT');
+
+    final (s, ms, us, ns) = value.splitSecondsMillisMicrosNanos();
+    buffer.write(s);
+    buffer.writeNonZeroMillisMicrosNanos(ms, us, ns);
+    return buffer.toString();
+  }
+
+  // TODO(JonasWanke): implement
+  @override
+  TimeDelta decode(String encoded) => throw UnimplementedError();
+}
+
+/// Encodes a [TimeDelta] as a simple string, e.g., “01:00:12.001002”.
+class TimeDeltaAsSimpleStringCodec
+    extends CodecAndJsonConverter<TimeDelta, String> {
+  const TimeDeltaAsSimpleStringCodec();
+
+  @override
+  String encode(TimeDelta input) {
+    final (value, sign) = input.isNegative ? (-input, '-') : (input, '');
+    final buffer = StringBuffer(sign);
+
+    final (h, m, s, ms, us, ns) = value
+        .splitHoursMinutesSecondsMillisMicrosNanos();
+    buffer.write(h.toString().padLeft(2, '0'));
+    buffer.write(':');
+    buffer.write(m.toString().padLeft(2, '0'));
+    buffer.write(':');
+    buffer.write(s.toString().padLeft(2, '0'));
+    buffer.writeNonZeroMillisMicrosNanos(ms, us, ns);
+    return buffer.toString();
+  }
+
+  @override
+  TimeDelta decode(String encoded) {
+    final pattern = RegExp(
+      r'^(?<sign>-)?(?<hours>\d{2,}):(?<minutes>\d{2}):(?<seconds>\d{2})(?:\.(?<subsecond>\d{1,9}))?$',
+    );
+    final match = pattern.firstMatch(encoded);
+    if (match == null) {
+      throw FormatException('Invalid TimeDelta string: $encoded');
+    }
+
+    final sign = match.namedGroup('sign') != null ? -1 : 1;
+    final hours = int.parse(match.namedGroup('hours')!);
+    final minutes = int.parse(match.namedGroup('minutes')!);
+    final seconds = int.parse(match.namedGroup('seconds')!);
+    final subsecondString = match.namedGroup('subsecond');
+    final nanos = subsecondString == null
+        ? 0
+        : int.parse(subsecondString.padRight(9, '0'));
+    return TimeDelta(
+      hours: sign * hours,
+      minutes: sign * minutes,
+      seconds: sign * seconds,
+      nanos: sign * nanos,
+    );
+  }
+}
+
+extension on StringBuffer {
+  void writeNonZeroMillisMicrosNanos(int millis, int micros, int nanos) {
+    if (millis == 0 && micros == 0 && nanos == 0) return;
+
+    write('.');
+    write(millis.toString().padLeft(3, '0'));
+    if (micros == 0 && nanos == 0) return;
+
+    write(micros.toString().padLeft(3, '0'));
+    if (nanos == 0) return;
+
+    write(nanos.toString().padLeft(3, '0'));
+  }
+}
 
 /// Encodes [TimeDelta] as a map: `{'seconds': <seconds>, 'nanos': <nanos>}`.
 @immutable
