@@ -524,6 +524,38 @@ class TimeDelta extends CDuration
   }
 }
 
+extension IntToTimeDeltaExtension on int {
+  /// Creates a [TimeDelta] representing this many nanoseconds.
+  TimeDelta get nanoseconds => TimeDelta(nanos: this);
+
+  /// Creates a [TimeDelta] representing this many microseconds.
+  TimeDelta get microseconds => TimeDelta(micros: this);
+
+  /// Creates a [TimeDelta] representing this many milliseconds.
+  TimeDelta get milliseconds => TimeDelta(millis: this);
+
+  /// Creates a [TimeDelta] representing this many seconds.
+  TimeDelta get seconds => TimeDelta(seconds: this);
+
+  /// Creates a [TimeDelta] representing this many minutes.
+  TimeDelta get minutes => TimeDelta(minutes: this);
+
+  /// Creates a [TimeDelta] representing this many hours.
+  TimeDelta get hours => TimeDelta(hours: this);
+
+  /// Creates a [TimeDelta] representing this many normal days.
+  TimeDelta get normalDays => TimeDelta(normalDays: this);
+
+  /// Creates a [TimeDelta] representing this many normal weeks.
+  TimeDelta get normalWeeks => TimeDelta(normalWeeks: this);
+
+  /// Creates a [TimeDelta] representing this many normal years.
+  TimeDelta get normalYears => TimeDelta(normalYears: this);
+
+  /// Creates a [TimeDelta] representing this many normal leap years.
+  TimeDelta get normalLeapYears => TimeDelta(normalLeapYears: this);
+}
+
 // TODO(JonasWanke): `TimeDeltaAsIsoStringCodec`, `TimeDeltaAsMillisIntCodec`,
 // `TimeDeltaAsMicrosIntCodec`, `TimeDeltaAsNanosIntCodec`
 
