@@ -30,8 +30,6 @@ abstract class CDuration {
   CDuration operator -();
   CDuration operator *(int factor);
   CDuration operator ~/(int divisor);
-  CDuration operator %(int divisor);
-  CDuration remainder(int divisor);
 
   @override
   bool operator ==(Object other) {
@@ -112,22 +110,6 @@ final class CompoundDuration extends CDuration {
     return CompoundDuration(
       monthsAndDays: monthsAndDays ~/ divisor,
       time: time ~/ divisor,
-    );
-  }
-
-  @override
-  CompoundDuration operator %(int divisor) {
-    return CompoundDuration(
-      monthsAndDays: monthsAndDays % divisor,
-      time: time % divisor,
-    );
-  }
-
-  @override
-  CompoundDuration remainder(int divisor) {
-    return CompoundDuration(
-      monthsAndDays: monthsAndDays.remainder(divisor),
-      time: time.remainder(divisor),
     );
   }
 

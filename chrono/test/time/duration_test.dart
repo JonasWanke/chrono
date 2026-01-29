@@ -31,12 +31,8 @@ void main() {
       expect((duration * 0).isZero, true);
     });
     Glados2<TimeDelta, int>(null, any.intExcept0).test(
-      '*, ~/, %, and remainder(…)',
-      (duration, factor) {
-        expect(duration * factor ~/ factor, duration);
-        expect((duration * factor % factor).isZero, true);
-        expect((duration * factor).remainder(factor).isZero, true);
-      },
+      '* and ~/',
+      (duration, factor) => expect(duration * factor ~/ factor, duration),
     );
   });
 }

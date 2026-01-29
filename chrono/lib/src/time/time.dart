@@ -175,7 +175,7 @@ final class Time
 
   Time addWrapping(TimeDelta duration) {
     return Time.fromTimeSinceMidnight(
-      (timeSinceMidnight + duration) % TimeDelta(normalDays: 1).totalNanos,
+      (timeSinceMidnight + duration) % TimeDelta(normalDays: 1),
     );
   }
 

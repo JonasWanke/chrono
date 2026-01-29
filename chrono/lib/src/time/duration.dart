@@ -6,8 +6,6 @@ import '../date_time/duration.dart';
 import '../rounding.dart';
 import '../utils.dart';
 
-// ignore_for_file: binary-expression-operand-order
-
 /// A [CDuration] that is of a fixed length.
 ///
 /// See also:
@@ -419,12 +417,11 @@ class TimeDelta extends CDuration
   // }) => Nanoseconds(rounding.round(inNanoseconds.toDouble() / divisor));
 
   // TODO(JonasWanke): avoid `totalNanos` to avoid overflows
-  @override
-  TimeDelta operator %(int divisor) => TimeDelta(nanos: totalNanos % divisor);
+  TimeDelta operator %(TimeDelta divisor) =>
+      TimeDelta(nanos: totalNanos % divisor.totalNanos);
   // TODO(JonasWanke): avoid `totalNanos` to avoid overflows
-  @override
-  TimeDelta remainder(int divisor) =>
-      TimeDelta(nanos: totalNanos.remainder(divisor));
+  TimeDelta remainder(TimeDelta divisor) =>
+      TimeDelta(nanos: totalNanos.remainder(divisor.totalNanos));
 
   int roundToMicros({Rounding rounding = Rounding.nearestAwayFromZero}) =>
       rounding.round(totalNanos / nanosPerMicro);
@@ -447,45 +444,30 @@ class TimeDelta extends CDuration
   Years roundToNormalLeapYears({
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) => Years(rounding.round(totalNanos / nanosPerNormalLeapYear));
-
   Duration roundToCoreDuration({
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) => Duration(microseconds: roundToMicros(rounding: rounding));
-
   TimeDelta roundToMultipleOf(
     TimeDelta duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) => duration * rounding.round(dividedByTimeDelta(duration));
-
   Days roundToMultipleOfNormalDays(
     DaysDuration duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    return duration.asDays *
-        rounding.round(dividedByTimeDelta(duration.asTime));
-  }
-
+  }) => duration.asDays * rounding.round(dividedByTimeDelta(duration.asTime));
   Weeks roundToMultipleOfNormalWeeks(
     Weeks duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    return duration * rounding.round(dividedByTimeDelta(duration.asTime));
-  }
-
+  }) => duration * rounding.round(dividedByTimeDelta(duration.asTime));
   Years roundToMultipleOfNormalYears(
     Years duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    return duration * rounding.round(dividedByTimeDelta(duration.asNormalTime));
-  }
-
+  }) => duration * rounding.round(dividedByTimeDelta(duration.asNormalTime));
   Years roundToMultipleOfNormalLeapYears(
     Years duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    return duration *
-        rounding.round(dividedByTimeDelta(duration.asNormalLeapTime));
-  }
+  }) =>
+      duration * rounding.round(dividedByTimeDelta(duration.asNormalLeapTime));
 
   /// Returns a [Future] that completes after this duration has passed.
   Future<void> get wait => Future<void>.delayed(roundToCoreDuration());
