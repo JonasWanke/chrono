@@ -175,6 +175,7 @@ class MappedLocalTime_None<T> extends MappedLocalTime<T> {
 }
 
 /// The offset from the local time to UTC.
+// TODO(JonasWanke): rename to avoid name clash with Flutter's Offset
 @immutable
 abstract interface class Offset<Tz extends TimeZone<Tz>> {
   /// Returns the fixed offset from UTC to the local time stored.

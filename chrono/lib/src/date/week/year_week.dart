@@ -71,7 +71,7 @@ final class YearWeek
 
   YearWeek get previous {
     return week == 1
-        ? (weekBasedYear - const Years(1)).weeks(config).endInclusive
+        ? (weekBasedYear - const Years(1)).weeks(config).end
         : YearWeek._unchecked(weekBasedYear, week - 1, config);
   }
 
@@ -137,8 +137,7 @@ extension RangeOfYearWeekChrono on Range<YearWeek> {
 
 extension RangeInclusiveOfYearWeekChrono on RangeInclusive<YearWeek> {
   /// The [Date]s in these weeks.
-  RangeInclusive<Date> get dates =>
-      start.dates.start.rangeTo(endInclusive.dates.endInclusive);
+  RangeInclusive<Date> get dates => start.dates.start.rangeTo(end.dates.end);
 
   /// The [DateTime]s in these weeks.
   Range<CDateTime> get dateTimes => exclusive.dateTimes;

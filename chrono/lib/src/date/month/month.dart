@@ -125,8 +125,8 @@ enum Month
     );
   }
 
-  MonthDay get minLastDay => daysInCommonYear.endInclusive;
-  MonthDay get maxLastDay => daysInLeapYear.endInclusive;
+  MonthDay get minLastDay => daysInCommonYear.end;
+  MonthDay get maxLastDay => daysInLeapYear.end;
 
   Month operator +(MonthsDuration duration) =>
       values[(index + duration.asMonths.inMonths) % values.length];

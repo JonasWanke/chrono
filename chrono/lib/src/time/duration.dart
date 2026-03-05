@@ -284,12 +284,43 @@ class TimeDelta extends CDuration
     return (totalSeconds * microsPerSecond + micros, nanos);
   }
 
+  (int, int) splitMillisMicros({
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    final (millis, micros, _) = TimeDelta(
+      micros: roundToMicros(rounding: rounding),
+    ).splitMillisMicrosNanos();
+    return (millis, micros);
+  }
+
   (int, int, int) splitMillisMicrosNanos() {
     final (millis, micros, nanos) = _splitNanosInMillisMicrosNanos();
     return (totalSeconds * millisPerSecond + millis, micros, nanos);
   }
 
   (int, int) splitSecondsNanos() => (totalSeconds, subSecondNanos);
+
+  (int, int) splitSecondsMicros({
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    final rounded = TimeDelta(micros: roundToMicros(rounding: rounding));
+    return (rounded.totalSeconds, rounded.subSecondNanos ~/ nanosPerMicro);
+  }
+
+  (int, int) splitSecondsMillis({
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    final rounded = TimeDelta(millis: roundToMillis(rounding: rounding));
+    return (rounded.totalSeconds, rounded.subSecondNanos ~/ nanosPerMilli);
+  }
+
+  (int, int, int) splitSecondsMillisMicros({
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    final rounded = TimeDelta(micros: roundToMicros(rounding: rounding));
+    final (millis, micros, _) = rounded._splitNanosInMillisMicrosNanos();
+    return (rounded.totalSeconds, millis, micros);
+  }
 
   (int, int, int, int) splitSecondsMillisMicrosNanos() {
     final (millis, micros, nanos) = _splitNanosInMillisMicrosNanos();
@@ -299,6 +330,31 @@ class TimeDelta extends CDuration
   (int, int, int) splitMinutesSecondsNanos() {
     final (minutes, seconds) = _splitSecondsInMinutesSeconds();
     return (minutes, seconds, subSecondNanos);
+  }
+
+  (int, int, int) splitMinutesSecondsMicros({
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    final rounded = TimeDelta(micros: roundToMicros(rounding: rounding));
+    final (minutes, seconds) = rounded._splitSecondsInMinutesSeconds();
+    return (minutes, seconds, rounded.subSecondNanos ~/ nanosPerMicro);
+  }
+
+  (int, int, int) splitMinutesSecondsMillis({
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    final rounded = TimeDelta(millis: roundToMillis(rounding: rounding));
+    final (minutes, seconds) = rounded._splitSecondsInMinutesSeconds();
+    return (minutes, seconds, rounded.subSecondNanos ~/ nanosPerMilli);
+  }
+
+  (int, int, int, int) splitMinutesSecondsMillisMicros({
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    final rounded = TimeDelta(micros: roundToMicros(rounding: rounding));
+    final (minutes, seconds) = rounded._splitSecondsInMinutesSeconds();
+    final (millis, micros, _) = rounded._splitNanosInMillisMicrosNanos();
+    return (minutes, seconds, millis, micros);
   }
 
   (int, int, int, int, int) splitMinutesSecondsMillisMicrosNanos() {

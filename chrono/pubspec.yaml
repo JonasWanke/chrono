@@ -12,7 +12,7 @@ dependencies:
     # path: ../../deranged
     git:
       url: https://github.com/JonasWanke/deranged.git
-      ref: 5c4686fdf389919fb01790ea5f73e454bf79d00f
+      ref: e22124cb7687c3189971671e8829d3ba774c6367
   glados: ^1.1.6
   # intl4x: ^0.10.0
   # intl: ^0.19.0
@@ -24,4 +24,4 @@ dev_dependencies:
     git:
       url: https://github.com/JonasWanke/supernova.git
       path: supernova_lints
-      ref: 1fa8535952fa7152f2bad30937e6b5bca4129bea
+      ref: 12c7ad595be5af4f7119c9c7990b8ce48e79905b

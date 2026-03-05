@@ -57,9 +57,7 @@ final class YearMonth
 
   /// How many times the given [weekday] occurs in this month.
   int weekdayCount(Weekday weekday) =>
-      (dates.endInclusive.day - dates.start.nextOrSame(weekday).day) ~/
-          Days.perWeek +
-      1;
+      (dates.end.day - dates.start.nextOrSame(weekday).day) ~/ Days.perWeek + 1;
 
   YearMonth operator +(MonthsDuration duration) {
     final (years, months) = duration.splitYearsMonths;
@@ -131,8 +129,7 @@ extension RangeOfYearMonthChrono on Range<YearMonth> {
 
 extension RangeInclusiveOfYearMonthChrono on RangeInclusive<YearMonth> {
   /// The [Date]s in these months.
-  RangeInclusive<Date> get dates =>
-      start.dates.start.rangeTo(endInclusive.dates.endInclusive);
+  RangeInclusive<Date> get dates => start.dates.start.rangeTo(end.dates.end);
 
   /// The [DateTime]s in these months.
   Range<CDateTime> get dateTimes => exclusive.dateTimes;

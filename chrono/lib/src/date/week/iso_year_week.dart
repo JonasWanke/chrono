@@ -73,7 +73,7 @@ final class IsoYearWeek
 
   IsoYearWeek get previous {
     return week == 1
-        ? (weekBasedYear - const Years(1)).isoWeeks.endInclusive
+        ? (weekBasedYear - const Years(1)).isoWeeks.end
         : IsoYearWeek._unchecked(weekBasedYear, week - 1);
   }
 
@@ -135,8 +135,7 @@ extension RangeOfIsoYearWeekChrono on Range<IsoYearWeek> {
 
 extension RangeInclusiveOfIsoYearWeekChrono on RangeInclusive<IsoYearWeek> {
   /// The [Date]s in these weeks.
-  RangeInclusive<Date> get dates =>
-      start.dates.start.rangeTo(endInclusive.dates.endInclusive);
+  RangeInclusive<Date> get dates => start.dates.start.rangeTo(end.dates.end);
 
   /// The [DateTime]s in these weeks.
   Range<CDateTime> get dateTimes => exclusive.dateTimes;

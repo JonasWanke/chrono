@@ -214,7 +214,7 @@ final class Date
     // Algorithm from https://en.wikipedia.org/wiki/ISO_week_date#Algorithms
     final weekOfYear = (dayOfYear - weekday.isoNumber + 10) ~/ Days.perWeek;
     return switch (weekOfYear) {
-      0 => year.previous.isoWeeks.endInclusive,
+      0 => year.previous.isoWeeks.end,
       53 when year.numberOfIsoWeeks == 52 => year.next.isoWeeks.start,
       _ => IsoYearWeek.from(year, weekOfYear),
     };
@@ -425,11 +425,15 @@ final class Date
 extension RangeOfDateChrono on Range<Date> {
   /// The [CDateTime]s in these dates.
   Range<CDateTime> get dateTimes => start.atMidnight.rangeUntil(end.atMidnight);
+
+  Days get lengthInDays => end.differenceInDays(start);
 }
 
 extension RangeInclusiveOfDateChrono on RangeInclusive<Date> {
   /// The [CDateTime]s in these dates.
   Range<CDateTime> get dateTimes => exclusive.dateTimes;
+
+  Days get lengthInDays => end.differenceInDays(start) + const Days(1);
 }
 
 /// Encodes a [Date] as an ISO 8601 string, e.g., “2023-04-23”.

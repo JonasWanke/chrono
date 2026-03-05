@@ -84,8 +84,8 @@ final class Year
   int get numberOfIsoWeeks {
     // https://en.wikipedia.org/wiki/ISO_week_date#Weeks_per_year
     final isLongWeek =
-        dates.endInclusive.weekday == Weekday.thursday ||
-        previous.dates.endInclusive.weekday == Weekday.wednesday;
+        dates.end.weekday == Weekday.thursday ||
+        previous.dates.end.weekday == Weekday.wednesday;
     return isLongWeek ? 53 : 52;
   }
 
@@ -193,17 +193,15 @@ extension RangeOfYearChrono on Range<Year> {
 extension RangeInclusiveOfYearChrono on RangeInclusive<Year> {
   /// The [YearMonth]s in these years.
   RangeInclusive<YearMonth> get months =>
-      start.months.start.rangeTo(endInclusive.months.endInclusive);
+      start.months.start.rangeTo(end.months.end);
 
   /// The [IsoYearWeek]s in these years.
   RangeInclusive<IsoYearWeek> get isoWeeks =>
-      start.isoWeeks.start.rangeTo(endInclusive.isoWeeks.endInclusive);
+      start.isoWeeks.start.rangeTo(end.isoWeeks.end);
 
   /// The [YearWeek]s in these years.
-  RangeInclusive<YearWeek> weeks(WeekConfig config) => start
-      .weeks(config)
-      .start
-      .rangeTo(endInclusive.weeks(config).endInclusive);
+  RangeInclusive<YearWeek> weeks(WeekConfig config) =>
+      start.weeks(config).start.rangeTo(end.weeks(config).end);
 
   /// The [Date]s in these years.
   RangeInclusive<Date> get dates => months.dates;
