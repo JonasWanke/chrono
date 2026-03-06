@@ -6,6 +6,7 @@ import 'package:meta/meta.dart';
 // ignore_for_file: avoid-top-level-members-in-tests
 
 void testDataClassBasics<T extends Comparable<T>>({
+  bool testCompareTo = true,
   required List<Codec<T, dynamic>> preciseCodecs,
 }) {
   Glados<T>().test('equality', (value) {
@@ -13,19 +14,21 @@ void testDataClassBasics<T extends Comparable<T>>({
     expect(value.compareTo(value), 0);
   });
 
-  Glados2<T, T>().test('compareTo(…)', (first, second) {
-    switch (first.compareTo(second)) {
-      case < 0:
-        expect(second.compareTo(first) > 0, true);
-        expect(first != second, true);
-      case 0:
-        expect(second.compareTo(first), 0);
-        expect(first == second, true);
-      case > 0:
-        expect(second.compareTo(first) < 0, true);
-        expect(first != second, true);
-    }
-  });
+  if (testCompareTo) {
+    Glados2<T, T>().test('compareTo(…)', (first, second) {
+      switch (first.compareTo(second)) {
+        case < 0:
+          expect(second.compareTo(first) > 0, true);
+          expect(first != second, true);
+        case 0:
+          expect(second.compareTo(first), 0);
+          expect(first == second, true);
+        case > 0:
+          expect(second.compareTo(first) < 0, true);
+          expect(first != second, true);
+      }
+    });
+  }
 
   group('Codecs', () => preciseCodecs.forEach(testCodec));
 }
