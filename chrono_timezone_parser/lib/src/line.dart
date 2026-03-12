@@ -881,8 +881,9 @@ sealed class DaySpec {
   Date toConcreteDay(YearMonth yearMonth) {
     return switch (this) {
       DaySpec_Ordinal(:final day) => Date.fromYearMonthAndDay(yearMonth, day),
-      DaySpec_Last(:final weekday) =>
-        yearMonth.dates.endInclusive.previousOrSame(weekday),
+      DaySpec_Last(:final weekday) => yearMonth.dates.end.previousOrSame(
+        weekday,
+      ),
       DaySpec_LastOnOrBefore(:final weekday, :final day) =>
         Date.fromYearMonthAndDay(yearMonth, day).previousOrSame(weekday),
       DaySpec_FirstOnOrAfter(:final weekday, :final day) =>
