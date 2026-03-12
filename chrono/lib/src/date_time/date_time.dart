@@ -217,6 +217,9 @@ extension RangeOfCDateTimeExtension on Range<CDateTime> {
       ? RangeInclusive.single(start.date)
       : start.date.rangeTo((end - TimeDelta(nanos: 1)).date);
 
+  /// The [Time]s in these datetimes.
+  Range<Time> get times => start.time.rangeUntil(end.time);
+
   TimeDelta get timeDuration => end.timeDifference(start);
   CompoundDuration get compoundDuration => end.difference(start);
 }
