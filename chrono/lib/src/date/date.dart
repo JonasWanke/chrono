@@ -28,7 +28,7 @@ import 'year.dart';
 @immutable
 final class Date
     with ComparisonOperatorsFromComparable<Date>
-    implements Comparable<Date>, Step<Date> {
+    implements Comparable<Date>, StepUnlimited<Date> {
   Date.from(Year year, Month month, int day)
     : this.fromYearMonthAndDay(YearMonth(year, month), day);
   Date.fromRaw(int year, int month, int day)

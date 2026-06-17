@@ -17,7 +17,7 @@ import '../year.dart';
 @immutable
 final class IsoYearWeek
     with ComparisonOperatorsFromComparable<IsoYearWeek>
-    implements Comparable<IsoYearWeek>, Step<IsoYearWeek> {
+    implements Comparable<IsoYearWeek>, StepUnlimited<IsoYearWeek> {
   IsoYearWeek.from(Year weekBasedYear, int week)
     : this._unchecked(
         weekBasedYear,

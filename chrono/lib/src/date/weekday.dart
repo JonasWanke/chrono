@@ -1,4 +1,5 @@
 import 'package:clock/clock.dart';
+import 'package:deranged/deranged.dart';
 
 import '../codec.dart';
 import '../utils.dart';
@@ -10,7 +11,7 @@ import 'duration.dart';
 /// In this calendar, the week starts on Monday and ends on Sunday.
 enum Weekday
     with ComparisonOperatorsFromComparable<Weekday>
-    implements Comparable<Weekday> {
+    implements Comparable<Weekday>, Step<Weekday> {
   monday,
   tuesday,
   wednesday,
@@ -82,6 +83,14 @@ enum Weekday
       values[(index + duration.asDays.inDays) % values.length];
   Weekday operator -(DaysDuration duration) => this + (-duration);
 
+  Weekday? addChecked(DaysDuration duration) {
+    final newIndex = index + duration.asDays.inDays;
+    if (newIndex < minIndex || newIndex > maxIndex) return null;
+    return values[newIndex - minIndex];
+  }
+
+  Weekday? subtractChecked(DaysDuration duration) => addChecked(-duration);
+
   /// The weekday after this one, wrapping around after Sunday.
   Weekday get next => this + const Days(1);
 
@@ -102,6 +111,11 @@ enum Weekday
 
   @override
   int compareTo(Weekday other) => index.compareTo(other.index);
+
+  @override
+  Weekday? stepBy(int count) => addChecked(Days(count));
+  @override
+  int stepsUntil(Weekday other) => (other.index - index) % values.length;
 
   @override
   String toString() {

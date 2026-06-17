@@ -33,7 +33,7 @@ import 'weekday.dart';
 @immutable
 final class Year
     with ComparisonOperatorsFromComparable<Year>
-    implements Comparable<Year>, Step<Year> {
+    implements Comparable<Year>, StepUnlimited<Year> {
   const Year(this.number);
 
   /// The UNIX epoch: 1970.

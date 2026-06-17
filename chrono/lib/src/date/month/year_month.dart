@@ -16,7 +16,7 @@ import 'month.dart';
 @immutable
 final class YearMonth
     with ComparisonOperatorsFromComparable<YearMonth>
-    implements Comparable<YearMonth>, Step<YearMonth> {
+    implements Comparable<YearMonth>, StepUnlimited<YearMonth> {
   const YearMonth(this.year, this.month);
   YearMonth.fromRaw(int year, int month)
     : this(Year(year), Month.fromNumber(month));

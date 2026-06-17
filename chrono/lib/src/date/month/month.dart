@@ -132,6 +132,14 @@ enum Month
       values[(index + duration.asMonths.inMonths) % values.length];
   Month operator -(MonthsDuration duration) => this + (-duration);
 
+  Month? addChecked(MonthsDuration duration) {
+    final newIndex = index + duration.asMonths.inMonths;
+    if (newIndex < minIndex || newIndex > maxIndex) return null;
+    return values[newIndex - minIndex];
+  }
+
+  Month? subtractChecked(MonthsDuration duration) => addChecked(-duration);
+
   /// The month after this one, wrapping around after January.
   Month get next => this + const Months(1);
 
@@ -154,7 +162,7 @@ enum Month
   int compareTo(Month other) => index.compareTo(other.index);
 
   @override
-  Month stepBy(int count) => this + Months(count);
+  Month? stepBy(int count) => addChecked(Months(count));
   @override
   int stepsUntil(Month other) => (other.index - index) % values.length;
 

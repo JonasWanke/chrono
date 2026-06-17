@@ -15,7 +15,7 @@ import 'week_config.dart';
 @immutable
 final class YearWeek
     with ComparisonOperatorsFromComparable<YearWeek>
-    implements Comparable<YearWeek>, Step<YearWeek> {
+    implements Comparable<YearWeek>, StepUnlimited<YearWeek> {
   YearWeek.from(Year weekBasedYear, int week, WeekConfig config)
     : this._unchecked(
         weekBasedYear,
