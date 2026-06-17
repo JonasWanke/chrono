@@ -698,3 +698,33 @@ class TimeDeltaAsSecondsIntCodec extends CodecAndJsonConverter<TimeDelta, int> {
   @override
   TimeDelta decode(int encoded) => TimeDelta(seconds: encoded);
 }
+
+/// Encodes [TimeDelta] as a (rounded) integer number of minutes.
+@immutable
+class TimeDeltaAsMinutesIntCodec extends CodecAndJsonConverter<TimeDelta, int> {
+  const TimeDeltaAsMinutesIntCodec({
+    this.rounding = Rounding.nearestAwayFromZero,
+  });
+
+  final Rounding rounding;
+
+  @override
+  int encode(TimeDelta input) => input.roundToMinutes(rounding: rounding);
+  @override
+  TimeDelta decode(int encoded) => TimeDelta(minutes: encoded);
+}
+
+/// Encodes [TimeDelta] as a (rounded) integer number of hours.
+@immutable
+class TimeDeltaAsHoursIntCodec extends CodecAndJsonConverter<TimeDelta, int> {
+  const TimeDeltaAsHoursIntCodec({
+    this.rounding = Rounding.nearestAwayFromZero,
+  });
+
+  final Rounding rounding;
+
+  @override
+  int encode(TimeDelta input) => input.roundToHours(rounding: rounding);
+  @override
+  TimeDelta decode(int encoded) => TimeDelta(hours: encoded);
+}

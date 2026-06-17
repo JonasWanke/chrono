@@ -13,6 +13,8 @@ void main() {
 
     group('Imprecise codecs', () {
       testCodecStartingFromEncoded(const TimeDeltaAsSecondsIntCodec());
+      testCodecStartingFromEncoded(const TimeDeltaAsMinutesIntCodec());
+      testCodecStartingFromEncoded(const TimeDeltaAsHoursIntCodec());
     });
 
     Glados2<TimeDelta, TimeDelta>().test(
