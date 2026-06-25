@@ -129,14 +129,23 @@ final class Time
   );
 
   final int hour;
+
+  // The hour number from 1 to 12.
+  int get hour12 {
+    final hour = this.hour % 12;
+    return hour == 0 ? 12 : hour;
+  }
+
+  AmPm get amPm => hour < 12 ? .am : .pm;
+  bool get isAm => hour < 12;
+  bool get isPm => !isAm;
+
   final int minute;
   final int second;
   final int subSecondNanos;
   TimeDelta get subSecond => TimeDelta(nanos: subSecondNanos);
   // TODO(JonasWanke): store only `secondsSinceMidnight` & `subSecondNanos`
 
-  bool get isAm => hour < 12;
-  bool get isPm => !isAm;
   bool get isMidnight => this == midnight;
   bool get isNoon => this == noon;
 
@@ -278,6 +287,8 @@ final class Time
     return '$hour:$minute:$second.$subSecondNanos';
   }
 }
+
+enum AmPm { am, pm }
 
 /// Encodes a [Time] as an ISO 8601 string, e.g., “18:24:20.12”.
 class TimeAsIsoStringCodec extends CodecAndJsonConverter<Time, String> {
