@@ -391,6 +391,29 @@ class TimeDelta extends CDuration
     return (hours, minutes, seconds, millis, micros, nanos);
   }
 
+  (int, int, int, int) splitNormalDaysHoursMinutesSeconds({
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) {
+    final (normalDays, hours, minutes, seconds) = TimeDelta(
+      seconds: roundToSeconds(rounding: rounding),
+    )._splitSecondsInNormalDaysHoursMinutesSeconds();
+    return (normalDays, hours, minutes, seconds);
+  }
+
+  (int, int, int, int, int) splitNormalDaysHoursMinutesSecondsNanos() {
+    final (normalDays, hours, minutes, seconds) =
+        _splitSecondsInNormalDaysHoursMinutesSeconds();
+    return (normalDays, hours, minutes, seconds, subSecondNanos);
+  }
+
+  (int, int, int, int, int, int, int)
+  splitNormalDaysHoursMinutesSecondsMillisMicrosNanos() {
+    final (normalDays, hours, minutes, seconds) =
+        _splitSecondsInNormalDaysHoursMinutesSeconds();
+    final (millis, micros, nanos) = _splitNanosInMillisMicrosNanos();
+    return (normalDays, hours, minutes, seconds, millis, micros, nanos);
+  }
+
   (int, int) _splitNanosInMicrosNanos() {
     final micros = subSecondNanos ~/ nanosPerMicro;
     return (micros, subSecondNanos - micros * nanosPerMicro);
@@ -412,6 +435,17 @@ class TimeDelta extends CDuration
     final (rawMinutes, seconds) = _splitSecondsInMinutesSeconds();
     final hours = totalMinutes ~/ minutesPerHour;
     return (hours, rawMinutes - hours * minutesPerHour, seconds);
+  }
+
+  (int, int, int, int) _splitSecondsInNormalDaysHoursMinutesSeconds() {
+    final (rawHours, minutes, seconds) = _splitSecondsInHoursMinutesSeconds();
+    final normalDays = totalSeconds ~/ secondsPerNormalDay;
+    return (
+      normalDays,
+      rawHours - normalDays * hoursPerNormalDay,
+      minutes,
+      seconds,
+    );
   }
 
   @override
