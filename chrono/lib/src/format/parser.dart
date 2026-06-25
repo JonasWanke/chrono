@@ -126,7 +126,7 @@ class ChronoParser {
                   ? throw const ChronoParseException(.outOfRange)
                   : Weekday.sunday + Days(it),
             ),
-            ChronoFormatWeekdayFromMon() => (
+            ChronoFormatWeekday() => (
               1,
               false,
               (it) => _parsed.weekday =

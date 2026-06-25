@@ -27,8 +27,8 @@ sealed class ChronoFormatItem {
       ChronoFormatIsoWeek;
   const factory ChronoFormatItem.numDaysFromSun({ChronoPadding padding}) =
       ChronoFormatNumDaysFromSun;
-  const factory ChronoFormatItem.weekdayFromMon({ChronoPadding padding}) =
-      ChronoFormatWeekdayFromMon;
+  const factory ChronoFormatItem.weekday({ChronoPadding padding}) =
+      ChronoFormatWeekday;
   const factory ChronoFormatItem.ordinal({ChronoPadding padding}) =
       ChronoFormatOrdinal;
   const factory ChronoFormatItem.hour({ChronoPadding padding}) =
@@ -160,9 +160,9 @@ class ChronoFormatNumDaysFromSun extends ChronoFormatItemNumeric {
   const ChronoFormatNumDaysFromSun({super.padding});
 }
 
-/// Day of the week, where Monday = 1 and Sunday = 7 (FW=PW=1).
-class ChronoFormatWeekdayFromMon extends ChronoFormatItemNumeric {
-  const ChronoFormatWeekdayFromMon({super.padding});
+/// ISO weekday number, where Monday = 1 and Sunday = 7 (FW=PW=1).
+class ChronoFormatWeekday extends ChronoFormatItemNumeric {
+  const ChronoFormatWeekday({super.padding});
 }
 
 /// Day of the year (FW=PW=3).

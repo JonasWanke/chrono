@@ -190,8 +190,8 @@ class ChronoFormatter {
         _writeTwo(date.isoYearWeek.week, item.padding);
       case (ChronoFormatNumDaysFromSun(), final date?, _):
         _writeOne(date.weekday.indexFrom(.sunday));
-      case (ChronoFormatWeekdayFromMon(), final date?, _):
-        _writeOne(date.weekday.isoNumber);
+      case (ChronoFormatWeekday(), final date?, _):
+        _writeOne(date.weekday.number);
       case (ChronoFormatOrdinal(), final date?, _):
         _writeN(3, date.dayOfYear, item.padding);
       case (ChronoFormatHour(), _, final time?):

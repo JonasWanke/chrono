@@ -65,8 +65,8 @@ enum Weekday
   static const minNumber = 1; // Weekday.monday.number
   static const maxNumber = 7; // Weekday.sunday.number
 
-  /// The number of this weekday (1 for Monday, …, 7 for Sunday).
-  int get isoNumber => index + 1;
+  /// The ISO number of this weekday (1 for Monday, …, 7 for Sunday).
+  int get number => index + 1;
 
   /// The index of this weekday (from 0 to 6) with [firstDayOfWeek] equal to 0.
   int indexFrom(Weekday firstDayOfWeek) =>
@@ -140,7 +140,7 @@ class WeekdayAsIntCodec extends CodecAndJsonConverter<Weekday, int> {
   const WeekdayAsIntCodec();
 
   @override
-  int encode(Weekday input) => input.isoNumber;
+  int encode(Weekday input) => input.number;
   @override
   Weekday decode(int encoded) => Weekday.fromNumber(encoded);
 }

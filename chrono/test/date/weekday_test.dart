@@ -9,7 +9,7 @@ void main() {
   testDataClassBasics(preciseCodecs: [const WeekdayAsIntCodec()]);
 
   testAll('`number` and `fromNumber(…)`', Weekday.values, (weekday) {
-    final number = weekday.isoNumber;
+    final number = weekday.number;
     expect(number, inInclusiveRange(1, 7));
     expect(Weekday.fromNumber(number), weekday);
   });

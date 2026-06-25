@@ -94,8 +94,8 @@ final class Date
 
     final rawDayOfYear =
         Days.perWeek * isoYearWeek.week +
-        weekday.isoNumber -
-        (january4.weekday.isoNumber + 3);
+        weekday.number -
+        (january4.weekday.number + 3);
     final Year year;
     final int dayOfYear;
     if (rawDayOfYear < 1) {
@@ -221,7 +221,7 @@ final class Date
 
   IsoYearWeek get isoYearWeek {
     // Algorithm from https://en.wikipedia.org/wiki/ISO_week_date#Algorithms
-    final weekOfYear = (dayOfYear - weekday.isoNumber + 10) ~/ Days.perWeek;
+    final weekOfYear = (dayOfYear - weekday.number + 10) ~/ Days.perWeek;
     return switch (weekOfYear) {
       0 => year.previous.isoWeeks.end,
       53 when year.numberOfIsoWeeks == 52 => year.next.isoWeeks.start,

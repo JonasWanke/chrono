@@ -386,7 +386,7 @@ void main() {
       '6 7 89 01',
       [
         const .weekFromMon(),
-        const .weekdayFromMon(),
+        const .weekday(),
         const .ordinal(),
         const .hour12(),
       ],
