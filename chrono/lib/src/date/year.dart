@@ -109,7 +109,7 @@ final class Year
     final weekDate =
         dates.start +
         Days.week -
-        Days(dates.start.weekday.number(firstDayOfWeek: config.firstDay) - 1);
+        Days(dates.start.weekday.numberFrom(config.firstDay) - 1);
     assert(weekDate.weekday == config.firstDay);
 
     final reference = Date.fromYearMonthAndDay(

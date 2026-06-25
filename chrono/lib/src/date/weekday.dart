@@ -68,11 +68,10 @@ enum Weekday
   /// The number of this weekday (1 for Monday, …, 7 for Sunday).
   int get isoNumber => index + 1;
 
-  /// The number of this weekday (from 1 to 7) with [firstDayOfWeek] equal to 1.
-  int number({required Weekday firstDayOfWeek}) =>
-      (Days.perWeek + index - firstDayOfWeek.index) % Days.perWeek + 1;
 
   // TODO: index with `firstDayOfWeek`
+  /// The number of this weekday (from 1 to 7) with [firstDayOfWeek] equal to 1.
+  int numberFrom(Weekday firstDayOfWeek) => indexFrom(firstDayOfWeek) + 1;
 
   bool isCurrentInLocalZone({Clock? clock}) =>
       this == Weekday.currentInLocalZone(clock: clock);
