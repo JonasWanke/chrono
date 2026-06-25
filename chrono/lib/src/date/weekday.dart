@@ -68,8 +68,10 @@ enum Weekday
   /// The number of this weekday (1 for Monday, …, 7 for Sunday).
   int get isoNumber => index + 1;
 
+  /// The index of this weekday (from 0 to 6) with [firstDayOfWeek] equal to 0.
+  int indexFrom(Weekday firstDayOfWeek) =>
+      (Days.perWeek + index - firstDayOfWeek.index) % Days.perWeek;
 
-  // TODO: index with `firstDayOfWeek`
   /// The number of this weekday (from 1 to 7) with [firstDayOfWeek] equal to 1.
   int numberFrom(Weekday firstDayOfWeek) => indexFrom(firstDayOfWeek) + 1;
 
