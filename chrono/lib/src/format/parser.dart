@@ -25,13 +25,13 @@ class ChronoParser {
   /// - (Still) obeying the intrinsic parsing width. This allows, for example,
   ///   parsing `HHMMSS`.
   static ChronoParsed parse(String string, List<ChronoFormatItem> items) {
-    final (:parsed, :rest) = parseAndRemainder(string, items);
+    final (:parsed, :rest) = parseAndRest(string, items);
     if (rest.isNotEmpty) throw const ChronoParseException(.tooLong);
     return parsed;
   }
 
-  /// Tries to parse given string into `parsed` with given formatting items.
-  /// Returns `Ok` with a slice of the unparsed remainder.
+  /// Tries to parse given string into `parsed` with the given formatting items
+  /// and also returns the remaining String.
   ///
   /// This particular date and time parser is:
   ///
@@ -44,7 +44,7 @@ class ChronoParser {
   ///   numbers.
   /// - (Still) obeying the intrinsic parsing width. This allows, for example,
   ///   parsing `HHMMSS`.
-  static ({ChronoParsed parsed, String rest}) parseAndRemainder(
+  static ({ChronoParsed parsed, String rest}) parseAndRest(
     String string,
     List<ChronoFormatItem> items,
   ) {
