@@ -197,15 +197,16 @@ final class Time
   // TODO(JonasWanke): support leap seconds
   // This method is similar to [overflowingAddSigned], but preserves leap
   // seconds.
+  // TODO(JonasWanke): test with negative offset and nanos
   @useResult
   (Time, Days) overflowingAddOffset(FixedOffset offset) {
-    final rawSeconds = secondsSinceMidnight + offset.localMinusUtcSeconds;
-    final seconds = rawSeconds % TimeDelta.secondsPerNormalDay;
-    final days = Days((rawSeconds - seconds) ~/ TimeDelta.secondsPerNormalDay);
-    final (hour, minute, second, _) = TimeDelta(
-      seconds: seconds,
-    ).splitHoursMinutesSecondsNanos();
-    return (Time.from(hour, minute, second, subSecondNanos), days);
+    var rawSeconds = secondsSinceMidnight + offset.localMinusUtc.totalSeconds;
+    final rawNanos = subSecondNanos + offset.localMinusUtc.subSecondNanos;
+    rawSeconds += rawNanos ~/ TimeDelta.nanosPerSecond;
+    final (days, hour, minute, second) = TimeDelta(
+      seconds: rawSeconds,
+    ).splitNormalDaysHoursMinutesSeconds();
+    return (Time.from(hour, minute, second, rawNanos), Days(days));
   }
 
   /// Subtracts given [FixedOffset] from the current time, and returns the
@@ -215,15 +216,16 @@ final class Time
   // TODO(JonasWanke): support leap seconds
   // This method is similar to [overflowingSubSigned], but preserves leap
   // seconds.
+  // TODO(JonasWanke): test with negative offset and nanos
   @useResult
   (Time, Days) overflowingSubOffset(FixedOffset offset) {
-    final rawSeconds = secondsSinceMidnight - offset.localMinusUtcSeconds;
-    final seconds = rawSeconds % TimeDelta.secondsPerNormalDay;
-    final days = Days((rawSeconds - seconds) ~/ TimeDelta.secondsPerNormalDay);
-    final (hour, minute, second, _) = TimeDelta(
-      seconds: seconds,
-    ).splitHoursMinutesSecondsNanos();
-    return (Time.from(hour, minute, second, subSecondNanos), days);
+    var rawSeconds = secondsSinceMidnight - offset.localMinusUtc.totalSeconds;
+    final rawNanos = subSecondNanos - offset.localMinusUtc.subSecondNanos;
+    rawSeconds += rawNanos ~/ TimeDelta.nanosPerSecond;
+    final (days, hour, minute, second) = TimeDelta(
+      seconds: rawSeconds,
+    ).splitNormalDaysHoursMinutesSeconds();
+    return (Time.from(hour, minute, second, rawNanos), Days(days));
   }
 
   /// Returns `this - other`.

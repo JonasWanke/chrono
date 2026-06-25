@@ -16,8 +16,7 @@ class FixedOffset extends TimeZone<FixedOffset> implements Offset<FixedOffset> {
   /// Negative [seconds] means the Western Hemisphere.
   ///
   /// [seconds] must be less than a day in either direction.
-  @useResult
-  const FixedOffset.east(int seconds) : this._(seconds);
+  FixedOffset.east(TimeDelta seconds) : this._(seconds);
 
   /// Makes a new [FixedOffset] for the Western Hemisphere with given timezone
   /// difference.
@@ -25,20 +24,21 @@ class FixedOffset extends TimeZone<FixedOffset> implements Offset<FixedOffset> {
   /// Negative [seconds] means the Eastern Hemisphere.
   ///
   /// [seconds] must be less than a day in either direction.
-  @useResult
-  const FixedOffset.west(int seconds) : this._(-seconds);
+  FixedOffset.west(TimeDelta seconds) : this._(-seconds);
 
-  const FixedOffset._(this.localMinusUtcSeconds)
-    : assert(
-        -TimeDelta.secondsPerNormalDay < localMinusUtcSeconds &&
-            localMinusUtcSeconds < TimeDelta.secondsPerNormalDay,
-      );
+  FixedOffset._(this.localMinusUtc)
+    : assert(minOffset <= localMinusUtc && localMinusUtc <= maxOffset);
+  static const zero = FixedOffset._unchecked(TimeDelta.raw(0, 0));
+  const FixedOffset._unchecked(this.localMinusUtc);
 
-  /// The number of seconds to add to convert from UTC to the local time.
-  final int localMinusUtcSeconds;
+  static final minOffset = TimeDelta(normalDays: -1, nanos: 1);
+  static final maxOffset = TimeDelta(normalDays: 1, nanos: -1);
 
-  /// The number of seconds to add to convert from the local time to UTC.
-  int get utcMinusLocalSeconds => -localMinusUtcSeconds;
+  /// The duration to add to convert from UTC to the local time.
+  final TimeDelta localMinusUtc;
+
+  /// The duration to add to convert from the local time to UTC.
+  TimeDelta get utcMinusLocal => -localMinusUtc;
 
   @override
   FixedOffset get timeZone => this;
@@ -54,19 +54,17 @@ class FixedOffset extends TimeZone<FixedOffset> implements Offset<FixedOffset> {
 
   @override
   bool operator ==(Object other) =>
-      other is FixedOffset &&
-      other.localMinusUtcSeconds == localMinusUtcSeconds;
+      other is FixedOffset && other.localMinusUtc == localMinusUtc;
   @override
-  int get hashCode => localMinusUtcSeconds.hashCode;
+  int get hashCode => localMinusUtc.hashCode;
 
   @override
   String toString() {
-    final (sign, offset) = localMinusUtcSeconds < 0
-        ? ('-', -localMinusUtcSeconds)
-        : ('+', localMinusUtcSeconds);
-    final (hoursRaw, minutesRaw, secondsRaw, _) = TimeDelta(
-      seconds: offset,
-    ).splitHoursMinutesSecondsNanos();
+    final (sign, offset) = localMinusUtc.isNegative
+        ? ('-', -localMinusUtc)
+        : ('+', localMinusUtc);
+    final (hoursRaw, minutesRaw, secondsRaw, _) = offset
+        .splitHoursMinutesSecondsNanos();
     final hours = hoursRaw.toString().padLeft(2, '0');
     final minutes = minutesRaw.toString().padLeft(2, '0');
     final seconds = secondsRaw.toString().padLeft(2, '0');

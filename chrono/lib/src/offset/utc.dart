@@ -15,7 +15,6 @@ import 'time_zone.dart';
 class Utc extends TimeZone<Utc> implements Offset<Utc> {
   const Utc();
 
-
   @override
   Utc get timeZone => this;
 
@@ -27,8 +26,7 @@ class Utc extends TimeZone<Utc> implements Offset<Utc> {
   Utc offsetFromUtcDateTime(CDateTime utc) => this;
 
   @override
-  // ignore: unused_result
-  FixedOffset fix() => const FixedOffset.east(0);
+  FixedOffset fix() => .zero;
 
   @override
   bool operator ==(Object other) => other is Utc;
