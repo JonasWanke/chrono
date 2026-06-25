@@ -74,6 +74,15 @@ final class Date
     return Date._unchecked(month, dayOfMonth);
   }
 
+  factory Date.fromIsoYearAndWeekAndWeekday(
+    Year weekBasedYear,
+    int week,
+    Weekday weekday,
+  ) => Date.fromIsoYearWeekAndWeekday(
+    IsoYearWeek.from(weekBasedYear, week),
+    weekday,
+  );
+
   /// Creates a date from a year week and weekday, e.g., Sunday in the 16th week
   /// of 2023.
   factory Date.fromIsoYearWeekAndWeekday(
