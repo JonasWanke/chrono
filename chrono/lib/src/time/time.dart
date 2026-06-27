@@ -12,7 +12,7 @@ import '../utils.dart';
 @immutable
 final class Time
     with ComparisonOperatorsFromComparable<Time>
-    implements Comparable<Time> {
+    implements Comparable<Time>, ChronoFormattable<TimeFormatItem> {
   Time.from(
     int hour, [
     int minute = 0,

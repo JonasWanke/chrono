@@ -23,7 +23,7 @@ import '../utils.dart';
 @immutable
 final class CDateTime
     with ComparisonOperatorsFromComparable<CDateTime>
-    implements Comparable<CDateTime> {
+    implements Comparable<CDateTime>, ChronoFormattable<CDateTimeFormatItem> {
   const CDateTime(this.date, this.time);
   CDateTime.fromRaw(
     int year,

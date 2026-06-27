@@ -137,6 +137,11 @@ sealed class ChronoFormatItemFixed extends ChronoFormatItem {
 // TODO(JonasWanke): Is this necessary?
 class ChronoFormatItemError extends ChronoFormatItem {}
 
+abstract interface class ChronoFormattable<I extends ChronoFormatItem> {
+  @override
+  String toString([List<I> items]);
+}
+
 // DateTime
 
 /// A [ChronoFormatItem] that is used for formatting and parsing [CDateTime]s.
