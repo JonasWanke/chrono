@@ -99,7 +99,13 @@ class ChronoParser {
               false,
               (it) => _parsed.isoYearMod100 = it,
             ),
-            ChronoFormatQuarter() => (1, false, (it) => _parsed.quarter = it),
+            ChronoFormatQuarter() => (
+              1,
+              false,
+              (it) => _parsed.quarter =
+                  Quarter.fromNumberOrNull(it) ??
+                  (throw const ChronoParseException(.outOfRange)),
+            ),
             ChronoFormatMonth() => (
               2,
               false,

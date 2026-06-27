@@ -375,7 +375,7 @@ void main() {
         const .isoWeek(),
       ],
       ChronoParsed()
-        ..quarter = 1
+        ..quarter = .q1
         ..month = .january
         ..day = 2
         ..weekFromSun = 3

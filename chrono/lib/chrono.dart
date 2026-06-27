@@ -5,6 +5,7 @@ export 'src/date/era.dart';
 export 'src/date/month/month.dart';
 export 'src/date/month/month_day.dart';
 export 'src/date/month/year_month.dart';
+export 'src/date/quarter.dart';
 export 'src/date/week/iso_year_week.dart';
 export 'src/date/week/year_week.dart';
 export 'src/date/weekday.dart';

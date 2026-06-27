@@ -5,6 +5,7 @@ import '../../codec.dart';
 import '../../utils.dart';
 import '../date.dart';
 import '../duration.dart';
+import '../quarter.dart';
 import 'month_day.dart';
 
 /// A month in the ISO 8601 calendar, e.g., April.
@@ -71,6 +72,8 @@ enum Month
 
   /// The number of this month (1 for January, …, 12 for December).
   int get number => index + 1;
+
+  Quarter get quarter => Quarter.fromIndex(index ~/ 3);
 
   bool isCurrentInLocalZone({Clock? clock}) =>
       this == Month.currentInLocalZone(clock: clock);

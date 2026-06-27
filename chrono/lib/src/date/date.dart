@@ -192,6 +192,7 @@ final class Date
 
   final YearMonth yearMonth;
   Year get year => yearMonth.year;
+  Quarter get quarter => month.quarter;
   Month get month => yearMonth.month;
 
   /// The one-based day of the month.

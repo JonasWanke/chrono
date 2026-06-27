@@ -27,6 +27,7 @@ final class YearMonth
       Date.todayInUtc(clock: clock).yearMonth;
 
   final Year year;
+  Quarter get quarter => month.quarter;
   final Month month;
 
   bool isCurrentInLocalZone({Clock? clock}) =>

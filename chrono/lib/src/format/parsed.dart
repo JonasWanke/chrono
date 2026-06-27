@@ -241,8 +241,8 @@ class ChronoParsed {
     _isoYearMod100 = value;
   }
 
-  int? _quarter;
-  int? get quarter => _quarter;
+  Quarter? _quarter;
+  Quarter? get quarter => _quarter;
 
   /// Set the [quarter] field to the given value.
   ///
@@ -255,8 +255,7 @@ class ChronoParsed {
   ///
   /// Throws [ChronoParseException] with [ChronoParseExceptionKind.impossible]
   /// if this field was already set to a different value.
-  set quarter(int value) {
-    if (value < 1 || value > 4) throw const ChronoParseException(.outOfRange);
+  set quarter(Quarter value) {
     _throwIfInconsistent(quarter, value);
     _quarter = value;
   }
