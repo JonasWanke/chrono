@@ -243,19 +243,6 @@ final class CDateTime
       ChronoFormatter.format(items, date: date, time: time);
 }
 
-extension RangeOfCDateTimeExtension on Range<CDateTime> {
-  /// The [Date]s in these datetimes.
-  RangeInclusive<Date> get dates => start == end
-      ? RangeInclusive.single(start.date)
-      : start.date.rangeTo((end - TimeDelta(nanos: 1)).date);
-
-  /// The [Time]s in these datetimes.
-  Range<Time> get times => start.time.rangeUntil(end.time);
-
-  TimeDelta get timeDuration => end.timeDifference(start);
-  CompoundDuration get compoundDuration => end.difference(start);
-}
-
 extension on TimeDelta {
   (Days, Time) toDaysAndTime() {
     var (seconds, nanos) = splitSecondsNanos();
@@ -283,4 +270,55 @@ class CDateTimeAsStringCodec extends CodecAndJsonConverter<CDateTime, String> {
   String encode(CDateTime input) => input.toString(formatItems);
   @override
   CDateTime decode(String encoded) => CDateTime.parse(encoded, formatItems);
+}
+
+// Deranged
+
+extension RangeOfCDateTimeExtension on Range<CDateTime> {
+  /// The [Date]s in these datetimes.
+  RangeInclusive<Date> get dates => start == end
+      ? RangeInclusive.single(start.date)
+      : start.date.rangeTo((end - TimeDelta(nanos: 1)).date);
+
+  /// The [Time]s in these datetimes.
+  Range<Time> get times => start.time.rangeUntil(end.time);
+
+  TimeDelta get timeDuration => end.timeDifference(start);
+  CompoundDuration get compoundDuration => end.difference(start);
+}
+
+/// Encodes a [Range] of [CDateTime]s as a string `start/end`.
+class RangeOfCDateTimeAsStringCodec
+    extends CodecAndJsonConverter<Range<CDateTime>, String> {
+  const RangeOfCDateTimeAsStringCodec({
+    this.formatItems = CDateTime.isoFormat,
+    this.intervalDesignator = '/',
+  });
+
+  final List<CDateTimeFormatItem> formatItems;
+  final String intervalDesignator;
+
+  @override
+  String encode(Range<CDateTime> input) =>
+      '${input.start.toString(formatItems)}$intervalDesignator'
+      '${input.end.toString(formatItems)}';
+  @override
+  Range<CDateTime> decode(String encoded) {
+    final (dateTime: start, :rest) = CDateTime.parseAndRest(
+      encoded,
+      formatItems,
+    );
+
+    if (rest.length < intervalDesignator.length) {
+      throw const ChronoParseException(.tooShort);
+    } else if (!rest.startsWith(intervalDesignator)) {
+      throw const ChronoParseException(.invalid);
+    }
+
+    final end = CDateTime.parse(
+      rest.substring(intervalDesignator.length),
+      formatItems,
+    );
+    return Range(start, end);
+  }
 }

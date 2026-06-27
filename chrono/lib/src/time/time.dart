@@ -1,4 +1,5 @@
 import 'package:clock/clock.dart';
+import 'package:deranged/deranged.dart';
 import 'package:meta/meta.dart';
 
 import '../../chrono.dart';
@@ -312,4 +313,39 @@ class TimeAsStringCodec extends CodecAndJsonConverter<Time, String> {
   String encode(Time input) => input.toString(formatItems);
   @override
   Time decode(String encoded) => Time.parse(encoded, formatItems);
+}
+
+// Deranged
+
+/// Encodes a [Range] of [Time]s as a string `start/end`.
+class RangeOfTimeAsStringCodec
+    extends CodecAndJsonConverter<Range<Time>, String> {
+  const RangeOfTimeAsStringCodec({
+    this.formatItems = Time.isoFormat,
+    this.intervalDesignator = '/',
+  });
+
+  final List<TimeFormatItem> formatItems;
+  final String intervalDesignator;
+
+  @override
+  String encode(Range<Time> input) =>
+      '${input.start.toString(formatItems)}$intervalDesignator'
+      '${input.end.toString(formatItems)}';
+  @override
+  Range<Time> decode(String encoded) {
+    final (time: start, :rest) = Time.parseAndRest(encoded, formatItems);
+
+    if (rest.length < intervalDesignator.length) {
+      throw const ChronoParseException(.tooShort);
+    } else if (!rest.startsWith(intervalDesignator)) {
+      throw const ChronoParseException(.invalid);
+    }
+
+    final end = Time.parse(
+      rest.substring(intervalDesignator.length),
+      formatItems,
+    );
+    return Range(start, end);
+  }
 }

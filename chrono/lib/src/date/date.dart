@@ -450,6 +450,20 @@ final class Date
       ChronoFormatter.format(items, date: this);
 }
 
+/// Encodes a [Date] as a string, defaulting to [Date.isoFormat].
+class DateAsStringCodec extends CodecAndJsonConverter<Date, String> {
+  const DateAsStringCodec([this.formatItems = Date.isoFormat]);
+
+  final List<DateFormatItem> formatItems;
+
+  @override
+  String encode(Date input) => input.toString(formatItems);
+  @override
+  Date decode(String encoded) => Date.parse(encoded, formatItems);
+}
+
+// Deranged
+
 extension RangeOfDateChrono on Range<Date> {
   /// The [CDateTime]s in these dates.
   Range<CDateTime> get dateTimes => start.atMidnight.rangeUntil(end.atMidnight);
@@ -464,14 +478,35 @@ extension RangeInclusiveOfDateChrono on RangeInclusive<Date> {
   Days get lengthInDays => end.differenceInDays(start) + const Days(1);
 }
 
-/// Encodes a [Date] as a string, defaulting to [Date.isoFormat].
-class DateAsStringCodec extends CodecAndJsonConverter<Date, String> {
-  const DateAsStringCodec([this.formatItems = Date.isoFormat]);
+/// Encodes a [RangeInclusive] of [Date]s as a string `start/end`.
+class RangeInclusiveOfDateAsStringCodec
+    extends CodecAndJsonConverter<RangeInclusive<Date>, String> {
+  const RangeInclusiveOfDateAsStringCodec({
+    this.formatItems = Date.isoFormat,
+    this.intervalDesignator = '/',
+  });
 
   final List<DateFormatItem> formatItems;
+  final String intervalDesignator;
 
   @override
-  String encode(Date input) => input.toString(formatItems);
+  String encode(RangeInclusive<Date> input) =>
+      '${input.start.toString(formatItems)}$intervalDesignator'
+      '${input.end.toString(formatItems)}';
   @override
-  Date decode(String encoded) => Date.parse(encoded, formatItems);
+  RangeInclusive<Date> decode(String encoded) {
+    final (date: start, :rest) = Date.parseAndRest(encoded, formatItems);
+
+    if (rest.length < intervalDesignator.length) {
+      throw const ChronoParseException(.tooShort);
+    } else if (!rest.startsWith(intervalDesignator)) {
+      throw const ChronoParseException(.invalid);
+    }
+
+    final end = Date.parse(
+      rest.substring(intervalDesignator.length),
+      formatItems,
+    );
+    return RangeInclusive(start, end);
+  }
 }
