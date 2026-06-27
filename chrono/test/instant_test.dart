@@ -7,6 +7,7 @@ void main() {
   setChronoGladosDefaults();
 
   group('Instant', () {
+    // ignore: missing-test-assertion
     testDataClassBasics<Instant>(
       preciseCodecs: [
         const InstantAsIsoStringCodec(),

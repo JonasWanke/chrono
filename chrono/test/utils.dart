@@ -5,6 +5,7 @@ import 'package:meta/meta.dart';
 
 // ignore_for_file: avoid-top-level-members-in-tests
 
+@isTest
 void testDataClassBasics<T extends Comparable<T>>({
   bool testCompareTo = true,
   required List<Codec<T, dynamic>> preciseCodecs,

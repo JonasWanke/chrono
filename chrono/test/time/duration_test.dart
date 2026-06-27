@@ -7,6 +7,7 @@ void main() {
   setChronoGladosDefaults();
 
   group('TimeDelta', () {
+    // ignore: missing-test-assertion
     testDataClassBasics<TimeDelta>(
       preciseCodecs: [const TimeDeltaAsMapCodec()],
     );

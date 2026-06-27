@@ -7,6 +7,7 @@ void main() {
   setChronoGladosDefaults();
 
   testDataClassBasics(preciseCodecs: const [CDateTimeAsIsoStringCodec()]);
+  // ignore: missing-test-assertion
 
   Glados<CDateTime>().test('fromDurationSinceUnixEpoch', (dateTime) {
     expect(

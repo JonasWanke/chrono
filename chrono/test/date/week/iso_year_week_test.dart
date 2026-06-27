@@ -6,6 +6,7 @@ import '../../utils.dart';
 void main() {
   setChronoGladosDefaults();
 
+  // ignore: missing-test-assertion
   testDataClassBasics(preciseCodecs: const [IsoYearWeekAsIsoStringCodec()]);
 
   Glados2<IsoYearWeek, Weeks>().test('+ and -', (yearWeek, duration) {

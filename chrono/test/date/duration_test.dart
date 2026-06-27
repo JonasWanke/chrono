@@ -8,6 +8,7 @@ void main() {
   setChronoGladosDefaults();
 
   group('CompoundCalendarDuration', () {
+    // ignore: missing-test-assertion
     _testDurationBasics<CompoundCalendarDuration>();
     Glados2<CompoundCalendarDuration, CalendarDuration>().test(
       '+ and -',
