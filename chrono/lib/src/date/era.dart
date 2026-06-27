@@ -3,7 +3,7 @@ import 'package:clock/clock.dart';
 import '../utils.dart';
 import 'year.dart';
 
-/// A month in the ISO 8601 calendar, e.g., April.
+/// An era in the ISO 8601 calendar, e.g., Before the Common Era.
 enum Era
     with ComparisonOperatorsFromComparable<Era>
     implements Comparable<Era> {
