@@ -84,7 +84,6 @@ enum Month
   ///
   /// The result is always in the range [28, 31].
   Days get lengthInCommonYear {
-    // https://howardhinnant.github.io/date_algorithms.html#last_day_of_month_common_year
     const days = [
       //
       Days(31), Days(28), Days(31), Days(30), Days(31), Days(30),
@@ -97,7 +96,6 @@ enum Month
   ///
   /// The result is always in the range [29, 31].
   Days get lengthInLeapYear {
-    // https://howardhinnant.github.io/date_algorithms.html#last_day_of_month_leap_year
     const days = [
       //
       Days(31), Days(29), Days(31), Days(30), Days(31), Days(30),
@@ -113,23 +111,16 @@ enum Month
   Days get maxLength => lengthInLeapYear;
 
   /// The [MonthDay]s in this month in a common (non-leap) year.
-  RangeInclusive<MonthDay> get daysInCommonYear {
-    return RangeInclusive(
-      MonthDay.from(this, 1),
-      MonthDay.from(this, lengthInCommonYear.inDays),
-    );
-  }
+  RangeInclusive<MonthDay> get daysInCommonYear =>
+      RangeInclusive(firstDay, minLastDay);
 
   /// The [MonthDay]s in this month in a leap year.
-  RangeInclusive<MonthDay> get daysInLeapYear {
-    return RangeInclusive(
-      MonthDay.from(this, 1),
-      MonthDay.from(this, lengthInLeapYear.inDays),
-    );
-  }
+  RangeInclusive<MonthDay> get daysInLeapYear =>
+      RangeInclusive(firstDay, maxLastDay);
 
-  MonthDay get minLastDay => daysInCommonYear.end;
-  MonthDay get maxLastDay => daysInLeapYear.end;
+  MonthDay get firstDay => MonthDay.from(this, 1);
+  MonthDay get minLastDay => MonthDay.from(this, lengthInCommonYear.inDays);
+  MonthDay get maxLastDay => MonthDay.from(this, lengthInLeapYear.inDays);
 
   Month operator +(MonthsDuration duration) =>
       values[(index + duration.asMonths.inMonths) % values.length];
@@ -170,22 +161,20 @@ enum Month
   int stepsUntil(Month other) => (other.index - index) % values.length;
 
   @override
-  String toString() {
-    return switch (this) {
-      Month.january => 'January',
-      Month.february => 'February',
-      Month.march => 'March',
-      Month.april => 'April',
-      Month.may => 'May',
-      Month.june => 'June',
-      Month.july => 'July',
-      Month.august => 'August',
-      Month.september => 'September',
-      Month.october => 'October',
-      Month.november => 'November',
-      Month.december => 'December',
-    };
-  }
+  String toString() => switch (this) {
+    .january => 'January',
+    .february => 'February',
+    .march => 'March',
+    .april => 'April',
+    .may => 'May',
+    .june => 'June',
+    .july => 'July',
+    .august => 'August',
+    .september => 'September',
+    .october => 'October',
+    .november => 'November',
+    .december => 'December',
+  };
 }
 
 /// Encodes a [Month] as an int: 1 for January, …, 12 for December.
