@@ -64,8 +64,8 @@ class TzOffset implements Offset<Tz> {
   }
 
   @override
-  // ignore: unused_result
-  FixedOffset fix() => FixedOffset.east(offset.offsetSeconds);
+  FixedOffset fix() =>
+      FixedOffset.east(TimeDelta(seconds: offset.offsetSeconds));
 
   @override
   bool operator ==(Object other) =>
