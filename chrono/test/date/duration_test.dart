@@ -38,28 +38,30 @@ void main() {
         expect(const Months(1).splitYearsMonths, const (Years(0), Months(1)));
         expect(const Months(0).splitYearsMonths, const (Years(0), Months(0)));
         expect(const Months(-1).splitYearsMonths, const (Years(0), Months(-1)));
-        expect(
-          const Months(-11).splitYearsMonths,
-          const (Years(0), Months(-11)),
-        );
-        expect(
-          const Months(-12).splitYearsMonths,
-          const (Years(-1), Months(0)),
-        );
-        expect(
-          const Months(-13).splitYearsMonths,
-          const (Years(-1), Months(-1)),
-        );
+        expect(const Months(-11).splitYearsMonths, const (
+          Years(0),
+          Months(-11),
+        ));
+        expect(const Months(-12).splitYearsMonths, const (
+          Years(-1),
+          Months(0),
+        ));
+        expect(const Months(-13).splitYearsMonths, const (
+          Years(-1),
+          Months(-1),
+        ));
       });
     });
   });
   group('Months', () {
+    // ignore: missing-test-assertion
     _testDurationBasics<Months>();
     Glados2<Months, MonthsDuration>().test('+ and -', (first, second) {
       expect(first + second - second, first);
     });
   });
   group('Years', () {
+    // ignore: missing-test-assertion
     _testDurationBasics<Years>();
     Glados2<Years, Years>().test('+ and -', (first, second) {
       expect(first + second - second, first);
@@ -81,12 +83,14 @@ void main() {
     });
   });
   group('Days', () {
+    // ignore: missing-test-assertion
     _testDurationBasics<Days>();
     Glados2<Days, DaysDuration>().test('+ and -', (first, second) {
       expect(first + second - second, first);
     });
   });
   group('Weeks', () {
+    // ignore: missing-test-assertion
     _testDurationBasics<Weeks>();
     Glados2<Weeks, Weeks>().test('+ and -', (first, second) {
       expect(first + second - second, first);
@@ -102,12 +106,12 @@ void _testDurationBasics<T extends CalendarDuration>() {
   Glados<T>().test('multiply with zero', (duration) {
     expect((duration * 0).isZero, true);
   });
-  Glados2<T, int>(null, any.intExcept0).test(
-    '*, ~/, %, and remainder(…)',
-    (duration, factor) {
-      expect(duration * factor ~/ factor, duration);
-      expect((duration * factor % factor).isZero, true);
-      expect((duration * factor).remainder(factor).isZero, true);
-    },
-  );
+  Glados2<T, int>(null, any.intExcept0).test('*, ~/, %, and remainder(…)', (
+    duration,
+    factor,
+  ) {
+    expect(duration * factor ~/ factor, duration);
+    expect((duration * factor % factor).isZero, true);
+    expect((duration * factor).remainder(factor).isZero, true);
+  });
 }

@@ -1,6 +1,10 @@
 import '../../chrono.dart';
 
-/// A single formatting item. This is used for both formatting and parsing.
+// Shared
+
+/// A single formatting item.
+///
+/// This is used for both formatting and parsing.
 sealed class ChronoFormatItem {
   const ChronoFormatItem();
 
@@ -61,14 +65,16 @@ sealed class ChronoFormatItem {
 }
 
 /// A literally printed and parsed text.
-class ChronoFormatItemLiteral extends ChronoFormatItem {
+class ChronoFormatItemLiteral extends ChronoFormatItem
+    implements DateFormatItem, TimeFormatItem {
   const ChronoFormatItemLiteral(this.text);
 
   final String text;
 }
 
 /// Whitespace. Prints literally but reads zero or more whitespace.
-class ChronoFormatItemSpace extends ChronoFormatItem {
+class ChronoFormatItemSpace extends ChronoFormatItem
+    implements DateFormatItem, TimeFormatItem {
   const ChronoFormatItemSpace(this.text);
 
   final String text;
@@ -94,15 +100,162 @@ sealed class ChronoFormatItemNumeric extends ChronoFormatItem {
   final ChronoPadding padding;
 }
 
+/// Padding characters for [ChronoFormatItemNumeric].
+enum ChronoPadding {
+  /// No padding.
+  none,
+
+  /// Pad using zeros (`0`).
+  zero,
+
+  /// Pad using spaces.
+  space,
+}
+
+/// Which length to use when formatting/parsing month/weekday names.
+enum ChronoFormatLength {
+  /// Prints the three-letter-long name in title case, reads the same name in
+  /// any case.
+  short,
+
+  /// Prints the full name, reads either the three-letter-long name or the
+  /// full name in any case.
+  full,
+}
+
+/// Fixed-format items.
+///
+/// They have their own rules of formatting and parsing.
+///
+/// Unless otherwise noted, they print in the specified case but parse
+/// case-insensitively.
+sealed class ChronoFormatItemFixed extends ChronoFormatItem {
+  const ChronoFormatItemFixed();
+}
+
+/// Issues a formatting error. Used to signal an invalid format string.
+// TODO(JonasWanke): Is this necessary?
+class ChronoFormatItemError extends ChronoFormatItem {}
+
+// DateTime
+
+/// A [ChronoFormatItem] that is used for formatting and parsing [CDateTime]s.
+sealed class CDateTimeFormatItem extends ChronoFormatItem {
+  const factory CDateTimeFormatItem.literal(String text) =
+      ChronoFormatItemLiteral;
+  const factory CDateTimeFormatItem.space(String text) = ChronoFormatItemSpace;
+  const factory CDateTimeFormatItem.year({
+    YearFormat format,
+    ChronoPadding padding,
+  }) = ChronoFormatYear;
+  const factory CDateTimeFormatItem.isoYear({
+    YearFormat format,
+    ChronoPadding padding,
+  }) = ChronoFormatIsoYear;
+  const factory CDateTimeFormatItem.quarter({ChronoPadding padding}) =
+      ChronoFormatQuarter;
+  const factory CDateTimeFormatItem.month({ChronoPadding padding}) =
+      ChronoFormatMonth;
+  const factory CDateTimeFormatItem.day({ChronoPadding padding}) =
+      ChronoFormatDay;
+  const factory CDateTimeFormatItem.weekFromSun({ChronoPadding padding}) =
+      ChronoFormatWeekFromSun;
+  const factory CDateTimeFormatItem.weekFromMon({ChronoPadding padding}) =
+      ChronoFormatWeekFromMon;
+  const factory CDateTimeFormatItem.isoWeek({ChronoPadding padding}) =
+      ChronoFormatIsoWeek;
+  const factory CDateTimeFormatItem.numDaysFromSun({ChronoPadding padding}) =
+      ChronoFormatNumDaysFromSun;
+  const factory CDateTimeFormatItem.weekday({ChronoPadding padding}) =
+      ChronoFormatWeekday;
+  const factory CDateTimeFormatItem.ordinal({ChronoPadding padding}) =
+      ChronoFormatOrdinal;
+  const factory CDateTimeFormatItem.hour({ChronoPadding padding}) =
+      ChronoFormatHour;
+  const factory CDateTimeFormatItem.hour12({ChronoPadding padding}) =
+      ChronoFormatHour12;
+  const factory CDateTimeFormatItem.minute({ChronoPadding padding}) =
+      ChronoFormatMinute;
+  const factory CDateTimeFormatItem.second({ChronoPadding padding}) =
+      ChronoFormatSecond;
+  const factory CDateTimeFormatItem.nanosecond({ChronoPadding padding}) =
+      ChronoFormatNanosecond;
+  const factory CDateTimeFormatItem.monthName(ChronoFormatLength length) =
+      ChronoFormatMonthName;
+  const factory CDateTimeFormatItem.weekdayName(ChronoFormatLength length) =
+      ChronoFormatWeekdayName;
+  const factory CDateTimeFormatItem.amPm(ChronoCasing casing) =
+      ChronoFormatAmPm;
+  const factory CDateTimeFormatItem.subsecond(
+    ChronoSubsecondAccuracy accuracy,
+  ) = ChronoFormatSubsecond;
+}
+
+// Date
+
+/// A [ChronoFormatItem] that is used for formatting and parsing [Date]s.
+sealed class DateFormatItem extends CDateTimeFormatItem {
+  const factory DateFormatItem.literal(String text) = ChronoFormatItemLiteral;
+  const factory DateFormatItem.space(String text) = ChronoFormatItemSpace;
+  const factory DateFormatItem.year({
+    YearFormat format,
+    ChronoPadding padding,
+  }) = ChronoFormatYear;
+  const factory DateFormatItem.isoYear({
+    YearFormat format,
+    ChronoPadding padding,
+  }) = ChronoFormatIsoYear;
+  const factory DateFormatItem.quarter({ChronoPadding padding}) =
+      ChronoFormatQuarter;
+  const factory DateFormatItem.month({ChronoPadding padding}) =
+      ChronoFormatMonth;
+  const factory DateFormatItem.day({ChronoPadding padding}) = ChronoFormatDay;
+  const factory DateFormatItem.weekFromSun({ChronoPadding padding}) =
+      ChronoFormatWeekFromSun;
+  const factory DateFormatItem.weekFromMon({ChronoPadding padding}) =
+      ChronoFormatWeekFromMon;
+  const factory DateFormatItem.isoWeek({ChronoPadding padding}) =
+      ChronoFormatIsoWeek;
+  const factory DateFormatItem.numDaysFromSun({ChronoPadding padding}) =
+      ChronoFormatNumDaysFromSun;
+  const factory DateFormatItem.weekday({ChronoPadding padding}) =
+      ChronoFormatWeekday;
+  const factory DateFormatItem.ordinal({ChronoPadding padding}) =
+      ChronoFormatOrdinal;
+  const factory DateFormatItem.monthName(ChronoFormatLength length) =
+      ChronoFormatMonthName;
+  const factory DateFormatItem.weekdayName(ChronoFormatLength length) =
+      ChronoFormatWeekdayName;
+}
+
+sealed class TimeFormatItem extends CDateTimeFormatItem {
+  const factory TimeFormatItem.literal(String text) = ChronoFormatItemLiteral;
+  const factory TimeFormatItem.space(String text) = ChronoFormatItemSpace;
+  const factory TimeFormatItem.hour({ChronoPadding padding}) = ChronoFormatHour;
+  const factory TimeFormatItem.hour12({ChronoPadding padding}) =
+      ChronoFormatHour12;
+  const factory TimeFormatItem.minute({ChronoPadding padding}) =
+      ChronoFormatMinute;
+  const factory TimeFormatItem.second({ChronoPadding padding}) =
+      ChronoFormatSecond;
+  const factory TimeFormatItem.nanosecond({ChronoPadding padding}) =
+      ChronoFormatNanosecond;
+  const factory TimeFormatItem.amPm(ChronoCasing casing) = ChronoFormatAmPm;
+  const factory TimeFormatItem.subsecond(ChronoSubsecondAccuracy accuracy) =
+      ChronoFormatSubsecond;
+}
+
 /// Gregorian year.
-class ChronoFormatYear extends ChronoFormatItemNumeric {
+class ChronoFormatYear extends ChronoFormatItemNumeric
+    implements DateFormatItem {
   const ChronoFormatYear({this.format = .full, super.padding});
 
   final YearFormat format;
 }
 
 /// Year in the ISO week date.
-class ChronoFormatIsoYear extends ChronoFormatItemNumeric {
+class ChronoFormatIsoYear extends ChronoFormatItemNumeric
+    implements DateFormatItem {
   const ChronoFormatIsoYear({this.format = .full, super.padding});
 
   final YearFormat format;
@@ -124,120 +277,22 @@ enum YearFormat {
 }
 
 /// Quarter (FW=PW=1).
-class ChronoFormatQuarter extends ChronoFormatItemNumeric {
+class ChronoFormatQuarter extends ChronoFormatItemNumeric
+    implements DateFormatItem {
   const ChronoFormatQuarter({super.padding});
 }
 
 /// Month (FW=PW=2).
-class ChronoFormatMonth extends ChronoFormatItemNumeric {
+class ChronoFormatMonth extends ChronoFormatItemNumeric
+    implements DateFormatItem {
   const ChronoFormatMonth({super.padding});
-}
-
-/// Day of the month (FW=PW=2).
-class ChronoFormatDay extends ChronoFormatItemNumeric {
-  const ChronoFormatDay({super.padding});
-}
-
-// TODO(JonasWanke): merge?
-/// Week number, where week 1 starts at the first Sunday of January (FW=PW=2).
-class ChronoFormatWeekFromSun extends ChronoFormatItemNumeric {
-  const ChronoFormatWeekFromSun({super.padding});
-}
-
-/// Week number, where week 1 starts at the first Monday of January (FW=PW=2).
-class ChronoFormatWeekFromMon extends ChronoFormatItemNumeric {
-  const ChronoFormatWeekFromMon({super.padding});
-}
-
-/// Week number in the ISO week date (FW=PW=2).
-class ChronoFormatIsoWeek extends ChronoFormatItemNumeric {
-  const ChronoFormatIsoWeek({super.padding});
-}
-
-// TODO(JonasWanke): merge?
-/// Day of the week, where Sunday = 0 and Saturday = 6 (FW=PW=1).
-class ChronoFormatNumDaysFromSun extends ChronoFormatItemNumeric {
-  const ChronoFormatNumDaysFromSun({super.padding});
-}
-
-/// ISO weekday number, where Monday = 1 and Sunday = 7 (FW=PW=1).
-class ChronoFormatWeekday extends ChronoFormatItemNumeric {
-  const ChronoFormatWeekday({super.padding});
-}
-
-/// Day of the year (FW=PW=3).
-class ChronoFormatOrdinal extends ChronoFormatItemNumeric {
-  const ChronoFormatOrdinal({super.padding});
-}
-
-/// Hour number in the 24-hour clocks (FW=PW=2).
-class ChronoFormatHour extends ChronoFormatItemNumeric {
-  const ChronoFormatHour({super.padding});
-}
-
-/// Hour number in the 12-hour clocks (FW=PW=2).
-class ChronoFormatHour12 extends ChronoFormatItemNumeric {
-  const ChronoFormatHour12({super.padding});
-}
-
-/// The number of minutes since the last whole hour (FW=PW=2).
-class ChronoFormatMinute extends ChronoFormatItemNumeric {
-  const ChronoFormatMinute({super.padding});
-}
-
-/// The number of seconds since the last whole minute (FW=PW=2).
-class ChronoFormatSecond extends ChronoFormatItemNumeric {
-  const ChronoFormatSecond({super.padding});
-}
-
-/// The number of nanoseconds since the last whole second (FW=PW=9).
-///
-/// Note that this is *not* left-aligned, see also [ChronoFormatSubsecond].
-class ChronoFormatNanosecond extends ChronoFormatItemNumeric {
-  const ChronoFormatNanosecond({super.padding});
-}
-
-/// The number of non-leap seconds since the midnight UTC on January 1, 1970
-/// (FW=1, PW=∞).
-///
-/// For formatting, it assumes UTC upon the absence of time zone offset.
-class ChronoFormatTimestamp extends ChronoFormatItemNumeric {
-  const ChronoFormatTimestamp({super.padding});
-}
-
-// TODO(JonasWanke):
-// /// Internal uses only.
-// ///
-// /// This item exists so that one can add additional internal-only formatting
-// /// without breaking major compatibility (as enum variants cannot be selectively private).
-// Internal(InternalNumeric),
-
-/// Padding characters for [ChronoFormatItemNumeric].
-enum ChronoPadding {
-  /// No padding.
-  none,
-
-  /// Zero padding (`0`).
-  zero,
-
-  /// Space padding.
-  space,
-}
-
-/// Fixed-format items.
-///
-/// They have their own rules of formatting and parsing.
-///
-/// Unless otherwise noted, they print in the specified case but parse
-/// case-insensitively.
-sealed class ChronoFormatItemFixed extends ChronoFormatItem {
-  const ChronoFormatItemFixed();
 }
 
 /// Month names.
 ///
 /// Prints a name in title case, reads the name in any case.
-class ChronoFormatMonthName extends ChronoFormatItemFixed {
+class ChronoFormatMonthName extends ChronoFormatItemFixed
+    implements DateFormatItem {
   const ChronoFormatMonthName(this.length);
 
   final ChronoFormatLength length;
@@ -246,25 +301,67 @@ class ChronoFormatMonthName extends ChronoFormatItemFixed {
 /// Weekday names.
 ///
 /// Prints a name in title case, reads the name in any case.
-class ChronoFormatWeekdayName extends ChronoFormatItemFixed {
+class ChronoFormatWeekdayName extends ChronoFormatItemFixed
+    implements DateFormatItem {
   const ChronoFormatWeekdayName(this.length);
 
   final ChronoFormatLength length;
 }
 
-/// Which length to use when formatting/parsing month/weekday names.
-enum ChronoFormatLength {
-  /// Prints the three-letter-long name in title case, reads the same name in
-  /// any case.
-  short,
+/// Day of the month (FW=PW=2).
+class ChronoFormatDay extends ChronoFormatItemNumeric
+    implements DateFormatItem {
+  const ChronoFormatDay({super.padding});
+}
 
-  /// Prints the full name, reads either the three-letter-long name or the
-  /// full name in any case.
-  full,
+// TODO(JonasWanke): merge?
+/// Week number, where week 1 starts at the first Sunday of January (FW=PW=2).
+class ChronoFormatWeekFromSun extends ChronoFormatItemNumeric
+    implements DateFormatItem {
+  const ChronoFormatWeekFromSun({super.padding});
+}
+
+/// Week number, where week 1 starts at the first Monday of January (FW=PW=2).
+class ChronoFormatWeekFromMon extends ChronoFormatItemNumeric
+    implements DateFormatItem {
+  const ChronoFormatWeekFromMon({super.padding});
+}
+
+/// Week number in the ISO week date (FW=PW=2).
+class ChronoFormatIsoWeek extends ChronoFormatItemNumeric
+    implements DateFormatItem {
+  const ChronoFormatIsoWeek({super.padding});
+}
+
+// TODO(JonasWanke): merge?
+/// Day of the week, where Sunday = 0 and Saturday = 6 (FW=PW=1).
+class ChronoFormatNumDaysFromSun extends ChronoFormatItemNumeric
+    implements DateFormatItem {
+  const ChronoFormatNumDaysFromSun({super.padding});
+}
+
+/// ISO weekday number, where Monday = 1 and Sunday = 7 (FW=PW=1).
+class ChronoFormatWeekday extends ChronoFormatItemNumeric
+    implements DateFormatItem {
+  const ChronoFormatWeekday({super.padding});
+}
+
+/// Day of the year (FW=PW=3).
+class ChronoFormatOrdinal extends ChronoFormatItemNumeric
+    implements DateFormatItem {
+  const ChronoFormatOrdinal({super.padding});
+}
+
+// Time
+
+/// Hour number in the 24-hour clocks (FW=PW=2).
+class ChronoFormatHour extends ChronoFormatItemNumeric
+    implements TimeFormatItem {
+  const ChronoFormatHour({super.padding});
 }
 
 /// AM/PM
-class ChronoFormatAmPm extends ChronoFormatItemFixed {
+class ChronoFormatAmPm extends ChronoFormatItemFixed implements TimeFormatItem {
   const ChronoFormatAmPm(this.casing);
 
   final ChronoCasing casing;
@@ -278,20 +375,59 @@ enum ChronoCasing {
   upper,
 }
 
+/// Hour number in the 12-hour clocks (FW=PW=2).
+class ChronoFormatHour12 extends ChronoFormatItemNumeric
+    implements TimeFormatItem {
+  const ChronoFormatHour12({super.padding});
+}
+
+/// The number of minutes since the last whole hour (FW=PW=2).
+class ChronoFormatMinute extends ChronoFormatItemNumeric
+    implements TimeFormatItem {
+  const ChronoFormatMinute({super.padding});
+}
+
+/// The number of seconds since the last whole minute (FW=PW=2).
+class ChronoFormatSecond extends ChronoFormatItemNumeric
+    implements TimeFormatItem {
+  const ChronoFormatSecond({super.padding});
+}
+
+/// The number of nanoseconds since the last whole second (FW=PW=9).
+///
+/// Note that this is *not* left-aligned, see also [ChronoFormatSubsecond].
+class ChronoFormatNanosecond extends ChronoFormatItemNumeric
+    implements TimeFormatItem {
+  const ChronoFormatNanosecond({super.padding});
+}
+
 /// An optional dot plus one or more digits for millis/micros/nanos.
-class ChronoFormatSubsecond extends ChronoFormatItemFixed {
+class ChronoFormatSubsecond extends ChronoFormatItemFixed
+    implements TimeFormatItem {
   const ChronoFormatSubsecond(this.accuracy);
 
   final ChronoSubsecondAccuracy accuracy;
 }
 
 enum ChronoSubsecondAccuracy {
-  /// May print nothing, 3, 6 or 9 digits according to the available accuracy.
+  /// May print nothing, 3, 6, or 9 digits according to the available accuracy.
   variable,
   millis,
   micros,
   nanos,
 }
+
+// Instant
+
+/// The number of non-leap seconds since the midnight UTC on January 1, 1970
+/// (FW=1, PW=∞).
+///
+/// For formatting, it assumes UTC upon the absence of time zone offset.
+class ChronoFormatTimestamp extends ChronoFormatItemNumeric {
+  const ChronoFormatTimestamp({super.padding});
+}
+
+// ZonedDateTime
 
 /// Timezone name.
 ///
@@ -345,17 +481,6 @@ class ChronoFormatRFC2822 extends ChronoFormatItemFixed {
 class ChronoFormatRFC3339 extends ChronoFormatItemFixed {
   const ChronoFormatRFC3339();
 }
-
-// TODO(JonasWanke):
-// /// Internal uses only.
-// ///
-// /// This item exists so that one can add additional internal-only formatting
-// /// without breaking major compatibility (as enum variants cannot be selectively private).
-// Internal(InternalFixed),
-
-/// Issues a formatting error. Used to signal an invalid format string.
-// TODO(JonasWanke): Is this necessary?
-class ChronoFormatItemError extends ChronoFormatItem {}
 
 /// Specific formatting options for seconds.
 ///

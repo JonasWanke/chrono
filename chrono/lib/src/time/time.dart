@@ -1,14 +1,9 @@
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 
+import '../../chrono.dart';
 import '../codec.dart';
-import '../date/duration.dart';
-import '../date_time/date_time.dart';
-import '../offset/fixed.dart';
-import '../parser.dart';
-import '../rounding.dart';
 import '../utils.dart';
-import 'duration.dart';
 
 /// A specific time of a day, e.g., 18:24:20.
 ///
@@ -280,24 +275,41 @@ final class Time
   @override
   int get hashCode => Object.hash(hour, minute, second, subSecondNanos);
 
-  @override
-  String toString() {
-    final hour = this.hour.toString().padLeft(2, '0');
-    final minute = this.minute.toString().padLeft(2, '0');
-    final second = this.second.toString().padLeft(2, '0');
-    final subSecondNanos = this.subSecondNanos.toString().padLeft(9, '0');
-    return '$hour:$minute:$second.$subSecondNanos';
+  /// Represents a [Time] as an ISO 8601 string, e.g., “18:24:20.123456789”
+  static const isoFormat = <TimeFormatItem>[
+    .hour(),
+    .literal(':'),
+    .minute(),
+    .literal(':'),
+    .second(),
+    .subsecond(.variable),
+  ];
+
+  factory Time.parse(String string, [List<TimeFormatItem> items = isoFormat]) =>
+      ChronoParser.parse(string, items).toTime();
+  static ({Time time, String rest}) parseAndRest(
+    String string, [
+    List<TimeFormatItem> items = isoFormat,
+  ]) {
+    final result = ChronoParser.parseAndRest(string, items);
+    return (time: result.parsed.toTime(), rest: result.rest);
   }
+
+  @override
+  String toString([List<TimeFormatItem> items = isoFormat]) =>
+      ChronoFormatter.format(items, time: this);
 }
 
 enum AmPm { am, pm }
 
-/// Encodes a [Time] as an ISO 8601 string, e.g., “18:24:20.12”.
-class TimeAsIsoStringCodec extends CodecAndJsonConverter<Time, String> {
-  const TimeAsIsoStringCodec();
+/// Encodes a [Time] as a string, defaulting to [Time.isoFormat].
+class TimeAsStringCodec extends CodecAndJsonConverter<Time, String> {
+  const TimeAsStringCodec([this.formatItems = Time.isoFormat]);
+
+  final List<TimeFormatItem> formatItems;
 
   @override
-  String encode(Time input) => input.toString();
+  String encode(Time input) => input.toString(formatItems);
   @override
-  Time decode(String encoded) => Parser.parseTime(encoded);
+  Time decode(String encoded) => Time.parse(encoded, formatItems);
 }

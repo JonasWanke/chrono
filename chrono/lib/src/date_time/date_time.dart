@@ -3,20 +3,9 @@ import 'package:clock/clock.dart';
 import 'package:deranged/deranged.dart';
 import 'package:meta/meta.dart';
 
+import '../../chrono.dart';
 import '../codec.dart';
-import '../date/date.dart';
-import '../date/duration.dart';
-import '../instant.dart';
-import '../offset/fixed.dart';
-import '../offset/time_zone.dart';
-import '../offset/utc.dart';
-import '../parser.dart';
-import '../rounding.dart';
-import '../time/duration.dart';
-import '../time/time.dart';
 import '../utils.dart';
-import '../zoned/zoned_date_time.dart';
-import 'duration.dart';
 
 /// A date and time in the ISO 8601 calendar represented using [Date] and
 /// [Time], e.g., April 23, 2023, at 18:24:20.
@@ -207,8 +196,51 @@ final class CDateTime
   @override
   int get hashCode => Object.hash(date, time);
 
+  /// Represents a [CDateTime] as an ISO 8601 string, e.g.,
+  /// “2023-04-23T18:24:20.123456789”.
+  static const isoFormat = <CDateTimeFormatItem>[
+    ...Date.isoFormat,
+    .literal('T'),
+    ...Time.isoFormat,
+  ];
+
+  /// Represents a [CDateTime] as an ordinal date ISO 8601 string, e.g.,
+  /// “2023-113T18:24:20.123456789”.
+  static const isoOrdinalFormat = <CDateTimeFormatItem>[
+    ...Date.isoOrdinalFormat,
+    .literal('T'),
+    ...Time.isoFormat,
+  ];
+
+  /// Represents a [CDateTime] as a week date ISO 8601 string, e.g.,
+  /// “2023-W16-7T18:24:20.123456789”.
+  static const isoWeekDateFormat = <CDateTimeFormatItem>[
+    ...Date.isoWeekDateFormat,
+    .literal('T'),
+    ...Time.isoFormat,
+  ];
+
+  factory CDateTime.parse(
+    String string, [
+    List<CDateTimeFormatItem> items = isoFormat,
+  ]) {
+    final parsed = ChronoParser.parse(string, items);
+    return parsed.toDate().at(parsed.toTime());
+  }
+  static ({CDateTime dateTime, String rest}) parseAndRest(
+    String string, [
+    List<CDateTimeFormatItem> items = isoFormat,
+  ]) {
+    final result = ChronoParser.parseAndRest(string, items);
+    return (
+      dateTime: result.parsed.toDate().at(result.parsed.toTime()),
+      rest: result.rest,
+    );
+  }
+
   @override
-  String toString() => '${date}T$time';
+  String toString([List<CDateTimeFormatItem> items = isoFormat]) =>
+      ChronoFormatter.format(items, date: date, time: time);
 }
 
 extension RangeOfCDateTimeExtension on Range<CDateTime> {
@@ -241,14 +273,14 @@ extension on TimeDelta {
   }
 }
 
-/// Encodes a [CDateTime] as an ISO 8601 string, e.g.,
-/// “2023-04-23T18:24:20.123456789”.
-class CDateTimeAsIsoStringCodec
-    extends CodecAndJsonConverter<CDateTime, String> {
-  const CDateTimeAsIsoStringCodec();
+/// Encodes a [CDateTime] as a string, defaulting to [CDateTime.isoFormat].
+class CDateTimeAsStringCodec extends CodecAndJsonConverter<CDateTime, String> {
+  const CDateTimeAsStringCodec([this.formatItems = CDateTime.isoFormat]);
+
+  final List<CDateTimeFormatItem> formatItems;
 
   @override
-  String encode(CDateTime input) => input.toString();
+  String encode(CDateTime input) => input.toString(formatItems);
   @override
-  CDateTime decode(String encoded) => Parser.parseDateTime(encoded);
+  CDateTime decode(String encoded) => CDateTime.parse(encoded, formatItems);
 }

@@ -4,20 +4,10 @@ import 'package:clock/clock.dart';
 import 'package:deranged/deranged.dart';
 import 'package:meta/meta.dart';
 
+import '../../chrono.dart';
 import '../codec.dart';
-import '../date_time/date_time.dart';
-import '../parser.dart';
-import '../time/time.dart';
 import '../utils.dart';
-import 'duration.dart';
-import 'month/month.dart';
-import 'month/month_day.dart';
-import 'month/year_month.dart';
-import 'week/iso_year_week.dart';
 import 'week/week_config.dart';
-import 'week/year_week.dart';
-import 'weekday.dart';
-import 'year.dart';
 
 /// A date in the ISO 8601 calendar, e.g., April 23, 2023.
 ///
@@ -417,18 +407,44 @@ final class Date
   @override
   int get hashCode => Object.hash(yearMonth, day);
 
+  /// Represents a [Date] as an ISO 8601 string, e.g., “2023-04-23”
+  static const isoFormat = <DateFormatItem>[
+    .year(),
+    .literal('-'),
+    .month(),
+    .literal('-'),
+    .day(),
+  ];
+
+  /// Represents a [Date] as an ordinal date ISO 8601 string, e.g., “2023-113”.
+  static const isoOrdinalFormat = <DateFormatItem>[
+    .year(),
+    .literal('-'),
+    .ordinal(),
+  ];
+
+  /// Represents a [Date] as a week date ISO 8601 string, e.g., “2023-W16-7”.
+  static const isoWeekDateFormat = <DateFormatItem>[
+    .isoYear(),
+    .literal('-W'),
+    .isoWeek(),
+    .literal('-'),
+    .weekday(),
+  ];
+
+  factory Date.parse(String string, [List<DateFormatItem> items = isoFormat]) =>
+      ChronoParser.parse(string, items).toDate();
+  static ({Date date, String rest}) parseAndRest(
+    String string, [
+    List<DateFormatItem> items = isoFormat,
+  ]) {
+    final result = ChronoParser.parseAndRest(string, items);
+    return (date: result.parsed.toDate(), rest: result.rest);
+  }
+
   @override
-  String toString() {
-    final day = this.day.toString().padLeft(2, '0');
-    return '$yearMonth-$day';
-  }
-
-  String toOrdinalDateString() {
-    final dayOfYear = this.dayOfYear.toString().padLeft(3, '0');
-    return '$year-$dayOfYear';
-  }
-
-  String toWeekDateString() => '$isoYearWeek-${weekday.isoNumber}';
+  String toString([List<DateFormatItem> items = isoFormat]) =>
+      ChronoFormatter.format(items, date: this);
 }
 
 extension RangeOfDateChrono on Range<Date> {
@@ -445,33 +461,14 @@ extension RangeInclusiveOfDateChrono on RangeInclusive<Date> {
   Days get lengthInDays => end.differenceInDays(start) + const Days(1);
 }
 
-/// Encodes a [Date] as an ISO 8601 string, e.g., “2023-04-23”.
-class DateAsIsoStringCodec extends CodecAndJsonConverter<Date, String> {
-  const DateAsIsoStringCodec();
+/// Encodes a [Date] as a string, defaulting to [Date.isoFormat].
+class DateAsStringCodec extends CodecAndJsonConverter<Date, String> {
+  const DateAsStringCodec([this.formatItems = Date.isoFormat]);
+
+  final List<DateFormatItem> formatItems;
 
   @override
-  String encode(Date input) => input.toString();
+  String encode(Date input) => input.toString(formatItems);
   @override
-  Date decode(String encoded) => Parser.parseDate(encoded);
-}
-
-/// Encodes a [Date] as an ordinal date ISO 8601 string, e.g., “2023-113”.
-class DateAsOrdinalDateIsoStringCodec
-    extends CodecAndJsonConverter<Date, String> {
-  const DateAsOrdinalDateIsoStringCodec();
-
-  @override
-  String encode(Date input) => input.toOrdinalDateString();
-  @override
-  Date decode(String encoded) => Parser.parseOrdinalDate(encoded);
-}
-
-/// Encodes a [Date] as a week date ISO 8601 string, e.g., “2023-W16-7”.
-class DateAsWeekDateIsoStringCodec extends CodecAndJsonConverter<Date, String> {
-  const DateAsWeekDateIsoStringCodec();
-
-  @override
-  String encode(Date input) => input.toWeekDateString();
-  @override
-  Date decode(String encoded) => Parser.parseWeekDate(encoded);
+  Date decode(String encoded) => Date.parse(encoded, formatItems);
 }

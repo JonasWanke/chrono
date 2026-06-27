@@ -9,9 +9,9 @@ void main() {
   // ignore: missing-test-assertion
   testDataClassBasics(
     preciseCodecs: const [
-      DateAsIsoStringCodec(),
-      DateAsOrdinalDateIsoStringCodec(),
-      DateAsWeekDateIsoStringCodec(),
+      DateAsStringCodec(),
+      DateAsStringCodec(Date.isoOrdinalFormat),
+      DateAsStringCodec(Date.isoWeekDateFormat),
     ],
   );
 
@@ -161,5 +161,17 @@ void main() {
   });
   Glados<Date>().test('next and previous', (date) {
     expect(date.next.previous, date);
+  });
+
+  test('toString()', () {
+    expect(Date.unixEpoch.toString(), '1970-01-01');
+    expect(Date.fromRaw(2026, 05, 12).toString(), '2026-05-12');
+  });
+  test('toOrdinalString()', () {
+    expect(Date.unixEpoch.toString(Date.isoOrdinalFormat), '1970-001');
+    expect(
+      Date.fromRaw(2026, 05, 12).toString(Date.isoOrdinalFormat),
+      '2026-132',
+    );
   });
 }

@@ -22,12 +22,24 @@ class ChronoFormatter {
   //     /// ZST if the `unstable-locales` feature is not enabled.
   //     locale: Locale,
 
+  static String format(
+    List<ChronoFormatItem> items, {
+    Date? date,
+    Time? time,
+    ({String name, FixedOffset offset})? offset,
+  }) => ChronoFormatter._(
+    items,
+    date: date,
+    time: time,
+    offset: offset,
+  ).toString();
+
   /// Writes the date, time, and offset to a string.
   ///
   // TODO(JonasWanke): improve comment
   /// Same as `%Y-%m-%dT%H:%M:%S%.f%:z`.
   @internal
-  String formatRfc3339(
+  static String formatRfc3339(
     CDateTime dateTime,
     FixedOffset offset,
     ChronoSecondsFormat secondsFormat, {
@@ -428,7 +440,7 @@ class ChronoFormatter {
 
   void _writeYear(Year year, ChronoPadding padding) {
     final number = year.number;
-    if (1000 <= number || number <= 9999) {
+    if (1000 <= number && number <= 9999) {
       _writeTwo(number ~/ 100, padding);
       _writeTwo(number % 100, padding);
     } else {
