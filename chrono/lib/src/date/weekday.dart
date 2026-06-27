@@ -119,17 +119,15 @@ enum Weekday
   int stepsUntil(Weekday other) => (other.index - index) % values.length;
 
   @override
-  String toString() {
-    return switch (this) {
-      Weekday.monday => 'Monday',
-      Weekday.tuesday => 'Tuesday',
-      Weekday.wednesday => 'Wednesday',
-      Weekday.thursday => 'Thursday',
-      Weekday.friday => 'Friday',
-      Weekday.saturday => 'Saturday',
-      Weekday.sunday => 'Sunday',
-    };
-  }
+  String toString() => switch (this) {
+    .monday => 'Monday',
+    .tuesday => 'Tuesday',
+    .wednesday => 'Wednesday',
+    .thursday => 'Thursday',
+    .friday => 'Friday',
+    .saturday => 'Saturday',
+    .sunday => 'Sunday',
+  };
 }
 
 // TODO: String JSON converters, maybe lowercase and uppercase?
