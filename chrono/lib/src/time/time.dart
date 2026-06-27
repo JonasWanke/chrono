@@ -317,6 +317,10 @@ class TimeAsStringCodec extends CodecAndJsonConverter<Time, String> {
 
 // Deranged
 
+extension RangeOfTimeExtension on Range<Time> {
+  TimeDelta get timeDuration => end.difference(start);
+}
+
 /// Encodes a [Range] of [Time]s as a string `start/end`.
 class RangeOfTimeAsStringCodec
     extends CodecAndJsonConverter<Range<Time>, String> {
