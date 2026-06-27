@@ -93,9 +93,11 @@ enum Weekday
   Weekday? subtractChecked(DaysDuration duration) => addChecked(-duration);
 
   /// The weekday after this one, wrapping around after Sunday.
+  @override
   Weekday get next => this + const Days(1);
 
   /// The weekday before this one, wrapping around before Monday.
+  @override
   Weekday get previous => this - const Days(1);
 
   /// The number of days from this weekday to the next [other] weekday.

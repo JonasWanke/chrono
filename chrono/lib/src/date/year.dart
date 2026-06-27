@@ -32,8 +32,8 @@ import 'weekday.dart';
 /// There is no limitation on the range of years.
 @immutable
 final class Year
-    with ComparisonOperatorsFromComparable<Year>
-    implements Comparable<Year>, StepUnlimited<Year> {
+    with ComparisonOperatorsFromComparable<Year>, StepUnlimited<Year>
+    implements Comparable<Year> {
   const Year(this.number);
 
   /// The UNIX epoch: 1970.
@@ -138,12 +138,6 @@ final class Year
 
   Year operator +(Years duration) => Year(number + duration.inYears);
   Year operator -(Years duration) => Year(number - duration.inYears);
-
-  /// The year after this one.
-  Year get next => this + const Years(1);
-
-  /// The year before this one.
-  Year get previous => this - const Years(1);
 
   /// Returns `this - other` as a number of [Years].
   Years difference(Year other) => Years(number - other.number);

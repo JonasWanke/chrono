@@ -12,7 +12,7 @@ dependencies:
     # path: ../../deranged
     git:
       url: https://github.com/JonasWanke/deranged.git
-      ref: 2456dade37cedc87fbf2e12ef1bece93b6b30f91
+      ref: cd171ce9b7103bb7967c97ddc4d3b6405d626791
   glados: ^1.1.6
   # intl4x: ^0.10.0
   # intl: ^0.19.0

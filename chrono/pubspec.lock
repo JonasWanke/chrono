@@ -173,8 +173,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "2456dade37cedc87fbf2e12ef1bece93b6b30f91"
-      resolved-ref: "2456dade37cedc87fbf2e12ef1bece93b6b30f91"
+      ref: cd171ce9b7103bb7967c97ddc4d3b6405d626791
+      resolved-ref: cd171ce9b7103bb7967c97ddc4d3b6405d626791
       url: "https://github.com/JonasWanke/deranged.git"
     source: git
     version: "0.0.0"

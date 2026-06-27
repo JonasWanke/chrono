@@ -10,8 +10,8 @@ import '../../utils.dart';
 /// The combination of a [Year] and a [Month], e.g., April 2023.
 @immutable
 final class YearMonth
-    with ComparisonOperatorsFromComparable<YearMonth>
-    implements Comparable<YearMonth>, StepUnlimited<YearMonth> {
+    with ComparisonOperatorsFromComparable<YearMonth>, StepUnlimited<YearMonth>
+    implements Comparable<YearMonth> {
   const YearMonth(this.year, this.month);
   YearMonth.fromRaw(int year, int month)
     : this(Year(year), Month.fromNumber(month));
@@ -69,12 +69,6 @@ final class YearMonth
   }
 
   YearMonth operator -(MonthsDuration duration) => this + (-duration);
-
-  /// The month after this one.
-  YearMonth get next => this + const Months(1);
-
-  /// The month before this one.
-  YearMonth get previous => this - const Months(1);
 
   /// Returns `this - other` as a number of [Months].
   Months difference(YearMonth other) {

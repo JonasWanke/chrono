@@ -17,11 +17,8 @@ import 'week/week_config.dart';
 /// This class does not store any time or timezone information.
 @immutable
 final class Date
-    with ComparisonOperatorsFromComparable<Date>
-    implements
-        Comparable<Date>,
-        ChronoFormattable<DateFormatItem>,
-        StepUnlimited<Date> {
+    with ComparisonOperatorsFromComparable<Date>, StepUnlimited<Date>
+    implements Comparable<Date>, ChronoFormattable<DateFormatItem> {
   Date.from(Year year, Month month, int day)
     : this.fromYearMonthAndDay(YearMonth(year, month), day);
   Date.fromRaw(int year, int month, int day)
@@ -317,12 +314,6 @@ final class Date
   }
 
   Date operator -(CalendarDuration duration) => this + (-duration);
-
-  /// The date after this one.
-  Date get next => this + const Days(1);
-
-  /// The date before this one.
-  Date get previous => this - const Days(1);
 
   /// Returns `this - other` as a number of [Days].
   Days differenceInDays(Date other) =>

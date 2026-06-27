@@ -10,8 +10,8 @@ import 'month_day.dart';
 
 /// A month in the ISO 8601 calendar, e.g., April.
 enum Month
-    with ComparisonOperatorsFromComparable<Month>
-    implements Comparable<Month>, Step<Month> {
+    with ComparisonOperatorsFromComparable<Month>, Step<Month>
+    implements Comparable<Month> {
   january,
   february,
   march,
@@ -135,9 +135,11 @@ enum Month
   Month? subtractChecked(MonthsDuration duration) => addChecked(-duration);
 
   /// The month after this one, wrapping around after January.
+  @override
   Month get next => this + const Months(1);
 
   /// The month before this one, wrapping around before January.
+  @override
   Month get previous => this - const Months(1);
 
   /// The number of months from this month to the next [other] month.

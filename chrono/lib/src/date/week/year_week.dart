@@ -14,8 +14,8 @@ import 'week_config.dart';
 // TODO(JonasWanke): more docs and comparison to [IsoYearWeek]
 @immutable
 final class YearWeek
-    with ComparisonOperatorsFromComparable<YearWeek>
-    implements Comparable<YearWeek>, StepUnlimited<YearWeek> {
+    with ComparisonOperatorsFromComparable<YearWeek>, StepUnlimited<YearWeek>
+    implements Comparable<YearWeek> {
   YearWeek.from(Year weekBasedYear, int week, WeekConfig config)
     : this._unchecked(
         weekBasedYear,
@@ -63,12 +63,14 @@ final class YearWeek
 
   YearWeek operator -(Weeks duration) => this + (-duration);
 
+  @override
   YearWeek get next {
     return week == weekBasedYear.numberOfWeeks(config)
         ? (weekBasedYear + const Years(1)).weeks(config).start
         : YearWeek._unchecked(weekBasedYear, week + 1, config);
   }
 
+  @override
   YearWeek get previous {
     return week == 1
         ? (weekBasedYear - const Years(1)).weeks(config).end

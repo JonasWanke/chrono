@@ -16,8 +16,10 @@ import '../year.dart';
 /// https://en.wikipedia.org/wiki/ISO_week_date
 @immutable
 final class IsoYearWeek
-    with ComparisonOperatorsFromComparable<IsoYearWeek>
-    implements Comparable<IsoYearWeek>, StepUnlimited<IsoYearWeek> {
+    with
+        ComparisonOperatorsFromComparable<IsoYearWeek>,
+        StepUnlimited<IsoYearWeek>
+    implements Comparable<IsoYearWeek> {
   IsoYearWeek.from(Year weekBasedYear, int week)
     : this._unchecked(
         weekBasedYear,
@@ -65,12 +67,14 @@ final class IsoYearWeek
 
   IsoYearWeek operator -(Weeks duration) => this + (-duration);
 
+  @override
   IsoYearWeek get next {
     return week == weekBasedYear.numberOfIsoWeeks
         ? (weekBasedYear + const Years(1)).isoWeeks.start
         : IsoYearWeek._unchecked(weekBasedYear, week + 1);
   }
 
+  @override
   IsoYearWeek get previous {
     return week == 1
         ? (weekBasedYear - const Years(1)).isoWeeks.end

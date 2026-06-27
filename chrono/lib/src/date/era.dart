@@ -1,11 +1,12 @@
 import 'package:clock/clock.dart';
+import 'package:deranged/deranged.dart';
 
 import '../utils.dart';
 import 'year.dart';
 
 /// An era in the ISO 8601 calendar, e.g., Before the Common Era.
 enum Era
-    with ComparisonOperatorsFromComparable<Era>
+    with ComparisonOperatorsFromComparable<Era>, Step<Era>
     implements Comparable<Era> {
   beforeCommon,
   common;
@@ -38,20 +39,17 @@ enum Era
       this == Era.currentInLocalZone(clock: clock);
   bool isCurrentInUtc({Clock? clock}) => this == Era.currentInUtc(clock: clock);
 
-  /// The era after this one or `null`.
-  Era? get next => Era.fromIndexOrNull(index + 1);
-
-  /// The era before this one or `null`.
-  Era? get previous => Era.fromIndexOrNull(index - 1);
+  @override
+  Era? stepBy(int count) => .fromIndexOrNull(index + count);
+  @override
+  int stepsUntil(Era other) => other.index - index;
 
   @override
   int compareTo(Era other) => index.compareTo(other.index);
 
   @override
-  String toString() {
-    return switch (this) {
-      Era.beforeCommon => 'Before the Common Era',
-      Era.common => 'Common Era',
-    };
-  }
+  String toString() => switch (this) {
+    .beforeCommon => 'Before the Common Era',
+    .common => 'Common Era',
+  };
 }
