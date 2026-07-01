@@ -318,6 +318,8 @@ class TimeAsStringCodec extends CodecAndJsonConverter<Time, String> {
 // Deranged
 
 extension RangeOfTimeExtension on Range<Time> {
+  Range<CDateTime> on(Date date) => Range(date.at(start), date.at(end));
+  
   TimeDelta get timeDuration => end.difference(start);
 }
 
