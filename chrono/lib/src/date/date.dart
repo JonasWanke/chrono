@@ -276,6 +276,10 @@ final class Date
   /// A [CDateTime] combining this [Date] and the given [time].
   CDateTime at(Time time) => CDateTime(this, time);
 
+  /// A [Range] of [CDateTime] combining this [Date] and the given time [range].
+  Range<CDateTime> atRange(Range<Time> range) =>
+      Range(at(range.start), at(range.end));
+
   /// A [CDateTime] at [Time.midnight] on this date.
   CDateTime get atMidnight => at(Time.midnight);
 
