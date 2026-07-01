@@ -10,8 +10,8 @@ import 'duration.dart';
 ///
 /// In this calendar, the week starts on Monday and ends on Sunday.
 enum Weekday
-    with ComparisonOperatorsFromComparable<Weekday>
-    implements Comparable<Weekday>, Step<Weekday> {
+    with ComparisonOperatorsFromComparable<Weekday>, Step<Weekday>
+    implements Comparable<Weekday> {
   monday,
   tuesday,
   wednesday,
