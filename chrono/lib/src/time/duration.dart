@@ -277,6 +277,26 @@ class TimeDelta extends CDuration
       totalSeconds * microsPerSecond + subSecondNanos ~/ nanosPerMicro;
   int get totalNanos => totalSeconds * nanosPerSecond + subSecondNanos;
 
+  double get totalMicrosDouble =>
+      totalSeconds * microsPerSecond + subSecondNanos / nanosPerMicro;
+  double get totalMillisDouble =>
+      totalSeconds * millisPerSecond + subSecondNanos / nanosPerMilli;
+  double get totalSecondsDouble =>
+      totalSeconds + subSecondNanos / nanosPerSecond;
+  double get totalMinutesDouble =>
+      totalSeconds / secondsPerMinute + subSecondNanos / nanosPerMinute;
+  double get totalHoursDouble =>
+      totalSeconds / secondsPerHour + subSecondNanos / nanosPerHour;
+  double get totalNormalDaysDouble =>
+      totalSeconds / secondsPerNormalDay + subSecondNanos / nanosPerNormalDay;
+  double get totalNormalWeeksDouble =>
+      totalSeconds / secondsPerNormalWeek + subSecondNanos / nanosPerNormalWeek;
+  double get totalNormalYearsDouble =>
+      totalSeconds / secondsPerNormalYear + subSecondNanos / nanosPerNormalYear;
+  double get totalNormalLeapYearsDouble =>
+      totalSeconds / secondsPerNormalLeapYear +
+      subSecondNanos / nanosPerNormalLeapYear;
+
   final int subSecondNanos;
 
   (int, int) splitMicrosNanos() {
