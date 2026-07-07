@@ -268,14 +268,19 @@ class TimeDelta extends CDuration
   /// seconds).
   static const hoursPerNormalLeapYear = hoursPerNormalDay * Days.perLeapYear;
 
-  int get totalHours => totalSeconds ~/ secondsPerHour;
-  int get totalMinutes => totalSeconds ~/ secondsPerMinute;
-  final int totalSeconds;
-  int get totalMillis =>
-      totalSeconds * millisPerSecond + subSecondNanos ~/ nanosPerMilli;
+  // TODO(JonasWanke): remove in favor of `roundTo*(…)`?
+  int get totalNanos => totalSeconds * nanosPerSecond + subSecondNanos;
   int get totalMicros =>
       totalSeconds * microsPerSecond + subSecondNanos ~/ nanosPerMicro;
-  int get totalNanos => totalSeconds * nanosPerSecond + subSecondNanos;
+  int get totalMillis =>
+      totalSeconds * millisPerSecond + subSecondNanos ~/ nanosPerMilli;
+  final int totalSeconds;
+  int get totalMinutes => totalSeconds ~/ secondsPerMinute;
+  int get totalHours => totalSeconds ~/ secondsPerHour;
+  int get totalNormalDays => totalSeconds ~/ secondsPerNormalDay;
+  int get totalNormalWeeks => totalSeconds ~/ secondsPerNormalWeek;
+  int get totalNormalYears => totalSeconds ~/ secondsPerNormalYear;
+  int get totalNormalLeapYears => totalSeconds ~/ secondsPerNormalLeapYear;
 
   double get totalMicrosDouble =>
       totalSeconds * microsPerSecond + subSecondNanos / nanosPerMicro;
