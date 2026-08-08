@@ -359,7 +359,7 @@ final class Date
     onDate ??= Date.todayInLocalZone();
 
     var age = onDate.year.difference(year);
-    if (monthDay > onDate.monthDay) age += const Years(1);
+    if (monthDay > onDate.monthDay) age -= const Years(1);
     return age;
   }
 

@@ -163,6 +163,45 @@ void main() {
     expect(date.next.previous, date);
   });
 
+  group('age(…)', () {
+    Years ageOn(Date birthday, Date onDate) => birthday.age(onDate: onDate);
+
+    test('birthday already happened this year', () {
+      expect(
+        ageOn(Date.fromRaw(2000, 1, 1), Date.fromRaw(2024, 1, 15)),
+        const Years(24),
+      );
+    });
+    test('birthday is today', () {
+      expect(
+        ageOn(Date.fromRaw(2000, 1, 15), Date.fromRaw(2024, 1, 15)),
+        const Years(24),
+      );
+    });
+    test('birthday has not happened yet this year', () {
+      expect(
+        ageOn(Date.fromRaw(2000, 12, 1), Date.fromRaw(2024, 1, 15)),
+        const Years(23),
+      );
+      expect(
+        ageOn(Date.fromRaw(2000, 1, 16), Date.fromRaw(2024, 1, 15)),
+        const Years(23),
+      );
+    });
+    test('born on February 29', () {
+      final birthday = Date.fromRaw(2000, 2, 29);
+      expect(ageOn(birthday, Date.fromRaw(2023, 2, 28)), const Years(22));
+      expect(ageOn(birthday, Date.fromRaw(2023, 3, 1)), const Years(23));
+      expect(ageOn(birthday, Date.fromRaw(2024, 2, 29)), const Years(24));
+    });
+    test('age is never negative for a past birthday', () {
+      expect(
+        ageOn(Date.fromRaw(2024, 1, 15), Date.fromRaw(2024, 1, 15)),
+        const Years(0),
+      );
+    });
+  });
+
   test('toString()', () {
     expect(Date.unixEpoch.toString(), '1970-01-01');
     expect(Date.fromRaw(2026, 05, 12).toString(), '2026-05-12');
