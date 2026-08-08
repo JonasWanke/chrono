@@ -203,7 +203,7 @@ final class Years extends MonthsDuration {
   Days get asNormalDays => Days.normalYear * inYears;
 
   /// The days in this many leap years (366 days).
-  Days get asLeapDays => Days.normalYear * inYears;
+  Days get asLeapDays => Days.leapYear * inYears;
 
   /// The hours in this many normal (non-leap) years (365 days), i.e., years
   /// where all days are exactly 24 hours long (no daylight savings time changes

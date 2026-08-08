@@ -181,7 +181,7 @@ class TimeDelta extends CDuration
   /// The number of milliseconds in a normal week, i.e., a week where all days
   /// are exactly 24 hours long (no daylight savings time changes and no leap
   /// seconds).
-  static const millisPerNormalWeek = millisPerSecond * secondsPerNormalDay;
+  static const millisPerNormalWeek = millisPerSecond * secondsPerNormalWeek;
 
   /// The number of milliseconds in a normal (non-leap) year (365 days), i.e., a
   /// year where all days are exactly 24 hours long (no daylight savings time

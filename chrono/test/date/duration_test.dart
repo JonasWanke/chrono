@@ -66,6 +66,11 @@ void main() {
     Glados2<Years, Years>().test('+ and -', (first, second) {
       expect(first + second - second, first);
     });
+
+    Glados<Years>().test('asNormalTime agrees with asNormalDays', (years) {
+      expect(years.asNormalTime, years.asNormalDays.asTime);
+      expect(years.asNormalLeapTime, years.asLeapDays.asTime);
+    });
   });
 
   group('DaysDuration', () {
