@@ -160,7 +160,7 @@ final class Date
   /// Creates a Chrono [Date] from a Dart Core [DateTime].
   ///
   /// This uses the [DateTime.year], [DateTime.month], and [DateTime.day]
-  /// getters and ignores whether that [ÐateTime] is in UTC or the local
+  /// getters and ignores whether that [DateTime] is in UTC or the local
   /// timezone.
   Date.fromCore(DateTime dateTime)
     : this._unchecked(
@@ -343,7 +343,7 @@ final class Date
   /// Returns a number of [Years], [Months], and [Days] so that `this + years +
   /// months + days == other`.
   ///
-  /// The returned [Years], [Months]y and [Days] are all `>= 0` or all `<= 0`.
+  /// The returned [Years], [Months], and [Days] are all `>= 0` or all `<= 0`.
   (Years, Months, Days) untilInYearsMonthsDays(Date other) {
     final (monthsRaw, days) = untilInMonthsDays(other);
     final (years, months) = monthsRaw.splitYearsMonths;

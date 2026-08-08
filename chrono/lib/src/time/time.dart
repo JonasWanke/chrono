@@ -126,7 +126,7 @@ final class Time
 
   final int hour;
 
-  // The hour number from 1 to 12.
+  /// The hour number from 1 to 12.
   int get hour12 {
     final hour = this.hour % 12;
     return hour == 0 ? 12 : hour;

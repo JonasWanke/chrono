@@ -134,7 +134,7 @@ enum Month
 
   Month? subtractChecked(MonthsDuration duration) => addChecked(-duration);
 
-  /// The month after this one, wrapping around after January.
+  /// The month after this one, wrapping around after December.
   @override
   Month get next => this + const Months(1);
 

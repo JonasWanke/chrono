@@ -55,7 +55,7 @@ final class CDateTime
   /// Creates a Chrono [CDateTime] from a Dart Core [DateTime].
   ///
   /// This uses the [DateTime.year], [DateTime.month], [DateTime.day],
-  /// [DateTime.hour], etc. getters and ignores whether that [ÐateTime] is in
+  /// [DateTime.hour], etc. getters and ignores whether that [DateTime] is in
   /// UTC or the local timezone.
   CDateTime.fromCore(DateTime dateTime)
     : date = Date.fromCore(dateTime),
