@@ -70,6 +70,6 @@ class FixedOffset extends TimeZone<FixedOffset> implements Offset<FixedOffset> {
     final seconds = secondsRaw.toString().padLeft(2, '0');
     return secondsRaw == 0
         ? '$sign$hours:$minutes'
-        : '$sign$hours:$minutes$seconds';
+        : '$sign$hours:$minutes:$seconds';
   }
 }
