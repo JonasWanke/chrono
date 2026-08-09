@@ -80,17 +80,17 @@ enum Weekday
   bool isCurrentInUtc({Clock? clock}) =>
       this == Weekday.currentInUtc(clock: clock);
 
-  Weekday operator +(DaysDuration duration) =>
-      values[(index + duration.asDays.inDays) % values.length];
-  Weekday operator -(DaysDuration duration) => this + (-duration);
+  Weekday operator +(Days duration) =>
+      values[(index + duration.inDays) % values.length];
+  Weekday operator -(Days duration) => this + (-duration);
 
-  Weekday? addChecked(DaysDuration duration) {
-    final newIndex = index + duration.asDays.inDays;
+  Weekday? addChecked(Days duration) {
+    final newIndex = index + duration.inDays;
     if (newIndex < minIndex || newIndex > maxIndex) return null;
     return values[newIndex - minIndex];
   }
 
-  Weekday? subtractChecked(DaysDuration duration) => addChecked(-duration);
+  Weekday? subtractChecked(Days duration) => addChecked(-duration);
 
   /// The weekday after this one, wrapping around after Sunday.
   @override

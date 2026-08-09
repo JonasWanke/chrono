@@ -59,13 +59,13 @@ final class IsoYearWeek
   /// The [DateTime]s in this week.
   Range<CDateTime> get dateTimes => dates.dateTimes;
 
-  IsoYearWeek operator +(Weeks duration) {
-    final newDate = dates.start + duration;
+  IsoYearWeek operator +(int weeks) {
+    final newDate = dates.start + Days.fromWeeks(weeks);
     assert(newDate.weekday == Weekday.monday);
     return newDate.isoYearWeek;
   }
 
-  IsoYearWeek operator -(Weeks duration) => this + (-duration);
+  IsoYearWeek operator -(int weeks) => this + (-weeks);
 
   @override
   IsoYearWeek get next {
@@ -81,13 +81,13 @@ final class IsoYearWeek
         : IsoYearWeek._unchecked(weekBasedYear, week - 1);
   }
 
-  /// Returns `this - other` as a number of [Weeks].
-  Weeks difference(IsoYearWeek other) {
-    final (weeks, days) = dates.start
-        .differenceInDays(other.dates.start)
-        .splitWeeksDays;
-    assert(days.isZero);
-    return weeks;
+  /// Returns `this - other` as a number of weeks.
+  // ignore: lines_longer_than_80_chars
+  // TODO(JonasWanke): rename to `differenceInWeeks`, add `differenceInYearAndWeeks`
+  int difference(IsoYearWeek other) {
+    final difference = dates.start.differenceInDays(other.dates.start);
+    assert(difference.isMultipleOf(.weeks));
+    return difference.roundTo(.weeks);
   }
 
   IsoYearWeek copyWith({Year? weekBasedYear, int? week}) {
@@ -106,9 +106,9 @@ final class IsoYearWeek
   }
 
   @override
-  IsoYearWeek stepBy(int count) => this + Weeks(count);
+  IsoYearWeek stepBy(int count) => this + count;
   @override
-  int stepsUntil(IsoYearWeek other) => other.difference(this).inWeeks;
+  int stepsUntil(IsoYearWeek other) => other.difference(this);
 
   @override
   bool operator ==(Object other) {

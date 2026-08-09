@@ -550,9 +550,6 @@ class TimeDelta extends CDuration
       rounding.round(totalNanos / nanosPerHour);
   Days roundToNormalDays({Rounding rounding = Rounding.nearestAwayFromZero}) =>
       Days(rounding.round(totalNanos / nanosPerNormalDay));
-  Weeks roundToNormalWeeks({
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) => Weeks(rounding.round(totalNanos / nanosPerNormalWeek));
   Years roundToNormalYears({
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) => Years(rounding.round(totalNanos / nanosPerNormalYear));
@@ -567,11 +564,7 @@ class TimeDelta extends CDuration
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) => duration * rounding.round(dividedByTimeDelta(duration));
   Days roundToMultipleOfNormalDays(
-    DaysDuration duration, {
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) => duration.asDays * rounding.round(dividedByTimeDelta(duration.asTime));
-  Weeks roundToMultipleOfNormalWeeks(
-    Weeks duration, {
+    Days duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) => duration * rounding.round(dividedByTimeDelta(duration.asTime));
   Years roundToMultipleOfNormalYears(

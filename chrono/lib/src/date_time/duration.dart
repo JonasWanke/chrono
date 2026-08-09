@@ -1,7 +1,7 @@
 import 'package:meta/meta.dart';
 
+import '../../chrono.dart' show Months, TimeDelta;
 import '../date/duration.dart';
-import '../time/duration.dart';
 
 /// Base class for date and time durations.
 ///
@@ -62,7 +62,7 @@ final class CompoundDuration extends CDuration {
   CompoundDuration({
     CalendarDuration? monthsAndDays,
     MonthsDuration? months,
-    DaysDuration? days,
+    Days? days,
     this.time = const TimeDelta.raw(0, 0),
   }) : assert(
          monthsAndDays == null || (months == null && days == null),
@@ -72,7 +72,7 @@ final class CompoundDuration extends CDuration {
            monthsAndDays?.asCompoundCalendarDuration ??
            CompoundCalendarDuration(
              months: months?.asMonths ?? const Months(0),
-             days: days?.asDays ?? const Days(0),
+             days: days ?? const Days(0),
            );
 
   final CompoundCalendarDuration monthsAndDays;
@@ -115,4 +115,52 @@ final class CompoundDuration extends CDuration {
 
   @override
   String toString() => '$months, $days, $time';
+}
+
+/// Base class for the results [TimeDelta.split], [Days.split], and
+/// [Months.split].
+@immutable
+abstract class ChronoParts<U extends Enum> {
+  const ChronoParts(this.values);
+
+  @protected
+  final Map<U, int> values;
+
+  /// The units that were requested when creating this.
+  Set<U> get units => values.keys.toSet();
+
+  @protected
+  List<U> get allUnitsOrdered;
+
+  @protected
+  int get(U unit) {
+    final value = values[unit];
+    if (value == null) {
+      throw StateError('$unit was not requested. Requested units: $units.');
+    }
+    return value;
+  }
+
+  /// The value for [unit], or `null` if it wasn't requested.
+  int? maybe(U unit) => values[unit];
+
+  /// Whether [unit] was requested.
+  bool has(U unit) => values.containsKey(unit);
+
+  @override
+  bool operator ==(Object other) {
+    return other is ChronoParts<U> &&
+        allUnitsOrdered.every((it) => values[it] == other.values[it]);
+  }
+
+  @override
+  int get hashCode => Object.hashAll(allUnitsOrdered.map((it) => values[it]));
+
+  @override
+  String toString() {
+    return allUnitsOrdered.reversed
+        .where(values.containsKey)
+        .map((it) => '${values[it]} ${it.name}')
+        .join(', ');
+  }
 }

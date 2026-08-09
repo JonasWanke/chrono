@@ -32,7 +32,7 @@ void main() {
     Glados<MonthsDuration>().test('MonthsDuration', (duration) {
       expect(duration.asCompoundDuration, duration);
     });
-    Glados<DaysDuration>().test('DaysDuration', (duration) {
+    Glados<Days>().test('Days', (duration) {
       expect(duration.asCompoundDuration, duration);
     });
     Glados<TimeDelta>().test('TimeDelta', (duration) {

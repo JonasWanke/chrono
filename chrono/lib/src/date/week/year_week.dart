@@ -48,20 +48,21 @@ final class YearWeek
   /// The [Date]s in this week.
   RangeInclusive<Date> get dates {
     final firstDay =
-        weekBasedYear.firstDayOfWeekBasedYear(config) + Weeks(week - 1);
+        weekBasedYear.firstDayOfWeekBasedYear(config) +
+        Days.fromWeeks(week - 1);
     return RangeInclusive(firstDay, firstDay + const Days(Days.perWeek - 1));
   }
 
   /// The [DateTime]s in this week.
   Range<CDateTime> get dateTimes => dates.dateTimes;
 
-  YearWeek operator +(Weeks duration) {
-    final newDate = dates.start + duration;
+  YearWeek operator +(int weeks) {
+    final newDate = dates.start + Days.fromWeeks(weeks);
     assert(newDate.weekday == config.firstDay);
     return newDate.yearWeek(config);
   }
 
-  YearWeek operator -(Weeks duration) => this + (-duration);
+  YearWeek operator -(int weeks) => this + (-weeks);
 
   @override
   YearWeek get next {
@@ -77,17 +78,17 @@ final class YearWeek
         : YearWeek._unchecked(weekBasedYear, week - 1, config);
   }
 
-  /// Returns `this - other` as a number of [Weeks].
+  /// Returns `this - other` as a number of weeks.
   ///
   /// Both [YearWeek]s must have the same [config].
-  Weeks difference(YearWeek other) {
+  // ignore: lines_longer_than_80_chars
+  // TODO(JonasWanke): rename to `differenceInWeeks`, add `differenceInYearAndWeeks`
+  int difference(YearWeek other) {
     assert(config == other.config);
 
-    final (weeks, days) = dates.start
-        .differenceInDays(other.dates.start)
-        .splitWeeksDays;
-    assert(days.isZero);
-    return weeks;
+    final difference = dates.start.differenceInDays(other.dates.start);
+    assert(difference.isMultipleOf(.weeks));
+    return difference.roundTo(.weeks);
   }
 
   YearWeek copyWith({Year? weekBasedYear, int? week, WeekConfig? config}) {
@@ -109,9 +110,9 @@ final class YearWeek
   }
 
   @override
-  YearWeek stepBy(int count) => this + Weeks(count);
+  YearWeek stepBy(int count) => this + count;
   @override
-  int stepsUntil(YearWeek other) => other.difference(this).inWeeks;
+  int stepsUntil(YearWeek other) => other.difference(this);
 
   @override
   bool operator ==(Object other) {

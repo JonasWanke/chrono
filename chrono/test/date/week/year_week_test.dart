@@ -9,7 +9,7 @@ void main() {
   // ignore: missing-test-assertion
   testDataClassBasics<YearWeek>(testCompareTo: false, preciseCodecs: const []);
 
-  Glados2<YearWeek, Weeks>().test('+ and -', (yearWeek, duration) {
+  Glados2<YearWeek, int>().test('+ and -', (yearWeek, duration) {
     expect(yearWeek + duration - duration, yearWeek);
   });
   Glados<YearWeek>().test('next and previous', (yearWeek) {

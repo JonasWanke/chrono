@@ -1,3 +1,6 @@
+import 'package:meta/meta.dart';
+
+import '../../chrono.dart' show TimeDelta;
 import '../date_time/duration.dart';
 import '../rounding.dart';
 import '../time/duration.dart';
@@ -13,9 +16,7 @@ import '../utils.dart';
 /// - [MonthsDuration], which represents an integer number of months or years.
 ///   - [Months], which represents an integer number of months.
 ///   - [Years], which represents an integer number of years.
-/// - [DaysDuration], which represents an integer number of weeks or days.
-///   - [Weeks], which represents an integer number of weeks.
-///   - [Days], which represents an integer number of days.
+/// - [Days], which represents an integer number of days.
 /// - [CompoundCalendarDuration], which combines [Months] and [Days].
 /// - [TimeDelta], which covers durations based on a fixed time like seconds.
 /// - [CDuration], which is the base class for date and time durations.
@@ -44,9 +45,8 @@ abstract class CalendarDuration extends CDuration {
 final class CompoundCalendarDuration extends CalendarDuration {
   CompoundCalendarDuration({
     MonthsDuration months = const Months(0),
-    DaysDuration days = const Days(0),
-  }) : months = months.asMonths,
-       days = days.asDays;
+    this.days = const Days(0),
+  }) : months = months.asMonths;
 
   final Months months;
   final Days days;
@@ -293,63 +293,60 @@ final class Years extends MonthsDuration {
   int toJson() => inYears;
 }
 
-/// Base class for [Days] and [Weeks].
-abstract class DaysDuration extends CalendarDuration
-    with ComparisonOperatorsFromComparable<DaysDuration>
-    implements Comparable<DaysDuration> {
-  const DaysDuration();
+/// A unit of the day family: A length that is an exact, context-free multiple
+/// of a day.
+///
+/// Members of this enum are units rather than types precisely because they are
+/// exact multiples of each other – a week is *always* seven days.
+enum DayUnit {
+  days(1),
+  weeks(Days.perWeek),
+  fortnights(2 * Days.perWeek);
 
-  Days get asDays;
-  int get inDays => asDays.inDays;
-  TimeDelta get asTime => TimeDelta(normalDays: inDays);
-  int get asNormalHours => TimeDelta.hoursPerNormalDay * inDays;
-  int get asNormalMinutes => TimeDelta.minutesPerNormalDay * inDays;
-  int get asNormalSeconds => TimeDelta.secondsPerNormalDay * inDays;
-  int get asNormalMillis => TimeDelta.millisPerNormalDay * inDays;
-  int get asNormalMicros => TimeDelta.microsPerNormalDay * inDays;
-  int get asNormalNanos => TimeDelta.nanosPerNormalDay * inDays;
+  const DayUnit(this.daysPer);
 
-  /// Both are `>= 0` or both are `<= 0`.
-  (Weeks, Days) get splitWeeksDays {
-    final asDays = this.asDays;
-    final weeks = Weeks(asDays.inDays ~/ Days.perWeek);
-    return (weeks, asDays - weeks);
+  /// The number of days in one of this unit.
+  final int daysPer;
+
+  /// How many of `this` fit in one [larger], e.g.,
+  /// `DayUnit.days.per(.weeks) == 7`.
+  int per(DayUnit larger) {
+    assert(larger.daysPer >= daysPer, 'Argument must be the larger unit.');
+    return larger.daysPer ~/ daysPer;
   }
+}
+
+/// The result of [Days.split]: One value per requested [DayUnit].
+///
+/// Reading a unit that wasn't requested throws instead of returning zero, since
+/// that is almost certainly a bug and zero would hide it. Use [maybe] or [has]
+/// when the requested set isn't statically known.
+///
+/// All components share the sign of the duration they were split from.
+@immutable
+final class DayParts extends ChronoParts<DayUnit> {
+  const DayParts._(super.values);
 
   @override
-  CompoundCalendarDuration get asCompoundCalendarDuration =>
-      CompoundCalendarDuration(days: asDays);
+  List<DayUnit> get allUnitsOrdered => DayUnit.values;
 
-  bool get isPositive => inDays > 0;
-  bool get isNonPositive => inDays <= 0;
-  bool get isNegative => inDays < 0;
-  bool get isNonNegative => inDays >= 0;
-
-  @override
-  DaysDuration operator -();
-  @override
-  DaysDuration operator *(int factor);
-  @override
-  DaysDuration operator ~/(int divisor);
-  double dividedByDaysDuration(DaysDuration divisor) => inDays / divisor.inDays;
-  @override
-  DaysDuration operator %(int divisor);
-  @override
-  DaysDuration remainder(int divisor);
-
-  DaysDuration get absolute => isNegative ? -this : this;
-
-  Weeks roundToWeeks({Rounding rounding = Rounding.nearestAwayFromZero}) =>
-      Weeks(rounding.round(inDays / Days.perWeek));
-
-  @override
-  int compareTo(DaysDuration other) => inDays.compareTo(other.inDays);
+  int get days => get(.days);
+  int get weeks => get(.weeks);
+  int get fortnights => get(.fortnights);
 }
 
 /// An integer number of days.
-final class Days extends DaysDuration {
+///
+/// This is different to [TimeDelta] because days can be shorter or longer than
+/// 24 hours due to daylight savings time changes.
+final class Days extends CalendarDuration
+    with ComparisonOperatorsFromComparable<Days>
+    implements Comparable<Days> {
   const Days(this.inDays);
   const Days.fromJson(int json) : this(json);
+
+  /// The days in [weeks] weeks.
+  const Days.fromWeeks(int weeks) : inDays = weeks * perWeek;
 
   /// The number of days in a week.
   static const perWeek = 7;
@@ -369,65 +366,99 @@ final class Days extends DaysDuration {
   /// The days in a leap year.
   static const leapYear = Days(perLeapYear);
 
-  @override
   final int inDays;
 
-  @override
-  Days get asDays => this;
+  TimeDelta get asTime => TimeDelta(normalDays: inDays);
+  int get asNormalHours => TimeDelta.hoursPerNormalDay * inDays;
+  int get asNormalMinutes => TimeDelta.minutesPerNormalDay * inDays;
+  int get asNormalSeconds => TimeDelta.secondsPerNormalDay * inDays;
+  int get asNormalMillis => TimeDelta.millisPerNormalDay * inDays;
+  int get asNormalMicros => TimeDelta.microsPerNormalDay * inDays;
+  int get asNormalNanos => TimeDelta.nanosPerNormalDay * inDays;
 
-  Days operator +(DaysDuration duration) =>
-      Days(inDays + duration.asDays.inDays);
-  Days operator -(DaysDuration duration) =>
-      Days(inDays - duration.asDays.inDays);
+  @override
+  CompoundCalendarDuration get asCompoundCalendarDuration =>
+      CompoundCalendarDuration(days: this);
+
+  bool get isPositive => inDays > 0;
+  bool get isNonPositive => inDays <= 0;
+  bool get isNegative => inDays < 0;
+  bool get isNonNegative => inDays >= 0;
+
+  /// This duration expressed in [unit], including a fractional part.
+  double totalIn(DayUnit unit) => inDays / unit.daysPer;
+
+  /// This duration as a whole number of [unit].
+  int roundTo(DayUnit unit, {Rounding rounding = .nearestAwayFromZero}) =>
+      rounding.round(totalIn(unit));
+
+  /// This duration rounded to a multiple of [increment] × [unit].
+  Days round(
+    DayUnit unit, {
+    int increment = 1,
+    Rounding rounding = .nearestAwayFromZero,
+  }) {
+    final step = unit.daysPer * increment;
+    return Days(rounding.round(inDays / step) * step);
+  }
+
+  /// Whether this duration is a whole multiple of [increment] × [unit], i.e.,
+  /// whether [round] with the same arguments would leave it unchanged.
+  bool isMultipleOf(DayUnit unit, {int increment = 1}) =>
+      inDays % (unit.daysPer * increment) == 0;
+
+  /// Decomposes this duration into the given [units].
+  ///
+  /// The largest listed unit absorbs everything above it; the smallest absorbs
+  /// everything below it, rounded according to [rounding]. All components share
+  /// the sign of this duration.
+  ///
+  /// ```dart
+  /// days.split({.weeks, .days});
+  /// ```
+  DayParts split(
+    Set<DayUnit> units, {
+    Rounding rounding = .nearestAwayFromZero,
+  }) {
+    assert(units.isNotEmpty);
+
+    final sorted = units.toList()
+      ..sort((a, b) => b.daysPer.compareTo(a.daysPer));
+    final smallest = sorted.last;
+
+    final values = <DayUnit, int>{};
+    var remaining = rounding.round(totalIn(smallest));
+    for (final unit in sorted.take(sorted.length - 1)) {
+      // `~/` truncates towards zero, so all components share the sign.
+      final value = remaining ~/ smallest.per(unit);
+      values[unit] = value;
+      remaining -= value * smallest.per(unit);
+    }
+    values[smallest] = remaining;
+    return DayParts._(values);
+  }
+
+  Days operator +(Days duration) => Days(inDays + duration.inDays);
+  Days operator -(Days duration) => Days(inDays - duration.inDays);
   @override
   Days operator -() => Days(-inDays);
   @override
   Days operator *(int factor) => Days(inDays * factor);
   @override
   Days operator ~/(int divisor) => Days(inDays ~/ divisor);
+  double operator /(Days divisor) => inDays / divisor.inDays;
   @override
   Days operator %(int divisor) => Days(inDays % divisor);
   @override
   Days remainder(int divisor) => Days(inDays.remainder(divisor));
 
-  @override
   Days get absolute => isNegative ? -this : this;
+
+  @override
+  int compareTo(Days other) => inDays.compareTo(other.inDays);
 
   @override
   String toString() => inDays.abs() == 1 ? '$inDays day' : '$inDays days';
 
   int toJson() => inDays;
-}
-
-/// An integer number of weeks.
-final class Weeks extends DaysDuration {
-  const Weeks(this.inWeeks);
-  const Weeks.fromJson(int json) : this(json);
-
-  final int inWeeks;
-
-  @override
-  Days get asDays => Days.week * inWeeks;
-
-  Weeks operator +(Weeks duration) => Weeks(inWeeks + duration.inWeeks);
-  Weeks operator -(Weeks duration) => Weeks(inWeeks - duration.inWeeks);
-  @override
-  Weeks operator -() => Weeks(-inWeeks);
-  @override
-  Weeks operator *(int factor) => Weeks(inWeeks * factor);
-  @override
-  Weeks operator ~/(int divisor) => Weeks(inWeeks ~/ divisor);
-  double dividedByWeeks(Weeks divisor) => inWeeks / divisor.inWeeks;
-  @override
-  Weeks operator %(int divisor) => Weeks(inWeeks % divisor);
-  @override
-  Weeks remainder(int divisor) => Weeks(inWeeks.remainder(divisor));
-
-  @override
-  Weeks get absolute => isNegative ? -this : this;
-
-  @override
-  String toString() => inWeeks.abs() == 1 ? '$inWeeks week' : '$inWeeks weeks';
-
-  int toJson() => inWeeks;
 }

@@ -40,12 +40,6 @@ void main() {
   });
 
   group('roundTo…()', () {
-    test('roundToNormalWeeks', () {
-      expect(TimeDelta(normalDays: 7).roundToNormalWeeks(), const Weeks(1));
-      expect(TimeDelta(normalDays: 14).roundToNormalWeeks(), const Weeks(2));
-      expect(TimeDelta(normalDays: -7).roundToNormalWeeks(), const Weeks(-1));
-      expect(TimeDelta(normalDays: 3).roundToNormalWeeks(), const Weeks(0));
-    });
     test('roundToNormalDays', () {
       expect(TimeDelta(hours: 24).roundToNormalDays(), const Days(1));
       expect(TimeDelta(hours: -48).roundToNormalDays(), const Days(-2));
@@ -57,10 +51,10 @@ void main() {
         const Years(1),
       );
     });
-    test('roundToMultipleOfNormalWeeks', () {
+    test('roundToMultipleOfNormalDays', () {
       expect(
-        TimeDelta(normalDays: 15).roundToMultipleOfNormalWeeks(const Weeks(1)),
-        const Weeks(2),
+        TimeDelta(normalDays: 15).roundToMultipleOfNormalDays(Days.week),
+        const Days(14),
       );
     });
   });

@@ -32,7 +32,7 @@ void main() {
     );
   });
 
-  Glados3<CDateTime, DaysDuration, TimeDelta>().test('+ and -', (
+  Glados3<CDateTime, Days, TimeDelta>().test('+ and -', (
     dateTime,
     daysDuration,
     timeDuration,

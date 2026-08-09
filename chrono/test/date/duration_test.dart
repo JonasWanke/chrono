@@ -73,32 +73,123 @@ void main() {
     });
   });
 
-  group('DaysDuration', () {
-    Glados<DaysDuration>().test('absolute', (duration) {
-      expect(duration.absolute.isNonNegative, true);
+  group('DayUnit', () {
+    test('per(…) is consistent with daysPer', () {
+      for (final smaller in DayUnit.values) {
+        for (final larger in DayUnit.values) {
+          if (larger.daysPer < smaller.daysPer) continue;
+          expect(smaller.per(larger) * smaller.daysPer, larger.daysPer);
+        }
+      }
     });
-    Glados<DaysDuration>().test('splitWeeksDays', (duration) {
-      final (weeks, days) = duration.splitWeeksDays;
-      expect(
-        weeks.isNonNegative && days.isNonNegative ||
-            weeks.isNonPositive && days.isNonPositive,
-        true,
-      );
-      expect(days + weeks, duration);
+    test('per(…) edge cases', () {
+      expect(DayUnit.days.per(.weeks), 7);
+      expect(DayUnit.days.per(.fortnights), 14);
+      expect(DayUnit.weeks.per(.fortnights), 2);
+      expect(DayUnit.weeks.per(.weeks), 1);
     });
   });
+
   group('Days', () {
     // ignore: missing-test-assertion
     _testDurationBasics<Days>();
-    Glados2<Days, DaysDuration>().test('+ and -', (first, second) {
+    Glados2<Days, Days>().test('+ and -', (first, second) {
       expect(first + second - second, first);
     });
-  });
-  group('Weeks', () {
-    // ignore: missing-test-assertion
-    _testDurationBasics<Weeks>();
-    Glados2<Weeks, Weeks>().test('+ and -', (first, second) {
-      expect(first + second - second, first);
+    Glados<Days>().test('absolute', (duration) {
+      expect(duration.absolute.isNonNegative, true);
+    });
+    Glados<Days>().test('fromWeeks(…) agrees with roundTo(…)', (duration) {
+      final weeks = duration.inDays;
+      expect(Days.fromWeeks(weeks).roundTo(.weeks), weeks);
+    });
+
+    group('totalIn(…)', () {
+      test('edge cases', () {
+        expect(Days.week.totalIn(.weeks), 1.0);
+        expect(const Days(-7).totalIn(.weeks), -1.0);
+        expect(const Days(14).totalIn(.fortnights), 1.0);
+        expect(const Days(3).totalIn(.days), 3.0);
+      });
+    });
+
+    group('isMultipleOf(…)', () {
+      test('edge cases', () {
+        expect(const Days(14).isMultipleOf(.weeks), true);
+        expect(const Days(-14).isMultipleOf(.weeks), true);
+        expect(const Days(15).isMultipleOf(.weeks), false);
+        expect(const Days(14).isMultipleOf(.weeks, increment: 2), true);
+        expect(Days.week.isMultipleOf(.weeks, increment: 2), false);
+      });
+      Glados2<Days, DayUnit>().test('agrees with round(…)', (duration, unit) {
+        expect(duration.isMultipleOf(unit), duration.round(unit) == duration);
+      });
+    });
+
+    group('split(…)', () {
+      test('edge cases', () {
+        final parts = const Days(17).split({.weeks, .days});
+        expect(parts.weeks, 2);
+        expect(parts.days, 3);
+
+        final negative = const Days(-17).split({.weeks, .days});
+        expect(negative.weeks, -2);
+        expect(negative.days, -3);
+
+        final skipping = const Days(17).split({.fortnights, .days});
+        expect(skipping.fortnights, 1);
+        expect(skipping.days, 3);
+
+        // The rounded weeks carry into the fortnights.
+        final roundingUp = const Days(13).split({.fortnights, .weeks});
+        expect(roundingUp.fortnights, 1);
+        expect(roundingUp.weeks, 0);
+
+        final roundingDown = const Days(-13).split({.fortnights, .weeks});
+        expect(roundingDown.fortnights, -1);
+        expect(roundingDown.weeks, 0);
+      });
+      Glados<Days>().test('weeks and days recombine', (duration) {
+        final parts = duration.split({.weeks, .days});
+        expect(Days.fromWeeks(parts.weeks) + Days(parts.days), duration);
+      });
+      Glados<Days>().test('components share the sign', (duration) {
+        final parts = duration.split({.fortnights, .weeks, .days});
+        final values = [parts.fortnights, parts.weeks, parts.days];
+        expect(
+          values.every((it) => it >= 0) || values.every((it) => it <= 0),
+          true,
+        );
+      });
+      Glados<Days>().test('single unit rounds', (duration) {
+        expect(duration.split({.weeks}).weeks, duration.roundTo(.weeks));
+      });
+    });
+
+    group('DayParts', () {
+      test('unrequested units throw', () {
+        final parts = const Days(17).split({.days});
+        expect(parts.days, 17);
+        expect(() => parts.weeks, throwsStateError);
+        expect(parts.maybe(.weeks), null);
+        expect(parts.has(.weeks), false);
+        expect(parts.has(.days), true);
+        expect(parts.units, {DayUnit.days});
+      });
+      test('equality includes the requested units', () {
+        expect(const Days(3).split({.days}), const Days(3).split({.days}));
+        expect(
+          const Days(3).split({.days}),
+          isNot(const Days(3).split({.weeks, .days})),
+        );
+      });
+      test('toString() prints only requested units', () {
+        expect(const Days(17).split({.days}).toString(), '17 days');
+        expect(
+          const Days(17).split({.weeks, .days}).toString(),
+          '2 weeks, 3 days',
+        );
+      });
     });
   });
 }

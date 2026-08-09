@@ -116,7 +116,7 @@ final class Year
       months.start,
       config.minDaysInFirstWeek,
     );
-    return weekDate > reference ? weekDate - const Weeks(1) : weekDate;
+    return weekDate > reference ? weekDate - Days.week : weekDate;
   }
 
   Date lastDayOfWeekBasedYear(WeekConfig config) =>
