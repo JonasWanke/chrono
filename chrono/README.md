@@ -91,7 +91,7 @@ Chrono offers different classes for each category (listed by inheritance):
     - [`Hours`], [`Minutes`], [`Seconds`], [`Milliseconds`], [`Microseconds`], [`Nanoseconds`]: a whole number of hours/etc.
   - [`CalendarDuration`]: day- and month-based durations
     - [`Days`]: a whole number of days, e.g., `Days(5)` or `Days.fromWeeks(3)`
-    - [`MonthsDuration`]: month-based durations, can be [`Months`] or [`Years`]
+    - [`Months`]: a whole number of months, e.g., `Months(3)` or `Months.fromYears(2)`
     - [`CompoundCalendarDuration`]: [`Months`] + [`Days`]
   - [`CompoundDuration`]: [`Months`] + [`Days`] + [`Nanoseconds`]
 
@@ -221,7 +221,7 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 | [`Weekday`]                               | `DayOfWeek`     | `chrono::Weekday`                  |
 | [`Time`]                                  | `LocalTime`     | `chrono::NaiveTime`                |
 | [`CalendarDuration`]                      | `Period`        | —                                  |
-| [`MonthsDuration`], [`Months`], [`Years`] | —               | `chrono::Months`                   |
+| [`Months`]                                | —               | `chrono::Months`                   |
 | [`Days`]                                  | —               | `chrono::Days`                     |
 | [`TimeDuration`]                          | `Duration`      | `std::time::Duration`              |
 | [`Clock`] (from [<kbd>clock</kbd>])       | `Clock`         | —                                  |
@@ -252,7 +252,6 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 [`MonthDay`]: https://pub.dev/documentation/chrono/latest/chrono/MonthDay-class.html
 [`MonthDayAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/MonthDayAsIsoStringCodec-class.html
 [`Months`]: https://pub.dev/documentation/chrono/latest/chrono/Months-class.html
-[`MonthsDuration`]: https://pub.dev/documentation/chrono/latest/chrono/MonthsDuration-class.html
 [`Nanoseconds`]: https://pub.dev/documentation/chrono/latest/chrono/Nanoseconds-class.html
 [`Seconds`]: https://pub.dev/documentation/chrono/latest/chrono/Seconds-class.html
 [`Time`]: https://pub.dev/documentation/chrono/latest/chrono/Time-class.html
@@ -275,7 +274,6 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 [`YearAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/YearAsIsoStringCodec-class.html
 [`YearMonth`]: https://pub.dev/documentation/chrono/latest/chrono/YearMonth-class.html
 [`YearMonthAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/YearMonthAsIsoStringCodec-class.html
-[`Years`]: https://pub.dev/documentation/chrono/latest/chrono/Years-class.html
 [`YearWeek`]: https://pub.dev/documentation/chrono/latest/chrono/YearWeek-class.html
 [`YearWeekAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/YearWeekAsIsoStringCodec-class.html
 

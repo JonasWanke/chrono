@@ -16,60 +16,157 @@ void main() {
     );
   });
 
-  group('MonthsDuration', () {
-    Glados<MonthsDuration>().test('absolute', (duration) {
-      expect(duration.absolute.isNonNegative, true);
+  group('MonthUnit', () {
+    test('per(…) is consistent with monthsPer', () {
+      for (final smaller in MonthUnit.values) {
+        for (final larger in MonthUnit.values) {
+          if (larger.monthsPer < smaller.monthsPer) continue;
+          expect(smaller.per(larger) * smaller.monthsPer, larger.monthsPer);
+        }
+      }
     });
-    group('splitYearsMonths', () {
-      Glados<MonthsDuration>().test('glados', (duration) {
-        final (years, months) = duration.splitYearsMonths;
-        expect(
-          years.isNonNegative && months.isNonNegative ||
-              years.isNonPositive && months.isNonPositive,
-          true,
-        );
-        expect(months + years, duration);
-      });
-      test('edge cases', () {
-        expect(const Months(13).splitYearsMonths, const (Years(1), Months(1)));
-        // ignore: use_named_constants
-        expect(const Months(12).splitYearsMonths, const (Years(1), Months(0)));
-        expect(const Months(11).splitYearsMonths, const (Years(0), Months(11)));
-        expect(const Months(1).splitYearsMonths, const (Years(0), Months(1)));
-        expect(const Months(0).splitYearsMonths, const (Years(0), Months(0)));
-        expect(const Months(-1).splitYearsMonths, const (Years(0), Months(-1)));
-        expect(const Months(-11).splitYearsMonths, const (
-          Years(0),
-          Months(-11),
-        ));
-        expect(const Months(-12).splitYearsMonths, const (
-          Years(-1),
-          Months(0),
-        ));
-        expect(const Months(-13).splitYearsMonths, const (
-          Years(-1),
-          Months(-1),
-        ));
-      });
+    test('per(…) edge cases', () {
+      expect(MonthUnit.months.per(.years), 12);
+      expect(MonthUnit.months.per(.quarters), 3);
+      expect(MonthUnit.quarters.per(.years), 4);
+      expect(MonthUnit.years.per(.decades), 10);
+      expect(MonthUnit.years.per(.millennia), 1000);
+      expect(MonthUnit.decades.per(.centuries), 10);
+      expect(MonthUnit.years.per(.years), 1);
     });
   });
+
   group('Months', () {
     // ignore: missing-test-assertion
     _testDurationBasics<Months>();
-    Glados2<Months, MonthsDuration>().test('+ and -', (first, second) {
+    Glados2<Months, Months>().test('+ and -', (first, second) {
       expect(first + second - second, first);
     });
-  });
-  group('Years', () {
-    // ignore: missing-test-assertion
-    _testDurationBasics<Years>();
-    Glados2<Years, Years>().test('+ and -', (first, second) {
-      expect(first + second - second, first);
+    Glados<Months>().test('absolute', (duration) {
+      expect(duration.absolute.isNonNegative, true);
+    });
+    Glados<Months>().test('fromYears(…) agrees with roundTo(…)', (duration) {
+      final years = duration.inMonths;
+      expect(Months.fromYears(years).roundTo(.years), years);
     });
 
-    Glados<Years>().test('asNormalTime agrees with asNormalDays', (years) {
-      expect(years.asNormalTime, years.asNormalDays.asTime);
-      expect(years.asNormalLeapTime, years.asLeapDays.asTime);
+    test('totalIn(…) edge cases', () {
+      expect(const Months(12).totalIn(.years), 1.0);
+      expect(const Months(-12).totalIn(.years), -1.0);
+      expect(const Months(6).totalIn(.quarters), 2.0);
+      expect(const Months(12000).totalIn(.millennia), 1.0);
+    });
+
+    group('isMultipleOf(…)', () {
+      test('edge cases', () {
+        expect(const Months(24).isMultipleOf(.years), true);
+        expect(const Months(-24).isMultipleOf(.years), true);
+        expect(const Months(25).isMultipleOf(.years), false);
+        expect(const Months(24).isMultipleOf(.years, increment: 2), true);
+        expect(const Months(12).isMultipleOf(.years, increment: 2), false);
+      });
+      Glados2<Months, MonthUnit>().test('agrees with round(…)', (
+        duration,
+        unit,
+      ) {
+        expect(duration.isMultipleOf(unit), duration.round(unit) == duration);
+      });
+    });
+
+    group('split(…)', () {
+      test('empty units throws', () {
+        expect(() => const Months(1).split({}), throwsA(isA<AssertionError>()));
+      });
+      test('years and months edge cases', () {
+        void expectYearsMonths(Months duration, int years, int months) {
+          final parts = duration.split({.years, .months});
+          expect(parts.years, years);
+          expect(parts.months, months);
+        }
+
+        expectYearsMonths(const Months(13), 1, 1);
+        expectYearsMonths(const Months(12), 1, 0);
+        expectYearsMonths(const Months(11), 0, 11);
+        expectYearsMonths(const Months(1), 0, 1);
+        expectYearsMonths(const Months(0), 0, 0);
+        expectYearsMonths(const Months(-1), 0, -1);
+        expectYearsMonths(const Months(-11), 0, -11);
+        expectYearsMonths(const Months(-12), -1, 0);
+        expectYearsMonths(const Months(-13), -1, -1);
+      });
+      test('skipping intermediate units', () {
+        final parts = const Months(1234).split({.centuries, .months});
+        expect(parts.centuries, 1);
+        expect(parts.months, 34);
+      });
+      test('rounding carries into the next unit up', () {
+        // 11 months rounds to one year, which is four quarters.
+        final parts = const Months(11).split({.years, .quarters});
+        expect(parts.years, 1);
+        expect(parts.quarters, 0);
+
+        final negative = const Months(-11).split({.years, .quarters});
+        expect(negative.years, -1);
+        expect(negative.quarters, 0);
+      });
+      Glados<Months>().test('years and months recombine', (duration) {
+        final parts = duration.split({.years, .months});
+        expect(Months.fromYears(parts.years) + Months(parts.months), duration);
+      });
+      Glados<Months>().test('components share the sign', (duration) {
+        final parts = duration.split({
+          .millennia,
+          .centuries,
+          .decades,
+          .years,
+          .quarters,
+          .months,
+        });
+        final values = [
+          parts.millennia,
+          parts.centuries,
+          parts.decades,
+          parts.years,
+          parts.quarters,
+          parts.months,
+        ];
+        expect(
+          values.every((it) => it >= 0) || values.every((it) => it <= 0),
+          true,
+        );
+      });
+      Glados<Months>().test('single unit rounds', (duration) {
+        expect(duration.split({.years}).years, duration.roundTo(.years));
+      });
+    });
+
+    group('MonthParts', () {
+      test('unrequested units throw', () {
+        final parts = const Months(13).split({.months});
+        expect(parts.months, 13);
+        expect(() => parts.years, throwsStateError);
+        expect(parts.maybe(.years), null);
+        expect(parts.has(.years), false);
+        expect(parts.has(.months), true);
+        expect(parts.units, {MonthUnit.months});
+      });
+      test('equality includes the requested units', () {
+        expect(
+          const Months(3).split({.months}),
+          const Months(3).split({.months}),
+        );
+        expect(
+          const Months(3).split({.months}),
+          isNot(const Months(3).split({.years, .months})),
+        );
+      });
+      test('toString() prints only requested units', () {
+        expect(const Months(13).split({.months}).toString(), '13 months');
+        expect(
+          const Months(13).split({.years, .months}).toString(),
+          '1 years, 1 months',
+        );
+      });
     });
   });
 

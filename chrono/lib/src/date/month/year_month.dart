@@ -55,20 +55,23 @@ final class YearMonth
   int weekdayCount(Weekday weekday) =>
       (dates.end.day - dates.start.nextOrSame(weekday).day) ~/ Days.perWeek + 1;
 
-  YearMonth operator +(MonthsDuration duration) {
-    final (years, months) = duration.splitYearsMonths;
+  YearMonth operator +(Months duration) {
+    final parts = duration.split({.years, .months});
 
-    final rawNewMonth = this.month.number + months.inMonths;
+    final rawNewMonth = this.month.number + parts.months;
     final (yearAdjustment, month) = switch (rawNewMonth) {
-      < Month.minNumber => (-const Years(1), rawNewMonth + Months.perYear),
-      > Month.maxNumber => (const Years(1), rawNewMonth - Months.perYear),
-      _ => (const Years(0), rawNewMonth),
+      < Month.minNumber => (-1, rawNewMonth + Months.perYear),
+      > Month.maxNumber => (1, rawNewMonth - Months.perYear),
+      _ => (0, rawNewMonth),
     };
 
-    return YearMonth(year + years + yearAdjustment, Month.fromNumber(month));
+    return YearMonth(
+      year + parts.years + yearAdjustment,
+      Month.fromNumber(month),
+    );
   }
 
-  YearMonth operator -(MonthsDuration duration) => this + (-duration);
+  YearMonth operator -(Months duration) => this + (-duration);
 
   /// Returns `this - other` as a number of [Months].
   Months difference(YearMonth other) {

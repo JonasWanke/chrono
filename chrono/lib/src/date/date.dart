@@ -89,12 +89,12 @@ final class Date
     final Year year;
     final int dayOfYear;
     if (rawDayOfYear < 1) {
-      year = isoYearWeek.weekBasedYear - const Years(1);
+      year = isoYearWeek.weekBasedYear - 1;
       dayOfYear = rawDayOfYear + year.length.inDays;
     } else {
       final daysInCurrentYear = isoYearWeek.weekBasedYear.length.inDays;
       if (rawDayOfYear > daysInCurrentYear) {
-        year = isoYearWeek.weekBasedYear + const Years(1);
+        year = isoYearWeek.weekBasedYear + 1;
         dayOfYear = rawDayOfYear - daysInCurrentYear;
       } else {
         year = isoYearWeek.weekBasedYear;
@@ -340,26 +340,14 @@ final class Date
     return (months, days);
   }
 
-  /// Returns a number of [Years], [Months], and [Days] so that `this + years +
-  /// months + days == other`.
-  ///
-  /// The returned [Years], [Months], and [Days] are all `>= 0` or all `<= 0`.
-  (Years, Months, Days) untilInYearsMonthsDays(Date other) {
-    final (monthsRaw, days) = untilInMonthsDays(other);
-    final (years, months) = monthsRaw.splitYearsMonths;
-    return (years, months, days);
-  }
-
-  // TODO: untilInWeeksDays, untilInYearsDays, untilInMonthsWeeksDays, etc.
-
   /// Calculates the age of someone on [onDate] who was born on `this` date.
   ///
   /// If [onDate] is not provided, the current date in the local zone is used.
-  Years age({Date? onDate}) {
+  int age({Date? onDate}) {
     onDate ??= Date.todayInLocalZone();
 
     var age = onDate.year.difference(year);
-    if (monthDay > onDate.monthDay) age -= const Years(1);
+    if (monthDay > onDate.monthDay) age -= 1;
     return age;
   }
 

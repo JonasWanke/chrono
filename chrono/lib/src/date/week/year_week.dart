@@ -67,14 +67,14 @@ final class YearWeek
   @override
   YearWeek get next {
     return week == weekBasedYear.numberOfWeeks(config)
-        ? (weekBasedYear + const Years(1)).weeks(config).start
+        ? (weekBasedYear + 1).weeks(config).start
         : YearWeek._unchecked(weekBasedYear, week + 1, config);
   }
 
   @override
   YearWeek get previous {
     return week == 1
-        ? (weekBasedYear - const Years(1)).weeks(config).end
+        ? (weekBasedYear - 1).weeks(config).end
         : YearWeek._unchecked(weekBasedYear, week - 1, config);
   }
 

@@ -33,7 +33,7 @@ void main() {
     expect(atNoon.time, Time.noon);
   });
 
-  // Arithmetic with `MonthsDuration` isn't always round-trippable.
+  // Arithmetic with `Months` isn't always round-trippable.
   Glados2<Date, Days>().test('+, -, and differenceInDays(…)', (date, duration) {
     expect(date + duration - duration, date);
     expect((date + duration).differenceInDays(date), duration);
@@ -145,9 +145,16 @@ void main() {
       ));
     });
   });
-  Glados2<Date, Date>().test('untilInYearsMonthsDays(…)', (dateA, dateB) {
-    final (years, months, days) = dateA.untilInYearsMonthsDays(dateB);
-    expect(dateA + years + months + days, dateB);
+  Glados2<Date, Date>().test('untilInMonthsDays(…) split into years', (
+    dateA,
+    dateB,
+  ) {
+    final (months, days) = dateA.untilInMonthsDays(dateB);
+    final parts = months.split({.years, .months});
+    expect(
+      dateA + Months.fromYears(parts.years) + Months(parts.months) + days,
+      dateB,
+    );
   });
 
   test('date plus month landing on non-existing February 29', () {
@@ -161,41 +168,26 @@ void main() {
   });
 
   group('age(…)', () {
-    Years ageOn(Date birthday, Date onDate) => birthday.age(onDate: onDate);
+    int ageOn(Date birthday, Date onDate) => birthday.age(onDate: onDate);
 
     test('birthday already happened this year', () {
-      expect(
-        ageOn(Date.fromRaw(2000, 1, 1), Date.fromRaw(2024, 1, 15)),
-        const Years(24),
-      );
+      expect(ageOn(Date.fromRaw(2000, 1, 1), Date.fromRaw(2024, 1, 15)), 24);
     });
     test('birthday is today', () {
-      expect(
-        ageOn(Date.fromRaw(2000, 1, 15), Date.fromRaw(2024, 1, 15)),
-        const Years(24),
-      );
+      expect(ageOn(Date.fromRaw(2000, 1, 15), Date.fromRaw(2024, 1, 15)), 24);
     });
     test('birthday has not happened yet this year', () {
-      expect(
-        ageOn(Date.fromRaw(2000, 12, 1), Date.fromRaw(2024, 1, 15)),
-        const Years(23),
-      );
-      expect(
-        ageOn(Date.fromRaw(2000, 1, 16), Date.fromRaw(2024, 1, 15)),
-        const Years(23),
-      );
+      expect(ageOn(Date.fromRaw(2000, 12, 1), Date.fromRaw(2024, 1, 15)), 23);
+      expect(ageOn(Date.fromRaw(2000, 1, 16), Date.fromRaw(2024, 1, 15)), 23);
     });
     test('born on February 29', () {
       final birthday = Date.fromRaw(2000, 2, 29);
-      expect(ageOn(birthday, Date.fromRaw(2023, 2, 28)), const Years(22));
-      expect(ageOn(birthday, Date.fromRaw(2023, 3, 1)), const Years(23));
-      expect(ageOn(birthday, Date.fromRaw(2024, 2, 29)), const Years(24));
+      expect(ageOn(birthday, Date.fromRaw(2023, 2, 28)), 22);
+      expect(ageOn(birthday, Date.fromRaw(2023, 3, 1)), 23);
+      expect(ageOn(birthday, Date.fromRaw(2024, 2, 29)), 24);
     });
     test('age is never negative for a past birthday', () {
-      expect(
-        ageOn(Date.fromRaw(2024, 1, 15), Date.fromRaw(2024, 1, 15)),
-        const Years(0),
-      );
+      expect(ageOn(Date.fromRaw(2024, 1, 15), Date.fromRaw(2024, 1, 15)), 0);
     });
   });
 

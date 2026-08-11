@@ -550,12 +550,6 @@ class TimeDelta extends CDuration
       rounding.round(totalNanos / nanosPerHour);
   Days roundToNormalDays({Rounding rounding = Rounding.nearestAwayFromZero}) =>
       Days(rounding.round(totalNanos / nanosPerNormalDay));
-  Years roundToNormalYears({
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) => Years(rounding.round(totalNanos / nanosPerNormalYear));
-  Years roundToNormalLeapYears({
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) => Years(rounding.round(totalNanos / nanosPerNormalLeapYear));
   Duration roundToCoreDuration({
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) => Duration(microseconds: roundToMicros(rounding: rounding));
@@ -567,15 +561,6 @@ class TimeDelta extends CDuration
     Days duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) => duration * rounding.round(dividedByTimeDelta(duration.asTime));
-  Years roundToMultipleOfNormalYears(
-    Years duration, {
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) => duration * rounding.round(dividedByTimeDelta(duration.asNormalTime));
-  Years roundToMultipleOfNormalLeapYears(
-    Years duration, {
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) =>
-      duration * rounding.round(dividedByTimeDelta(duration.asNormalLeapTime));
 
   /// Returns a [Future] that completes after this duration has passed.
   Future<void> get wait => Future<void>.delayed(roundToCoreDuration());

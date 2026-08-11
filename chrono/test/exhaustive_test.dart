@@ -50,7 +50,7 @@ void main() {
     // expect(previous.weekday, `TODO`);
 
     final startTime = Instant.now();
-    for (var year = startYear; year <= endYear; year += const Years(1)) {
+    for (var year = startYear; year <= endYear; year += 1) {
       for (final date in year.dates.iter) {
         final daysSinceEpoch = date.daysSinceUnixEpoch;
         expect(daysSinceEpoch, previous.daysSinceUnixEpoch + const Days(1));

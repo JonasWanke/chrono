@@ -44,13 +44,6 @@ void main() {
       expect(TimeDelta(hours: 24).roundToNormalDays(), const Days(1));
       expect(TimeDelta(hours: -48).roundToNormalDays(), const Days(-2));
     });
-    test('roundToNormalYears and roundToNormalLeapYears', () {
-      expect(TimeDelta(normalDays: 365).roundToNormalYears(), const Years(1));
-      expect(
-        TimeDelta(normalDays: 366).roundToNormalLeapYears(),
-        const Years(1),
-      );
-    });
     test('roundToMultipleOfNormalDays', () {
       expect(
         TimeDelta(normalDays: 15).roundToMultipleOfNormalDays(Days.week),

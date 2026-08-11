@@ -61,7 +61,7 @@ abstract class CDuration {
 final class CompoundDuration extends CDuration {
   CompoundDuration({
     CalendarDuration? monthsAndDays,
-    MonthsDuration? months,
+    Months? months,
     Days? days,
     this.time = const TimeDelta.raw(0, 0),
   }) : assert(
@@ -71,7 +71,7 @@ final class CompoundDuration extends CDuration {
        monthsAndDays =
            monthsAndDays?.asCompoundCalendarDuration ??
            CompoundCalendarDuration(
-             months: months?.asMonths ?? const Months(0),
+             months: months ?? const Months(0),
              days: days ?? const Days(0),
            );
 

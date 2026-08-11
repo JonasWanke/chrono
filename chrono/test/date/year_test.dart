@@ -59,7 +59,7 @@ void main() {
     }
   });
 
-  Glados2<Year, Years>().test('+ and -', (year, duration) {
+  Glados2<Year, int>().test('+ and -', (year, duration) {
     expect(year + duration - duration, year);
   });
   Glados<Year>().test('next and previous', (year) {

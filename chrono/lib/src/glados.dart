@@ -40,11 +40,10 @@ void setChronoGladosDefaults() {
   Any.setDefault(any.compoundDuration);
   Any.setDefault(any.calendarDuration);
   Any.setDefault(any.compoundCalendarDuration);
-  Any.setDefault(any.monthsDuration);
   Any.setDefault(any.months);
-  Any.setDefault(any.years);
   Any.setDefault(any.days);
   Any.setDefault(any.dayUnit);
+  Any.setDefault(any.monthUnit);
   Any.setDefault(any.timeDelta);
 }
 
@@ -206,7 +205,7 @@ extension ChronoAny on Any {
   }
 
   Generator<CalendarDuration> get calendarDuration =>
-      either(compoundCalendarDuration, monthsDuration, days);
+      either(compoundCalendarDuration, months, days);
   Generator<CompoundCalendarDuration> get compoundCalendarDuration {
     return combine2(
       months,
@@ -215,11 +214,10 @@ extension ChronoAny on Any {
     );
   }
 
-  Generator<MonthsDuration> get monthsDuration => either(months, years);
   Generator<Months> get months => this.int.map(Months.new);
-  Generator<Years> get years => this.int.map(Years.new);
 
   Generator<Days> get days => this.int.map(Days.new);
+  Generator<MonthUnit> get monthUnit => choose(MonthUnit.values);
   Generator<DayUnit> get dayUnit => choose(DayUnit.values);
 
   Generator<TimeDelta> get timeDelta {

@@ -14,7 +14,7 @@ void main() {
     expectInRange<Days>(yearMonth.length, const Days(28), const Days(31));
   });
 
-  Glados2<YearMonth, MonthsDuration>().test('+ and -', (yearMonth, duration) {
+  Glados2<YearMonth, Months>().test('+ and -', (yearMonth, duration) {
     expect(yearMonth + duration - duration, yearMonth);
   });
   Glados<YearMonth>().test('next and previous', (yearMonth) {

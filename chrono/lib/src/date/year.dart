@@ -41,6 +41,9 @@ final class Year
   /// https://en.wikipedia.org/wiki/Unix_time
   static const unixEpoch = Year(1970);
 
+  /// The number of years until the Gregorian calendar cycles repeat: 400.
+  static const perGregorianRepeat = 400;
+
   factory Year.currentInLocalZone({Clock? clock}) =>
       Date.todayInLocalZone(clock: clock).year;
   factory Year.currentInUtc({Clock? clock}) =>
@@ -136,19 +139,19 @@ final class Year
   /// The [CDateTime]s in this year.
   Range<CDateTime> get dateTimes => dates.dateTimes;
 
-  Year operator +(Years duration) => Year(number + duration.inYears);
-  Year operator -(Years duration) => Year(number - duration.inYears);
+  Year operator +(int years) => Year(number + years);
+  Year operator -(int years) => Year(number - years);
 
-  /// Returns `this - other` as a number of [Years].
-  Years difference(Year other) => Years(number - other.number);
+  /// Returns `this - other` as a number of years.
+  int difference(Year other) => number - other.number;
 
   @override
   int compareTo(Year other) => number.compareTo(other.number);
 
   @override
-  Year stepBy(int count) => this + Years(count);
+  Year stepBy(int count) => this + count;
   @override
-  int stepsUntil(Year other) => other.difference(this).inYears;
+  int stepsUntil(Year other) => other.difference(this);
 
   @override
   bool operator ==(Object other) =>

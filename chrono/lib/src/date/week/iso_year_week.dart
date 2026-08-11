@@ -70,14 +70,14 @@ final class IsoYearWeek
   @override
   IsoYearWeek get next {
     return week == weekBasedYear.numberOfIsoWeeks
-        ? (weekBasedYear + const Years(1)).isoWeeks.start
+        ? (weekBasedYear + 1).isoWeeks.start
         : IsoYearWeek._unchecked(weekBasedYear, week + 1);
   }
 
   @override
   IsoYearWeek get previous {
     return week == 1
-        ? (weekBasedYear - const Years(1)).isoWeeks.end
+        ? (weekBasedYear - 1).isoWeeks.end
         : IsoYearWeek._unchecked(weekBasedYear, week - 1);
   }
 

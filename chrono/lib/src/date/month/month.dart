@@ -122,17 +122,17 @@ enum Month
   MonthDay get minLastDay => MonthDay.from(this, lengthInCommonYear.inDays);
   MonthDay get maxLastDay => MonthDay.from(this, lengthInLeapYear.inDays);
 
-  Month operator +(MonthsDuration duration) =>
-      values[(index + duration.asMonths.inMonths) % values.length];
-  Month operator -(MonthsDuration duration) => this + (-duration);
+  Month operator +(Months duration) =>
+      values[(index + duration.inMonths) % values.length];
+  Month operator -(Months duration) => this + (-duration);
 
-  Month? addChecked(MonthsDuration duration) {
-    final newIndex = index + duration.asMonths.inMonths;
+  Month? addChecked(Months duration) {
+    final newIndex = index + duration.inMonths;
     if (newIndex < minIndex || newIndex > maxIndex) return null;
     return values[newIndex - minIndex];
   }
 
-  Month? subtractChecked(MonthsDuration duration) => addChecked(-duration);
+  Month? subtractChecked(Months duration) => addChecked(-duration);
 
   /// The month after this one, wrapping around after December.
   @override

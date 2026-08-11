@@ -13,9 +13,7 @@ import '../utils.dart';
 ///
 /// See also:
 ///
-/// - [MonthsDuration], which represents an integer number of months or years.
-///   - [Months], which represents an integer number of months.
-///   - [Years], which represents an integer number of years.
+/// - [Months], which represents an integer number of months.
 /// - [Days], which represents an integer number of days.
 /// - [CompoundCalendarDuration], which combines [Months] and [Days].
 /// - [TimeDelta], which covers durations based on a fixed time like seconds.
@@ -43,10 +41,10 @@ abstract class CalendarDuration extends CDuration {
 /// [CalendarDuration] subclass that can represent any days-based duration by
 /// combining [Months] and [Days].
 final class CompoundCalendarDuration extends CalendarDuration {
-  CompoundCalendarDuration({
-    MonthsDuration months = const Months(0),
+  const CompoundCalendarDuration({
+    this.months = const Months(0),
     this.days = const Days(0),
-  }) : months = months.asMonths;
+  });
 
   final Months months;
   final Days days;
@@ -94,57 +92,66 @@ final class CompoundCalendarDuration extends CalendarDuration {
   String toString() => '$months, $days';
 }
 
-/// Base class for [Months] and [Years].
-abstract class MonthsDuration extends CalendarDuration
-    with ComparisonOperatorsFromComparable<MonthsDuration>
-    implements Comparable<MonthsDuration> {
-  const MonthsDuration();
+/// A unit of the month family: A length that is an exact, context-free multiple
+/// of a month.
+///
+/// Members of this enum are units rather than types precisely because they are
+/// exact multiples of each other – a year is *always* twelve months.
+enum MonthUnit {
+  months(1),
+  quarters(3),
+  years(Months.perYear),
+  decades(10 * Months.perYear),
+  centuries(100 * Months.perYear),
+  millennia(1000 * Months.perYear);
 
-  Months get asMonths;
-  int get inMonths => asMonths.inMonths;
+  const MonthUnit(this.monthsPer);
 
-  /// Both are `>= 0` or both are `<= 0`.
-  (Years, Months) get splitYearsMonths {
-    final asMonths = this.asMonths;
-    final years = Years(asMonths.inMonths ~/ Months.perYear);
-    return (years, asMonths - years);
+  /// The number of months in one of this unit.
+  final int monthsPer;
+
+  /// How many of `this` fit in one [larger], e.g.,
+  /// `MonthUnit.months.per(MonthUnit.years) == 12`.
+  int per(MonthUnit larger) {
+    assert(larger.monthsPer >= monthsPer, 'Argument must be the larger unit.');
+    return larger.monthsPer ~/ monthsPer;
   }
+}
+
+/// The result of [Months.split]: one value per requested [MonthUnit].
+///
+/// Reading a unit that wasn't requested throws instead of returning zero, since
+/// that is almost certainly a bug and zero would hide it. Use [maybe] or [has]
+/// when the requested set isn't statically known.
+///
+/// All components share the sign of the duration they were split from.
+@immutable
+final class MonthParts extends ChronoParts<MonthUnit> {
+  const MonthParts._(super.values);
 
   @override
-  CompoundCalendarDuration get asCompoundCalendarDuration =>
-      CompoundCalendarDuration(months: asMonths);
+  List<MonthUnit> get allUnitsOrdered => MonthUnit.values;
 
-  bool get isPositive => inMonths > 0;
-  bool get isNonPositive => inMonths <= 0;
-  bool get isNegative => inMonths < 0;
-  bool get isNonNegative => inMonths >= 0;
-
-  @override
-  MonthsDuration operator -();
-  @override
-  MonthsDuration operator *(int factor);
-  @override
-  MonthsDuration operator ~/(int divisor);
-  double dividedByMonthsDuration(MonthsDuration divisor) =>
-      inMonths / divisor.inMonths;
-  @override
-  MonthsDuration operator %(int divisor);
-  @override
-  MonthsDuration remainder(int divisor);
-
-  MonthsDuration get absolute => isNegative ? -this : this;
-
-  Years roundToYears({Rounding rounding = Rounding.nearestAwayFromZero}) =>
-      Years(rounding.round(inMonths / Months.perYear));
-
-  @override
-  int compareTo(MonthsDuration other) => inMonths.compareTo(other.inMonths);
+  int get months => get(.months);
+  int get quarters => get(.quarters);
+  int get years => get(.years);
+  int get decades => get(.decades);
+  int get centuries => get(.centuries);
+  int get millennia => get(.millennia);
 }
 
 /// An integer number of months.
-final class Months extends MonthsDuration {
+///
+/// This is different to [TimeDelta] because months have a varying number of
+/// days.
+final class Months extends CalendarDuration
+    with ComparisonOperatorsFromComparable<Months>
+    implements Comparable<Months> {
   const Months(this.inMonths);
   const Months.fromJson(int json) : this(json);
+
+  /// The months in [years] years.
+  const Months.fromYears(int years) : inMonths = years * perYear;
 
   /// The number of months in a year.
   static const perYear = 12;
@@ -152,152 +159,86 @@ final class Months extends MonthsDuration {
   /// The months in a year.
   static const year = Months(perYear);
 
-  @override
   final int inMonths;
 
   @override
-  Months get asMonths => this;
+  CompoundCalendarDuration get asCompoundCalendarDuration =>
+      CompoundCalendarDuration(months: this);
 
-  Months operator +(MonthsDuration duration) =>
-      Months(inMonths + duration.inMonths);
-  Months operator -(MonthsDuration duration) =>
-      Months(inMonths - duration.inMonths);
+  bool get isPositive => inMonths > 0;
+  bool get isNonPositive => inMonths <= 0;
+  bool get isNegative => inMonths < 0;
+  bool get isNonNegative => inMonths >= 0;
+
+  /// This duration expressed in [unit], including a fractional part.
+  double totalIn(MonthUnit unit) => inMonths / unit.monthsPer;
+
+  /// This duration as a whole number of [unit].
+  int roundTo(MonthUnit unit, {Rounding rounding = .nearestAwayFromZero}) =>
+      rounding.round(totalIn(unit));
+
+  /// This duration rounded to a multiple of [increment] × [unit].
+  Months round(
+    MonthUnit unit, {
+    int increment = 1,
+    Rounding rounding = .nearestAwayFromZero,
+  }) {
+    final step = unit.monthsPer * increment;
+    return Months(rounding.round(inMonths / step) * step);
+  }
+
+  /// Whether this duration is a whole multiple of [increment] × [unit], i.e.,
+  /// whether [round] with the same arguments would leave it unchanged.
+  bool isMultipleOf(MonthUnit unit, {int increment = 1}) =>
+      inMonths % (unit.monthsPer * increment) == 0;
+
+  /// Decomposes this duration into the given [units].
+  ///
+  /// The largest listed unit absorbs everything above it; the smallest absorbs
+  /// everything below it, rounded according to [rounding]. All components share
+  /// the sign of this duration.
+  ///
+  /// ```dart
+  /// months.split({.years, .months});
+  /// ```
+  MonthParts split(
+    Set<MonthUnit> units, {
+    Rounding rounding = .nearestAwayFromZero,
+  }) => MonthParts._(
+    splitIntoUnits(inMonths, units, (it) => it.monthsPer, rounding),
+  );
+
+  Months operator +(Months duration) => Months(inMonths + duration.inMonths);
+  Months operator -(Months duration) => Months(inMonths - duration.inMonths);
   @override
   Months operator -() => Months(-inMonths);
   @override
   Months operator *(int factor) => Months(inMonths * factor);
   @override
   Months operator ~/(int divisor) => Months(inMonths ~/ divisor);
+  double operator /(Months divisor) => inMonths / divisor.inMonths;
   @override
   Months operator %(int divisor) => Months(inMonths % divisor);
   @override
   Months remainder(int divisor) => Months(inMonths.remainder(divisor));
 
-  @override
   Months get absolute => isNegative ? -this : this;
 
   @override
+  int compareTo(Months other) => inMonths.compareTo(other.inMonths);
+
+  @override
   String toString() =>
-      inMonths.abs() == 1 ? '$inMonths month' : '$inMonths months';
+      inMonths.abs() == 1 ? '$inMonths month' : '$inMonths months';
 
   int toJson() => inMonths;
-}
-
-/// An integer number of years.
-final class Years extends MonthsDuration {
-  const Years(this.inYears);
-  const Years.fromJson(int json) : this(json);
-
-  /// The number of years until the Gregorian calendar cycles repeat: 400.
-  static const perGregorianRepeat = 400;
-
-  /// The years until the Gregorian calendar cycles repeat: 400.
-  static const gregorianRepeat = Years(perGregorianRepeat);
-
-  final int inYears;
-
-  TimeDelta get asNormalTime => TimeDelta(normalYears: inYears);
-  TimeDelta get asNormalLeapTime => TimeDelta(normalLeapYears: inYears);
-
-  /// The days in this many normal (non-leap) years (365 days).
-  Days get asNormalDays => Days.normalYear * inYears;
-
-  /// The days in this many leap years (366 days).
-  Days get asLeapDays => Days.leapYear * inYears;
-
-  /// The hours in this many normal (non-leap) years (365 days), i.e., years
-  /// where all days are exactly 24 hours long (no daylight savings time changes
-  /// and no leap seconds).
-  int get asNormalHours => asNormalDays.asNormalHours;
-
-  /// The hours in this many normal leap years (366 days), i.e., years where all
-  /// days are exactly 24 hours long (no daylight savings time changes and no
-  /// leap seconds).
-  int get asNormalLeapHours => asLeapDays.asNormalHours;
-
-  /// The minutes in this many normal (non-leap) years (365 days), i.e., years
-  /// where all days are exactly 24 hours long (no daylight savings time changes
-  /// and no leap seconds).
-  int get asNormalMinutes => asNormalDays.asNormalMinutes;
-
-  /// The minutes in this many normal leap years (366 days), i.e., years where
-  /// all days are exactly 24 hours long (no daylight savings time changes and
-  /// no leap seconds).
-  int get asNormalLeapMinutes => asLeapDays.asNormalMinutes;
-
-  /// The seconds in this many normal (non-leap) years (365 days), i.e., years
-  /// where all days are exactly 24 hours long (no daylight savings time changes
-  /// and no leap seconds).
-  int get asNormalSeconds => asNormalDays.asNormalSeconds;
-
-  /// The seconds in this many normal leap years (366 days), i.e., years where
-  /// all days are exactly 24 hours long (no daylight savings time changes and
-  /// no leap seconds).
-  int get asNormalLeapSeconds => asLeapDays.asNormalSeconds;
-
-  /// The milliseconds in this many normal (non-leap) years (365 days), i.e.,
-  /// years where all days are exactly 24 hours long (no daylight savings time
-  /// changes and no leap seconds).
-  int get asNormalMillis => asNormalDays.asNormalMillis;
-
-  /// The milliseconds in this many normal leap years (366 days), i.e., years
-  /// where all days are exactly 24 hours long (no daylight savings time changes
-  /// and no leap seconds).
-  int get asNormalLeapMillis => asLeapDays.asNormalMillis;
-
-  /// The microseconds in this many normal (non-leap) years (365 days), i.e.,
-  /// years where all days are exactly 24 hours long (no daylight savings time
-  /// changes and no leap seconds).
-  int get asNormalMicros => asNormalDays.asNormalMicros;
-
-  /// The microseconds in this many normal leap years (366 days), i.e., years
-  /// where all days are exactly 24 hours long (no daylight savings time changes
-  /// and no leap seconds).
-  int get asNormalLeapMicros => asLeapDays.asNormalMicros;
-
-  /// The nanoseconds in this many normal (non-leap) years (365 days), i.e.,
-  /// years where all days are exactly 24 hours long (no daylight savings time
-  /// changes and no leap seconds).
-  int get asNormalNanos => asNormalDays.asNormalNanos;
-
-  /// The nanoseconds in this many normal leap years (366 days), i.e., years
-  /// where all days are exactly 24 hours long (no daylight savings time changes
-  /// and no leap seconds).
-  int get asNormalLeapNanos => asLeapDays.asNormalNanos;
-
-  @override
-  (Years, Months) get splitYearsMonths => (this, const Months(0));
-  @override
-  Months get asMonths => Months.year * inYears;
-
-  Years operator +(Years duration) => Years(inYears + duration.inYears);
-  Years operator -(Years duration) => Years(inYears - duration.inYears);
-  @override
-  Years operator -() => Years(-inYears);
-  @override
-  Years operator *(int factor) => Years(inYears * factor);
-  @override
-  Years operator ~/(int divisor) => Years(inYears ~/ divisor);
-  double dividedByYears(Years divisor) => inYears / divisor.inYears;
-  @override
-  Years operator %(int divisor) => Years(inYears % divisor);
-  @override
-  Years remainder(int divisor) => Years(inYears.remainder(divisor));
-
-  @override
-  Years get absolute => isNegative ? -this : this;
-
-  @override
-  String toString() => inYears.abs() == 1 ? '$inYears year' : '$inYears years';
-
-  int toJson() => inYears;
 }
 
 /// A unit of the day family: A length that is an exact, context-free multiple
 /// of a day.
 ///
 /// Members of this enum are units rather than types precisely because they are
-/// exact multiples of each other – a week is *always* seven days.
+/// exact multiples of each other – a week is *always* seven days.
 enum DayUnit {
   days(1),
   weeks(Days.perWeek),
@@ -419,24 +360,7 @@ final class Days extends CalendarDuration
   DayParts split(
     Set<DayUnit> units, {
     Rounding rounding = .nearestAwayFromZero,
-  }) {
-    assert(units.isNotEmpty);
-
-    final sorted = units.toList()
-      ..sort((a, b) => b.daysPer.compareTo(a.daysPer));
-    final smallest = sorted.last;
-
-    final values = <DayUnit, int>{};
-    var remaining = rounding.round(totalIn(smallest));
-    for (final unit in sorted.take(sorted.length - 1)) {
-      // `~/` truncates towards zero, so all components share the sign.
-      final value = remaining ~/ smallest.per(unit);
-      values[unit] = value;
-      remaining -= value * smallest.per(unit);
-    }
-    values[smallest] = remaining;
-    return DayParts._(values);
-  }
+  }) => DayParts._(splitIntoUnits(inDays, units, (it) => it.daysPer, rounding));
 
   Days operator +(Days duration) => Days(inDays + duration.inDays);
   Days operator -(Days duration) => Days(inDays - duration.inDays);

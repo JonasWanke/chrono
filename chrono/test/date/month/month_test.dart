@@ -15,7 +15,7 @@ void main() {
     expect(Month.fromNumber(number), month);
   });
 
-  Glados2<Month, MonthsDuration>().test('+ and -', (month, duration) {
+  Glados2<Month, Months>().test('+ and -', (month, duration) {
     expect(month + duration - duration, month);
   });
   Glados<Month>().test('next and previous', (month) {
@@ -27,15 +27,11 @@ void main() {
     Month.values,
     (first, second) {
       final untilNextOrSame = first.untilNextOrSame(second);
-      expectInRange<MonthsDuration>(
-        untilNextOrSame,
-        const Months(0),
-        const Months(11),
-      );
+      expectInRange<Months>(untilNextOrSame, const Months(0), const Months(11));
       expect(first == second, untilNextOrSame == const Months(0));
 
       final untilPreviousOrSame = first.untilPreviousOrSame(second);
-      expectInRange<MonthsDuration>(
+      expectInRange<Months>(
         untilPreviousOrSame,
         const Months(-11),
         const Months(0),
