@@ -1,7 +1,6 @@
 import 'package:meta/meta.dart';
 
 import '../date/date.dart';
-import '../date/duration.dart';
 import '../date_time/date_time.dart';
 import '../date_time/duration.dart';
 import '../offset/fixed.dart';
@@ -76,9 +75,9 @@ class ZonedDateTime<Tz extends TimeZone<Tz>> {
   ZonedDateTime<Utc> toUtc() =>
       ZonedDateTime.fromUtcDateTimeAndOffset(utcDateTime, const Utc());
 
-  ZonedDateTime<Tz> operator +(CDuration duration) =>
+  ZonedDateTime<Tz> operator +(ChronoDelta duration) =>
       ZonedDateTime.fromUtcDateTimeAndOffset(utcDateTime + duration, offset);
-  ZonedDateTime<Tz> operator -(CDuration duration) => this + (-duration);
+  ZonedDateTime<Tz> operator -(ChronoDelta duration) => this + (-duration);
 
   // TODO(JonasWanke): more arithmetic
   /// Subtracts another `DateTime` from the current date and time.

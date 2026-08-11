@@ -36,10 +36,10 @@ void setChronoGladosDefaults() {
   Any.setDefault(any.monthDay);
   Any.setDefault(any.weekday);
 
-  Any.setDefault(any.durationChrono);
-  Any.setDefault(any.compoundDuration);
-  Any.setDefault(any.calendarDuration);
-  Any.setDefault(any.compoundCalendarDuration);
+  Any.setDefault(any.chronoDelta);
+  Any.setDefault(any.dateTimeDelta);
+  Any.setDefault(any.calendarDelta);
+  Any.setDefault(any.monthsDays);
   Any.setDefault(any.months);
   Any.setDefault(any.days);
   Any.setDefault(any.dayUnit);
@@ -193,24 +193,23 @@ extension ChronoAny on Any {
 
   Generator<Weekday> get weekday => choose(Weekday.values);
 
-  Generator<CDuration> get durationChrono =>
-      either(calendarDuration, timeDelta);
-  Generator<CompoundDuration> get compoundDuration {
+  Generator<ChronoDelta> get chronoDelta => either(calendarDelta, timeDelta);
+  Generator<DateTimeDelta> get dateTimeDelta {
     return combine2(
-      compoundCalendarDuration,
+      monthsDays,
       timeDelta,
       (monthsAndDays, time) =>
-          CompoundDuration(monthsAndDays: monthsAndDays, time: time),
+          DateTimeDelta(monthsAndDays: monthsAndDays, time: time),
     );
   }
 
-  Generator<CalendarDuration> get calendarDuration =>
-      either(compoundCalendarDuration, months, days);
-  Generator<CompoundCalendarDuration> get compoundCalendarDuration {
+  Generator<CalendarDelta> get calendarDelta =>
+      either(monthsDays, months, days);
+  Generator<MonthsDays> get monthsDays {
     return combine2(
       months,
       days,
-      (months, days) => CompoundCalendarDuration(months: months, days: days),
+      (months, days) => MonthsDays(months: months, days: days),
     );
   }
 

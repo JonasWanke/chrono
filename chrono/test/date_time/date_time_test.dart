@@ -48,37 +48,37 @@ void main() {
 
     expect(
       (base + TimeDelta(hours: 5)).difference(base),
-      TimeDelta(hours: 5).asCompoundDuration,
+      TimeDelta(hours: 5).asDateTimeDelta,
     );
     expect(
       (base + const Days(1)).difference(base),
-      const Days(1).asCompoundDuration,
+      const Days(1).asDateTimeDelta,
     );
     expect(
       (base + const Days(1) + TimeDelta(hours: 5)).difference(base),
-      CompoundDuration(days: const Days(1), time: TimeDelta(hours: 5)),
+      DateTimeDelta(days: const Days(1), time: TimeDelta(hours: 5)),
     );
 
     expect(
       (base - TimeDelta(hours: 5)).difference(base),
-      TimeDelta(hours: -5).asCompoundDuration,
+      TimeDelta(hours: -5).asDateTimeDelta,
     );
     expect(
       (base - const Days(1)).difference(base),
-      const Days(-1).asCompoundDuration,
+      const Days(-1).asDateTimeDelta,
     );
     expect(
       (base - const Days(1) - TimeDelta(hours: 5)).difference(base),
-      CompoundDuration(days: const Days(-1), time: TimeDelta(hours: -5)),
+      DateTimeDelta(days: const Days(-1), time: TimeDelta(hours: -5)),
     );
 
     expect(
       (base + const Days(1) - TimeDelta(hours: 5)).difference(base),
-      CompoundDuration(time: TimeDelta(hours: 24 - 5)),
+      DateTimeDelta(time: TimeDelta(hours: 24 - 5)),
     );
     expect(
       (base - const Days(1) + TimeDelta(hours: 5)).difference(base),
-      CompoundDuration(time: TimeDelta(hours: -(24 - 5))),
+      DateTimeDelta(time: TimeDelta(hours: -(24 - 5))),
     );
   });
 }

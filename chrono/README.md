@@ -21,7 +21,7 @@ The following features are _not_ implemented, but could be added in the future:
 A timestamp is a unique point on the UTC timeline, stored as the duration since the [Unix epoch].
 Chrono provides these classes:
 
-- [`UnixEpochTimestamp<D>`], generic over a [`TimeDuration`] type
+- [`UnixEpochTimestamp<D>`], generic over a [`TimeDelta`] type
   - [`Instant`]: a subclass with nanosecond precision
   - [`UnixEpochMicroseconds`]: a subclass with microsecond precision
   - [`UnixEpochMilliseconds`]: a subclass with millisecond precision
@@ -86,30 +86,29 @@ Durations fall into three categories:
 One day is not always 24 hours long (due to daylight savings time changes), and one month is not always 30/31 days long (due to leap years and different month lengths).
 Chrono offers different classes for each category (listed by inheritance):
 
-- [`CDuration`]: abstract base class
-  - [`TimeDuration`]: time-based durations: hours, minutes, seconds, milliseconds, etc.
-    - [`Hours`], [`Minutes`], [`Seconds`], [`Milliseconds`], [`Microseconds`], [`Nanoseconds`]: a whole number of hours/etc.
-  - [`CalendarDuration`]: day- and month-based durations
+- [`ChronoDelta`]: abstract base class
+  - [`TimeDelta`]: exact durations, e.g., `TimeDelta(hours: 2, minutes: 30)`
+  - [`CalendarDelta`]: day- and month-based durations
     - [`Days`]: a whole number of days, e.g., `Days(5)` or `Days.fromWeeks(3)`
     - [`Months`]: a whole number of months, e.g., `Months(3)` or `Months.fromYears(2)`
-    - [`CompoundCalendarDuration`]: [`Months`] + [`Days`]
-  - [`CompoundDuration`]: [`Months`] + [`Days`] + [`Nanoseconds`]
+    - [`MonthsDays`]: [`Months`] + [`Days`]
+  - [`DateTimeDelta`]: [`MonthsDays`] + [`TimeDelta`]
 
-The [`CDuration`] class from Dart Core corresponds to [`TimeDuration`], but limited to microsecond precision.
+The `Duration` class from Dart Core corresponds to [`TimeDelta`], but limited to microsecond precision.
 
-Some duration classes also have a corresponding `…Duration` class, e.g., [`Minutes`] and [`MinutesDuration`].
-[`MinutesDuration`] is an abstract base class for all time-based durations consisting of a whole number of minutes.
-[`Minutes`] is a concrete class extending [`MinutesDuration`].
-When constructing or returning values, you should use [`Minutes`] directly.
-However, in parameters, you should accept any [`MinutesDuration`].
-This way, callers can pass not only [`Minutes`], but also [`Hours`].
-To convert this to [`Minutes`], call `asMinutes`.
+[`Months`] and [`Days`] are separate types because they are mutually irreducible: one month is 28–31 days, and one day is 23–25 hours.
+Coarser units like years, weeks and quarters are *not* separate types, since they are exact multiples – use `Months.fromYears(2)` or `Days.fromWeeks(3)` to construct them, and `split(…)` to decompose:
+
+```dart
+Months(14).split({.years, .months});  // 1 years, 2 months
+Days(17).split({.weeks, .days});      // 2 weeks, 3 days
+```
 
 ### Compound Durations
 
-[`CompoundDuration`] and [`CompoundCalendarDuration`] can represent values with mixed signs, e.g., -1 month and 1 day.
+[`DateTimeDelta`] and [`MonthsDays`] can represent values with mixed signs, e.g., -1 month and 1 day.
 
-When performing additions and subtractions with compound durations, first the [`Months`] are evaluated, then the [`Days`], and finally the [`Nanoseconds`].
+When performing additions and subtractions with compound durations, first the [`Months`] are evaluated, then the [`Days`], and finally the [`TimeDelta`].
 For example, adding 1 month and -1 day to 2023-08-31 results in 2023-09-29:
 
 1. First, 1 month is added, resulting in 2023-09-30.
@@ -220,43 +219,36 @@ Chrono uses [<kbd>Glados</kbd>] for property-based testing.
 | [`YearWeek`]                              | —               | `chrono::IsoWeek`                  |
 | [`Weekday`]                               | `DayOfWeek`     | `chrono::Weekday`                  |
 | [`Time`]                                  | `LocalTime`     | `chrono::NaiveTime`                |
-| [`CalendarDuration`]                      | `Period`        | —                                  |
+| [`CalendarDelta`]                      | `Period`        | —                                  |
 | [`Months`]                                | —               | `chrono::Months`                   |
 | [`Days`]                                  | —               | `chrono::Days`                     |
-| [`TimeDuration`]                          | `Duration`      | `std::time::Duration`              |
+| [`TimeDelta`]                             | `Duration`      | `std::time::Duration`              |
 | [`Clock`] (from [<kbd>clock</kbd>])       | `Clock`         | —                                  |
 
 <!-- chrono -->
 
-[`CalendarDuration`]: https://pub.dev/documentation/chrono/latest/chrono/CalendarDuration-class.html
+[`CalendarDelta`]: https://pub.dev/documentation/chrono/latest/chrono/CalendarDelta-class.html
 [`CDateTime`]: https://pub.dev/documentation/chrono/latest/chrono/CDateTime-class.html
 [`CDateTimeAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/CDateTimeAsIsoStringCodec-class.html
-[`CDuration`]: https://pub.dev/documentation/chrono/latest/chrono/CDuration-class.html
-[`CompoundCalendarDuration`]: https://pub.dev/documentation/chrono/latest/chrono/CompoundCalendarDuration-class.html
-[`CompoundDuration`]: https://pub.dev/documentation/chrono/latest/chrono/CompoundDuration-class.html
+[`ChronoDelta`]: https://pub.dev/documentation/chrono/latest/chrono/ChronoDelta-class.html
+[`MonthsDays`]: https://pub.dev/documentation/chrono/latest/chrono/MonthsDays-class.html
+[`DateTimeDelta`]: https://pub.dev/documentation/chrono/latest/chrono/DateTimeDelta-class.html
 [`Date`]: https://pub.dev/documentation/chrono/latest/chrono/Date-class.html
 [`DateAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/DateAsIsoStringCodec-class.html
 [`DateAsOrdinalDateIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/DateAsOrdinalDateIsoStringCodec-class.html
 [`DateAsWeekDateIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/DateAsWeekDateIsoStringCodec-class.html
 [`Days`]: https://pub.dev/documentation/chrono/latest/chrono/Days-class.html
-[`Hours`]: https://pub.dev/documentation/chrono/latest/chrono/Hours-class.html
 [`Instant`]: https://pub.dev/documentation/chrono/latest/chrono/Instant-class.html
 [`InstantAsIntCodec`]: https://pub.dev/documentation/chrono/latest/chrono/InstantAsIntCodec-class.html
 [`InstantAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/InstantAsIsoStringCodec-class.html
-[`Microseconds`]: https://pub.dev/documentation/chrono/latest/chrono/Microseconds-class.html
-[`Milliseconds`]: https://pub.dev/documentation/chrono/latest/chrono/Milliseconds-class.html
-[`Minutes`]: https://pub.dev/documentation/chrono/latest/chrono/Minutes-class.html
-[`MinutesDuration`]: https://pub.dev/documentation/chrono/latest/chrono/MinutesDuration-class.html
 [`Month`]: https://pub.dev/documentation/chrono/latest/chrono/Month-class.html
 [`MonthAsIntCodec`]: https://pub.dev/documentation/chrono/latest/chrono/MonthAsIntCodec-class.html
 [`MonthDay`]: https://pub.dev/documentation/chrono/latest/chrono/MonthDay-class.html
 [`MonthDayAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/MonthDayAsIsoStringCodec-class.html
 [`Months`]: https://pub.dev/documentation/chrono/latest/chrono/Months-class.html
-[`Nanoseconds`]: https://pub.dev/documentation/chrono/latest/chrono/Nanoseconds-class.html
-[`Seconds`]: https://pub.dev/documentation/chrono/latest/chrono/Seconds-class.html
 [`Time`]: https://pub.dev/documentation/chrono/latest/chrono/Time-class.html
 [`TimeAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/TimeAsIsoStringCodec-class.html
-[`TimeDuration`]: https://pub.dev/documentation/chrono/latest/chrono/TimeDuration-class.html
+[`TimeDelta`]: https://pub.dev/documentation/chrono/latest/chrono/TimeDelta-class.html
 [`UnixEpochMicroseconds`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochMicroseconds-class.html
 [`UnixEpochMicrosecondsAsIntCodec`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochMicrosecondsAsIntCodec-class.html
 [`UnixEpochMicrosecondsAsIsoStringCodec`]: https://pub.dev/documentation/chrono/latest/chrono/UnixEpochMicrosecondsAsIsoStringCodec-class.html

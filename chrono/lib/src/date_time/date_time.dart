@@ -112,8 +112,8 @@ final class CDateTime
     );
   }
 
-  CDateTime operator +(CDuration duration) {
-    final compoundDuration = duration.asCompoundDuration;
+  CDateTime operator +(ChronoDelta duration) {
+    final compoundDuration = duration.asDateTimeDelta;
     var newDate = date + compoundDuration.months + compoundDuration.days;
 
     final (days, newTime) = (time.timeSinceMidnight + compoundDuration.time)
@@ -122,7 +122,7 @@ final class CDateTime
     return CDateTime(newDate, newTime);
   }
 
-  CDateTime operator -(CDuration duration) => this + (-duration);
+  CDateTime operator -(ChronoDelta duration) => this + (-duration);
 
   /// Adds the given [FixedOffset] to the current [CDateTime].
   ///
@@ -144,9 +144,9 @@ final class CDateTime
 
   /// Returns `this - other` as days and fractional seconds.
   ///
-  /// The returned [CompoundDuration]'s days and seconds are both `>= 0` or both
+  /// The returned [DateTimeDelta]'s days and seconds are both `>= 0` or both
   /// `<= 0`. The months will always be zero.
-  CompoundDuration difference(CDateTime other) {
+  DateTimeDelta difference(CDateTime other) {
     if (this < other) return -other.difference(this);
 
     var days = date.differenceInDays(other.date);
@@ -158,12 +158,12 @@ final class CDateTime
       timeDelta = time.difference(other.time);
     }
 
-    return CompoundDuration(days: days, time: timeDelta);
+    return DateTimeDelta(days: days, time: timeDelta);
   }
 
   /// Returns `this - other` as fractional seconds.
   ///
-  /// The returned [CompoundDuration]'s days and seconds are both `>= 0` or both
+  /// The returned [DateTimeDelta]'s days and seconds are both `>= 0` or both
   /// `<= 0`. The months will always be zero.
   TimeDelta timeDifference(CDateTime other) {
     final difference = this.difference(other);
@@ -284,7 +284,7 @@ extension RangeOfCDateTimeExtension on Range<CDateTime> {
   Range<Time> get times => start.time.rangeUntil(end.time);
 
   TimeDelta get timeDuration => end.timeDifference(start);
-  CompoundDuration get compoundDuration => end.difference(start);
+  DateTimeDelta get compoundDuration => end.difference(start);
 }
 
 /// Encodes a [Range] of [CDateTime]s as a string `start/end`.

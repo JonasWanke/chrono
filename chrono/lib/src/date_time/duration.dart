@@ -5,39 +5,49 @@ import '../date/duration.dart';
 
 /// Base class for date and time durations.
 ///
-/// This class is called `CDuration` to avoid conflicts with `Duration` from
-/// `dart:core`.
+/// The `Chrono` prefix avoids a conflict with `Duration` from `dart:core` and
+/// joins the convention of [ChronoParser], [ChronoFormatter] and friends.
 ///
 /// See also:
 ///
-/// - [CalendarDuration], which covers durations based on an integer number of
+/// - [CalendarDelta], which covers durations based on an integer number of
 ///   days or months.
 /// - [TimeDelta], which covers durations based on a fixed time like seconds.
-/// - [CompoundDuration], which combines [CalendarDuration] and [TimeDelta].
+/// - [DateTimeDelta], which combines [CalendarDelta] and [TimeDelta].
 @immutable
-abstract class CDuration {
-  const CDuration();
+abstract class ChronoDelta {
+  const ChronoDelta();
 
-  CompoundDuration get asCompoundDuration;
+  DateTimeDelta get asDateTimeDelta;
 
   bool get isZero {
-    final compoundDuration = asCompoundDuration;
+    final compoundDuration = asDateTimeDelta;
     return compoundDuration.months.inMonths == 0 &&
         compoundDuration.days.inDays == 0 &&
         compoundDuration.time.isZero;
   }
 
-  CDuration operator -();
-  CDuration operator *(int factor);
-  CDuration operator ~/(int divisor);
+  ChronoDelta operator -();
+  ChronoDelta operator *(int factor);
+  ChronoDelta operator ~/(int divisor);
+
+  /// The remainder of dividing this by [divisor], with the sign of [divisor].
+  ///
+  /// The divisor is a duration rather than an [int]: `TimeDelta % TimeDelta`
+  /// and `CalendarDelta % int` used to be the same operator with incompatible
+  /// meanings.
+  ChronoDelta operator %(covariant ChronoDelta divisor);
+
+  /// The remainder of dividing this by [divisor], with the sign of `this`.
+  ChronoDelta remainder(covariant ChronoDelta divisor);
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! CDuration) return false;
+    if (other is! ChronoDelta) return false;
 
-    final thisCompound = asCompoundDuration;
-    final otherCompound = other.asCompoundDuration;
+    final thisCompound = asDateTimeDelta;
+    final otherCompound = other.asDateTimeDelta;
     return thisCompound.months.inMonths == otherCompound.months.inMonths &&
         thisCompound.days.inDays == otherCompound.days.inDays &&
         thisCompound.time.totalSeconds == otherCompound.time.totalSeconds &&
@@ -46,7 +56,7 @@ abstract class CDuration {
 
   @override
   int get hashCode {
-    final compound = asCompoundDuration;
+    final compound = asDateTimeDelta;
     return Object.hash(
       compound.months.inMonths,
       compound.days.inDays,
@@ -56,11 +66,11 @@ abstract class CDuration {
   }
 }
 
-/// [CDuration] subclass that can represent any duration by combining [Months],
+/// [ChronoDelta] subclass that can represent any duration by combining [Months],
 /// [Days], and [TimeDelta].
-final class CompoundDuration extends CDuration {
-  CompoundDuration({
-    CalendarDuration? monthsAndDays,
+final class DateTimeDelta extends ChronoDelta {
+  DateTimeDelta({
+    CalendarDelta? monthsAndDays,
     Months? months,
     Days? days,
     this.time = const TimeDelta.raw(0, 0),
@@ -69,47 +79,63 @@ final class CompoundDuration extends CDuration {
          'Cannot specify both `monthsAndDays` and `months`/`days`.',
        ),
        monthsAndDays =
-           monthsAndDays?.asCompoundCalendarDuration ??
-           CompoundCalendarDuration(
+           monthsAndDays?.asMonthsDays ??
+           MonthsDays(
              months: months ?? const Months(0),
              days: days ?? const Days(0),
            );
 
-  final CompoundCalendarDuration monthsAndDays;
+  final MonthsDays monthsAndDays;
   Months get months => monthsAndDays.months;
   Days get days => monthsAndDays.days;
   final TimeDelta time;
 
   @override
-  CompoundDuration get asCompoundDuration => this;
+  DateTimeDelta get asDateTimeDelta => this;
 
-  CompoundDuration operator +(CDuration duration) {
-    final CompoundDuration(:monthsAndDays, time: seconds) =
-        duration.asCompoundDuration;
-    return CompoundDuration(
+  DateTimeDelta operator +(ChronoDelta duration) {
+    final DateTimeDelta(:monthsAndDays, time: seconds) =
+        duration.asDateTimeDelta;
+    return DateTimeDelta(
       monthsAndDays: this.monthsAndDays + monthsAndDays,
       time: time + seconds,
     );
   }
 
-  CompoundDuration operator -(CDuration other) => this + -other;
+  DateTimeDelta operator -(ChronoDelta other) => this + -other;
   @override
-  CompoundDuration operator -() =>
-      CompoundDuration(monthsAndDays: -monthsAndDays, time: -time);
+  DateTimeDelta operator -() =>
+      DateTimeDelta(monthsAndDays: -monthsAndDays, time: -time);
 
   @override
-  CompoundDuration operator *(int factor) {
-    return CompoundDuration(
+  DateTimeDelta operator *(int factor) {
+    return DateTimeDelta(
       monthsAndDays: monthsAndDays * factor,
       time: time * factor,
     );
   }
 
   @override
-  CompoundDuration operator ~/(int divisor) {
-    return CompoundDuration(
+  DateTimeDelta operator ~/(int divisor) {
+    return DateTimeDelta(
       monthsAndDays: monthsAndDays ~/ divisor,
       time: time ~/ divisor,
+    );
+  }
+
+  @override
+  DateTimeDelta operator %(DateTimeDelta divisor) {
+    return DateTimeDelta(
+      monthsAndDays: monthsAndDays % divisor.monthsAndDays,
+      time: time % divisor.time,
+    );
+  }
+
+  @override
+  DateTimeDelta remainder(DateTimeDelta divisor) {
+    return DateTimeDelta(
+      monthsAndDays: monthsAndDays.remainder(divisor.monthsAndDays),
+      time: time.remainder(divisor.time),
     );
   }
 

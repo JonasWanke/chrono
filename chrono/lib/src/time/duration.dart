@@ -6,14 +6,14 @@ import '../date_time/duration.dart';
 import '../rounding.dart';
 import '../utils.dart';
 
-/// A [CDuration] that is of a fixed length.
+/// A [ChronoDelta] that is of a fixed length.
 ///
 /// See also:
 ///
-/// - [CalendarDuration], which covers durations based on an integer number of
+/// - [CalendarDelta], which covers durations based on an integer number of
 ///   days or months.
-/// - [CDuration], which is the base class for all durations.
-class TimeDelta extends CDuration
+/// - [ChronoDelta], which is the base class for all durations.
+class TimeDelta extends ChronoDelta
     with ComparisonOperatorsFromComparable<TimeDelta>
     implements Comparable<TimeDelta> {
   factory TimeDelta({
@@ -474,7 +474,7 @@ class TimeDelta extends CDuration
   }
 
   @override
-  CompoundDuration get asCompoundDuration => CompoundDuration(time: this);
+  DateTimeDelta get asDateTimeDelta => DateTimeDelta(time: this);
 
   @override
   bool get isZero => totalSeconds == 0 && subSecondNanos == 0;
@@ -520,8 +520,7 @@ class TimeDelta extends CDuration
   }
 
   // TODO(JonasWanke): avoid `totalNanos` to avoid overflows
-  double dividedByTimeDelta(TimeDelta divisor) =>
-      totalNanos / divisor.totalNanos;
+  double operator /(TimeDelta divisor) => totalNanos / divisor.totalNanos;
   // Nanoseconds dividedByInt(
   //   int divisor, {
   //   Rounding rounding = Rounding.nearestAwayFromZero,
@@ -532,9 +531,11 @@ class TimeDelta extends CDuration
   // }) => Nanoseconds(rounding.round(inNanoseconds.toDouble() / divisor));
 
   // TODO(JonasWanke): avoid `totalNanos` to avoid overflows
+  @override
   TimeDelta operator %(TimeDelta divisor) =>
       TimeDelta(nanos: totalNanos % divisor.totalNanos);
   // TODO(JonasWanke): avoid `totalNanos` to avoid overflows
+  @override
   TimeDelta remainder(TimeDelta divisor) =>
       TimeDelta(nanos: totalNanos.remainder(divisor.totalNanos));
 
@@ -556,11 +557,11 @@ class TimeDelta extends CDuration
   TimeDelta roundToMultipleOf(
     TimeDelta duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) => duration * rounding.round(dividedByTimeDelta(duration));
+  }) => duration * rounding.round(this / duration);
   Days roundToMultipleOfNormalDays(
     Days duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) => duration * rounding.round(dividedByTimeDelta(duration.asTime));
+  }) => duration * rounding.round(this / duration.asTime);
 
   /// Returns a [Future] that completes after this duration has passed.
   Future<void> get wait => Future<void>.delayed(roundToCoreDuration());

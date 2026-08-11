@@ -7,10 +7,12 @@ import '../utils.dart';
 void main() {
   setChronoGladosDefaults();
 
-  group('CompoundCalendarDuration', () {
+  group('MonthsDays', () {
     // ignore: missing-test-assertion
-    _testDurationBasics<CompoundCalendarDuration>();
-    Glados2<CompoundCalendarDuration, CalendarDuration>().test(
+    _testDurationBasics<MonthsDays>(
+      (it) => MonthsDays(months: Months(it), days: Days(it)),
+    );
+    Glados2<MonthsDays, CalendarDelta>().test(
       '+ and -',
       (first, second) => expect(first + second - second, first),
     );
@@ -38,7 +40,7 @@ void main() {
 
   group('Months', () {
     // ignore: missing-test-assertion
-    _testDurationBasics<Months>();
+    _testDurationBasics<Months>(Months.new);
     Glados2<Months, Months>().test('+ and -', (first, second) {
       expect(first + second - second, first);
     });
@@ -189,7 +191,7 @@ void main() {
 
   group('Days', () {
     // ignore: missing-test-assertion
-    _testDurationBasics<Days>();
+    _testDurationBasics<Days>(Days.new);
     Glados2<Days, Days>().test('+ and -', (first, second) {
       expect(first + second - second, first);
     });
@@ -291,8 +293,10 @@ void main() {
   });
 }
 
+/// [fromInt] builds a duration of type [T] whose every component is the given
+/// value – needed since `%` and `remainder(…)` now take a duration, not an int.
 @isTest
-void _testDurationBasics<T extends CalendarDuration>() {
+void _testDurationBasics<T extends CalendarDelta>(T Function(int) fromInt) {
   // ignore: unnecessary_parenthesis
   Glados<T>().test('unary -', (duration) => expect(-(-duration), duration));
 
@@ -304,7 +308,7 @@ void _testDurationBasics<T extends CalendarDuration>() {
     factor,
   ) {
     expect(duration * factor ~/ factor, duration);
-    expect((duration * factor % factor).isZero, true);
-    expect((duration * factor).remainder(factor).isZero, true);
+    expect((duration * factor % fromInt(factor)).isZero, true);
+    expect((duration * factor).remainder(fromInt(factor)).isZero, true);
   });
 }

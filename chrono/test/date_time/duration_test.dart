@@ -6,37 +6,37 @@ import '../utils.dart';
 void main() {
   setChronoGladosDefaults();
 
-  group('CompoundDuration', () {
-    Glados<CompoundDuration>().test('unary -', (duration) {
+  group('DateTimeDelta', () {
+    Glados<DateTimeDelta>().test('unary -', (duration) {
       // ignore: unnecessary_parenthesis
       expect(-(-duration), duration);
     });
-    Glados2<CompoundDuration, CDuration>().test(
+    Glados2<DateTimeDelta, ChronoDelta>().test(
       '+ and -',
       (first, second) => expect(first + second - second, first),
     );
 
-    Glados<CompoundDuration>().test('multiply with zero', (duration) {
+    Glados<DateTimeDelta>().test('multiply with zero', (duration) {
       expect((duration * 0).isZero, true);
     });
-    Glados2<CompoundDuration, int>(null, any.intExcept0).test(
+    Glados2<DateTimeDelta, int>(null, any.intExcept0).test(
       '* and ~/',
       (duration, factor) => expect(duration * factor ~/ factor, duration),
     );
   });
 
   group('equality', () {
-    Glados<CalendarDuration>().test('CalendarDuration', (duration) {
-      expect(duration.asCompoundDuration, duration);
+    Glados<CalendarDelta>().test('CalendarDelta', (duration) {
+      expect(duration.asDateTimeDelta, duration);
     });
     Glados<Months>().test('Months', (duration) {
-      expect(duration.asCompoundDuration, duration);
+      expect(duration.asDateTimeDelta, duration);
     });
     Glados<Days>().test('Days', (duration) {
-      expect(duration.asCompoundDuration, duration);
+      expect(duration.asDateTimeDelta, duration);
     });
     Glados<TimeDelta>().test('TimeDelta', (duration) {
-      expect(duration.asCompoundDuration, duration);
+      expect(duration.asDateTimeDelta, duration);
     });
   });
 }

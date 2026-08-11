@@ -6,7 +6,7 @@ import '../rounding.dart';
 import '../time/duration.dart';
 import '../utils.dart';
 
-/// A [CDuration] based on an integer number of days or months.
+/// A [ChronoDelta] based on an integer number of days or months.
 ///
 /// This is different to [TimeDelta] because days can be shorter or longer
 /// than 24 hours and months have a varying of days.
@@ -15,76 +15,64 @@ import '../utils.dart';
 ///
 /// - [Months], which represents an integer number of months.
 /// - [Days], which represents an integer number of days.
-/// - [CompoundCalendarDuration], which combines [Months] and [Days].
+/// - [MonthsDays], which combines [Months] and [Days].
 /// - [TimeDelta], which covers durations based on a fixed time like seconds.
-/// - [CDuration], which is the base class for date and time durations.
-abstract class CalendarDuration extends CDuration {
-  const CalendarDuration();
+/// - [ChronoDelta], which is the base class for date and time durations.
+abstract class CalendarDelta extends ChronoDelta {
+  const CalendarDelta();
 
-  CompoundCalendarDuration get asCompoundCalendarDuration;
+  MonthsDays get asMonthsDays;
   @override
-  CompoundDuration get asCompoundDuration =>
-      CompoundDuration(monthsAndDays: asCompoundCalendarDuration);
+  DateTimeDelta get asDateTimeDelta =>
+      DateTimeDelta(monthsAndDays: asMonthsDays);
 
   @override
-  CalendarDuration operator -();
+  CalendarDelta operator -();
   @override
-  CalendarDuration operator *(int factor);
+  CalendarDelta operator *(int factor);
   @override
-  CalendarDuration operator ~/(int divisor);
+  CalendarDelta operator ~/(int divisor);
   @override
-  CalendarDuration operator %(int divisor);
+  CalendarDelta operator %(covariant CalendarDelta divisor);
   @override
-  CalendarDuration remainder(int divisor);
+  CalendarDelta remainder(covariant CalendarDelta divisor);
 }
 
-/// [CalendarDuration] subclass that can represent any days-based duration by
+/// [CalendarDelta] subclass that can represent any days-based duration by
 /// combining [Months] and [Days].
-final class CompoundCalendarDuration extends CalendarDuration {
-  const CompoundCalendarDuration({
-    this.months = const Months(0),
-    this.days = const Days(0),
-  });
+final class MonthsDays extends CalendarDelta {
+  const MonthsDays({this.months = const Months(0), this.days = const Days(0)});
 
   final Months months;
   final Days days;
 
   @override
-  CompoundCalendarDuration get asCompoundCalendarDuration => this;
+  MonthsDays get asMonthsDays => this;
 
-  CompoundCalendarDuration operator +(CalendarDuration duration) {
-    final CompoundCalendarDuration(:months, :days) =
-        duration.asCompoundCalendarDuration;
-    return CompoundCalendarDuration(
-      months: this.months + months,
-      days: this.days + days,
-    );
+  MonthsDays operator +(CalendarDelta duration) {
+    final MonthsDays(:months, :days) = duration.asMonthsDays;
+    return MonthsDays(months: this.months + months, days: this.days + days);
   }
 
-  CompoundCalendarDuration operator -(CalendarDuration duration) =>
-      this + (-duration);
+  MonthsDays operator -(CalendarDelta duration) => this + (-duration);
   @override
-  CompoundCalendarDuration operator -() =>
-      CompoundCalendarDuration(months: -months, days: -days);
+  MonthsDays operator -() => MonthsDays(months: -months, days: -days);
   @override
-  CompoundCalendarDuration operator *(int factor) =>
-      CompoundCalendarDuration(months: months * factor, days: days * factor);
+  MonthsDays operator *(int factor) =>
+      MonthsDays(months: months * factor, days: days * factor);
   @override
-  CompoundCalendarDuration operator ~/(int divisor) {
-    return CompoundCalendarDuration(
-      months: months ~/ divisor,
-      days: days ~/ divisor,
-    );
+  MonthsDays operator ~/(int divisor) {
+    return MonthsDays(months: months ~/ divisor, days: days ~/ divisor);
   }
 
   @override
-  CompoundCalendarDuration operator %(int divisor) =>
-      CompoundCalendarDuration(months: months % divisor, days: days % divisor);
+  MonthsDays operator %(MonthsDays divisor) =>
+      MonthsDays(months: months % divisor.months, days: days % divisor.days);
   @override
-  CompoundCalendarDuration remainder(int divisor) {
-    return CompoundCalendarDuration(
-      months: months.remainder(divisor),
-      days: days.remainder(divisor),
+  MonthsDays remainder(MonthsDays divisor) {
+    return MonthsDays(
+      months: months.remainder(divisor.months),
+      days: days.remainder(divisor.days),
     );
   }
 
@@ -144,7 +132,7 @@ final class MonthParts extends ChronoParts<MonthUnit> {
 ///
 /// This is different to [TimeDelta] because months have a varying number of
 /// days.
-final class Months extends CalendarDuration
+final class Months extends CalendarDelta
     with ComparisonOperatorsFromComparable<Months>
     implements Comparable<Months> {
   const Months(this.inMonths);
@@ -162,8 +150,7 @@ final class Months extends CalendarDuration
   final int inMonths;
 
   @override
-  CompoundCalendarDuration get asCompoundCalendarDuration =>
-      CompoundCalendarDuration(months: this);
+  MonthsDays get asMonthsDays => MonthsDays(months: this);
 
   bool get isPositive => inMonths > 0;
   bool get isNonPositive => inMonths <= 0;
@@ -218,9 +205,10 @@ final class Months extends CalendarDuration
   Months operator ~/(int divisor) => Months(inMonths ~/ divisor);
   double operator /(Months divisor) => inMonths / divisor.inMonths;
   @override
-  Months operator %(int divisor) => Months(inMonths % divisor);
+  Months operator %(Months divisor) => Months(inMonths % divisor.inMonths);
   @override
-  Months remainder(int divisor) => Months(inMonths.remainder(divisor));
+  Months remainder(Months divisor) =>
+      Months(inMonths.remainder(divisor.inMonths));
 
   Months get absolute => isNegative ? -this : this;
 
@@ -280,7 +268,7 @@ final class DayParts extends ChronoParts<DayUnit> {
 ///
 /// This is different to [TimeDelta] because days can be shorter or longer than
 /// 24 hours due to daylight savings time changes.
-final class Days extends CalendarDuration
+final class Days extends CalendarDelta
     with ComparisonOperatorsFromComparable<Days>
     implements Comparable<Days> {
   const Days(this.inDays);
@@ -318,8 +306,7 @@ final class Days extends CalendarDuration
   int get asNormalNanos => TimeDelta.nanosPerNormalDay * inDays;
 
   @override
-  CompoundCalendarDuration get asCompoundCalendarDuration =>
-      CompoundCalendarDuration(days: this);
+  MonthsDays get asMonthsDays => MonthsDays(days: this);
 
   bool get isPositive => inDays > 0;
   bool get isNonPositive => inDays <= 0;
@@ -372,9 +359,9 @@ final class Days extends CalendarDuration
   Days operator ~/(int divisor) => Days(inDays ~/ divisor);
   double operator /(Days divisor) => inDays / divisor.inDays;
   @override
-  Days operator %(int divisor) => Days(inDays % divisor);
+  Days operator %(Days divisor) => Days(inDays % divisor.inDays);
   @override
-  Days remainder(int divisor) => Days(inDays.remainder(divisor));
+  Days remainder(Days divisor) => Days(inDays.remainder(divisor.inDays));
 
   Days get absolute => isNegative ? -this : this;
 
