@@ -197,7 +197,8 @@ class FixedTimespanSetBuilder {
         final earliestRule = activatedRules.removeAt(pos);
         dstOffsetSeconds = earliestRule.timeToAdd;
 
-        insertStartTransition &= earliestAt != startTime!;
+        insertStartTransition =
+            insertStartTransition && earliestAt != startTime!;
         if (insertStartTransition) {
           if (earliestAt < startTime!) {
             startUtcOffset = timespan.offsetSeconds;
