@@ -19,8 +19,10 @@ void main() {
   test('us_eastern_dst_commutativity', () {
     final dt = Tz.utc.with_ymd_and_hms(2002, 4, 7, 7, 0, 0).unwrap();
     for (final days in const IntRange(-420, 719)) {
-      final dt1 = (dt + Days(days)).withTimezone(Tz.us_eastern);
-      final dt2 = dt.withTimezone(Tz.us_eastern) + Days(days);
+      final dt1 = (dt + TimeDelta(normalDays: days)).withTimezone(
+        Tz.us_eastern,
+      );
+      final dt2 = dt.withTimezone(Tz.us_eastern) + TimeDelta(normalDays: days);
       expect(dt1, dt2);
     }
   });
@@ -77,9 +79,55 @@ void main() {
   //     );
   // });
 
+  group('adding Days', () {
+    test('keeps wall-clock time across DST', () {
+      final dt = Tz.europe_berlin.with_ymd_and_hms(2024, 3, 30, 12, 0, 0);
+      expect(
+        dt.unwrap() + const Days(1),
+        Tz.europe_berlin.with_ymd_and_hms(2024, 3, 31, 12, 0, 0).unwrap(),
+      );
+      expect(
+        dt.unwrap() + TimeDelta(hours: 24),
+        Tz.europe_berlin.with_ymd_and_hms(2024, 3, 31, 13, 0, 0).unwrap(),
+      );
+    });
+
+    test('into a gap shifts forward', () {
+      final dt = Tz.europe_london.with_ymd_and_hms(2024, 3, 30, 1, 30, 0);
+      expect(
+        dt.unwrap() + const Days(1),
+        Tz.europe_london.with_ymd_and_hms(2024, 3, 31, 2, 30, 0).unwrap(),
+      );
+    });
+
+    test('into a fold keeps offset, else earliest', () {
+      final earliest = Tz.europe_london
+          .with_ymd_and_hms(2024, 10, 26, 1, 30, 0)
+          .unwrap();
+      final result = earliest + const Days(1);
+      expect(result.localDateTime, CDateTime.fromRaw(2024, 10, 27, 1, 30));
+      expect(
+        result,
+        Tz.europe_london.with_ymd_and_hms(2024, 10, 27, 1, 30, 0).earliest,
+      );
+
+      final latest = Tz.europe_london
+          .with_ymd_and_hms(2024, 10, 27, 1, 30, 0)
+          .latest!;
+      expect(
+        (latest + Days.week).localDateTime.date,
+        Date.fromRaw(2024, 11, 3),
+      );
+      expect(
+        (latest - Days.week).offset.fix(),
+        FixedOffset.east(TimeDelta(hours: 1)),
+      );
+    });
+  });
+
   test('London DST', () {
     final dt = Tz.europe_london.with_ymd_and_hms(2016, 3, 10, 5, 0, 0).unwrap();
-    final later = dt + const Days(180);
+    final later = dt + TimeDelta(normalDays: 180);
     final expected = Tz.europe_london
         .with_ymd_and_hms(2016, 9, 6, 6, 0, 0)
         .unwrap();

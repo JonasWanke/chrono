@@ -1,6 +1,7 @@
 import 'package:meta/meta.dart';
 
 import '../date/date.dart';
+import '../date/duration.dart';
 import '../date_time/date_time.dart';
 import '../date_time/duration.dart';
 import '../offset/fixed.dart';
@@ -68,11 +69,56 @@ class ZonedDateTime<Tz extends TimeZone<Tz>> {
   ZonedDateTime<Utc> toUtc() =>
       ZonedDateTime.fromUtcDateTimeAndOffset(utcDateTime, const Utc());
 
-  /// Adds [duration] and re-resolves the offset, since it may differ at the new
-  /// instant (e.g., across a DST transition).
-  ZonedDateTime<Tz> operator +(ChronoDelta duration) =>
-      timeZone.fromUtcDateTime(utcDateTime + duration);
+  /// Adds [duration] to this.
+  ///
+  /// The months and days of [duration] are added to the local date and time
+  /// (so adding one day keeps the wall-clock time across DST transitions),
+  /// whereas the time part is added on the UTC timeline.
+  ///
+  /// If the resulting local time is ambiguous (a fold), the current offset is
+  /// kept if it is one of the candidates, otherwise the earlier one is used. If
+  /// it doesn't exist (a gap), the result is shifted forward by the length of
+  /// the gap.
+  ZonedDateTime<Tz> operator +(ChronoDelta duration) {
+    final delta = duration.asDateTimeDelta;
+    final withCalendar = delta.months.inMonths == 0 && delta.days.inDays == 0
+        ? this
+        : _addCalendarDelta(delta.months, delta.days);
+    if (delta.time.isZero) return withCalendar;
+
+    return timeZone.fromUtcDateTime(withCalendar.utcDateTime + delta.time);
+  }
+
   ZonedDateTime<Tz> operator -(ChronoDelta duration) => this + (-duration);
+
+  ZonedDateTime<Tz> _addCalendarDelta(Months months, Days days) {
+    final local = localDateTime + DateTimeDelta(months: months, days: days);
+    return switch (timeZone.offsetFromLocalDateTime(local)) {
+      MappedLocalTime_Single(:final value) => _atOffset(local, value),
+      MappedLocalTime_Ambiguous(:final earliest, :final latest) => _atOffset(
+        local,
+        latest == offset ? latest : earliest,
+      ),
+      MappedLocalTime_None() => _afterGap(local),
+    };
+  }
+
+  ZonedDateTime<Tz> _atOffset(CDateTime local, Offset<Tz> offset) =>
+      ZonedDateTime.fromUtcDateTimeAndOffset(
+        local.subOffset(offset.fix()),
+        offset,
+      );
+
+  /// Interprets the nonexistent [local] time with the offset from before the
+  /// gap, which lands right after the gap.
+  ZonedDateTime<Tz> _afterGap(CDateTime local) {
+    // Transitions are far apart, so the offset a day before [local] is the one
+    // in effect before the gap.
+    final before = timeZone.offsetFromUtcDateTime(
+      local - TimeDelta(hours: 24),
+    );
+    return timeZone.fromUtcDateTime(local.subOffset(before.fix()));
+  }
 
   // TODO(JonasWanke): more arithmetic
   /// Subtracts another `DateTime` from the current date and time.
