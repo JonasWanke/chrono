@@ -24,6 +24,26 @@ void main() {
     expect(general.dates, iso.dates);
   });
 
+  group('WeekConfig presets', () {
+    test('US weeks start on Sunday and week 1 contains January 1st', () {
+      // 2023-01-01 is a Sunday, 2022-01-01 is a Saturday.
+      final sunday = Date.from(const Year(2023), Month.january, 1);
+      expect(sunday.yearWeek(WeekConfig.usSunday).week, 1);
+      final saturday = Date.from(const Year(2022), Month.january, 1);
+      expect(saturday.yearWeek(WeekConfig.usSunday).week, 1);
+      expect(
+        saturday.yearWeek(WeekConfig.usSunday).dates.start.weekday,
+        Weekday.sunday,
+      );
+    });
+    test('Middle East weeks start on Saturday', () {
+      final date = Date.from(const Year(2022), Month.january, 1); // Saturday
+      final week = date.yearWeek(WeekConfig.middleEast);
+      expect(week.week, 1);
+      expect(week.dates.start, date);
+    });
+  });
+
   test('comparing different configs throws', () {
     final a = YearWeek.fromRaw(2023, 10, WeekConfig.iso);
     final b = YearWeek.fromRaw(
