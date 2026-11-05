@@ -64,8 +64,10 @@ void main() {
         FixedTimespan('TEST', utcOffsetSeconds: 1234, dstOffsetSeconds: 0),
         [
           (
-            TimeDelta.secondsPerNormalDay +
-                10 * TimeDelta.secondsPerHour +
+            TimeDelta.secondsPerMinute *
+                    TimeDelta.minutesPerHour *
+                    TimeDelta.hoursPerNormalDay +
+                10 * TimeDelta.secondsPerMinute * TimeDelta.minutesPerHour +
                 17 * TimeDelta.secondsPerMinute +
                 36,
             FixedTimespan('TSET', utcOffsetSeconds: 5678, dstOffsetSeconds: 0),

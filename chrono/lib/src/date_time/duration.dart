@@ -50,7 +50,7 @@ abstract class ChronoDelta {
     final otherCompound = other.asDateTimeDelta;
     return thisCompound.months.inMonths == otherCompound.months.inMonths &&
         thisCompound.days.inDays == otherCompound.days.inDays &&
-        thisCompound.time.totalSeconds == otherCompound.time.totalSeconds &&
+        thisCompound.time.wholeSeconds == otherCompound.time.wholeSeconds &&
         thisCompound.time.subSecondNanos == otherCompound.time.subSecondNanos;
   }
 
@@ -60,7 +60,7 @@ abstract class ChronoDelta {
     return Object.hash(
       compound.months.inMonths,
       compound.days.inDays,
-      compound.time.totalSeconds,
+      compound.time.wholeSeconds,
       compound.time.subSecondNanos,
     );
   }

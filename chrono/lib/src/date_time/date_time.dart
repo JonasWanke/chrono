@@ -245,14 +245,16 @@ final class CDateTime
 
 extension on TimeDelta {
   (Days, Time) toDaysAndTime() {
-    var (seconds, nanos) = splitSecondsNanos();
+    var seconds = wholeSeconds;
+    var nanos = subSecondNanos;
     if (seconds == 0 && nanos.isNegative) {
       seconds = -1;
       nanos += TimeDelta.nanosPerSecond;
     }
 
-    final days = (seconds / TimeDelta.secondsPerNormalDay).floor();
-    final secondsWithinDay = seconds - days * TimeDelta.secondsPerNormalDay;
+    final secondsPerNormalDay = TimeUnit.seconds.per(.normalDays);
+    final days = (seconds / secondsPerNormalDay).floor();
+    final secondsWithinDay = seconds - days * secondsPerNormalDay;
     final time = Time.fromTimeSinceMidnight(
       TimeDelta(seconds: secondsWithinDay, nanos: nanos),
     );

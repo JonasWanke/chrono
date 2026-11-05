@@ -29,14 +29,7 @@ class ZonedDateTime<Tz extends TimeZone<Tz>> {
   /// The date corresponding to the given duration since the [unixEpoch].
   static ZonedDateTime<Utc> fromDurationSinceUnixEpoch(
     TimeDelta sinceUnixEpoch,
-  ) {
-    final (days, time) = sinceUnixEpoch.toDaysAndTime();
-    final date = Date.fromDaysSinceUnixEpoch(days);
-    return ZonedDateTime.fromUtcDateTimeAndOffset(
-      CDateTime(date, time),
-      const Utc(),
-    );
-  }
+  ) => CDateTime.fromDurationSinceUnixEpoch(sinceUnixEpoch).andUtc();
 
   /// The UNIX epoch: 1970-01-01 at 00:00.
   ///
@@ -105,21 +98,4 @@ class ZonedDateTime<Tz extends TimeZone<Tz>> {
   String toString() => '$localDateTime $offset';
 
   // TODO(JonasWanke): use new [ChronoParser]
-}
-
-extension on TimeDelta {
-  (Days, Time) toDaysAndTime() {
-    var (seconds, nanos) = splitSecondsNanos();
-    if (seconds == 0 && nanos.isNegative) {
-      seconds = -1;
-      nanos += TimeDelta.nanosPerSecond;
-    }
-
-    final days = seconds ~/ TimeDelta.secondsPerNormalDay;
-    final secondsWithinDay = seconds - days * TimeDelta.secondsPerNormalDay;
-    final time = Time.fromTimeSinceMidnight(
-      TimeDelta(seconds: secondsWithinDay, nanos: nanos),
-    );
-    return (Days(days), time);
-  }
 }

@@ -614,8 +614,9 @@ sealed class ChangeTime {
   /// seconds since the Unix epoch that the change occurs at.
   int toTimestamp(int utcOffsetSeconds, int dstOffsetSeconds) {
     int timeToTimestamp(Date date, int hour, int minute, int second) {
-      return date.daysSinceUnixEpoch.inDays * TimeDelta.secondsPerNormalDay +
-          hour * TimeDelta.secondsPerHour +
+      return date.daysSinceUnixEpoch.inDays *
+              TimeUnit.seconds.per(TimeUnit.normalDays) +
+          hour * TimeUnit.seconds.per(TimeUnit.hours) +
           minute * TimeDelta.secondsPerMinute +
           second;
     }
@@ -980,15 +981,17 @@ sealed class TimeSpec {
   /// represents.
   int asSeconds() {
     return switch (this) {
-      TimeSpec_Hours(:final hours) => hours * TimeDelta.secondsPerHour,
+      TimeSpec_Hours(:final hours) =>
+        hours * TimeUnit.seconds.per(TimeUnit.hours),
       TimeSpec_HoursMinutes(:final hours, :final minutes) =>
-        hours * TimeDelta.secondsPerHour + minutes * TimeDelta.secondsPerMinute,
+        hours * TimeUnit.seconds.per(TimeUnit.hours) +
+            minutes * TimeDelta.secondsPerMinute,
       TimeSpec_HoursMinutesSeconds(
         :final hours,
         :final minutes,
         :final seconds,
       ) =>
-        hours * TimeDelta.secondsPerHour +
+        hours * TimeUnit.seconds.per(TimeUnit.hours) +
             minutes * TimeDelta.secondsPerMinute +
             seconds,
       TimeSpec_Zero _ => 0,

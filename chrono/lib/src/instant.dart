@@ -44,7 +44,7 @@ final class Instant
   DateTime get asCoreDateTimeInUtc => _getDateTime(isUtc: true);
   DateTime _getDateTime({required bool isUtc}) {
     return DateTime.fromMicrosecondsSinceEpoch(
-      durationSinceUnixEpoch.roundToMicros(),
+      durationSinceUnixEpoch.roundTo(.micros),
       isUtc: isUtc,
     );
   }
@@ -120,7 +120,7 @@ class InstantAsNanosIntCodec extends CodecAndJsonConverter<Instant, int> {
   const InstantAsNanosIntCodec();
 
   @override
-  int encode(Instant input) => input.durationSinceUnixEpoch.totalNanos;
+  int encode(Instant input) => input.durationSinceUnixEpoch.roundTo(.nanos);
   @override
   Instant decode(int encoded) =>
       Instant.fromDurationSinceUnixEpoch(TimeDelta(nanos: encoded));
@@ -148,7 +148,7 @@ class InstantAsMicrosIntCodec extends CodecAndJsonConverter<Instant, int> {
 
   @override
   int encode(Instant input) =>
-      input.durationSinceUnixEpoch.roundToMicros(rounding: rounding);
+      input.durationSinceUnixEpoch.roundTo(.micros, rounding: rounding);
   @override
   Instant decode(int encoded) =>
       Instant.fromDurationSinceUnixEpoch(TimeDelta(micros: encoded));
@@ -176,7 +176,7 @@ class InstantAsMillisIntCodec extends CodecAndJsonConverter<Instant, int> {
 
   @override
   int encode(Instant input) =>
-      input.durationSinceUnixEpoch.roundToMillis(rounding: rounding);
+      input.durationSinceUnixEpoch.roundTo(.millis, rounding: rounding);
   @override
   Instant decode(int encoded) =>
       Instant.fromDurationSinceUnixEpoch(TimeDelta(millis: encoded));
@@ -206,7 +206,7 @@ class InstantAsSecondsIntCodec extends CodecAndJsonConverter<Instant, int> {
 
   @override
   int encode(Instant input) =>
-      input.durationSinceUnixEpoch.roundToSeconds(rounding: rounding);
+      input.durationSinceUnixEpoch.roundTo(.seconds, rounding: rounding);
   @override
   Instant decode(int encoded) =>
       Instant.fromDurationSinceUnixEpoch(TimeDelta(seconds: encoded));

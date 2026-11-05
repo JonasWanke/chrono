@@ -146,7 +146,7 @@ ${_zoneNameToLowerCamelCase(zone)}(
   // there is any ambiguity.
   @override
   MappedLocalTime<TzOffset> offsetFromLocalDateTime(CDateTime local) {
-    final timestamp = local.inUtc.durationSinceUnixEpoch.totalSeconds;
+    final timestamp = local.inUtc.durationSinceUnixEpoch.wholeSeconds;
     final index = binarySearch(
       timespans.length,
       (index) => timespans.localSpan(index).compareTo(timestamp),
@@ -182,7 +182,7 @@ ${_zoneNameToLowerCamelCase(zone)}(
   // within exactly one timespan, no matter what (so the `!` is safe).
   @override
   TzOffset offsetFromUtcDateTime(CDateTime utc) {
-    final timestamp = utc.inUtc.durationSinceUnixEpoch.totalSeconds;
+    final timestamp = utc.inUtc.durationSinceUnixEpoch.wholeSeconds;
     final index = binarySearch(
       timespans.length,
       (index) => timespans.utcSpan(index).compareTo(timestamp),

@@ -6,6 +6,83 @@ import '../date_time/duration.dart';
 import '../rounding.dart';
 import '../utils.dart';
 
+/// A unit of the time family: a length that is an exact, context-free multiple
+/// of a nanosecond.
+///
+/// There is no `years` member: unlike a normal or leap year individually, "a
+/// year" has no single exact factor to nanoseconds. Use
+/// [IntToTimeDeltaChrono.normalYears]/[IntToTimeDeltaChrono.normalLeapYears] to
+/// construct such a duration explicitly instead.
+///
+/// [centis] and [decis] exist so timer-style displays (`05:03.25`) are exact
+/// rather than `millis ~/ 10`.
+enum TimeUnit {
+  nanos(1),
+  micros(TimeDelta.nanosPerMicro),
+  millis(TimeDelta.nanosPerMicro * TimeDelta.microsPerMilli),
+  centis(TimeDelta.nanosPerMicro * TimeDelta.microsPerMilli * 10),
+  decis(TimeDelta.nanosPerMicro * TimeDelta.microsPerMilli * 100),
+  seconds(TimeDelta.nanosPerSecond),
+  minutes(TimeDelta.nanosPerSecond * TimeDelta.secondsPerMinute),
+  hours(
+    TimeDelta.nanosPerSecond *
+        TimeDelta.secondsPerMinute *
+        TimeDelta.minutesPerHour,
+  ),
+  normalDays(
+    TimeDelta.nanosPerSecond *
+        TimeDelta.secondsPerMinute *
+        TimeDelta.minutesPerHour *
+        TimeDelta.hoursPerNormalDay,
+  ),
+  normalWeeks(
+    TimeDelta.nanosPerSecond *
+        TimeDelta.secondsPerMinute *
+        TimeDelta.minutesPerHour *
+        TimeDelta.hoursPerNormalDay *
+        Days.perWeek,
+  );
+
+  const TimeUnit(this.nanosPer);
+
+  /// Nanoseconds in one of this unit. Derived from the primitives, never
+  /// hand-written as an independent product.
+  final int nanosPer;
+
+  /// How many of `this` fit in one [larger] — e.g.,
+  /// `TimeUnit.normalDays.per(.normalWeeks) == 7`.
+  int per(TimeUnit larger) {
+    assert(larger.nanosPer >= nanosPer, 'Argument must be the larger unit.');
+    return larger.nanosPer ~/ nanosPer;
+  }
+}
+
+/// The result of [TimeDelta.split]: one value per requested [TimeUnit].
+///
+/// Reading a unit that wasn't requested throws instead of returning zero, since
+/// that is almost certainly a bug and zero would hide it. Use [maybe] or [has]
+/// when the requested set isn't statically known.
+///
+/// All components share the sign of the duration they were split from.
+@immutable
+final class TimeParts extends ChronoParts<TimeUnit> {
+  const TimeParts._(super.values);
+
+  @override
+  List<TimeUnit> get allUnitsOrdered => TimeUnit.values;
+
+  int get nanos => get(.nanos);
+  int get micros => get(.micros);
+  int get millis => get(.millis);
+  int get centis => get(.centis);
+  int get decis => get(.decis);
+  int get seconds => get(.seconds);
+  int get minutes => get(.minutes);
+  int get hours => get(.hours);
+  int get normalDays => get(.normalDays);
+  int get normalWeeks => get(.normalWeeks);
+}
+
 /// A [ChronoDelta] that is of a fixed length.
 ///
 /// See also:
@@ -28,36 +105,38 @@ class TimeDelta extends ChronoDelta
     int micros = 0,
     int nanos = 0,
   }) {
-    var totalSeconds =
-        normalLeapYears * secondsPerNormalLeapYear +
-        normalYears * secondsPerNormalYear +
-        normalWeeks * secondsPerNormalWeek +
+    final secondsPerNormalDay = TimeUnit.seconds.per(.normalDays);
+    final microsPerSecond = TimeUnit.micros.per(.seconds);
+    var wholeSeconds =
+        normalLeapYears * Days.perLeapYear * secondsPerNormalDay +
+        normalYears * Days.perNormalYear * secondsPerNormalDay +
+        normalWeeks * TimeUnit.seconds.per(.normalWeeks) +
         normalDays * secondsPerNormalDay +
-        hours * secondsPerHour +
+        hours * TimeUnit.seconds.per(.hours) +
         minutes * secondsPerMinute +
         seconds +
         millis ~/ millisPerSecond +
         micros ~/ microsPerSecond +
         nanos ~/ nanosPerSecond;
     var subSecondNanos =
-        millis.remainder(millisPerSecond) * nanosPerMilli +
+        millis.remainder(millisPerSecond) * TimeUnit.millis.nanosPer +
         micros.remainder(microsPerSecond) * nanosPerMicro +
         nanos.remainder(nanosPerSecond);
-    totalSeconds += subSecondNanos ~/ nanosPerSecond;
+    wholeSeconds += subSecondNanos ~/ nanosPerSecond;
     subSecondNanos = subSecondNanos.remainder(nanosPerSecond);
-    if (totalSeconds > 0 && subSecondNanos < 0) {
-      totalSeconds -= 1;
+    if (wholeSeconds > 0 && subSecondNanos < 0) {
+      wholeSeconds -= 1;
       subSecondNanos += nanosPerSecond;
-    } else if (totalSeconds < 0 && subSecondNanos > 0) {
-      totalSeconds += 1;
+    } else if (wholeSeconds < 0 && subSecondNanos > 0) {
+      wholeSeconds += 1;
       subSecondNanos -= nanosPerSecond;
     }
-    return TimeDelta.raw(totalSeconds, subSecondNanos);
+    return TimeDelta.raw(wholeSeconds, subSecondNanos);
   }
-  const TimeDelta.raw(this.totalSeconds, this.subSecondNanos)
+  const TimeDelta.raw(this.wholeSeconds, this.subSecondNanos)
     : assert(
-        totalSeconds >= 0 && subSecondNanos >= 0 ||
-            totalSeconds <= 0 && subSecondNanos <= 0,
+        wholeSeconds >= 0 && subSecondNanos >= 0 ||
+            wholeSeconds <= 0 && subSecondNanos <= 0,
       ),
       assert(
         (subSecondNanos < 0 ? -subSecondNanos : subSecondNanos) <
@@ -93,434 +172,139 @@ class TimeDelta extends ChronoDelta
         b.timesDouble(t, rounding: rounding);
   }
 
-  // Nanos
+  // Only the six primitives below are kept as public constants; every derived
+  // factor (e.g. seconds per hour) is available through [TimeUnit.per], so it
+  // is never hand-written as a product — see `docs/…/duration-redesign-design.md`
+  // for the incident that motivated this.
+  //
+  // `nanosPerSecond` is the one derived factor kept anyway: [Time] needs it in
+  // a `const` context (`Time._dayEnd`), and `per()` cannot be `const`.
 
   /// The number of nanoseconds in a microsecond.
   static const nanosPerMicro = 1000;
 
-  /// The number of nanoseconds in a millisecond.
-  static const nanosPerMilli = nanosPerMicro * microsPerMilli;
-
-  /// The number of nanoseconds in a second.
-  static const nanosPerSecond = nanosPerMicro * microsPerSecond;
-
-  /// The number of nanoseconds in a minute.
-  static const nanosPerMinute = nanosPerMicro * microsPerMinute;
-
-  /// The number of nanoseconds in an hour.
-  static const nanosPerHour = nanosPerMicro * microsPerHour;
-
-  /// The number of nanoseconds in a normal day, i.e., a day with exactly
-  /// 24 hours (no daylight savings time changes and no leap seconds).
-  static const nanosPerNormalDay = nanosPerMicro * microsPerNormalDay;
-
-  /// The number of nanoseconds in a normal week, i.e., a week where all days
-  /// are exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static const nanosPerNormalWeek = nanosPerMicro * microsPerNormalWeek;
-
-  /// The number of nanoseconds in a normal (non-leap) year (365 days), i.e., a
-  /// year where all days are exactly 24 hours long (no daylight savings time
-  /// changes and no leap seconds).
-  static const nanosPerNormalYear = nanosPerMicro * microsPerNormalYear;
-
-  /// The number of nanoseconds in a leap year (366 days), i.e., a year where
-  /// all days are exactly 24 hours long (no daylight savings time changes and
-  /// no leap seconds).
-  static const nanosPerNormalLeapYear = nanosPerMicro * microsPerNormalLeapYear;
-
-  // Micros
-
   /// The number of microseconds in a millisecond.
   static const microsPerMilli = 1000;
-
-  /// The number of microseconds in a second.
-  static const microsPerSecond = microsPerMilli * millisPerSecond;
-
-  /// The number of microseconds in a minute.
-  static const microsPerMinute = microsPerMilli * millisPerMinute;
-
-  /// The number of microseconds in an hour.
-  static const microsPerHour = microsPerMilli * millisPerHour;
-
-  /// The number of microseconds in a normal day, i.e., a day with exactly
-  /// 24 hours (no daylight savings time changes and no leap seconds).
-  static const microsPerNormalDay = microsPerMilli * millisPerNormalDay;
-
-  /// The number of microseconds in a normal week, i.e., a week where all days
-  /// are exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static const microsPerNormalWeek = microsPerMilli * millisPerNormalWeek;
-
-  /// The number of microseconds in a normal (non-leap) year (365 days), i.e., a
-  /// year where all days are exactly 24 hours long (no daylight savings time
-  /// changes and no leap seconds).
-  static const microsPerNormalYear = microsPerMilli * millisPerNormalYear;
-
-  /// The number of microseconds in a leap year (366 days), i.e., a year where
-  /// all days are exactly 24 hours long (no daylight savings time changes and
-  /// no leap seconds).
-  static const microsPerNormalLeapYear =
-      microsPerMilli * millisPerNormalLeapYear;
-
-  // Millis
 
   /// The number of milliseconds in a second.
   static const millisPerSecond = 1000;
 
-  /// The number of milliseconds in a minute.
-  static const millisPerMinute = millisPerSecond * secondsPerMinute;
-
-  /// The number of milliseconds in an hour.
-  static const millisPerHour = millisPerSecond * secondsPerHour;
-
-  /// The number of milliseconds in a normal day, i.e., a day with exactly
-  /// 24 hours (no daylight savings time changes and no leap seconds).
-  static const millisPerNormalDay = millisPerSecond * secondsPerNormalDay;
-
-  /// The number of milliseconds in a normal week, i.e., a week where all days
-  /// are exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static const millisPerNormalWeek = millisPerSecond * secondsPerNormalWeek;
-
-  /// The number of milliseconds in a normal (non-leap) year (365 days), i.e., a
-  /// year where all days are exactly 24 hours long (no daylight savings time
-  /// changes and no leap seconds).
-  static const millisPerNormalYear = millisPerSecond * secondsPerNormalYear;
-
-  /// The number of milliseconds in a leap year (366 days), i.e., a year where
-  /// all days are exactly 24 hours long (no daylight savings time changes and
-  /// no leap seconds).
-  static const millisPerNormalLeapYear =
-      millisPerSecond * secondsPerNormalLeapYear;
-
-  // Seconds
-
   /// The number of seconds in a minute.
   static const secondsPerMinute = 60;
-
-  /// The number of seconds in an hour.
-  static const secondsPerHour = secondsPerMinute * minutesPerHour;
-
-  /// The number of seconds in a normal day, i.e., a day with exactly 24 hours
-  /// (no daylight savings time changes and no leap seconds).
-  static const secondsPerNormalDay = secondsPerMinute * minutesPerNormalDay;
-
-  /// The number of seconds in a normal week, i.e., a week where all days are
-  /// exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static const secondsPerNormalWeek = secondsPerMinute * minutesPerNormalWeek;
-
-  /// The number of seconds in a normal (non-leap) year (365 days), i.e., a year
-  /// where all days are exactly 24 hours long (no daylight savings time changes
-  /// and no leap seconds).
-  static const secondsPerNormalYear = secondsPerMinute * minutesPerNormalYear;
-
-  /// The number of seconds in a leap year (366 days), i.e., a year where all
-  /// days are exactly 24 hours long (no daylight savings time changes and no
-  /// leap seconds).
-  static const secondsPerNormalLeapYear =
-      secondsPerMinute * minutesPerNormalLeapYear;
-
-  // Minutes
 
   /// The number of minutes in an hour.
   static const minutesPerHour = 60;
 
-  /// The number of minutes in a normal day, i.e., a day with exactly 24 hours
-  /// (no daylight savings time changes and no leap seconds).
-  static const minutesPerNormalDay = minutesPerHour * hoursPerNormalDay;
-
-  /// The number of minutes in a normal week, i.e., a week where all days are
-  /// exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static const minutesPerNormalWeek = minutesPerHour * hoursPerNormalWeek;
-
-  /// The number of minutes in a normal (non-leap) year (365 days), i.e., a year
-  /// where all days are exactly 24 hours long (no daylight savings time changes
-  /// and no leap seconds).
-  static const minutesPerNormalYear = minutesPerHour * hoursPerNormalYear;
-
-  /// The number of minutes in a leap year (366 days), i.e., a year where all
-  /// days are exactly 24 hours long (no daylight savings time changes and no
-  /// leap seconds).
-  static const minutesPerNormalLeapYear =
-      minutesPerHour * hoursPerNormalLeapYear;
-
-  // Hours
-
   /// The number of hours in a normal day, i.e., a day with exactly 24 hours
-  /// no daylight savings time changes and no leap seconds).
+  /// (no daylight savings time changes and no leap seconds).
   static const hoursPerNormalDay = 24;
 
-  /// The number of hours in a normal week, i.e., a week where all days are
-  /// exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static const hoursPerNormalWeek = hoursPerNormalDay * Days.perWeek;
+  /// The number of nanoseconds in a second.
+  static const nanosPerSecond =
+      nanosPerMicro * microsPerMilli * millisPerSecond;
 
-  /// The number of hours in a normal (non-leap) year (365 days), i.e., a year
-  /// where all days are exactly 24 hours long (no daylight savings time changes
-  /// and no leap seconds).
-  static const hoursPerNormalYear = hoursPerNormalDay * Days.perNormalYear;
+  // TODO(JonasWanke): avoid `_totalNanos` to avoid overflows
+  int get _totalNanos => wholeSeconds * nanosPerSecond + subSecondNanos;
 
-  /// The number of hours in a leap year (366 days), i.e., a year where all days
-  /// are exactly 24 hours long (no daylight savings time changes and no leap
-  /// seconds).
-  static const hoursPerNormalLeapYear = hoursPerNormalDay * Days.perLeapYear;
+  /// The whole seconds in this duration, truncated towards zero.
+  ///
+  /// This is one of the two canonical stored fields — the other is
+  /// [subSecondNanos]. Neither can be misread as the total: use [totalIn] for
+  /// that.
+  final int wholeSeconds;
 
-  // TODO(JonasWanke): remove in favor of `roundTo*(…)`?
-  int get totalNanos => totalSeconds * nanosPerSecond + subSecondNanos;
-  int get totalMicros =>
-      totalSeconds * microsPerSecond + subSecondNanos ~/ nanosPerMicro;
-  int get totalMillis =>
-      totalSeconds * millisPerSecond + subSecondNanos ~/ nanosPerMilli;
-  final int totalSeconds;
-  int get totalMinutes => totalSeconds ~/ secondsPerMinute;
-  int get totalHours => totalSeconds ~/ secondsPerHour;
-  int get totalNormalDays => totalSeconds ~/ secondsPerNormalDay;
-  int get totalNormalWeeks => totalSeconds ~/ secondsPerNormalWeek;
-  int get totalNormalYears => totalSeconds ~/ secondsPerNormalYear;
-  int get totalNormalLeapYears => totalSeconds ~/ secondsPerNormalLeapYear;
-
-  double get totalMicrosDouble =>
-      totalSeconds * microsPerSecond + subSecondNanos / nanosPerMicro;
-  double get totalMillisDouble =>
-      totalSeconds * millisPerSecond + subSecondNanos / nanosPerMilli;
-  double get totalSecondsDouble =>
-      totalSeconds + subSecondNanos / nanosPerSecond;
-  double get totalMinutesDouble =>
-      totalSeconds / secondsPerMinute + subSecondNanos / nanosPerMinute;
-  double get totalHoursDouble =>
-      totalSeconds / secondsPerHour + subSecondNanos / nanosPerHour;
-  double get totalNormalDaysDouble =>
-      totalSeconds / secondsPerNormalDay + subSecondNanos / nanosPerNormalDay;
-  double get totalNormalWeeksDouble =>
-      totalSeconds / secondsPerNormalWeek + subSecondNanos / nanosPerNormalWeek;
-  double get totalNormalYearsDouble =>
-      totalSeconds / secondsPerNormalYear + subSecondNanos / nanosPerNormalYear;
-  double get totalNormalLeapYearsDouble =>
-      totalSeconds / secondsPerNormalLeapYear +
-      subSecondNanos / nanosPerNormalLeapYear;
-
+  /// The sub-second nanoseconds in this duration, in `-999_999_999 …
+  /// 999_999_999`, with the same sign as [wholeSeconds] (or either sign if
+  /// [wholeSeconds] is zero).
   final int subSecondNanos;
 
-  (int, int) splitMicrosNanos() {
-    final (micros, nanos) = _splitNanosInMicrosNanos();
-    return (totalSeconds * microsPerSecond + micros, nanos);
-  }
+  /// This duration expressed in [unit], including a fractional part.
+  double totalIn(TimeUnit unit) => _totalNanos / unit.nanosPer;
 
-  (int, int) splitMillisMicros({
+  /// This duration rounded to a whole number of [unit].
+  int roundTo(
+    TimeUnit unit, {
+    Rounding rounding = Rounding.nearestAwayFromZero,
+  }) => roundDivide(_totalNanos, unit.nanosPer, rounding);
+
+  /// This duration rounded to a multiple of [increment] × [unit].
+  TimeDelta round(
+    TimeUnit unit, {
+    int increment = 1,
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
-    final (millis, micros, _) = TimeDelta(
-      micros: roundToMicros(rounding: rounding),
-    ).splitMillisMicrosNanos();
-    return (millis, micros);
+    final step = unit.nanosPer * increment;
+    return TimeDelta(nanos: roundDivide(_totalNanos, step, rounding) * step);
   }
 
-  (int, int, int) splitMillisMicrosNanos() {
-    final (millis, micros, nanos) = _splitNanosInMillisMicrosNanos();
-    return (totalSeconds * millisPerSecond + millis, micros, nanos);
-  }
+  /// Whether this duration is a whole multiple of [increment] × [unit], i.e.,
+  /// whether [round] with the same arguments would leave it unchanged.
+  bool isMultipleOf(TimeUnit unit, {int increment = 1}) =>
+      _totalNanos % (unit.nanosPer * increment) == 0;
 
-  (int, int) splitSecondsNanos() => (totalSeconds, subSecondNanos);
-
-  (int, int) splitSecondsMicros({
+  /// Decomposes this duration into the given [units].
+  ///
+  /// The largest listed unit absorbs everything above it; the smallest absorbs
+  /// everything below it, rounded according to [rounding]. All components share
+  /// the sign of this duration.
+  ///
+  /// ```dart
+  /// delta.split({.hours, .minutes, .seconds, .nanos});
+  /// ```
+  TimeParts split(
+    Set<TimeUnit> units, {
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    final rounded = TimeDelta(micros: roundToMicros(rounding: rounding));
-    return (rounded.totalSeconds, rounded.subSecondNanos ~/ nanosPerMicro);
-  }
-
-  (int, int) splitSecondsMillis({
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    final rounded = TimeDelta(millis: roundToMillis(rounding: rounding));
-    return (rounded.totalSeconds, rounded.subSecondNanos ~/ nanosPerMilli);
-  }
-
-  (int, int, int) splitSecondsMillisMicros({
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    final rounded = TimeDelta(micros: roundToMicros(rounding: rounding));
-    final (millis, micros, _) = rounded._splitNanosInMillisMicrosNanos();
-    return (rounded.totalSeconds, millis, micros);
-  }
-
-  (int, int, int, int) splitSecondsMillisMicrosNanos() {
-    final (millis, micros, nanos) = _splitNanosInMillisMicrosNanos();
-    return (totalSeconds, millis, micros, nanos);
-  }
-
-  (int, int, int) splitMinutesSecondsNanos() {
-    final (minutes, seconds) = _splitSecondsInMinutesSeconds();
-    return (minutes, seconds, subSecondNanos);
-  }
-
-  (int, int, int) splitMinutesSecondsMicros({
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    final rounded = TimeDelta(micros: roundToMicros(rounding: rounding));
-    final (minutes, seconds) = rounded._splitSecondsInMinutesSeconds();
-    return (minutes, seconds, rounded.subSecondNanos ~/ nanosPerMicro);
-  }
-
-  (int, int, int) splitMinutesSecondsMillis({
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    final rounded = TimeDelta(millis: roundToMillis(rounding: rounding));
-    final (minutes, seconds) = rounded._splitSecondsInMinutesSeconds();
-    return (minutes, seconds, rounded.subSecondNanos ~/ nanosPerMilli);
-  }
-
-  (int, int, int, int) splitMinutesSecondsMillisMicros({
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    final rounded = TimeDelta(micros: roundToMicros(rounding: rounding));
-    final (minutes, seconds) = rounded._splitSecondsInMinutesSeconds();
-    final (millis, micros, _) = rounded._splitNanosInMillisMicrosNanos();
-    return (minutes, seconds, millis, micros);
-  }
-
-  (int, int, int, int, int) splitMinutesSecondsMillisMicrosNanos() {
-    final (minutes, seconds) = _splitSecondsInMinutesSeconds();
-    final (millis, micros, nanos) = _splitNanosInMillisMicrosNanos();
-    return (minutes, seconds, millis, micros, nanos);
-  }
-
-  (int, int) splitHoursMinutes({
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    final (hours, minutes, _) = TimeDelta(
-      minutes: roundToMinutes(rounding: rounding),
-    )._splitSecondsInHoursMinutesSeconds();
-    return (hours, minutes);
-  }
-
-  (int, int, int) splitHoursMinutesSeconds({
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    return TimeDelta(
-      seconds: roundToSeconds(rounding: rounding),
-    )._splitSecondsInHoursMinutesSeconds();
-  }
-
-  (int, int, int, int) splitHoursMinutesSecondsNanos() {
-    final (hours, minutes, seconds) = _splitSecondsInHoursMinutesSeconds();
-    return (hours, minutes, seconds, subSecondNanos);
-  }
-
-  (int, int, int, int, int, int) splitHoursMinutesSecondsMillisMicrosNanos() {
-    final (hours, minutes, seconds) = _splitSecondsInHoursMinutesSeconds();
-    final (millis, micros, nanos) = _splitNanosInMillisMicrosNanos();
-    return (hours, minutes, seconds, millis, micros, nanos);
-  }
-
-  (int, int, int, int) splitNormalDaysHoursMinutesSeconds({
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) {
-    final (normalDays, hours, minutes, seconds) = TimeDelta(
-      seconds: roundToSeconds(rounding: rounding),
-    )._splitSecondsInNormalDaysHoursMinutesSeconds();
-    return (normalDays, hours, minutes, seconds);
-  }
-
-  (int, int, int, int, int) splitNormalDaysHoursMinutesSecondsNanos() {
-    final (normalDays, hours, minutes, seconds) =
-        _splitSecondsInNormalDaysHoursMinutesSeconds();
-    return (normalDays, hours, minutes, seconds, subSecondNanos);
-  }
-
-  (int, int, int, int, int, int, int)
-  splitNormalDaysHoursMinutesSecondsMillisMicrosNanos() {
-    final (normalDays, hours, minutes, seconds) =
-        _splitSecondsInNormalDaysHoursMinutesSeconds();
-    final (millis, micros, nanos) = _splitNanosInMillisMicrosNanos();
-    return (normalDays, hours, minutes, seconds, millis, micros, nanos);
-  }
-
-  (int, int) _splitNanosInMicrosNanos() {
-    final micros = subSecondNanos ~/ nanosPerMicro;
-    return (micros, subSecondNanos - micros * nanosPerMicro);
-  }
-
-  (int, int, int) _splitNanosInMillisMicrosNanos() {
-    final (rawMicros, nanos) = _splitNanosInMicrosNanos();
-    final millis = rawMicros ~/ microsPerMilli;
-    return (millis, rawMicros - millis * microsPerMilli, nanos);
-  }
-
-  (int, int) _splitSecondsInMinutesSeconds() {
-    final minutes = totalSeconds ~/ secondsPerMinute;
-    final seconds = totalSeconds - minutes * secondsPerMinute;
-    return (minutes, seconds);
-  }
-
-  (int, int, int) _splitSecondsInHoursMinutesSeconds() {
-    final (rawMinutes, seconds) = _splitSecondsInMinutesSeconds();
-    final hours = totalMinutes ~/ minutesPerHour;
-    return (hours, rawMinutes - hours * minutesPerHour, seconds);
-  }
-
-  (int, int, int, int) _splitSecondsInNormalDaysHoursMinutesSeconds() {
-    final (rawHours, minutes, seconds) = _splitSecondsInHoursMinutesSeconds();
-    final normalDays = totalSeconds ~/ secondsPerNormalDay;
-    return (
-      normalDays,
-      rawHours - normalDays * hoursPerNormalDay,
-      minutes,
-      seconds,
-    );
-  }
+  }) => TimeParts._(
+    splitIntoUnits(_totalNanos, units, (it) => it.nanosPer, rounding),
+  );
 
   @override
   DateTimeDelta get asDateTimeDelta => DateTimeDelta(time: this);
 
   @override
-  bool get isZero => totalSeconds == 0 && subSecondNanos == 0;
-  bool get isPositive => totalSeconds > 0 || subSecondNanos > 0;
+  bool get isZero => wholeSeconds == 0 && subSecondNanos == 0;
+  bool get isPositive => wholeSeconds > 0 || subSecondNanos > 0;
   bool get isNonPositive => !isPositive;
-  bool get isNegative => totalSeconds < 0 || subSecondNanos < 0;
+  bool get isNegative => wholeSeconds < 0 || subSecondNanos < 0;
   bool get isNonNegative => !isNegative;
 
   TimeDelta operator +(TimeDelta other) {
     return TimeDelta(
-      seconds: totalSeconds + other.totalSeconds,
+      seconds: wholeSeconds + other.wholeSeconds,
       nanos: subSecondNanos + other.subSecondNanos,
     );
   }
 
   TimeDelta operator -(TimeDelta other) {
     return TimeDelta(
-      seconds: totalSeconds - other.totalSeconds,
+      seconds: wholeSeconds - other.wholeSeconds,
       nanos: subSecondNanos - other.subSecondNanos,
     );
   }
 
   @override
-  TimeDelta operator -() => TimeDelta.raw(-totalSeconds, -subSecondNanos);
+  TimeDelta operator -() => TimeDelta.raw(-wholeSeconds, -subSecondNanos);
   TimeDelta get absolute => isNegative ? -this : this;
 
   @override
   TimeDelta operator *(int factor) =>
-      TimeDelta(seconds: totalSeconds * factor, nanos: subSecondNanos * factor);
-  // TODO(JonasWanke): avoid `totalNanos` to avoid overflows
+      TimeDelta(seconds: wholeSeconds * factor, nanos: subSecondNanos * factor);
   TimeDelta timesDouble(
     double factor, {
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) => TimeDelta(nanos: rounding.round(totalNanos * factor));
+  }) => TimeDelta(nanos: rounding.round(_totalNanos * factor));
 
   @override
   TimeDelta operator ~/(int divisor) {
-    final totalSeconds = this.totalSeconds ~/ divisor;
-    final carry = this.totalSeconds - totalSeconds * divisor;
+    final wholeSeconds = this.wholeSeconds ~/ divisor;
+    final carry = this.wholeSeconds - wholeSeconds * divisor;
     final subSecondNanos =
         (carry * nanosPerSecond + this.subSecondNanos) ~/ divisor;
-    return TimeDelta(seconds: totalSeconds, nanos: subSecondNanos);
+    return TimeDelta(seconds: wholeSeconds, nanos: subSecondNanos);
   }
 
-  // TODO(JonasWanke): avoid `totalNanos` to avoid overflows
-  double operator /(TimeDelta divisor) => totalNanos / divisor.totalNanos;
+  // TODO(JonasWanke): avoid `_totalNanos` to avoid overflows
+  double operator /(TimeDelta divisor) => _totalNanos / divisor._totalNanos;
   // Nanoseconds dividedByInt(
   //   int divisor, {
   //   Rounding rounding = Rounding.nearestAwayFromZero,
@@ -530,45 +314,38 @@ class TimeDelta extends ChronoDelta
   //   Rounding rounding = Rounding.nearestAwayFromZero,
   // }) => Nanoseconds(rounding.round(inNanoseconds.toDouble() / divisor));
 
-  // TODO(JonasWanke): avoid `totalNanos` to avoid overflows
   @override
   TimeDelta operator %(TimeDelta divisor) =>
-      TimeDelta(nanos: totalNanos % divisor.totalNanos);
-  // TODO(JonasWanke): avoid `totalNanos` to avoid overflows
+      TimeDelta(nanos: _totalNanos % divisor._totalNanos);
   @override
   TimeDelta remainder(TimeDelta divisor) =>
-      TimeDelta(nanos: totalNanos.remainder(divisor.totalNanos));
+      TimeDelta(nanos: _totalNanos.remainder(divisor._totalNanos));
 
-  int roundToMicros({Rounding rounding = Rounding.nearestAwayFromZero}) =>
-      rounding.round(totalNanos / nanosPerMicro);
-  int roundToMillis({Rounding rounding = Rounding.nearestAwayFromZero}) =>
-      rounding.round(totalNanos / nanosPerMilli);
-  int roundToSeconds({Rounding rounding = Rounding.nearestAwayFromZero}) =>
-      rounding.round(totalNanos / nanosPerSecond);
-  int roundToMinutes({Rounding rounding = Rounding.nearestAwayFromZero}) =>
-      rounding.round(totalNanos / nanosPerMinute);
-  int roundToHours({Rounding rounding = Rounding.nearestAwayFromZero}) =>
-      rounding.round(totalNanos / nanosPerHour);
+  /// The number of whole normal (24 h) days in this duration.
+  ///
+  /// The `Normal` qualifier is load-bearing: it marks the 24-hour assumption
+  /// being made when this exact duration is reinterpreted as a calendar one.
   Days roundToNormalDays({Rounding rounding = Rounding.nearestAwayFromZero}) =>
-      Days(rounding.round(totalNanos / nanosPerNormalDay));
+      Days(roundTo(.normalDays, rounding: rounding));
   Duration roundToCoreDuration({
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) => Duration(microseconds: roundToMicros(rounding: rounding));
+  }) => Duration(microseconds: roundTo(.micros, rounding: rounding));
+
+  /// This duration rounded to a multiple of [duration].
+  ///
+  /// Unlike [round], [duration] can be any [TimeDelta], not just a whole
+  /// number of a single [TimeUnit].
   TimeDelta roundToMultipleOf(
     TimeDelta duration, {
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) => duration * rounding.round(this / duration);
-  Days roundToMultipleOfNormalDays(
-    Days duration, {
-    Rounding rounding = Rounding.nearestAwayFromZero,
-  }) => duration * rounding.round(this / duration.asTime);
 
   /// Returns a [Future] that completes after this duration has passed.
   Future<void> get wait => Future<void>.delayed(roundToCoreDuration());
 
   @override
   int compareTo(TimeDelta other) {
-    final result = totalSeconds.compareTo(other.totalSeconds);
+    final result = wholeSeconds.compareTo(other.wholeSeconds);
     if (result != 0) return result;
 
     return subSecondNanos.compareTo(other.subSecondNanos);
@@ -628,9 +405,13 @@ class TimeDeltaAsIsoStringCodec
     final buffer = StringBuffer(sign);
     buffer.write('PT');
 
-    final (s, ms, us, ns) = value.splitSecondsMillisMicrosNanos();
-    buffer.write(s);
-    buffer.writeNonZeroMillisMicrosNanos(ms, us, ns);
+    final parts = value.split({.seconds, .millis, .micros, .nanos});
+    buffer.write(parts.seconds);
+    buffer.writeNonZeroMillisMicrosNanos(
+      parts.millis,
+      parts.micros,
+      parts.nanos,
+    );
     return buffer.toString();
   }
 
@@ -649,14 +430,24 @@ class TimeDeltaAsSimpleStringCodec
     final (value, sign) = input.isNegative ? (-input, '-') : (input, '');
     final buffer = StringBuffer(sign);
 
-    final (h, m, s, ms, us, ns) = value
-        .splitHoursMinutesSecondsMillisMicrosNanos();
-    buffer.write(h.toString().padLeft(2, '0'));
+    final parts = value.split({
+      .hours,
+      .minutes,
+      .seconds,
+      .millis,
+      .micros,
+      .nanos,
+    });
+    buffer.write(parts.hours.toString().padLeft(2, '0'));
     buffer.write(':');
-    buffer.write(m.toString().padLeft(2, '0'));
+    buffer.write(parts.minutes.toString().padLeft(2, '0'));
     buffer.write(':');
-    buffer.write(s.toString().padLeft(2, '0'));
-    buffer.writeNonZeroMillisMicrosNanos(ms, us, ns);
+    buffer.write(parts.seconds.toString().padLeft(2, '0'));
+    buffer.writeNonZeroMillisMicrosNanos(
+      parts.millis,
+      parts.micros,
+      parts.nanos,
+    );
     return buffer.toString();
   }
 
@@ -710,7 +501,7 @@ class TimeDeltaAsMapCodec
 
   @override
   Map<String, dynamic> encode(TimeDelta input) => {
-    'seconds': input.totalSeconds,
+    'seconds': input.wholeSeconds,
     'nanos': input.subSecondNanos,
   };
   @override
@@ -732,7 +523,7 @@ class TimeDeltaAsSecondsIntCodec extends CodecAndJsonConverter<TimeDelta, int> {
   final Rounding rounding;
 
   @override
-  int encode(TimeDelta input) => input.roundToSeconds(rounding: rounding);
+  int encode(TimeDelta input) => input.roundTo(.seconds, rounding: rounding);
   @override
   TimeDelta decode(int encoded) => TimeDelta(seconds: encoded);
 }
@@ -747,7 +538,7 @@ class TimeDeltaAsMinutesIntCodec extends CodecAndJsonConverter<TimeDelta, int> {
   final Rounding rounding;
 
   @override
-  int encode(TimeDelta input) => input.roundToMinutes(rounding: rounding);
+  int encode(TimeDelta input) => input.roundTo(.minutes, rounding: rounding);
   @override
   TimeDelta decode(int encoded) => TimeDelta(minutes: encoded);
 }
@@ -762,7 +553,7 @@ class TimeDeltaAsHoursIntCodec extends CodecAndJsonConverter<TimeDelta, int> {
   final Rounding rounding;
 
   @override
-  int encode(TimeDelta input) => input.roundToHours(rounding: rounding);
+  int encode(TimeDelta input) => input.roundTo(.hours, rounding: rounding);
   @override
   TimeDelta decode(int encoded) => TimeDelta(hours: encoded);
 }

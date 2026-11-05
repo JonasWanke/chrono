@@ -44,6 +44,7 @@ void setChronoGladosDefaults() {
   Any.setDefault(any.days);
   Any.setDefault(any.dayUnit);
   Any.setDefault(any.monthUnit);
+  Any.setDefault(any.timeUnit);
   Any.setDefault(any.timeDelta);
 }
 
@@ -218,6 +219,7 @@ extension ChronoAny on Any {
   Generator<Days> get days => this.int.map(Days.new);
   Generator<MonthUnit> get monthUnit => choose(MonthUnit.values);
   Generator<DayUnit> get dayUnit => choose(DayUnit.values);
+  Generator<TimeUnit> get timeUnit => choose(TimeUnit.values);
 
   Generator<TimeDelta> get timeDelta {
     return combine10(

@@ -175,7 +175,7 @@ class GapInfo {
   /// If [local] is at the limits of the known timestamps, the fields [begin] or
   /// [end] in [GapInfo] will be `null`.
   static GapInfo? of(CDateTime local, Tz tz) {
-    final timestamp = local.andUtc().durationSinceUnixEpoch.totalSeconds;
+    final timestamp = local.andUtc().durationSinceUnixEpoch.wholeSeconds;
     final timespans = tz.timespans;
     final endIndex = binarySearch(
       timespans.length,

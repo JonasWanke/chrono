@@ -2,6 +2,20 @@ import 'package:meta/meta.dart';
 
 import 'rounding.dart';
 
+/// Rounds [total] / [step] to the nearest [int], per [rounding].
+///
+/// Unlike `rounding.round(total / step)`, this stays exact for evenly
+/// divisible inputs no matter how large — `total / step` first converts to
+/// `double`, which silently loses precision once `total` exceeds 2^53 (as
+/// [TimeDelta]'s nanosecond totals routinely do), even when the division
+/// itself is exact.
+@internal
+int roundDivide(int total, int step, Rounding rounding) {
+  final quotient = total ~/ step;
+  if (total == quotient * step) return quotient;
+  return rounding.round(total / step);
+}
+
 /// Decomposes [total] (expressed in base units) into the given [units].
 ///
 /// [baseUnitsPer] returns how many base units one of a given unit contains. The
@@ -28,7 +42,7 @@ Map<U, int> splitIntoUnits<U extends Object>(
   final smallest = sorted.last;
 
   final values = <U, int>{};
-  var remaining = rounding.round(total / baseUnitsPer(smallest));
+  var remaining = roundDivide(total, baseUnitsPer(smallest), rounding);
   for (final unit in sorted.take(sorted.length - 1)) {
     final per = baseUnitsPer(unit) ~/ baseUnitsPer(smallest);
     final value = remaining ~/ per;

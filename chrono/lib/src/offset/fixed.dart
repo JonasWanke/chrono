@@ -63,12 +63,11 @@ class FixedOffset extends TimeZone<FixedOffset> implements Offset<FixedOffset> {
     final (sign, offset) = localMinusUtc.isNegative
         ? ('-', -localMinusUtc)
         : ('+', localMinusUtc);
-    final (hoursRaw, minutesRaw, secondsRaw, _) = offset
-        .splitHoursMinutesSecondsNanos();
-    final hours = hoursRaw.toString().padLeft(2, '0');
-    final minutes = minutesRaw.toString().padLeft(2, '0');
-    final seconds = secondsRaw.toString().padLeft(2, '0');
-    return secondsRaw == 0
+    final parts = offset.split({.hours, .minutes, .seconds, .nanos});
+    final hours = parts.hours.toString().padLeft(2, '0');
+    final minutes = parts.minutes.toString().padLeft(2, '0');
+    final seconds = parts.seconds.toString().padLeft(2, '0');
+    return parts.seconds == 0
         ? '$sign$hours:$minutes'
         : '$sign$hours:$minutes:$seconds';
   }

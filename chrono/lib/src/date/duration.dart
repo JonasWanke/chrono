@@ -299,11 +299,11 @@ final class Days extends CalendarDelta
 
   TimeDelta get asTime => TimeDelta(normalDays: inDays);
   int get asNormalHours => TimeDelta.hoursPerNormalDay * inDays;
-  int get asNormalMinutes => TimeDelta.minutesPerNormalDay * inDays;
-  int get asNormalSeconds => TimeDelta.secondsPerNormalDay * inDays;
-  int get asNormalMillis => TimeDelta.millisPerNormalDay * inDays;
-  int get asNormalMicros => TimeDelta.microsPerNormalDay * inDays;
-  int get asNormalNanos => TimeDelta.nanosPerNormalDay * inDays;
+  int get asNormalMinutes => TimeUnit.minutes.per(.normalDays) * inDays;
+  int get asNormalSeconds => TimeUnit.seconds.per(.normalDays) * inDays;
+  int get asNormalMillis => TimeUnit.millis.per(.normalDays) * inDays;
+  int get asNormalMicros => TimeUnit.micros.per(.normalDays) * inDays;
+  int get asNormalNanos => TimeUnit.nanos.per(.normalDays) * inDays;
 
   @override
   MonthsDays get asMonthsDays => MonthsDays(days: this);

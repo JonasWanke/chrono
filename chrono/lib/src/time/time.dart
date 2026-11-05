@@ -41,7 +41,7 @@ final class Time
            'second',
          ),
          RangeError.checkValueInInterval(
-           millis * TimeDelta.nanosPerMilli +
+           millis * TimeUnit.millis.nanosPer +
                micros * TimeDelta.nanosPerMicro +
                nanos,
            0,
@@ -73,9 +73,13 @@ final class Time
       );
     }
 
-    final (hours, minutes, seconds, nanos) = timeSinceMidnight
-        .splitHoursMinutesSecondsNanos();
-    return Time._unchecked(hours, minutes, seconds, nanos);
+    final parts = timeSinceMidnight.split({.hours, .minutes, .seconds, .nanos});
+    return Time._unchecked(
+      parts.hours,
+      parts.minutes,
+      parts.seconds,
+      parts.nanos,
+    );
   }
 
   factory Time.nowInLocalZone({Clock? clock}) =>
@@ -196,13 +200,16 @@ final class Time
   // TODO(JonasWanke): test with negative offset and nanos
   @useResult
   (Time, Days) overflowingAddOffset(FixedOffset offset) {
-    var rawSeconds = secondsSinceMidnight + offset.localMinusUtc.totalSeconds;
+    var rawSeconds = secondsSinceMidnight + offset.localMinusUtc.wholeSeconds;
     final rawNanos = subSecondNanos + offset.localMinusUtc.subSecondNanos;
     rawSeconds += rawNanos ~/ TimeDelta.nanosPerSecond;
-    final (days, hour, minute, second) = TimeDelta(
+    final parts = TimeDelta(
       seconds: rawSeconds,
-    ).splitNormalDaysHoursMinutesSeconds();
-    return (Time.from(hour, minute, second, rawNanos), Days(days));
+    ).split({.normalDays, .hours, .minutes, .seconds});
+    return (
+      Time.from(parts.hours, parts.minutes, parts.seconds, rawNanos),
+      Days(parts.normalDays),
+    );
   }
 
   /// Subtracts given [FixedOffset] from the current time, and returns the
@@ -215,13 +222,16 @@ final class Time
   // TODO(JonasWanke): test with negative offset and nanos
   @useResult
   (Time, Days) overflowingSubOffset(FixedOffset offset) {
-    var rawSeconds = secondsSinceMidnight - offset.localMinusUtc.totalSeconds;
+    var rawSeconds = secondsSinceMidnight - offset.localMinusUtc.wholeSeconds;
     final rawNanos = subSecondNanos - offset.localMinusUtc.subSecondNanos;
     rawSeconds += rawNanos ~/ TimeDelta.nanosPerSecond;
-    final (days, hour, minute, second) = TimeDelta(
+    final parts = TimeDelta(
       seconds: rawSeconds,
-    ).splitNormalDaysHoursMinutesSeconds();
-    return (Time.from(hour, minute, second, rawNanos), Days(days));
+    ).split({.normalDays, .hours, .minutes, .seconds});
+    return (
+      Time.from(parts.hours, parts.minutes, parts.seconds, rawNanos),
+      Days(parts.normalDays),
+    );
   }
 
   /// Returns `this - other`.

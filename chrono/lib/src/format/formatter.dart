@@ -226,7 +226,7 @@ class ChronoFormatter {
       case (ChronoFormatTimestamp(), final date?, final time?):
         final offset = _offset?.offset.localMinusUtc ?? TimeDelta();
         final timestamp = date.at(time).inUtc.durationSinceUnixEpoch - offset;
-        _writeN(9, timestamp.roundToSeconds(), item.padding);
+        _writeN(9, timestamp.roundTo(.seconds), item.padding);
       default:
         throw FormatException('Insufficient arguments for given format $item');
     }
@@ -318,20 +318,24 @@ class ChronoFormatter {
     switch (precision) {
       case .hours:
         // Minutes and seconds are simply truncated.
-        hours = offset.roundToHours(rounding: .down);
+        hours = offset.roundTo(.hours, rounding: .down);
         precision = .hours;
       case .minutes || .optionalMinutes:
-        final (h, m) = offset.splitHoursMinutes(rounding: .down);
-        hours = h;
-        minutes = m;
+        final parts = offset.split({.hours, .minutes}, rounding: .down);
+        hours = parts.hours;
+        minutes = parts.minutes;
         if (precision == .optionalMinutes && minutes == 0) {
           precision = .hours;
         }
       case .seconds || .optionalSeconds || .optionalMinutesAndSeconds:
-        final (h, m, s) = offset.splitHoursMinutesSeconds(rounding: .down);
-        hours = h;
-        minutes = m;
-        seconds = s;
+        final parts = offset.split({
+          .hours,
+          .minutes,
+          .seconds,
+        }, rounding: .down);
+        hours = parts.hours;
+        minutes = parts.minutes;
+        seconds = parts.seconds;
         if (precision != .seconds && seconds == 0) {
           precision = precision == .optionalMinutesAndSeconds && minutes == 0
               ? .hours
@@ -358,9 +362,9 @@ class ChronoFormatter {
 
         // TODO(JonasWanke): localization
         _buffer.write('.');
-        if (nanos % TimeDelta.nanosPerMilli == 0) {
+        if (nanos % TimeUnit.millis.nanosPer == 0) {
           _buffer.write(
-            (nanos ~/ TimeDelta.nanosPerMilli).toString().padLeft(3, '0'),
+            (nanos ~/ TimeUnit.millis.nanosPer).toString().padLeft(3, '0'),
           );
         } else if (nanos % TimeDelta.nanosPerMicro == 0) {
           _buffer.write(
@@ -374,7 +378,7 @@ class ChronoFormatter {
         _buffer.write('.');
         _buffer.write(
           (time.subSecondNanos ~/
-                  TimeDelta.nanosPerMilli %
+                  TimeUnit.millis.nanosPer %
                   TimeDelta.millisPerSecond)
               .toString()
               .padLeft(3, '0'),
@@ -385,7 +389,7 @@ class ChronoFormatter {
         _buffer.write(
           (time.subSecondNanos ~/
                   TimeDelta.nanosPerMicro %
-                  TimeDelta.microsPerSecond)
+                  TimeUnit.micros.per(.seconds))
               .toString()
               .padLeft(6, '0'),
         );
