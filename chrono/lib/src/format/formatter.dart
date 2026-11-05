@@ -165,7 +165,14 @@ class ChronoFormatter {
         _writeName(date.month.name, length);
       case (ChronoFormatWeekdayName(:final length), final date?, _, _):
         _writeName(date.weekday.name, length);
-      // case (ChronoFormatAmPm(casing: .lower), _, final time?, _):
+      case (ChronoFormatAmPm(:final casing), _, final time?, _):
+        // TODO(JonasWanke): localization
+        _buffer.write(switch ((time.amPm, casing)) {
+          (.am, .lower) => 'am',
+          (.am, .upper) => 'AM',
+          (.pm, .lower) => 'pm',
+          (.pm, .upper) => 'PM',
+        });
       case (final ChronoFormatSubsecond item, _, final time?, _):
         _writeSubsecond(item, time);
       case (ChronoFormatTimezoneName(), _, _, (:final name, offset: _)?):
@@ -192,17 +199,6 @@ class ChronoFormatter {
     //         ),
     //         (LongWeekdayName, Some(d), _, _) => {
     //             w.write_str(long_weekdays(self.locale)[d.weekday().num_days_from_sunday() as usize])
-    //         }
-    //         (LowerAmPm, _, Some(t), _) => {
-    //             let ampm = if t.hour12().0 { am_pm(self.locale)[1] } else { am_pm(self.locale)[0] };
-    //             for c in ampm.chars().flat_map(|c| c.to_lowercase()) {
-    //                 w.write_char(c)?
-    //             }
-    //             Ok(())
-    //         }
-    //         (UpperAmPm, _, Some(t), _) => {
-    //             let ampm = if t.hour12().0 { am_pm(self.locale)[1] } else { am_pm(self.locale)[0] };
-    //             w.write_str(ampm)
     //         }
     //         (Internal(InternalFixed { val: Nanosecond3NoDot }), _, Some(t), _) => {
     //             write!(w, "{:03}", t.nanosecond() / 1_000_000 % 1_000)

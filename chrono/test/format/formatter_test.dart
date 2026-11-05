@@ -50,4 +50,23 @@ void main() {
       });
     }
   });
+
+  group('AM/PM', () {
+    String format(int hour, ChronoCasing casing) =>
+        Time.from(hour)
+            .toString([const .hour12(), const .literal(' '), .amPm(casing)]);
+
+    test('after midnight and before noon', () {
+      expect(format(0, .upper), '12 AM');
+      expect(format(0, .lower), '12 am');
+      expect(format(1, .upper), '01 AM');
+      expect(format(11, .lower), '11 am');
+    });
+    test('from noon to midnight', () {
+      expect(format(12, .upper), '12 PM');
+      expect(format(12, .lower), '12 pm');
+      expect(format(13, .upper), '01 PM');
+      expect(format(23, .lower), '11 pm');
+    });
+  });
 }
