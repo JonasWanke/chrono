@@ -161,7 +161,10 @@ class ChronoFormatter {
 
   void _writeFixed(ChronoFormatItemFixed item) {
     switch ((item, _date, _time, _offset)) {
-      // case (ChronoFormatMonthName(length: .short), final date?, _, _):
+      case (ChronoFormatMonthName(:final length), final date?, _, _):
+        _writeName(date.month.name, length);
+      case (ChronoFormatWeekdayName(:final length), final date?, _, _):
+        _writeName(date.weekday.name, length);
       // case (ChronoFormatAmPm(casing: .lower), _, final time?, _):
       case (final ChronoFormatSubsecond item, _, final time?, _):
         _writeSubsecond(item, time);
@@ -222,6 +225,18 @@ class ChronoFormatter {
     //         ),
     //     }
     // }
+  }
+
+  /// Writes the English [name] (the lowercase name of a [Month] or [Weekday])
+  /// in title case, abbreviated to three letters if [length] is
+  /// [ChronoFormatLength.short].
+  void _writeName(String name, ChronoFormatLength length) {
+    // TODO(JonasWanke): localization
+    final titleCase = name[0].toUpperCase() + name.substring(1);
+    _buffer.write(switch (length) {
+      .short => titleCase.substring(0, 3),
+      .full => titleCase,
+    });
   }
 
   void _writeOffset(ChronoFormatTimezoneOffset item, FixedOffset offsetRaw) {

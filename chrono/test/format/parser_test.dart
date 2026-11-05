@@ -1691,73 +1691,86 @@ void main() {
     );
   });
 
-  // test('_rfc850', () {
-  //     static RFC850_FMT: &str = "%A, %d-%b-%y %T GMT";
+  test('rfc850', () {
+    /// Rust's `RFC850_FMT`: `%A, %d-%b-%y %T GMT`.
+    const format = <CDateTimeFormatItem>[
+      .weekdayName(.full),
+      .literal(', '),
+      .day(),
+      .literal('-'),
+      .monthName(.short),
+      .literal('-'),
+      .year(format: .mod100),
+      .literal(' '),
+      .hour(),
+      .literal(':'),
+      .minute(),
+      .literal(':'),
+      .second(),
+      .literal(' GMT'),
+    ];
+    final dt = CDateTime.fromRaw(1994, 11, 6, 8, 49, 37);
 
-  //     let dt = Utc.with_ymd_and_hms(1994, 11, 6, 8, 49, 37).unwrap();
+    // Check that the format is what we expect.
+    expect(dt.toString(format), 'Sunday, 06-Nov-94 08:49:37 GMT');
 
-  //     // Check that the format is what we expect
-  //     #[cfg(feature = "alloc")]
-  //     assert_eq!(dt.format(RFC850_FMT).to_string(), "Sunday, 06-Nov-94 08:49:37 GMT");
+    // Check that it parses correctly.
+    expect(CDateTime.parse('Sunday, 06-Nov-94 08:49:37 GMT', format), dt);
 
-  //     // Check that it parses correctly
-  //     assert_eq!(
-  //         NaiveDateTime::parse_from_str("Sunday, 06-Nov-94 08:49:37 GMT", RFC850_FMT),
-  //         Ok(dt.naive_utc())
-  //     );
+    // Check that the rest of the weekdays parse correctly (this test
+    // originally failed in Rust because Sunday parsed incorrectly).
+    final testDates = [
+      (
+        CDateTime.fromRaw(1994, 11, 7, 8, 49, 37),
+        'Monday, 07-Nov-94 08:49:37 GMT',
+      ),
+      (
+        CDateTime.fromRaw(1994, 11, 8, 8, 49, 37),
+        'Tuesday, 08-Nov-94 08:49:37 GMT',
+      ),
+      (
+        CDateTime.fromRaw(1994, 11, 9, 8, 49, 37),
+        'Wednesday, 09-Nov-94 08:49:37 GMT',
+      ),
+      (
+        CDateTime.fromRaw(1994, 11, 10, 8, 49, 37),
+        'Thursday, 10-Nov-94 08:49:37 GMT',
+      ),
+      (
+        CDateTime.fromRaw(1994, 11, 11, 8, 49, 37),
+        'Friday, 11-Nov-94 08:49:37 GMT',
+      ),
+      (
+        CDateTime.fromRaw(1994, 11, 12, 8, 49, 37),
+        'Saturday, 12-Nov-94 08:49:37 GMT',
+      ),
+    ];
+    for (final (expected, string) in testDates) {
+      expect(CDateTime.parse(string, format), expected, reason: string);
+    }
 
-  //     // Check that the rest of the weekdays parse correctly (this test originally failed because
-  //     // Sunday parsed incorrectly).
-  //     let testdates = [
-  //         (
-  //             Utc.with_ymd_and_hms(1994, 11, 7, 8, 49, 37).unwrap(),
-  //             "Monday, 07-Nov-94 08:49:37 GMT",
-  //         ),
-  //         (
-  //             Utc.with_ymd_and_hms(1994, 11, 8, 8, 49, 37).unwrap(),
-  //             "Tuesday, 08-Nov-94 08:49:37 GMT",
-  //         ),
-  //         (
-  //             Utc.with_ymd_and_hms(1994, 11, 9, 8, 49, 37).unwrap(),
-  //             "Wednesday, 09-Nov-94 08:49:37 GMT",
-  //         ),
-  //         (
-  //             Utc.with_ymd_and_hms(1994, 11, 10, 8, 49, 37).unwrap(),
-  //             "Thursday, 10-Nov-94 08:49:37 GMT",
-  //         ),
-  //         (
-  //             Utc.with_ymd_and_hms(1994, 11, 11, 8, 49, 37).unwrap(),
-  //             "Friday, 11-Nov-94 08:49:37 GMT",
-  //         ),
-  //         (
-  //             Utc.with_ymd_and_hms(1994, 11, 12, 8, 49, 37).unwrap(),
-  //             "Saturday, 12-Nov-94 08:49:37 GMT",
-  //         ),
-  //     ];
-
-  //     for val in &testdates {
-  //         assert_eq!(NaiveDateTime::parse_from_str(val.1, RFC850_FMT), Ok(val.0.naive_utc()));
-  //     }
-
-  //     let test_dates_fail = [
-  //         "Saturday, 12-Nov-94 08:49:37",
-  //         "Saturday, 12-Nov-94 08:49:37 Z",
-  //         "Saturday, 12-Nov-94 08:49:37 GMTTTT",
-  //         "Saturday, 12-Nov-94 08:49:37 gmt",
-  //         "Saturday, 12-Nov-94 08:49:37 +08:00",
-  //         "Caturday, 12-Nov-94 08:49:37 GMT",
-  //         "Saturday, 99-Nov-94 08:49:37 GMT",
-  //         "Saturday, 12-Nov-2000 08:49:37 GMT",
-  //         "Saturday, 12-Mop-94 08:49:37 GMT",
-  //         "Saturday, 12-Nov-94 28:49:37 GMT",
-  //         "Saturday, 12-Nov-94 08:99:37 GMT",
-  //         "Saturday, 12-Nov-94 08:49:99 GMT",
-  //     ];
-
-  //     for val in &test_dates_fail {
-  //         assert!(NaiveDateTime::parse_from_str(val, RFC850_FMT).is_err());
-  //     }
-  // });
+    const testDatesFail = [
+      'Saturday, 12-Nov-94 08:49:37',
+      'Saturday, 12-Nov-94 08:49:37 Z',
+      'Saturday, 12-Nov-94 08:49:37 GMTTTT',
+      'Saturday, 12-Nov-94 08:49:37 gmt',
+      'Saturday, 12-Nov-94 08:49:37 +08:00',
+      'Caturday, 12-Nov-94 08:49:37 GMT',
+      'Saturday, 99-Nov-94 08:49:37 GMT',
+      'Saturday, 12-Nov-2000 08:49:37 GMT',
+      'Saturday, 12-Mop-94 08:49:37 GMT',
+      'Saturday, 12-Nov-94 28:49:37 GMT',
+      'Saturday, 12-Nov-94 08:99:37 GMT',
+      'Saturday, 12-Nov-94 08:49:99 GMT',
+    ];
+    for (final string in testDatesFail) {
+      expect(
+        () => CDateTime.parse(string, format),
+        throwsA(isA<ChronoParseException>()),
+        reason: string,
+      );
+    }
+  });
 
   test('parseRfc3339', () {
     // Test data: input and either the expected result or the expected error.
