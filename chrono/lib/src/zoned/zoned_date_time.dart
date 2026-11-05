@@ -91,6 +91,28 @@ class ZonedDateTime<Tz extends TimeZone<Tz>> {
 
   ZonedDateTime<Tz> operator -(ChronoDelta duration) => this + (-duration);
 
+  /// Like [+], but reports a gap or fold instead of resolving it.
+  ///
+  /// The months and days of [duration] are added to the local date and time,
+  /// and the result of mapping it back into the time zone is returned as is
+  /// (so [MappedLocalTime_None] for a gap and [MappedLocalTime_Ambiguous] for a
+  /// fold). The time part is then added on the UTC timeline.
+  @useResult
+  MappedLocalTime<ZonedDateTime<Tz>> checkedAdd(ChronoDelta duration) {
+    final delta = duration.asDateTimeDelta;
+    final withCalendar = delta.months.inMonths == 0 && delta.days.inDays == 0
+        ? MappedLocalTime_Single(this)
+        : timeZone.fromLocalDateTime(
+            localDateTime +
+                DateTimeDelta(months: delta.months, days: delta.days),
+          );
+    if (delta.time.isZero) return withCalendar;
+
+    return withCalendar.map(
+      (it) => timeZone.fromUtcDateTime(it.utcDateTime + delta.time),
+    );
+  }
+
   ZonedDateTime<Tz> _addCalendarDelta(Months months, Days days) {
     final local = localDateTime + DateTimeDelta(months: months, days: days);
     return switch (timeZone.offsetFromLocalDateTime(local)) {
@@ -114,11 +136,16 @@ class ZonedDateTime<Tz extends TimeZone<Tz>> {
   ZonedDateTime<Tz> _afterGap(CDateTime local) {
     // Transitions are far apart, so the offset a day before [local] is the one
     // in effect before the gap.
-    final before = timeZone.offsetFromUtcDateTime(
-      local - TimeDelta(hours: 24),
-    );
+    final before = timeZone.offsetFromUtcDateTime(local - TimeDelta(hours: 24));
     return timeZone.fromUtcDateTime(local.subOffset(before.fix()));
   }
+
+  /// Like [-], but reports a gap or fold instead of resolving it.
+  ///
+  /// See [checkedAdd] for details.
+  @useResult
+  MappedLocalTime<ZonedDateTime<Tz>> checkedSubtract(ChronoDelta duration) =>
+      checkedAdd(-duration);
 
   // TODO(JonasWanke): more arithmetic
   /// Subtracts another `DateTime` from the current date and time.

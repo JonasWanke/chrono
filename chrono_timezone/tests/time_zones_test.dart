@@ -100,6 +100,52 @@ void main() {
       );
     });
 
+    test('checkedAdd reports gaps and folds', () {
+      final beforeGap = Tz.europe_london
+          .with_ymd_and_hms(2024, 3, 30, 1, 30, 0)
+          .unwrap();
+      expect(beforeGap.checkedAdd(const Days(1)), isA<MappedLocalTime_None>());
+
+      final beforeFold = Tz.europe_london
+          .with_ymd_and_hms(2024, 10, 26, 1, 30, 0)
+          .unwrap();
+      expect(
+        beforeFold.checkedAdd(const Days(1)),
+        Tz.europe_london.with_ymd_and_hms(2024, 10, 27, 1, 30, 0),
+      );
+
+      final ordinary = Tz.europe_berlin
+          .with_ymd_and_hms(2024, 3, 30, 12, 0, 0)
+          .unwrap();
+      final delta = DateTimeDelta(
+        days: const Days(1),
+        time: TimeDelta(hours: 1),
+      );
+      expect(ordinary.checkedAdd(delta).single, ordinary + delta);
+    });
+
+    test('checkedSubtract reports gaps and folds', () {
+      final afterGap = Tz.europe_london
+          .with_ymd_and_hms(2024, 4, 1, 1, 30, 0)
+          .unwrap();
+      expect(
+        afterGap.checkedSubtract(const Days(1)),
+        Tz.europe_london.with_ymd_and_hms(2024, 3, 31, 1, 30, 0),
+      );
+      expect(
+        afterGap.checkedSubtract(const Days(1)),
+        isA<MappedLocalTime_None>(),
+      );
+
+      final afterFold = Tz.europe_london
+          .with_ymd_and_hms(2024, 10, 28, 1, 30, 0)
+          .unwrap();
+      expect(
+        afterFold.checkedSubtract(const Days(1)),
+        isA<MappedLocalTime_Ambiguous>(),
+      );
+    });
+
     test('into a fold keeps offset, else earliest', () {
       final earliest = Tz.europe_london
           .with_ymd_and_hms(2024, 10, 26, 1, 30, 0)
