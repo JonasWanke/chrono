@@ -53,6 +53,26 @@ class ChronoParser {
     return (parsed: parser._parsed, rest: parser._string);
   }
 
+  /// Parses [string] as a strict RFC 3339 date and time, e.g.,
+  /// “2015-01-20T17:35:20.001-08:00”.
+  ///
+  /// This is the grammar of Rust's `DateTime::parse_from_rfc3339`:
+  ///
+  /// - The date and time are separated by `T`, `t`, or a space.
+  /// - The offset is `Z`/`z` or a signed `hh:mm` (with a colon) from `-23:59`
+  ///   to `+23:59`. The ASCII hyphen-minus and U+2212 are both accepted as the
+  ///   minus sign.
+  /// - Any number of fractional-second digits is accepted; digits beyond the
+  ///   ninth are ignored.
+  ///
+  /// Throws a [ChronoParseException] if [string] doesn't match.
+  static ChronoParsed parseRfc3339(String string) {
+    final parser = ChronoParser._(string);
+    parser._parseRfc3339();
+    if (parser._string.isNotEmpty) throw const ChronoParseException(.tooLong);
+    return parser._parsed;
+  }
+
   void _parseAndRemainder(List<ChronoFormatItem> items) {
     for (final item in items) {
       switch (item) {
@@ -229,6 +249,56 @@ class ChronoParser {
           throw const ChronoParseException(.badFormat);
       }
     }
+  }
+
+  void _parseRfc3339() {
+    // date-time = full-date ("T" / "t" / " ") full-time, see RFC 3339 section
+    // 5.6. Unlike RFC 2822, the offset range is -23:59 to +23:59.
+    _parsed.year = Year(_scanNumber(4, 4));
+    _scanChar('-');
+    _parsed.month =
+        Month.fromNumberOrNull(_scanNumber(2, 2)) ??
+        (throw const ChronoParseException(.outOfRange));
+    _scanChar('-');
+    _parsed.day = _scanNumber(2, 2);
+
+    switch (_string.isEmpty ? null : _string[0]) {
+      case 'T' || 't' || ' ':
+        _string = _string.substring(1);
+      case _?:
+        throw const ChronoParseException(.invalid);
+      case null:
+        throw const ChronoParseException(.tooShort);
+    }
+
+    _parsed.hour = _scanNumber(2, 2);
+    _scanChar(':');
+    _parsed.minute = _scanNumber(2, 2);
+    _scanChar(':');
+    _parsed.second = _scanNumber(2, 2);
+    if (_string.startsWith('.')) {
+      _string = _string.substring(1);
+      _parsed.nanosecond = _scanNanosecond();
+    }
+
+    final offset = _scanTimezoneOffset(
+      consumeColon: () => _scanChar(':'),
+      allowZulu: true,
+      allowMissingMinutes: false,
+      allowTzMinusSign: true,
+    );
+    if (offset.wholeSeconds.abs() > 86399) {
+      throw const ChronoParseException(.outOfRange);
+    }
+    _parsed.offset = offset;
+  }
+
+  /// Consumes exactly the character [expected].
+  void _scanChar(String expected) {
+    if (_string.isEmpty) throw const ChronoParseException(.tooShort);
+    if (_string[0] != expected) throw const ChronoParseException(.invalid);
+
+    _string = _string.substring(1);
   }
 
   /// Tries to parse the non-negative number from [minDigits] to [maxDigits].

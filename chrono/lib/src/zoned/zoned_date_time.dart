@@ -6,6 +6,7 @@ import '../date_time/date_time.dart';
 import '../date_time/duration.dart';
 import '../format/format.dart';
 import '../format/formatter.dart';
+import '../format/parser.dart';
 import '../offset/fixed.dart';
 import '../offset/time_zone.dart';
 import '../offset/utc.dart';
@@ -172,6 +173,17 @@ class ZonedDateTime<Tz extends TimeZone<Tz>>
   @override
   int get hashCode => Object.hash(utcDateTime, offset);
 
+  /// Parses [string] as a strict RFC 3339 date and time, e.g.,
+  /// “2015-01-20T17:35:20.001-08:00”.
+  ///
+  /// The date and time may be separated by `T`, `t`, or a space. The offset is
+  /// `Z` or a signed `hh:mm`, and fractional seconds may have any number of
+  /// digits (those beyond nanoseconds are ignored).
+  ///
+  /// Throws a [ChronoParseException] if [string] is not valid.
+  static ZonedDateTime<FixedOffset> parseRfc3339(String string) =>
+      ChronoParser.parseRfc3339(string).toZonedDateTime();
+
   /// Represents a [ZonedDateTime] as an ISO 8601 date and time, followed by a
   /// space and the name of the [offset], e.g., “2023-04-23T18:24:20 EDT”.
   static const defaultFormat = <ZonedDateTimeFormatItem>[
@@ -180,11 +192,9 @@ class ZonedDateTime<Tz extends TimeZone<Tz>>
     .timezoneName(),
   ];
 
-  // TODO(JonasWanke): Add `parseRfc3339(…)` (Rust's `parse_from_rfc3339`) and
-  // `parseRfc2822(…)` as dedicated functions. The lenient grammars (RFC 2822
-  // comments and obsolete zone names, relaxed RFC 3339 for `%+` that also
-  // accepts `UTC`) can't be expressed as format items. Test data is in
-  // `test/format/parser_test.dart`.
+  // TODO(JonasWanke): Add `parseRfc2822(…)` (Rust's `parse_from_rfc2822`) as a
+  // dedicated function. Its grammar (comments, obsolete zone names) can't be
+  // expressed as format items. Test data is in `test/format/parser_test.dart`.
   /// Returns the items to format a [ZonedDateTime] as RFC 3339 and ISO 8601,
   /// e.g., “2023-04-23T18:24:20.123+09:30”.
   ///

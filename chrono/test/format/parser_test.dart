@@ -1708,93 +1708,114 @@ void main() {
   //     }
   // });
 
-  // test('rfc3339', () {
-  //     let ymd_hmsn = |y, m, d, h, n, s, nano, off| {
-  //         FixedOffset::east_opt(off * 60 * 60)
-  //             .unwrap()
-  //             .with_ymd_and_hms(y, m, d, h, n, s)
-  //             .unwrap()
-  //             .with_nanosecond(nano)
-  //             .unwrap()
-  //     };
+  test('parseRfc3339', () {
+    ZonedDateTime<FixedOffset> ymdhmsn(
+      int year,
+      int month,
+      int day,
+      int hour,
+      int minute,
+      int second,
+      int nanos,
+      int offsetHours,
+    ) =>
+        FixedOffset.east(
+          TimeDelta(hours: offsetHours),
+        ).with_ymd_and_hms(year, month, day, hour, minute, second).unwrap() +
+        TimeDelta(nanos: nanos);
 
-  //     // Test data - (input, Ok(expected result) or Err(error code))
-  //     let testdates = [
-  //         ("2015-01-20T17:35:20-08:00", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, -8))), // normal case
-  //         ("2015-01-20T17:35:20−08:00", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, -8))), // normal case with MINUS SIGN (U+2212)
-  //         ("1944-06-06T04:04:00Z", Ok(ymd_hmsn(1944, 6, 6, 4, 4, 0, 0, 0))),           // D-day
-  //         ("2001-09-11T09:45:00-08:00", Ok(ymd_hmsn(2001, 9, 11, 9, 45, 0, 0, -8))),
-  //         ("2015-01-20T17:35:20.001-08:00", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 1_000_000, -8))),
-  //         ("2015-01-20T17:35:20.001−08:00", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 1_000_000, -8))), // with MINUS SIGN (U+2212)
-  //         ("2015-01-20T17:35:20.000031-08:00", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 31_000, -8))),
-  //         ("2015-01-20T17:35:20.000000004-08:00", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 4, -8))),
-  //         ("2015-01-20T17:35:20.000000004−08:00", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 4, -8))), // with MINUS SIGN (U+2212)
-  //         (
-  //             "2015-01-20T17:35:20.000000000452-08:00",
-  //             Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, -8)),
-  //         ), // too small
-  //         (
-  //             "2015-01-20T17:35:20.000000000452−08:00",
-  //             Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, -8)),
-  //         ), // too small with MINUS SIGN (U+2212)
-  //         ("2023-11-05T01:30:00-04:00", Ok(ymd_hmsn(2023, 11, 5, 1, 30, 0, 0, -4))), // ambiguous timestamp
-  //         ("2015-01-20 17:35:20-08:00", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, -8))), // without 'T'
-  //         ("2015-01-20_17:35:20-08:00", .invalid), // wrong date time separator
-  //         ("2015/01/20T17:35:20.001-08:00", .invalid), // wrong separator char YM
-  //         ("2015-01/20T17:35:20.001-08:00", .invalid), // wrong separator char MD
-  //         ("2015-01-20T17-35-20.001-08:00", .invalid), // wrong separator char HM
-  //         ("2015-01-20T17-35:20.001-08:00", .invalid), // wrong separator char MS
-  //         ("-01-20T17:35:20-08:00", .invalid),     // missing year
-  //         ("99-01-20T17:35:20-08:00", .invalid),   // bad year format
-  //         ("99999-01-20T17:35:20-08:00", .invalid), // bad year value
-  //         ("-2000-01-20T17:35:20-08:00", .invalid), // bad year value
-  //         ("2015-00-30T17:35:20-08:00", .outOfRange), // bad month value
-  //         ("2015-02-30T17:35:20-08:00", .outOfRange), // bad day of month value
-  //         ("2015-01-20T25:35:20-08:00", .outOfRange), // bad hour value
-  //         ("2015-01-20T17:65:20-08:00", .outOfRange), // bad minute value
-  //         ("2015-01-20T17:35:90-08:00", .outOfRange), // bad second value
-  //         ("2015-01-20T17:35:20-24:00", .outOfRange), // bad offset value
-  //         ("15-01-20T17:35:20-08:00", .invalid),   // bad year format
-  //         ("15-01-20T17:35:20-08:00:00", .invalid), // bad year format, bad offset format
-  //         ("2015-01-20T17:35:2008:00", .invalid),  // missing offset sign
-  //         ("2015-01-20T17:35:20 08:00", .invalid), // missing offset sign
-  //         ("2015-01-20T17:35:20Zulu", .tooLong),  // bad offset format
-  //         ("2015-01-20T17:35:20 Zulu", .invalid),  // bad offset format
-  //         ("2015-01-20T17:35:20GMT", .invalid),    // bad offset format
-  //         ("2015-01-20T17:35:20 GMT", .invalid),   // bad offset format
-  //         ("2015-01-20T17:35:20+GMT", .invalid),   // bad offset format
-  //         ("2015-01-20T17:35:20++08:00", .invalid), // bad offset format
-  //         ("2015-01-20T17:35:20--08:00", .invalid), // bad offset format
-  //         ("2015-01-20T17:35:20−−08:00", .invalid), // bad offset format with MINUS SIGN (U+2212)
-  //         ("2015-01-20T17:35:20±08:00", .invalid),  // bad offset sign
-  //         ("2015-01-20T17:35:20-08-00", .invalid),  // bad offset separator
-  //         ("2015-01-20T17:35:20-08;00", .invalid),  // bad offset separator
-  //         ("2015-01-20T17:35:20-0800", .invalid),   // bad offset separator
-  //         ("2015-01-20T17:35:20-08:0", .tooShort), // bad offset minutes
-  //         ("2015-01-20T17:35:20-08:AA", .invalid),  // bad offset minutes
-  //         ("2015-01-20T17:35:20-08:ZZ", .invalid),  // bad offset minutes
-  //         ("2015-01-20T17:35:20.001-08 : 00", .invalid), // bad offset separator
-  //         ("2015-01-20T17:35:20-08:00:00", .tooLong), // bad offset format
-  //         ("2015-01-20T17:35:20+08:", .tooShort),  // bad offset format
-  //         ("2015-01-20T17:35:20-08:", .tooShort),  // bad offset format
-  //         ("2015-01-20T17:35:20−08:", .tooShort), // bad offset format with MINUS SIGN (U+2212)
-  //         ("2015-01-20T17:35:20-08", .tooShort),  // bad offset format
-  //         ("2015-01-20T", .tooShort),             // missing HMS
-  //         ("2015-01-20T00:00:1", .tooShort),      // missing complete S
-  //         ("2015-01-20T00:00:1-08:00", .invalid),  // missing complete S
-  //     ];
+    // Test data: input and either the expected result or the expected error.
+    final testDates = <(String, Object)>[
+      ('2015-01-20T17:35:20-08:00', ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8)),
+      ('2015-01-20T17:35:20−08:00', ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8)),
+      ('1944-06-06T04:04:00Z', ymdhmsn(1944, 6, 6, 4, 4, 0, 0, 0)),
+      ('2001-09-11T09:45:00-08:00', ymdhmsn(2001, 9, 11, 9, 45, 0, 0, -8)),
+      (
+        '2015-01-20T17:35:20.001-08:00',
+        ymdhmsn(2015, 1, 20, 17, 35, 20, 1000000, -8),
+      ),
+      (
+        '2015-01-20T17:35:20.001−08:00',
+        ymdhmsn(2015, 1, 20, 17, 35, 20, 1000000, -8),
+      ),
+      (
+        '2015-01-20T17:35:20.000031-08:00',
+        ymdhmsn(2015, 1, 20, 17, 35, 20, 31000, -8),
+      ),
+      (
+        '2015-01-20T17:35:20.000000004-08:00',
+        ymdhmsn(2015, 1, 20, 17, 35, 20, 4, -8),
+      ),
+      (
+        '2015-01-20T17:35:20.000000004−08:00',
+        ymdhmsn(2015, 1, 20, 17, 35, 20, 4, -8),
+      ),
+      (
+        '2015-01-20T17:35:20.000000000452-08:00',
+        ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8),
+      ),
+      (
+        '2015-01-20T17:35:20.000000000452−08:00',
+        ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8),
+      ),
+      ('2023-11-05T01:30:00-04:00', ymdhmsn(2023, 11, 5, 1, 30, 0, 0, -4)),
+      ('2015-01-20 17:35:20-08:00', ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8)),
+      ('2015-01-20_17:35:20-08:00', ChronoParseExceptionKind.invalid),
+      ('2015/01/20T17:35:20.001-08:00', ChronoParseExceptionKind.invalid),
+      ('2015-01/20T17:35:20.001-08:00', ChronoParseExceptionKind.invalid),
+      ('2015-01-20T17-35-20.001-08:00', ChronoParseExceptionKind.invalid),
+      ('2015-01-20T17-35:20.001-08:00', ChronoParseExceptionKind.invalid),
+      ('-01-20T17:35:20-08:00', ChronoParseExceptionKind.invalid),
+      ('99-01-20T17:35:20-08:00', ChronoParseExceptionKind.invalid),
+      ('99999-01-20T17:35:20-08:00', ChronoParseExceptionKind.invalid),
+      ('-2000-01-20T17:35:20-08:00', ChronoParseExceptionKind.invalid),
+      ('2015-00-30T17:35:20-08:00', ChronoParseExceptionKind.outOfRange),
+      ('2015-02-30T17:35:20-08:00', ChronoParseExceptionKind.outOfRange),
+      ('2015-01-20T25:35:20-08:00', ChronoParseExceptionKind.outOfRange),
+      ('2015-01-20T17:65:20-08:00', ChronoParseExceptionKind.outOfRange),
+      ('2015-01-20T17:35:90-08:00', ChronoParseExceptionKind.outOfRange),
+      ('2015-01-20T17:35:20-24:00', ChronoParseExceptionKind.outOfRange),
+      ('15-01-20T17:35:20-08:00', ChronoParseExceptionKind.invalid),
+      ('15-01-20T17:35:20-08:00:00', ChronoParseExceptionKind.invalid),
+      ('2015-01-20T17:35:2008:00', ChronoParseExceptionKind.invalid),
+      ('2015-01-20T17:35:20 08:00', ChronoParseExceptionKind.invalid),
+      ('2015-01-20T17:35:20Zulu', ChronoParseExceptionKind.tooLong),
+      ('2015-01-20T17:35:20 Zulu', ChronoParseExceptionKind.invalid),
+      ('2015-01-20T17:35:20GMT', ChronoParseExceptionKind.invalid),
+      ('2015-01-20T17:35:20 GMT', ChronoParseExceptionKind.invalid),
+      ('2015-01-20T17:35:20+GMT', ChronoParseExceptionKind.invalid),
+      ('2015-01-20T17:35:20++08:00', ChronoParseExceptionKind.invalid),
+      ('2015-01-20T17:35:20--08:00', ChronoParseExceptionKind.invalid),
+      ('2015-01-20T17:35:20−−08:00', ChronoParseExceptionKind.invalid),
+      ('2015-01-20T17:35:20±08:00', ChronoParseExceptionKind.invalid),
+      ('2015-01-20T17:35:20-08-00', ChronoParseExceptionKind.invalid),
+      ('2015-01-20T17:35:20-08;00', ChronoParseExceptionKind.invalid),
+      ('2015-01-20T17:35:20-0800', ChronoParseExceptionKind.invalid),
+      ('2015-01-20T17:35:20-08:0', ChronoParseExceptionKind.tooShort),
+      ('2015-01-20T17:35:20-08:AA', ChronoParseExceptionKind.invalid),
+      ('2015-01-20T17:35:20-08:ZZ', ChronoParseExceptionKind.invalid),
+      ('2015-01-20T17:35:20.001-08 : 00', ChronoParseExceptionKind.invalid),
+      ('2015-01-20T17:35:20-08:00:00', ChronoParseExceptionKind.tooLong),
+      ('2015-01-20T17:35:20+08:', ChronoParseExceptionKind.tooShort),
+      ('2015-01-20T17:35:20-08:', ChronoParseExceptionKind.tooShort),
+      ('2015-01-20T17:35:20−08:', ChronoParseExceptionKind.tooShort),
+      ('2015-01-20T17:35:20-08', ChronoParseExceptionKind.tooShort),
+      ('2015-01-20T', ChronoParseExceptionKind.tooShort),
+      ('2015-01-20T00:00:1', ChronoParseExceptionKind.tooShort),
+      ('2015-01-20T00:00:1-08:00', ChronoParseExceptionKind.invalid),
+    ];
 
-  //     // Test against test data above
-  //     for &(date, checkdate) in testdates.iter() {
-  //         let dt = DateTime::<FixedOffset>::parse_from_rfc3339(date);
-  //         if dt != checkdate {
-  //             // check for expected result
-  //             panic!(
-  //                 "Date conversion failed for {date}\nReceived: {dt:?}\nExpected: {checkdate:?}"
-  //             );
-  //         }
-  //     }
-  // });
+    for (final (date, expected) in testDates) {
+      final Object actual;
+      try {
+        actual = ZonedDateTime.parseRfc3339(date);
+      } on ChronoParseException catch (e) {
+        expect(e.kind, expected, reason: 'Input: $date');
+        continue;
+      }
+      expect(actual, expected, reason: 'Input: $date');
+    }
+  });
 
   // test('issue_1010', () {
   //     let dt = crate::NaiveDateTime::parse_from_str(
