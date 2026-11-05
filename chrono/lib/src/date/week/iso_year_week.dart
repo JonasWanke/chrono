@@ -85,7 +85,7 @@ final class IsoYearWeek
   // ignore: lines_longer_than_80_chars
   // TODO(JonasWanke): rename to `differenceInWeeks`, add `differenceInYearAndWeeks`
   int difference(IsoYearWeek other) {
-    final difference = dates.start.differenceInDays(other.dates.start);
+    final difference = dates.start.daysSince(other.dates.start);
     assert(difference.isMultipleOf(.weeks));
     return difference.roundTo(.weeks);
   }

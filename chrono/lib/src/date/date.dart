@@ -233,7 +233,7 @@ final class Date
       weekBasedYear = year.next;
       week = 1;
     } else {
-      final diff = differenceInDays(first);
+      final diff = daysSince(first);
       weekBasedYear = year;
       week = 1 + diff.inDays ~/ Days.perWeek;
     }
@@ -318,15 +318,37 @@ final class Date
 
   Date operator -(CalendarDelta duration) => this + (-duration);
 
-  /// Returns `this - other` as a number of [Days].
-  Days differenceInDays(Date other) =>
-      daysSinceUnixEpoch - other.daysSinceUnixEpoch;
-
-  /// Returns a number of [Months] and [Days] so that `this + months + days ==
-  /// other`.
+  /// Returns `this - other` as a number of [Days], i.e., positive if `this` is
+  /// later than [other].
   ///
-  /// The returned [Months] and [Days] are both `>= 0` or both `<= 0`.
-  (Months, Days) untilInMonthsDays(Date other) {
+  /// Unlike [since], this doesn't extract months, so it doesn't depend on
+  /// which date the calculation starts from.
+  Days daysSince(Date other) => daysSinceUnixEpoch - other.daysSinceUnixEpoch;
+
+  /// Returns `other - this` as a number of [Days], i.e., positive if [other] is
+  /// later than `this`.
+  ///
+  /// This is the negation of [daysSince].
+  Days daysUntil(Date other) => other.daysSince(this);
+
+  /// Returns a [MonthsDays] so that `this + result == other`.
+  ///
+  /// [MonthsDays.months] and [MonthsDays.days] are both `>= 0` or both `<= 0`.
+  ///
+  /// [smallestMonthUnit] is the granularity of [MonthsDays.months]: it's always
+  /// a whole multiple of it, truncated towards zero, and the rest is returned
+  /// as [MonthsDays.days]. For example, with [MonthUnit.years], Jan 1, 2020 to
+  /// Mar 15, 2023 is 36 months and 73 days. Use [Months.split] and [Days.split]
+  /// on the result to display it in more units.
+  ///
+  /// The result is anchored at `this`, so month ends are clamped as in
+  /// `this + result`. See [since] for the opposite direction.
+  ///
+  /// See also [daysSince], which doesn't extract months.
+  MonthsDays until(
+    Date other, {
+    MonthUnit smallestMonthUnit = MonthUnit.months,
+  }) {
     var months = other.yearMonth.difference(yearMonth);
     var days = Days(other.day - day);
     if (months.isPositive && days.isNegative) {
@@ -336,8 +358,29 @@ final class Date
       months += const Months(1);
       days -= other.yearMonth.length;
     }
-    return (months, days);
+
+    final truncatedMonths =
+        months ~/ smallestMonthUnit.monthsPer * smallestMonthUnit.monthsPer;
+    if (truncatedMonths != months) {
+      months = truncatedMonths;
+      days = other.daysSinceUnixEpoch - (this + months).daysSinceUnixEpoch;
+    }
+    return MonthsDays(months: months, days: days);
   }
+
+  /// Returns a [MonthsDays] so that `this - result == other`, i.e., the
+  /// negation of [until].
+  ///
+  /// The result is positive if `this` is later than [other]. Because month ends
+  /// are clamped starting from `this`, it can differ by a few days from
+  /// `other.until(this)`: `mar1.since(jan30)` is 1 month and 2 days in 2023,
+  /// whereas `jan30.until(mar1)` is 1 month and 1 day.
+  ///
+  /// See [until] for [smallestMonthUnit].
+  MonthsDays since(
+    Date other, {
+    MonthUnit smallestMonthUnit = MonthUnit.months,
+  }) => -until(other, smallestMonthUnit: smallestMonthUnit);
 
   /// Calculates the age of someone on [onDate] who was born on `this` date.
   ///
@@ -382,7 +425,7 @@ final class Date
   @override
   Date stepBy(int count) => this + Days(count);
   @override
-  int stepsUntil(Date other) => other.differenceInDays(this).inDays;
+  int stepsUntil(Date other) => other.daysSince(this).inDays;
 
   @override
   bool operator ==(Object other) {
@@ -451,14 +494,14 @@ extension RangeOfDateChrono on Range<Date> {
   /// The [CDateTime]s in these dates.
   Range<CDateTime> get dateTimes => start.atMidnight.rangeUntil(end.atMidnight);
 
-  Days get lengthInDays => end.differenceInDays(start);
+  Days get lengthInDays => end.daysSince(start);
 }
 
 extension RangeInclusiveOfDateChrono on RangeInclusive<Date> {
   /// The [CDateTime]s in these dates.
   Range<CDateTime> get dateTimes => exclusive.dateTimes;
 
-  Days get lengthInDays => end.differenceInDays(start) + const Days(1);
+  Days get lengthInDays => end.daysSince(start) + const Days(1);
 }
 
 /// Encodes a [RangeInclusive] of [Date]s as a string `start/end`.

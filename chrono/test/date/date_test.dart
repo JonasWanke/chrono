@@ -34,17 +34,23 @@ void main() {
   });
 
   // Arithmetic with `Months` isn't always round-trippable.
-  Glados2<Date, Days>().test('+, -, and differenceInDays(…)', (date, duration) {
+  Glados2<Date, Days>().test('+, -, and daysSince(…)', (date, duration) {
     expect(date + duration - duration, date);
-    expect((date + duration).differenceInDays(date), duration);
+    expect((date + duration).daysSince(date), duration);
+  });
+  Glados2<Date, Date>().test('daysSince(…) and daysUntil(…)', (dateA, dateB) {
+    expect(dateA.daysUntil(dateB), -dateA.daysSince(dateB));
+    expect(dateA + dateA.daysUntil(dateB), dateB);
   });
   Glados<Date>().test('difference methods', (date) {
-    expect(date.differenceInDays(date), const Days(0));
-    expect(date.untilInMonthsDays(date), const (Months(0), Days(0)));
+    expect(date.daysSince(date), const Days(0));
+    final MonthsDays(:months, :days) = date.until(date);
+    expect(months, const Months(0));
+    expect(days, const Days(0));
   });
-  group('untilInMonthsDays(…)', () {
+  group('until(…)', () {
     Glados2<Date, Date>().test('fulfills contract', (dateA, dateB) {
-      final (months, days) = dateA.untilInMonthsDays(dateB);
+      final MonthsDays(:months, :days) = dateA.until(dateB);
       expect(dateA + months + days, dateB);
     });
     test('edge cases', () {
@@ -57,7 +63,8 @@ void main() {
       ]) {
         final dateA = Date.from(year, monthA, dayA);
         final dateB = Date.from(year, monthB, dayB);
-        return dateA.untilInMonthsDays(dateB);
+        final MonthsDays(:months, :days) = dateA.until(dateB);
+        return (months, days);
       }
 
       expect(until(Month.january, 1, Month.january, 1), const (
@@ -145,11 +152,63 @@ void main() {
       ));
     });
   });
-  Glados2<Date, Date>().test('untilInMonthsDays(…) split into years', (
-    dateA,
-    dateB,
-  ) {
-    final (months, days) = dateA.untilInMonthsDays(dateB);
+  group('until(…) with smallestMonthUnit', () {
+    Glados3<Date, Date, MonthUnit>().test('fulfills contract', (
+      dateA,
+      dateB,
+      unit,
+    ) {
+      final result = dateA.until(dateB, smallestMonthUnit: unit);
+      expect(dateA + result, dateB);
+      expect(result.months.isMultipleOf(unit), true);
+      expect(
+        result.months.isNonNegative && result.days.isNonNegative ||
+            result.months.isNonPositive && result.days.isNonPositive,
+        true,
+      );
+    });
+    test('edge cases', () {
+      final start = Date.from(const Year(2020), Month.january, 1);
+      final end = Date.from(const Year(2023), Month.march, 15);
+      final years = start.until(end, smallestMonthUnit: .years);
+      expect(years.months, const Months(36));
+      expect(years.days, const Days(73));
+
+      final quarters = start.until(
+        Date.from(const Year(2020), Month.march, 15),
+        smallestMonthUnit: .quarters,
+      );
+      expect(quarters.months, const Months(0));
+      expect(quarters.days, const Days(74));
+    });
+  });
+  group('since(…)', () {
+    Glados3<Date, Date, MonthUnit>().test('fulfills contract', (
+      dateA,
+      dateB,
+      unit,
+    ) {
+      expect(dateA - dateA.since(dateB, smallestMonthUnit: unit), dateB);
+    });
+    test('is anchored at the receiver', () {
+      final jan30 = Date.from(const Year(2023), Month.january, 30);
+      final mar1 = Date.from(const Year(2023), Month.march, 1);
+
+      final forward = jan30.until(mar1);
+      expect(forward.months, const Months(1));
+      expect(forward.days, const Days(1));
+
+      final backward = mar1.since(jan30);
+      expect(backward.months, const Months(1));
+      expect(backward.days, const Days(2));
+
+      final negative = jan30.since(mar1);
+      expect(negative.months, const Months(-1));
+      expect(negative.days, const Days(-1));
+    });
+  });
+  Glados2<Date, Date>().test('until(…) split into years', (dateA, dateB) {
+    final MonthsDays(:months, :days) = dateA.until(dateB);
     final parts = months.split({.years, .months});
     expect(
       dateA + Months.fromYears(parts.years) + Months(parts.months) + days,

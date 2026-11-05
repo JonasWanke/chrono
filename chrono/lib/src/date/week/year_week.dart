@@ -86,7 +86,7 @@ final class YearWeek
   int difference(YearWeek other) {
     assert(config == other.config);
 
-    final difference = dates.start.differenceInDays(other.dates.start);
+    final difference = dates.start.daysSince(other.dates.start);
     assert(difference.isMultipleOf(.weeks));
     return difference.roundTo(.weeks);
   }

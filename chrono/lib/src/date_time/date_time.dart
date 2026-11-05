@@ -149,7 +149,7 @@ final class CDateTime
   DateTimeDelta difference(CDateTime other) {
     if (this < other) return -other.difference(this);
 
-    var days = date.differenceInDays(other.date);
+    var days = date.daysSince(other.date);
     TimeDelta timeDelta;
     if (time < other.time) {
       days -= const Days(1);

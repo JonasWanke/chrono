@@ -104,7 +104,7 @@ final class Year
     return 1 +
         lastDayOfWeekBasedYear(
               config,
-            ).differenceInDays(firstDayOfWeekBasedYear(config)).inDays ~/
+            ).daysSince(firstDayOfWeekBasedYear(config)).inDays ~/
             Days.perWeek;
   }
 
