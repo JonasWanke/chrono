@@ -80,4 +80,33 @@ void main() {
       );
     });
   });
+
+  group('toString(…)', () {
+    final dateTime = FixedOffset.east(
+      TimeDelta(hours: 9, minutes: 30),
+    ).fromUtcDateTime(CDateTime.fromRaw(2000, 9, 1, 13, 0, 15));
+
+    test('default', () {
+      expect(dateTime.toString(), '2000-09-01T22:30:15 +09:30');
+    });
+    test('offset items', () {
+      expect(
+        dateTime.toString(const [.year(), .month(), .day(), .timezoneOffset()]),
+        '20000901+09:30',
+      );
+      expect(
+        dateTime.toString(const [.timezoneOffset(printColon: false)]),
+        '+0930',
+      );
+      expect(
+        dateTime.toString(const [.timezoneOffset(precision: .hours)]),
+        '+09',
+      );
+    });
+    test('zulu', () {
+      final utc = dateTime.withTimezone(FixedOffset.zero);
+      expect(utc.toString(const [.timezoneOffset()]), 'Z');
+      expect(utc.toString(const [.timezoneOffset(allowZulu: false)]), '+00:00');
+    });
+  });
 }

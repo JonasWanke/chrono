@@ -142,10 +142,77 @@ abstract interface class ChronoFormattable<I extends ChronoFormatItem> {
   String toString([List<I> items]);
 }
 
+// ZonedDateTime
+
+/// A [ChronoFormatItem] that is used for formatting [ZonedDateTime]s.
+///
+/// This includes all [CDateTimeFormatItem]s, applied to the local date and
+/// time, plus items for the time zone.
+sealed class ZonedDateTimeFormatItem extends ChronoFormatItem {
+  const factory ZonedDateTimeFormatItem.literal(String text) =
+      ChronoFormatItemLiteral;
+  const factory ZonedDateTimeFormatItem.space(String text) =
+      ChronoFormatItemSpace;
+  const factory ZonedDateTimeFormatItem.year({
+    YearFormat format,
+    ChronoPadding padding,
+  }) = ChronoFormatYear;
+  const factory ZonedDateTimeFormatItem.isoYear({
+    YearFormat format,
+    ChronoPadding padding,
+  }) = ChronoFormatIsoYear;
+  const factory ZonedDateTimeFormatItem.quarter({ChronoPadding padding}) =
+      ChronoFormatQuarter;
+  const factory ZonedDateTimeFormatItem.month({ChronoPadding padding}) =
+      ChronoFormatMonth;
+  const factory ZonedDateTimeFormatItem.day({ChronoPadding padding}) =
+      ChronoFormatDay;
+  const factory ZonedDateTimeFormatItem.weekFromSun({ChronoPadding padding}) =
+      ChronoFormatWeekFromSun;
+  const factory ZonedDateTimeFormatItem.weekFromMon({ChronoPadding padding}) =
+      ChronoFormatWeekFromMon;
+  const factory ZonedDateTimeFormatItem.isoWeek({ChronoPadding padding}) =
+      ChronoFormatIsoWeek;
+  const factory ZonedDateTimeFormatItem.numDaysFromSun({
+    ChronoPadding padding,
+  }) = ChronoFormatNumDaysFromSun;
+  const factory ZonedDateTimeFormatItem.weekday({ChronoPadding padding}) =
+      ChronoFormatWeekday;
+  const factory ZonedDateTimeFormatItem.ordinal({ChronoPadding padding}) =
+      ChronoFormatOrdinal;
+  const factory ZonedDateTimeFormatItem.hour({ChronoPadding padding}) =
+      ChronoFormatHour;
+  const factory ZonedDateTimeFormatItem.hour12({ChronoPadding padding}) =
+      ChronoFormatHour12;
+  const factory ZonedDateTimeFormatItem.minute({ChronoPadding padding}) =
+      ChronoFormatMinute;
+  const factory ZonedDateTimeFormatItem.second({ChronoPadding padding}) =
+      ChronoFormatSecond;
+  const factory ZonedDateTimeFormatItem.nanosecond({ChronoPadding padding}) =
+      ChronoFormatNanosecond;
+  const factory ZonedDateTimeFormatItem.monthName(ChronoFormatLength length) =
+      ChronoFormatMonthName;
+  const factory ZonedDateTimeFormatItem.weekdayName(ChronoFormatLength length) =
+      ChronoFormatWeekdayName;
+  const factory ZonedDateTimeFormatItem.amPm(ChronoCasing casing) =
+      ChronoFormatAmPm;
+  const factory ZonedDateTimeFormatItem.subsecond(
+    ChronoSubsecondAccuracy accuracy,
+  ) = ChronoFormatSubsecond;
+  const factory ZonedDateTimeFormatItem.timezoneName() =
+      ChronoFormatTimezoneName;
+  const factory ZonedDateTimeFormatItem.timezoneOffset({
+    TimezoneOffsetPrecision precision,
+    bool allowZulu,
+    bool printColon,
+  }) = ChronoFormatTimezoneOffset;
+}
+
 // DateTime
 
 /// A [ChronoFormatItem] that is used for formatting and parsing [CDateTime]s.
-sealed class CDateTimeFormatItem extends ChronoFormatItem {
+sealed class CDateTimeFormatItem extends ChronoFormatItem
+    implements ZonedDateTimeFormatItem {
   const factory CDateTimeFormatItem.literal(String text) =
       ChronoFormatItemLiteral;
   const factory CDateTimeFormatItem.space(String text) = ChronoFormatItemSpace;
@@ -436,8 +503,12 @@ class ChronoFormatTimestamp extends ChronoFormatItemNumeric {
 
 /// Timezone name.
 ///
+/// For a [ZonedDateTime], this is the `toString()` of its [Offset], e.g.,
+/// “EDT”, “+09:30”, or “UTC”.
+///
 /// It does not support parsing, its use in the parser is an immediate failure.
-class ChronoFormatTimezoneName extends ChronoFormatItemFixed {
+class ChronoFormatTimezoneName extends ChronoFormatItemFixed
+    implements ZonedDateTimeFormatItem {
   const ChronoFormatTimezoneName();
 }
 
@@ -448,7 +519,8 @@ class ChronoFormatTimezoneName extends ChronoFormatItemFixed {
 ///
 /// The offset is limited from `-24:00:00` to `+24:00:00` (exclusive), which is
 /// the same as [FixedOffset]'s range.
-class ChronoFormatTimezoneOffset extends ChronoFormatItemFixed {
+class ChronoFormatTimezoneOffset extends ChronoFormatItemFixed
+    implements ZonedDateTimeFormatItem {
   const ChronoFormatTimezoneOffset({
     this.precision = .minutes,
     this.allowZulu = true,

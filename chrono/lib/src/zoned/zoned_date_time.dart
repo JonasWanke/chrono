@@ -4,6 +4,8 @@ import '../date/date.dart';
 import '../date/duration.dart';
 import '../date_time/date_time.dart';
 import '../date_time/duration.dart';
+import '../format/format.dart';
+import '../format/formatter.dart';
 import '../offset/fixed.dart';
 import '../offset/time_zone.dart';
 import '../offset/utc.dart';
@@ -12,7 +14,8 @@ import '../time/time.dart';
 
 /// ISO 8601 combined date and time with a time zone.
 @immutable
-class ZonedDateTime<Tz extends TimeZone<Tz>> {
+class ZonedDateTime<Tz extends TimeZone<Tz>>
+    implements ChronoFormattable<ZonedDateTimeFormatItem> {
   /// The UTC [CDateTime].
   final CDateTime utcDateTime;
 
@@ -169,8 +172,22 @@ class ZonedDateTime<Tz extends TimeZone<Tz>> {
   @override
   int get hashCode => Object.hash(utcDateTime, offset);
 
+  /// Represents a [ZonedDateTime] as an ISO 8601 date and time, followed by a
+  /// space and the name of the [offset], e.g., “2023-04-23T18:24:20 EDT”.
+  static const defaultFormat = <ZonedDateTimeFormatItem>[
+    ...CDateTime.isoFormat,
+    .literal(' '),
+    .timezoneName(),
+  ];
+
   @override
-  String toString() => '$localDateTime $offset';
+  String toString([List<ZonedDateTimeFormatItem> items = defaultFormat]) =>
+      ChronoFormatter.format(
+        items,
+        date: localDateTime.date,
+        time: localDateTime.time,
+        offset: (name: offset.toString(), offset: offset.fix()),
+      );
 
   // TODO(JonasWanke): use new [ChronoParser]
 }
