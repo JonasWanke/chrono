@@ -1,6 +1,5 @@
 import 'package:meta/meta.dart';
 
-import '../../chrono.dart' show TimeDelta;
 import '../date_time/duration.dart';
 import '../rounding.dart';
 import '../time/duration.dart';
@@ -298,7 +297,7 @@ final class Days extends CalendarDelta
   final int inDays;
 
   TimeDelta get asTime => TimeDelta(normalDays: inDays);
-  int get asNormalHours => TimeDelta.hoursPerNormalDay * inDays;
+  int get asNormalHours => TimeUnit.hours.per(.normalDays) * inDays;
   int get asNormalMinutes => TimeUnit.minutes.per(.normalDays) * inDays;
   int get asNormalSeconds => TimeUnit.seconds.per(.normalDays) * inDays;
   int get asNormalMillis => TimeUnit.millis.per(.normalDays) * inDays;

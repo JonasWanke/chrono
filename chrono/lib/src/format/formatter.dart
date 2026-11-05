@@ -190,11 +190,11 @@ class ChronoFormatter {
         _writeTwo(date.month.number, item.padding);
       case (ChronoFormatDay(), final date?, _):
         _writeTwo(date.day, item.padding);
-      case (ChronoFormatWeekFromSun(), final date?, _):
+      case (ChronoFormatWeekFromSun(), _?, _):
         // TODO(JonasWanke): support ChronoFormatWeekFromSun
         // (WeekFromSun, Some(d), _) => write_two(w, d.weeks_from(Weekday::Sun) as u8, pad),
         throw UnimplementedError();
-      case (ChronoFormatWeekFromMon(), final date?, _):
+      case (ChronoFormatWeekFromMon(), _?, _):
         // TODO(JonasWanke): support ChronoFormatWeekFromMon
         // (WeekFromMon, Some(d), _) => write_two(w, d.weeks_from(Weekday::Mon) as u8, pad),
         throw UnimplementedError();

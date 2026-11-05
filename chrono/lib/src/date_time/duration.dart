@@ -1,6 +1,7 @@
 import 'package:meta/meta.dart';
 
-import '../../chrono.dart' show Months, TimeDelta;
+import '../../chrono.dart'
+    show ChronoFormatter, ChronoParser, Months, TimeDelta;
 import '../date/duration.dart';
 
 /// Base class for date and time durations.
@@ -66,8 +67,8 @@ abstract class ChronoDelta {
   }
 }
 
-/// [ChronoDelta] subclass that can represent any duration by combining [Months],
-/// [Days], and [TimeDelta].
+/// [ChronoDelta] subclass that can represent any duration by combining
+/// [Months], [Days], and [TimeDelta].
 final class DateTimeDelta extends ChronoDelta {
   DateTimeDelta({
     CalendarDelta? monthsAndDays,

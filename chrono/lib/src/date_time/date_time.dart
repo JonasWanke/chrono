@@ -44,7 +44,8 @@ final class CDateTime
   // TODO(JonasWanke): remove in favor of `zonedDateTime.unixEpoch`
   static final unixEpoch = Date.unixEpoch.at(Time.midnight);
 
-  // TODO(JonasWanke): remove in favor of `zonedDateTime.fromDurationSinceUnixEpoch(…)`
+  // TODO(JonasWanke): remove in favor of
+  // `zonedDateTime.fromDurationSinceUnixEpoch(…)`
   /// The date corresponding to the given duration since the [unixEpoch].
   factory CDateTime.fromDurationSinceUnixEpoch(TimeDelta sinceUnixEpoch) {
     final (days, time) = sinceUnixEpoch.toDaysAndTime();
