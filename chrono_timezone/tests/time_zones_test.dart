@@ -27,23 +27,22 @@ void main() {
     }
   });
 
-  // test('test_addition_across_dst_boundary', () {
-  //     use chrono::TimeZone;
-  //     final two_hours = Duration::hours(2);
-  //     final edt = Eastern.with_ymd_and_hms(2019, 11, 3, 0, 0, 0).unwrap();
-  //     final est = edt + two_hours;
+  test('addition across DST boundary', () {
+    final twoHours = TimeDelta(hours: 2);
+    final edt = Tz.us_eastern.with_ymd_and_hms(2019, 11, 3, 0, 0, 0).unwrap();
+    final est = edt + twoHours;
 
-  //     expect(edt.to_string(), "2019-11-03 00:00:00 EDT".to_string());
-  //     expect(est.to_string(), "2019-11-03 01:00:00 EST".to_string());
-  //     expect(est.timestamp(), edt.timestamp() + two_hours.num_seconds());
-  // });
+    expect(edt.toString(), '2019-11-03T00:00:00 EDT');
+    expect(est.toString(), '2019-11-03T01:00:00 EST');
+    expect(est.durationSinceUnixEpoch, edt.durationSinceUnixEpoch + twoHours);
+  });
 
-  // test('warsaw_tz_name', () {
-  //     final dt = UTC.with_ymd_and_hms(1915, 8, 4, 22, 35, 59).unwrap();
-  //     expect(dt.withTimezone(&Warsaw).format("%Z").to_string(), "WMT");
-  //     final dt = dt + Duration::seconds(1);
-  //     expect(dt.withTimezone(&Warsaw).format("%Z").to_string(), "CET");
-  // });
+  test('Warsaw time zone name', () {
+    final dt = Tz.utc.with_ymd_and_hms(1915, 8, 4, 22, 35, 59).unwrap();
+    expect(abbreviationOf(dt.withTimezone(Tz.europe_warsaw)), 'WMT');
+    final later = dt + TimeDelta(seconds: 1);
+    expect(abbreviationOf(later.withTimezone(Tz.europe_warsaw)), 'CET');
+  });
 
   test('Vilnius UTC offset', () {
     final dt0 = Tz.utc
@@ -61,23 +60,20 @@ void main() {
     );
   });
 
-  // test('victorian_times', () {
-  //     final dt = UTC
-  //         .with_ymd_and_hms(1847, 12, 1, 0, 1, 14)
-  //         .unwrap()
-  //         .withTimezone(&London);
-  //     expect(
-  //         dt,
-  //         Tz.europe_london
-  //             .with_ymd_and_hms(1847, 11, 30, 23, 59, 59)
-  //             .unwrap()
-  //     );
-  //     final dt = dt + Duration::seconds(1);
-  //     expect(
-  //         dt,
-  //         Tz.europe_london.with_ymd_and_hms(1847, 12, 1, 0, 1, 15).unwrap(),
-  //     );
-  // });
+  test('Victorian times', () {
+    final dt = Tz.utc
+        .with_ymd_and_hms(1847, 12, 1, 0, 1, 14)
+        .unwrap()
+        .withTimezone(Tz.europe_london);
+    expect(
+      dt,
+      Tz.europe_london.with_ymd_and_hms(1847, 11, 30, 23, 59, 59).unwrap(),
+    );
+    expect(
+      dt + TimeDelta(seconds: 1),
+      Tz.europe_london.with_ymd_and_hms(1847, 12, 1, 0, 1, 15).unwrap(),
+    );
+  });
 
   group('adding Days', () {
     test('keeps wall-clock time across DST', () {
@@ -180,15 +176,20 @@ void main() {
     expect(later, expected);
   });
 
-  // test('international_date_line_change', () {
-  //     final dt = UTC
-  //         .with_ymd_and_hms(2011, 12, 30, 9, 59, 59)
-  //         .unwrap()
-  //         .withTimezone(&Apia);
-  //     expect(dt, Apia.with_ymd_and_hms(2011, 12, 29, 23, 59, 59).unwrap());
-  //     final dt = dt + Duration::seconds(1);
-  //     expect(dt, Apia.with_ymd_and_hms(2011, 12, 31, 0, 0, 0).unwrap());
-  // });
+  test('international date line change', () {
+    final dt = Tz.utc
+        .with_ymd_and_hms(2011, 12, 30, 9, 59, 59)
+        .unwrap()
+        .withTimezone(Tz.pacific_apia);
+    expect(
+      dt,
+      Tz.pacific_apia.with_ymd_and_hms(2011, 12, 29, 23, 59, 59).unwrap(),
+    );
+    expect(
+      dt + TimeDelta(seconds: 1),
+      Tz.pacific_apia.with_ymd_and_hms(2011, 12, 31, 0, 0, 0).unwrap(),
+    );
+  });
 
   test('negative offset with minutes and seconds', () {
     final dt = Tz.utc
@@ -201,48 +202,39 @@ void main() {
     );
   });
 
-  // test('monotonicity', () {
-  //     final mut dt = Noumea.with_ymd_and_hms(1800, 1, 1, 12, 0, 0).unwrap();
-  //     for _ in 0..24 * 356 * 400 {
-  //         final new = dt + Duration::hours(1);
-  //         assert!(new > dt);
-  //         assert!(new.withTimezone(&UTC) > dt.withTimezone(&UTC));
-  //         dt = new;
-  //     }
-  // }
+  test('monotonicity', () {
+    var dt = Tz.pacific_noumea.with_ymd_and_hms(1800, 1, 1, 12, 0, 0).unwrap();
+    for (var i = 0; i < 24 * 356 * 400; i++) {
+      final next = dt + TimeDelta(hours: 1);
+      expect(next.utcDateTime > dt.utcDateTime, isTrue, reason: '$dt');
+      dt = next;
+    }
+  });
 
-  // test('test_inverse', <T: TimeZone>(tz: T, begin: i32, end: i32) {
-  //     for y in begin..end {
-  //         for d in 1..366 {
-  //             final date = NaiveDate::from_yo_opt(y, d).unwrap();
-  //             for h in 0..24 {
-  //                 for m in 0..60 {
-  //                     final dt =
-  //                         date.and_hms_opt(h, m, 0).unwrap().and_utc();
-  //                     final with_tz = dt.withTimezone(&tz);
-  //                     final utc = with_tz.withTimezone(&UTC);
-  //                     expect(dt, utc);
-  //                 }
-  //             }
-  //         }
-  //     }
-  // });
+  group('inverse', () {
+    @isTest
+    void testInverse(String description, Tz tz, int begin, int end) {
+      test(description, () {
+        for (var year = begin; year < end; year++) {
+          for (var dayOfYear = 1; dayOfYear < 366; dayOfYear++) {
+            final date = Date.fromYearAndOrdinal(Year(year), dayOfYear);
+            for (var hour = 0; hour < 24; hour++) {
+              for (var minute = 0; minute < 60; minute++) {
+                final dt = date.at(Time.from(hour, minute)).andUtc();
+                final back = dt.withTimezone(tz).withTimezone(Tz.utc);
+                expect(back.utcDateTime, dt.utcDateTime, reason: '$tz $dt');
+              }
+            }
+          }
+        }
+      });
+    }
 
-  // test('inverse_london', () {
-  //     test_inverse(London, 1989, 1994);
-  // });
-
-  // test('inverse_dhaka', () {
-  //     test_inverse(Dhaka, 1995, 2000);
-  // });
-
-  // test('inverse_apia', () {
-  //     test_inverse(Apia, 2011, 2012);
-  // });
-
-  // test('inverse_tahiti', () {
-  //     test_inverse(Tahiti, 1911, 1914);
-  // });
+    testInverse('London', Tz.europe_london, 1989, 1994);
+    testInverse('Dhaka', Tz.asia_dhaka, 1995, 2000);
+    testInverse('Apia', Tz.pacific_apia, 2011, 2012);
+    testInverse('Tahiti', Tz.pacific_tahiti, 1911, 1914);
+  });
 
   // test('string_representation', () {
   //     final dt = UTC
@@ -255,22 +247,20 @@ void main() {
   //     expect(format!("{dt}"), "2000-09-01 22:00:15 ACST");
   // });
 
-  // test('tahiti', () {
-  //     final dt = UTC
-  //         .with_ymd_and_hms(1912, 10, 1, 9, 58, 16)
-  //         .unwrap()
-  //         .withTimezone(&Tahiti);
-  //     final before = dt - Duration::hours(1);
-  //     expect(
-  //         before,
-  //         Tahiti.with_ymd_and_hms(1912, 9, 30, 23, 0, 0).unwrap()
-  //     );
-  //     final after = dt + Duration::hours(1);
-  //     expect(
-  //         after,
-  //         Tahiti.with_ymd_and_hms(1912, 10, 1, 0, 58, 16).unwrap()
-  //     );
-  // });
+  test('Tahiti', () {
+    final dt = Tz.utc
+        .with_ymd_and_hms(1912, 10, 1, 9, 58, 16)
+        .unwrap()
+        .withTimezone(Tz.pacific_tahiti);
+    expect(
+      dt - TimeDelta(hours: 1),
+      Tz.pacific_tahiti.with_ymd_and_hms(1912, 9, 30, 23, 0, 0).unwrap(),
+    );
+    expect(
+      dt + TimeDelta(hours: 1),
+      Tz.pacific_tahiti.with_ymd_and_hms(1912, 10, 1, 0, 58, 16).unwrap(),
+    );
+  });
 
   test('Non-existent time', () {
     expect(
@@ -345,12 +335,12 @@ void main() {
     );
   });
 
-  // test('test_get_name', () {
-  //     expect(Tz.europe_london.name(), "Europe/London");
-  //     expect(Tz::Africa__Abidjan.name(), "Africa/Abidjan");
-  //     expect(Tz::UTC.name(), "UTC");
-  //     expect(Tz::Zulu.name(), "Zulu");
-  // });
+  test('tzId', () {
+    expect(Tz.europe_london.tzId, 'Europe/London');
+    expect(Tz.africa_abidjan.tzId, 'Africa/Abidjan');
+    expect(Tz.utc.tzId, 'UTC');
+    expect(Tz.zulu.tzId, 'Zulu');
+  });
 
   test('toString()', () {
     expect(Tz.europe_london.toString(), 'Europe/London');
@@ -370,17 +360,30 @@ void main() {
     );
   });
 
-  // test('test_numeric_names', () {
-  //     final dt = Scoresbysund.with_ymd_and_hms(2024, 5, 1, 0, 0, 0).unwrap();
-  //     expect(format!("{}", dt.offset()), "-01");
-  //     expect(format!("{:?}", dt.offset()), "-01");
-  //     final dt = Casey.with_ymd_and_hms(2022, 11, 1, 0, 0, 0).unwrap();
-  //     expect(format!("{}", dt.offset()), "+11");
-  //     expect(format!("{:?}", dt.offset()), "+11");
-  //     final dt = Addis_Ababa.with_ymd_and_hms(1937, 2, 1, 0, 0, 0).unwrap();
-  //     expect(format!("{}", dt.offset()), "+0245");
-  //     expect(format!("{:?}", dt.offset()), "+0245");
-  // }
+  group('numeric names', () {
+    test(
+      'Scoresbysund',
+      () {
+        final dt = Tz.america_scoresbysund
+            .with_ymd_and_hms(2024, 5, 1, 0, 0, 0)
+            .unwrap();
+        expect(dt.offset.toString(), '-01');
+      },
+      skip: 'time_zones.dart lacks the 2024 DST period of Scoresbysund',
+    );
+    test('Casey', () {
+      final dt = Tz.antarctica_casey
+          .with_ymd_and_hms(2022, 11, 1, 0, 0, 0)
+          .unwrap();
+      expect(dt.offset.toString(), '+11');
+    });
+    test('Addis Ababa', () {
+      final dt = Tz.africa_addisAbaba
+          .with_ymd_and_hms(1937, 2, 1, 0, 0, 0)
+          .unwrap();
+      expect(dt.offset.toString(), '+0245');
+    });
+  });
 
   group('Gap info', () {
     @isTest
@@ -458,3 +461,6 @@ void main() {
     );
   });
 }
+
+String abbreviationOf(ZonedDateTime<Tz> dateTime) =>
+    (dateTime.offset as TzOffset).abbreviation;

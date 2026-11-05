@@ -422,6 +422,6 @@ class Format_Offset extends Format {
     String format(int number) => number.toString().padLeft(2, '0');
     return minutes == 0
         ? '$sign${format(hours)}'
-        : '$sign${format(hours)}:${format(minutes)}';
+        : '$sign${format(hours)}${format(minutes)}';
   }
 }

@@ -40,7 +40,7 @@ Future<String> _detectIanaDbVersion() async {
 // The timezone file contains the `Tz` enum with all time zones and their data.
 String _buildTimezoneFile(String version, Table table) {
   final buffer = StringBuffer('''
-// ignore_for_file: constant_identifier_names
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names
 
 /// Time zones built from the tz database at compile time.
 library;
