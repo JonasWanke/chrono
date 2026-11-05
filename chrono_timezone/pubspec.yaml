@@ -3,7 +3,7 @@ version: 0.0.0
 homepage: https://github.com/JonasWanke/chrono
 
 environment:
-  sdk: ^3.8.0
+  sdk: ^3.13.0
 
 dependencies:
   chrono:
