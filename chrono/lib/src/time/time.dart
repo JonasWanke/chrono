@@ -199,18 +199,8 @@ final class Time
   // seconds.
   // TODO(JonasWanke): test with negative offset and nanos
   @useResult
-  (Time, Days) overflowingAddOffset(FixedOffset offset) {
-    var rawSeconds = secondsSinceMidnight + offset.localMinusUtc.wholeSeconds;
-    final rawNanos = subSecondNanos + offset.localMinusUtc.subSecondNanos;
-    rawSeconds += rawNanos ~/ TimeDelta.nanosPerSecond;
-    final parts = TimeDelta(
-      seconds: rawSeconds,
-    ).split({.normalDays, .hours, .minutes, .seconds});
-    return (
-      Time.from(parts.hours, parts.minutes, parts.seconds, rawNanos),
-      Days(parts.normalDays),
-    );
-  }
+  (Time, Days) overflowingAddOffset(FixedOffset offset) =>
+      _overflowingAdd(offset.localMinusUtc);
 
   /// Subtracts given [FixedOffset] from the current time, and returns the
   /// number of days that should be added to a date as a result of the offset
@@ -221,16 +211,17 @@ final class Time
   // seconds.
   // TODO(JonasWanke): test with negative offset and nanos
   @useResult
-  (Time, Days) overflowingSubOffset(FixedOffset offset) {
-    var rawSeconds = secondsSinceMidnight - offset.localMinusUtc.wholeSeconds;
-    final rawNanos = subSecondNanos - offset.localMinusUtc.subSecondNanos;
-    rawSeconds += rawNanos ~/ TimeDelta.nanosPerSecond;
-    final parts = TimeDelta(
-      seconds: rawSeconds,
-    ).split({.normalDays, .hours, .minutes, .seconds});
+  (Time, Days) overflowingSubOffset(FixedOffset offset) =>
+      _overflowingAdd(-offset.localMinusUtc);
+
+  /// Adds [delta] and returns the resulting time of day plus the number of days
+  /// that overflowed, rounded towards negative infinity, so the time is never
+  /// negative.
+  (Time, Days) _overflowingAdd(TimeDelta delta) {
+    final total = timeSinceMidnight + delta;
     return (
-      Time.from(parts.hours, parts.minutes, parts.seconds, rawNanos),
-      Days(parts.normalDays),
+      Time.fromTimeSinceMidnight(total % TimeDelta(normalDays: 1)),
+      Days(total.roundTo(.normalDays, rounding: .down)),
     );
   }
 
