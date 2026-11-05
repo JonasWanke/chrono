@@ -15,9 +15,7 @@ import 'utils.dart';
 // Date and time strings only use ASCII, hence we don't need to worry about
 // proper Unicode handling.
 // TODO(JonasWanke): use the new [ChronoParser] instead of this
-final class Parser {
-  Parser._(this._source);
-
+final class Parser._(final String _source) {
   static Instant parseInstant(String value) =>
       _parse(value, (it) => it._parseInstant());
   static CDateTime parseDateTime(String value) =>
@@ -44,7 +42,6 @@ final class Parser {
     return result;
   }
 
-  final String _source;
   int _offset = 0;
 
   // Date and Time

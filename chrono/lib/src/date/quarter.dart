@@ -19,7 +19,7 @@ enum Quarter
   ///
   /// The index must be in the range 0 for the first quarter, …, 3 for the
   /// fourth quarter. For any other number, a [RangeError] is thrown.
-  factory Quarter.fromIndex(int index) {
+  factory fromIndex(int index) {
     RangeError.checkValueInInterval(index, minIndex, maxIndex, 'index');
     return values[index - minIndex];
   }
@@ -35,7 +35,7 @@ enum Quarter
   ///
   /// The number must be in the range 1 for the first quarter, …, 4 for the
   /// fourth quarter. For any other number, a [RangeError] is thrown.
-  factory Quarter.fromNumber(int number) {
+  factory fromNumber(int number) {
     RangeError.checkValueInInterval(number, minNumber, maxNumber, 'number');
     return values[number - minNumber];
   }
@@ -113,9 +113,8 @@ enum Quarter
 
 /// Encodes a [Quarter] as an int: 1 for the first quarter, …, 4 for the fourth
 /// quarter.
-class QuarterAsIntJsonConverter extends CodecAndJsonConverter<Quarter, int> {
-  const QuarterAsIntJsonConverter();
-
+class const QuarterAsIntJsonConverter()
+    extends CodecAndJsonConverter<Quarter, int> {
   @override
   int encode(Quarter input) => input.number;
   @override

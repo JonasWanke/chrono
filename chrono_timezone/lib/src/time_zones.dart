@@ -13,7 +13,8 @@ import 'utils.dart';
 
 const ianaTzdbVersion = '2026f';
 
-enum Tz implements TimeZone<Tz> {
+enum Tz(final String tzId, final FixedTimespanSet timespans)
+    implements TimeZone<Tz> {
   /// Africa/Abidjan
   africa_abidjan(
     'Africa/Abidjan',
@@ -68048,9 +68049,7 @@ enum Tz implements TimeZone<Tz> {
   /// Zulu
   zulu('Zulu', FixedTimespanSet(FixedTimespan('UTC', offsetSeconds: 0), []));
 
-  const Tz(this.tzId, this.timespans);
-
-  factory Tz.fromJson(String json) {
+  factory fromJson(String json) {
     final tz = nameToTz[json];
     if (tz == null) {
       throw ArgumentError.value(json, 'json', 'Unknown time zone ID');
@@ -69256,9 +69255,6 @@ enum Tz implements TimeZone<Tz> {
     'wet': europe_lisbon,
     'zulu': etc_utc,
   };
-
-  final String tzId;
-  final FixedTimespanSet timespans;
 
   String toJson() => tzId;
 

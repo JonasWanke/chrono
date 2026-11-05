@@ -2,14 +2,7 @@ import '../../chrono.dart';
 
 // Based on Rust Chrono's formatter: https://github.com/chronotope/chrono/blob/3ffcd1b107fd3085bc184a1f5f7445b97a0d655f/src/format/formatting.rs
 class ChronoFormatter {
-  ChronoFormatter._(
-    this._items, {
-    Date? date,
-    Time? time,
-    ({String name, FixedOffset offset})? offset,
-  }) : _date = date,
-       _time = time,
-       _offset = offset;
+  new _(this._items, {this._date, this._time, this._offset});
 
   final List<ChronoFormatItem> _items;
   final Date? _date;

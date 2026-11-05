@@ -7,21 +7,14 @@ import 'package:xml/xpath.dart';
 part 'common.freezed.dart';
 
 @freezed
-class Plural<T> with _$Plural<T> implements ToExpression {
-  const factory Plural({
-    T? zero,
-    T? one,
-    T? two,
-    T? few,
-    T? many,
-    T? other,
-  }) = _Plural<T>;
-  const Plural._();
+sealed class const Plural<T>._() with _$Plural<T> implements ToExpression {
+  const factory({T? zero, T? one, T? two, T? few, T? many, T? other}) =
+      _Plural<T>;
 
   static Plural<String> stringsFromXml(CldrXml xml, CldrPath path) =>
       Plural.fromXml(xml, path, (it) => it.innerText);
   // ignore: sort_constructors_first
-  factory Plural.fromXml(
+  factory fromXml(
     CldrXml xml,
     CldrPath path,
     T Function(XmlElement) valueFromElement,
@@ -54,26 +47,22 @@ class Plural<T> with _$Plural<T> implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('Plural').constInstance(
-      [],
-      {
-        if (zero != null) 'zero': ToExpression.convert(zero),
-        if (one != null) 'one': ToExpression.convert(one),
-        if (two != null) 'two': ToExpression.convert(two),
-        if (few != null) 'few': ToExpression.convert(few),
-        if (many != null) 'many': ToExpression.convert(many),
-        if (other != null) 'other': ToExpression.convert(other),
-      },
-    );
+    return referCldr('Plural').constInstance([], {
+      if (zero != null) 'zero': ToExpression.convert(zero),
+      if (one != null) 'one': ToExpression.convert(one),
+      if (two != null) 'two': ToExpression.convert(two),
+      if (few != null) 'few': ToExpression.convert(few),
+      if (many != null) 'many': ToExpression.convert(many),
+      if (other != null) 'other': ToExpression.convert(other),
+    });
   }
 }
 
 @freezed
-class ValueWithVariant<T extends Object>
+sealed class const ValueWithVariant<T extends Object>._()
     with _$ValueWithVariant<T>
     implements ToExpression {
-  const factory ValueWithVariant(T value, [T? variant]) = _ValueWithVariant<T>;
-  const ValueWithVariant._();
+  const factory(T value, [T? variant]) = _ValueWithVariant<T>;
 
   static ValueWithVariant<String> fromXml(CldrXml xml, CldrPath path) {
     return ValueWithVariant(
@@ -94,15 +83,16 @@ class ValueWithVariant<T extends Object>
     final secondAlt = elements[1].getAttribute('alt');
     final (normal, alt) = switch ((firstAlt, secondAlt)) {
       (null, null) => throw const FormatException(
-          "Both elements don't have an alt attribute",
-        ),
+        "Both elements don't have an alt attribute",
+      ),
       (null, 'variant') => (elements.first, elements[1]),
       ('variant', null) => (elements[1], elements.first),
-      ('variant', 'variant') =>
-        throw const FormatException('Both elements have an alt attribute'),
+      ('variant', 'variant') => throw const FormatException(
+        'Both elements have an alt attribute',
+      ),
       _ => throw FormatException(
-          'Unknown combination of alt attributes: `$firstAlt`, `$secondAlt`',
-        ),
+        'Unknown combination of alt attributes: `$firstAlt`, `$secondAlt`',
+      ),
     };
     return ValueWithVariant(normal.innerText, alt.innerText);
   }
@@ -111,12 +101,10 @@ class ValueWithVariant<T extends Object>
 
   @override
   Expression toExpression() {
-    return referCldr('ValueWithVariant').constInstance(
-      [
-        ToExpression.convert(value),
-        if (variant != null) ToExpression.convert(variant!),
-      ],
-    );
+    return referCldr('ValueWithVariant').constInstance([
+      ToExpression.convert(value),
+      if (variant != null) ToExpression.convert(variant!),
+    ]);
   }
 
   @override
@@ -124,14 +112,12 @@ class ValueWithVariant<T extends Object>
       [value, if (variant != null) '(Variant: $variant)'].join(' ');
 }
 
-class CldrXml {
-  CldrXml(this.documents)
-      : assert(
-          documents.length >= 2,
-          'At least the language and root documents are required.',
-        );
-
-  final List<XmlDocument> documents;
+class CldrXml(final List<XmlDocument> documents) {
+  this
+    : assert(
+        documents.length >= 2,
+        'At least the language and root documents are required.',
+      );
   XmlDocument get root => documents.last;
 
   String resolveString(CldrPath path) => resolveElement(path).innerText;
@@ -217,12 +203,15 @@ class CldrXml {
         .findAllElements('alias')
         .where((it) => it.getAttribute('source') == 'locale')
         .map((it) {
-      final path = CldrPath.fromElement(it.parentElement!);
-      return (
-        sourcePath: path,
-        destinationPath: path._resolveRelativePath(it.getAttribute('path')!),
-      );
-    }).sortedBy((it) => it.destinationPath);
+          final path = CldrPath.fromElement(it.parentElement!);
+          return (
+            sourcePath: path,
+            destinationPath: path._resolveRelativePath(
+              it.getAttribute('path')!,
+            ),
+          );
+        })
+        .sortedBy((it) => it.destinationPath);
 
     var lastPathCount = 0;
     while (allPaths.length > lastPathCount) {
@@ -259,15 +248,16 @@ class CldrXml {
 }
 
 @freezed
-class CldrPath with _$CldrPath implements Comparable<CldrPath> {
-  const factory CldrPath(List<CldrPathSegment> segments) = _CldrPath;
-  const CldrPath._();
+sealed class const CldrPath._()
+    with _$CldrPath
+    implements Comparable<CldrPath> {
+  const factory(List<CldrPathSegment> segments) = _CldrPath;
 
   /// Only parses a very limited subset of the path syntax.
-  factory CldrPath.parse(String path) =>
+  factory parse(String path) =>
       CldrPath(path.split('/').map(CldrPathSegment.parse).toList());
 
-  factory CldrPath.fromElement(XmlElement element) {
+  factory fromElement(XmlElement element) {
     return CldrPath(
       element.ancestorElements.reversed
           .followedBy([element])
@@ -291,22 +281,19 @@ class CldrPath with _$CldrPath implements Comparable<CldrPath> {
   CldrPath withAttribute(String attribute, String value) {
     assert(segments.isNotEmpty);
     final lastSegment = segments.last;
-    return CldrPath(
-      [
-        ...segments.sublist(0, segments.length - 1),
-        CldrPathSegment(
-          lastSegment.elementName,
-          attributes: {...lastSegment.attributes, attribute: value},
-        ),
-      ],
-    );
+    return CldrPath([
+      ...segments.sublist(0, segments.length - 1),
+      CldrPathSegment(
+        lastSegment.elementName,
+        attributes: {...lastSegment.attributes, attribute: value},
+      ),
+    ]);
   }
 
   CldrPath child(
     String elementName, {
     Map<String, String> attributes = const {},
-  }) =>
-      childSegment(CldrPathSegment(elementName, attributes: attributes));
+  }) => childSegment(CldrPathSegment(elementName, attributes: attributes));
   CldrPath childSegment(CldrPathSegment segment) =>
       CldrPath([...segments, segment]);
 
@@ -340,7 +327,9 @@ class CldrPath with _$CldrPath implements Comparable<CldrPath> {
 
   Iterable<CldrPath> get lateralFallbacks {
     if (isRoot) return [];
-    return [parent!].followedBy(parent!.lateralFallbacks).expand(
+    return [parent!]
+        .followedBy(parent!.lateralFallbacks)
+        .expand(
           (parent) => segments.last.lateralFallbacks.map(parent.childSegment),
         );
   }
@@ -355,15 +344,14 @@ class CldrPath with _$CldrPath implements Comparable<CldrPath> {
 }
 
 @freezed
-class CldrPathSegment with _$CldrPathSegment {
-  const factory CldrPathSegment(
+sealed class const CldrPathSegment._() with _$CldrPathSegment {
+  const factory(
     String elementName, {
     @Default(<String, String>{}) Map<String, String> attributes,
   }) = _CldrPathSegment;
-  const CldrPathSegment._();
 
   /// Only parses a very limited subset of the path syntax.
-  factory CldrPathSegment.parse(String segment) {
+  factory parse(String segment) {
     final attributeRegExp = RegExp(r"\[\@(?<type>[^=]+)='(?<value>[^']+)'\]");
 
     final attributeMatches = attributeRegExp.allMatches(segment);
@@ -380,13 +368,12 @@ class CldrPathSegment with _$CldrPathSegment {
     );
   }
 
-  factory CldrPathSegment.fromElement(XmlElement element) {
+  factory fromElement(XmlElement element) {
     return CldrPathSegment(
       element.localName,
       attributes: {
         for (final attribute in _distinguishingAttributes)
-          if (element.getAttribute(attribute) case final value?)
-            attribute: value,
+          attribute: ?element.getAttribute(attribute),
       },
     );
   }
@@ -411,16 +398,17 @@ class CldrPathSegment with _$CldrPathSegment {
     // plural_rules(locale, x) → "other" → ∅
     final countVariants =
         ['minDays', 'pluralMinimalPairs'].contains(elementName)
-            ? [count]
-            : switch (attributes['count']) {
-                null => [null],
-                'other' => ['other', null],
-                final count => [count, 'other', null],
-              };
+        ? [count]
+        : switch (attributes['count']) {
+            null => [null],
+            'other' => ['other', null],
+            final count => [count, 'other', null],
+          };
 
     final remainingAttributes = Map.fromEntries(
-      attributes.entries
-          .where((it) => !_attributesWithLateralFallbacks.contains(it.key)),
+      attributes.entries.where(
+        (it) => !_attributesWithLateralFallbacks.contains(it.key),
+      ),
     );
     return countVariants
         .expand((count) => altVariants.map((alt) => (alt: alt, count: count)))

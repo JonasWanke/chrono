@@ -12,9 +12,7 @@ import 'time_zone.dart';
 /// Using the [TimeZone] methods on [utc] is the preferred way to construct
 /// `ZonedDateTime<Utc>` instances.
 @immutable
-class Utc extends TimeZone<Utc> implements Offset<Utc> {
-  const Utc();
-
+class const Utc() extends TimeZone<Utc> implements Offset<Utc> {
   @override
   Utc get timeZone => this;
 

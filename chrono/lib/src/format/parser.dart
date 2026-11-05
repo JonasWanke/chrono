@@ -1,11 +1,8 @@
 import '../../chrono.dart';
 
 // Based on Rust Chrono's parser: https://github.com/chronotope/chrono/blob/3ffcd1b107fd3085bc184a1f5f7445b97a0d655f/src/format/parse.rs
-class ChronoParser {
-  ChronoParser._(this._string);
-
+class ChronoParser._(var String _string) {
   final _parsed = ChronoParsed();
-  String _string;
 
   /// Tries to parse given [string] with given formatting [items].
   ///
@@ -708,11 +705,8 @@ class ChronoParser {
   }
 }
 
-class ChronoParseException implements Exception {
-  const ChronoParseException(this.kind);
-
-  final ChronoParseExceptionKind kind;
-
+class const ChronoParseException(final ChronoParseExceptionKind kind)
+    implements Exception {
   @override
   String toString() => 'ChronoParseException: $kind';
 }

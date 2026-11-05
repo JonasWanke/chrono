@@ -15,10 +15,14 @@ import 'month.dart';
 ///
 /// - [Date], which also includes a year.
 @immutable
-final class MonthDay
-    with ComparisonOperatorsFromComparable<MonthDay>
+final class const MonthDay._unchecked(
+  final Month month,
+
+  /// The one-based day of the month.
+  final int day,
+) with ComparisonOperatorsFromComparable<MonthDay>
     implements Comparable<MonthDay> {
-  MonthDay.from(Month month, int day)
+  new from(Month month, int day)
     : this._unchecked(
         month,
         RangeError.checkValueInInterval(
@@ -29,19 +33,11 @@ final class MonthDay
           'Invalid day for $month.',
         ),
       );
-  MonthDay.fromRaw(int month, int day)
-    : this.from(Month.fromNumber(month), day);
-  const MonthDay._unchecked(this.month, this.day);
+  new fromRaw(int month, int day) : this.from(Month.fromNumber(month), day);
 
-  factory MonthDay.todayInLocalZone({Clock? clock}) =>
+  factory todayInLocalZone({Clock? clock}) =>
       Date.todayInLocalZone(clock: clock).monthDay;
-  factory MonthDay.todayInUtc({Clock? clock}) =>
-      Date.todayInUtc(clock: clock).monthDay;
-
-  final Month month;
-
-  /// The one-based day of the month.
-  final int day;
+  factory todayInUtc({Clock? clock}) => Date.todayInUtc(clock: clock).monthDay;
 
   bool isTodayInLocalZone({Clock? clock}) =>
       this == MonthDay.todayInLocalZone(clock: clock);
@@ -77,9 +73,8 @@ final class MonthDay
 }
 
 /// Encodes a [MonthDay] as an ISO 8601 string, e.g., --04-23”.
-class MonthDayAsIsoStringCodec extends CodecAndJsonConverter<MonthDay, String> {
-  const MonthDayAsIsoStringCodec();
-
+class const MonthDayAsIsoStringCodec()
+    extends CodecAndJsonConverter<MonthDay, String> {
   @override
   String encode(MonthDay input) => input.toString();
   @override

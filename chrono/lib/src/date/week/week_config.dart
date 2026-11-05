@@ -4,11 +4,11 @@ import '../duration.dart';
 import '../weekday.dart';
 
 @immutable
-class WeekConfig {
-  factory WeekConfig.from({
-    required Weekday firstDay,
-    required int minDaysInFirstWeek,
-  }) {
+class const WeekConfig._unchecked({
+  required final Weekday firstDay,
+  required final int minDaysInFirstWeek,
+}) {
+  factory from({required Weekday firstDay, required int minDaysInFirstWeek}) {
     RangeError.checkValueInInterval(
       minDaysInFirstWeek,
       1,
@@ -21,18 +21,10 @@ class WeekConfig {
     );
   }
 
-  const WeekConfig._unchecked({
-    required this.firstDay,
-    required this.minDaysInFirstWeek,
-  });
-
   static const iso = WeekConfig._unchecked(
     firstDay: Weekday.monday,
     minDaysInFirstWeek: 4,
   );
-
-  final Weekday firstDay;
-  final int minDaysInFirstWeek;
 
   WeekConfig copyWith({Weekday? firstDay, int? minDaysInFirstWeek}) {
     return WeekConfig.from(

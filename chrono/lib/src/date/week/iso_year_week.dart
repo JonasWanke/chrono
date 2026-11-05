@@ -15,12 +15,14 @@ import '../year.dart';
 ///
 /// https://en.wikipedia.org/wiki/ISO_week_date
 @immutable
-final class IsoYearWeek
-    with
+final class const IsoYearWeek._unchecked(
+  final Year weekBasedYear,
+  final int week,
+) with
         ComparisonOperatorsFromComparable<IsoYearWeek>,
         StepUnlimited<IsoYearWeek>
     implements Comparable<IsoYearWeek> {
-  IsoYearWeek.from(Year weekBasedYear, int week)
+  new from(Year weekBasedYear, int week)
     : this._unchecked(
         weekBasedYear,
         RangeError.checkValueInInterval(
@@ -31,17 +33,13 @@ final class IsoYearWeek
           'Invalid week for year $weekBasedYear.',
         ),
       );
-  IsoYearWeek.fromRaw(int weekBasedYear, int week)
+  new fromRaw(int weekBasedYear, int week)
     : this.from(Year(weekBasedYear), week);
-  const IsoYearWeek._unchecked(this.weekBasedYear, this.week);
 
-  factory IsoYearWeek.currentInLocalZone({Clock? clock}) =>
+  factory currentInLocalZone({Clock? clock}) =>
       Date.todayInLocalZone(clock: clock).isoYearWeek;
-  factory IsoYearWeek.currentInUtc({Clock? clock}) =>
+  factory currentInUtc({Clock? clock}) =>
       Date.todayInUtc(clock: clock).isoYearWeek;
-
-  final Year weekBasedYear;
-  final int week;
 
   bool isCurrentInLocalZone({Clock? clock}) =>
       this == IsoYearWeek.currentInLocalZone(clock: clock);
@@ -146,10 +144,8 @@ extension RangeInclusiveOfIsoYearWeekChrono on RangeInclusive<IsoYearWeek> {
 }
 
 /// Encodes a [IsoYearWeek] as an ISO 8601 string, e.g., “2023-W16”.
-class IsoYearWeekAsIsoStringCodec
+class const IsoYearWeekAsIsoStringCodec()
     extends CodecAndJsonConverter<IsoYearWeek, String> {
-  const IsoYearWeekAsIsoStringCodec();
-
   @override
   String encode(IsoYearWeek input) => input.toString();
   @override

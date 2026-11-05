@@ -14,16 +14,15 @@ import 'utils.dart';
 /// The Unix epoch is 1970-01-01 at 00:00:00 in UTC
 /// (https://en.wikipedia.org/wiki/Unix_time).
 @immutable
-final class Instant
-    with ComparisonOperatorsFromComparable<Instant>
+final class Instant.fromDurationSinceUnixEpoch(
+  final TimeDelta durationSinceUnixEpoch,
+) with ComparisonOperatorsFromComparable<Instant>
     implements Comparable<Instant> {
-  Instant.fromDurationSinceUnixEpoch(this.durationSinceUnixEpoch);
-
-  Instant.fromCore(DateTime dateTime)
-    : durationSinceUnixEpoch = TimeDelta(
-        micros: dateTime.microsecondsSinceEpoch,
+  new fromCore(DateTime dateTime)
+    : this.fromDurationSinceUnixEpoch(
+        TimeDelta(micros: dateTime.microsecondsSinceEpoch),
       );
-  Instant.now({Clock? clockOverride})
+  new now({Clock? clockOverride})
     : this.fromCore((clockOverride ?? clock).now());
 
   /// The UNIX epoch: 1970-01-01 at 00:00:00 in UTC.
@@ -32,8 +31,6 @@ final class Instant
   static final unixEpoch = Instant.fromDurationSinceUnixEpoch(
     const TimeDelta.raw(0, 0),
   );
-
-  final TimeDelta durationSinceUnixEpoch;
 
   CDateTime get dateTimeInLocalZone =>
       CDateTime.fromCore(asCoreDateTimeInLocalZone);
@@ -92,9 +89,8 @@ final class Instant
 ///   milliseconds since the Unix epoch.
 /// - [InstantAsSecondsIntCodec], which encodes the rounded number of
 ///   seconds since the Unix epoch.
-class InstantAsIsoStringCodec extends CodecAndJsonConverter<Instant, String> {
-  const InstantAsIsoStringCodec();
-
+class const InstantAsIsoStringCodec()
+    extends CodecAndJsonConverter<Instant, String> {
   @override
   String encode(Instant input) => input.toString();
   @override
@@ -116,9 +112,8 @@ class InstantAsIsoStringCodec extends CodecAndJsonConverter<Instant, String> {
 /// - [InstantAsSecondsIntCodec], which encodes the rounded number of
 ///   seconds since the Unix epoch.
 @immutable
-class InstantAsNanosIntCodec extends CodecAndJsonConverter<Instant, int> {
-  const InstantAsNanosIntCodec();
-
+class const InstantAsNanosIntCodec()
+    extends CodecAndJsonConverter<Instant, int> {
   @override
   int encode(Instant input) => input.durationSinceUnixEpoch.roundTo(.nanos);
   @override
@@ -141,11 +136,9 @@ class InstantAsNanosIntCodec extends CodecAndJsonConverter<Instant, int> {
 /// - [InstantAsSecondsIntCodec], which encodes the rounded number of
 ///   seconds since the Unix epoch.
 @immutable
-class InstantAsMicrosIntCodec extends CodecAndJsonConverter<Instant, int> {
-  const InstantAsMicrosIntCodec({this.rounding = Rounding.nearestAwayFromZero});
-
-  final Rounding rounding;
-
+class const InstantAsMicrosIntCodec({
+  final Rounding rounding = Rounding.nearestAwayFromZero,
+}) extends CodecAndJsonConverter<Instant, int> {
   @override
   int encode(Instant input) =>
       input.durationSinceUnixEpoch.roundTo(.micros, rounding: rounding);
@@ -169,11 +162,9 @@ class InstantAsMicrosIntCodec extends CodecAndJsonConverter<Instant, int> {
 /// - [InstantAsSecondsIntCodec], which encodes the rounded number of
 ///   seconds since the Unix epoch.
 @immutable
-class InstantAsMillisIntCodec extends CodecAndJsonConverter<Instant, int> {
-  const InstantAsMillisIntCodec({this.rounding = Rounding.nearestAwayFromZero});
-
-  final Rounding rounding;
-
+class const InstantAsMillisIntCodec({
+  final Rounding rounding = Rounding.nearestAwayFromZero,
+}) extends CodecAndJsonConverter<Instant, int> {
   @override
   int encode(Instant input) =>
       input.durationSinceUnixEpoch.roundTo(.millis, rounding: rounding);
@@ -197,13 +188,9 @@ class InstantAsMillisIntCodec extends CodecAndJsonConverter<Instant, int> {
 /// - [InstantAsMillisIntCodec], which encodes the rounded number of
 ///   milliseconds since the Unix epoch.
 @immutable
-class InstantAsSecondsIntCodec extends CodecAndJsonConverter<Instant, int> {
-  const InstantAsSecondsIntCodec({
-    this.rounding = Rounding.nearestAwayFromZero,
-  });
-
-  final Rounding rounding;
-
+class const InstantAsSecondsIntCodec({
+  final Rounding rounding = Rounding.nearestAwayFromZero,
+}) extends CodecAndJsonConverter<Instant, int> {
   @override
   int encode(Instant input) =>
       input.durationSinceUnixEpoch.roundTo(.seconds, rounding: rounding);

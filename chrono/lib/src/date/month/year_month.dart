@@ -9,22 +9,17 @@ import '../../utils.dart';
 
 /// The combination of a [Year] and a [Month], e.g., April 2023.
 @immutable
-final class YearMonth
+final class const YearMonth(final Year year, final Month month)
     with ComparisonOperatorsFromComparable<YearMonth>, StepUnlimited<YearMonth>
     implements Comparable<YearMonth> {
-  const YearMonth(this.year, this.month);
-  YearMonth.fromRaw(int year, int month)
-    : this(Year(year), Month.fromNumber(month));
+  new fromRaw(int year, int month) : this(Year(year), Month.fromNumber(month));
 
-  factory YearMonth.currentInLocalZone({Clock? clock}) =>
+  factory currentInLocalZone({Clock? clock}) =>
       Date.todayInLocalZone(clock: clock).yearMonth;
-  factory YearMonth.currentInUtc({Clock? clock}) =>
+  factory currentInUtc({Clock? clock}) =>
       Date.todayInUtc(clock: clock).yearMonth;
 
-  final Year year;
   Quarter get quarter => month.quarter;
-  final Month month;
-
   bool isCurrentInLocalZone({Clock? clock}) =>
       this == YearMonth.currentInLocalZone(clock: clock);
   bool isCurrentInUtc({Clock? clock}) =>
@@ -129,10 +124,8 @@ extension RangeInclusiveOfYearMonthChrono on RangeInclusive<YearMonth> {
 }
 
 /// Encodes a [YearMonth] as an ISO 8601 string, e.g., “2023-04”.
-class YearMonthAsIsoStringCodec
+class const YearMonthAsIsoStringCodec()
     extends CodecAndJsonConverter<YearMonth, String> {
-  const YearMonthAsIsoStringCodec();
-
   @override
   String encode(YearMonth input) => input.toString();
   @override

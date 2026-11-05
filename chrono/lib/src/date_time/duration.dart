@@ -16,9 +16,7 @@ import '../date/duration.dart';
 /// - [TimeDelta], which covers durations based on a fixed time like seconds.
 /// - [DateTimeDelta], which combines [CalendarDelta] and [TimeDelta].
 @immutable
-abstract class ChronoDelta {
-  const ChronoDelta();
-
+abstract class const ChronoDelta() {
   DateTimeDelta get asDateTimeDelta;
 
   bool get isZero {
@@ -69,27 +67,27 @@ abstract class ChronoDelta {
 
 /// [ChronoDelta] subclass that can represent any duration by combining
 /// [Months], [Days], and [TimeDelta].
-final class DateTimeDelta extends ChronoDelta {
-  DateTimeDelta({
-    CalendarDelta? monthsAndDays,
-    Months? months,
-    Days? days,
-    this.time = const TimeDelta.raw(0, 0),
-  }) : assert(
-         monthsAndDays == null || (months == null && days == null),
-         'Cannot specify both `monthsAndDays` and `months`/`days`.',
-       ),
-       monthsAndDays =
-           monthsAndDays?.asMonthsDays ??
-           MonthsDays(
-             months: months ?? const Months(0),
-             days: days ?? const Days(0),
-           );
+// ignore: prefer_const_constructors_in_immutables
+final class DateTimeDelta({
+  CalendarDelta? monthsAndDays,
+  Months? months,
+  Days? days,
+  final TimeDelta time = const TimeDelta.raw(0, 0),
+}) extends ChronoDelta {
+  this
+    : assert(
+        monthsAndDays == null || (months == null && days == null),
+        'Cannot specify both `monthsAndDays` and `months`/`days`.',
+      );
 
-  final MonthsDays monthsAndDays;
+  final monthsAndDays =
+      monthsAndDays?.asMonthsDays ??
+      MonthsDays(
+        months: months ?? const Months(0),
+        days: days ?? const Days(0),
+      );
   Months get months => monthsAndDays.months;
   Days get days => monthsAndDays.days;
-  final TimeDelta time;
 
   @override
   DateTimeDelta get asDateTimeDelta => this;
@@ -147,12 +145,9 @@ final class DateTimeDelta extends ChronoDelta {
 /// Base class for the results [TimeDelta.split], [Days.split], and
 /// [Months.split].
 @immutable
-abstract class ChronoParts<U extends Enum> {
-  const ChronoParts(this.values);
-
-  @protected
-  final Map<U, int> values;
-
+abstract class const ChronoParts<U extends Enum>(
+  @protected final Map<U, int> values,
+) {
   /// The units that were requested when creating this.
   Set<U> get units => values.keys.toSet();
 

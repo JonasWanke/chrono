@@ -24,7 +24,7 @@ enum Weekday
   ///
   /// The index must be in the range 0 for Monday, …, 6 for Sunday. For any
   /// other number, a [RangeError] is thrown.
-  factory Weekday.fromIndex(int index) {
+  factory fromIndex(int index) {
     RangeError.checkValueInInterval(index, minIndex, maxIndex, 'index');
     return values[index - minIndex];
   }
@@ -40,7 +40,7 @@ enum Weekday
   ///
   /// The number must be in the range 1 for Monday, …, 7 for Sunday. For any
   /// other number, a [RangeError] is thrown.
-  factory Weekday.fromNumber(int number) {
+  factory fromNumber(int number) {
     RangeError.checkValueInInterval(number, minNumber, maxNumber, 'number');
     return values[number - minNumber];
   }
@@ -55,10 +55,9 @@ enum Weekday
         : null;
   }
 
-  factory Weekday.currentInLocalZone({Clock? clock}) =>
+  factory currentInLocalZone({Clock? clock}) =>
       Date.todayInLocalZone(clock: clock).weekday;
-  factory Weekday.currentInUtc({Clock? clock}) =>
-      Date.todayInUtc(clock: clock).weekday;
+  factory currentInUtc({Clock? clock}) => Date.todayInUtc(clock: clock).weekday;
 
   static const minIndex = 0; // Weekday.monday.index
   static const maxIndex = 6; // Weekday.sunday.index
@@ -136,9 +135,7 @@ enum Weekday
 
 /// Encodes a [Weekday] as an ISO 8601 weekday number: 1 for Monday, …, 7 for
 /// Sunday.
-class WeekdayAsIntCodec extends CodecAndJsonConverter<Weekday, int> {
-  const WeekdayAsIntCodec();
-
+class const WeekdayAsIntCodec() extends CodecAndJsonConverter<Weekday, int> {
   @override
   int encode(Weekday input) => input.number;
   @override

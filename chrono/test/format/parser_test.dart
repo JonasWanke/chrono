@@ -713,231 +713,226 @@ void main() {
   });
 
   group('Timezones', () {
-    test(
-      '.timezoneOffset(precision: .minute, allowZulu: false, printColon: false)',
-      () {
-        const item = ChronoFormatItem.timezoneOffset(
-          allowZulu: false,
-          printColon: false,
-        );
-        _checkError('1', [item], .invalid);
-        _checkError('12', [item], .invalid);
-        _checkError('123', [item], .invalid);
-        _checkError('1234', [item], .invalid);
-        _checkError('12345', [item], .invalid);
-        _checkError('123456', [item], .invalid);
-        _checkError('1234567', [item], .invalid);
-        _checkError('+1', [item], .tooShort);
-        _checkError('+12', [item], .tooShort);
-        _checkError('+123', [item], .tooShort);
-        _check('+1234', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-        _checkError('+12345', [item], .tooLong);
-        _checkError('+123456', [item], .tooLong);
-        _checkError('+1234567', [item], .tooLong);
-        _checkError('+12345678', [item], .tooLong);
-        _checkError('+12:', [item], .tooShort);
-        _checkError('+12:3', [item], .tooShort);
-        _check('+12:34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-        _check('-12:34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
-        _check(
-          '−12:34',
-          [item],
-          ChronoParsed()..offset = TimeDelta(seconds: -45_240),
-        ); // MINUS SIGN (U+2212)
-        _checkError('+12:34:', [item], .tooLong);
-        _checkError('+12:34:5', [item], .tooLong);
-        _checkError('+12:34:56', [item], .tooLong);
-        _checkError('+12:34:56:', [item], .tooLong);
-        _check('+12 34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-        _check('+12  34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-        _checkError('12:34', [item], .invalid);
-        _checkError('12:34:56', [item], .invalid);
-        _check('+12::34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-        _check('+12: :34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-        _check('+12:::34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-        _check('+12::::34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-        _check('+12::34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-        _checkError('+12:34:56', [item], .tooLong);
-        _checkError('+12:3456', [item], .tooLong);
-        _checkError('+1234:56', [item], .tooLong);
-        _checkError('+1234:567', [item], .tooLong);
-        _check('+00:00', [item], ChronoParsed()..offset = TimeDelta());
-        _check('-00:00', [item], ChronoParsed()..offset = TimeDelta());
-        _check('−00:00', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta()); // MINUS SIGN (U+2212)
-        _check('+00:01', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 60));
-        _check('-00:01', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: -60));
-        _check('+00:30', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 1_800));
-        _check('-00:30', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: -1_800));
-        _check('+24:00', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 86_400));
-        _check('-24:00', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: -86_400));
-        _check(
-          '−24:00',
-          [item],
-          ChronoParsed()..offset = TimeDelta(seconds: -86_400),
-        ); // MINUS SIGN (U+2212)
-        _check('+99:59', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 359_940));
-        _check('-99:59', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: -359_940));
-        _checkError('+00:60', [item], .outOfRange);
-        _checkError('+00:99', [item], .outOfRange);
-        _checkError('#12:34', [item], .invalid);
-        _checkError('+12:34 ', [item], .tooLong);
-        _checkError('+12 34 ', [item], .tooLong);
-        _check(' +12:34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-        _check(' -12:34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
-        _check(
-          ' −12:34',
-          [item],
-          ChronoParsed()..offset = TimeDelta(seconds: -45_240),
-        ); // MINUS SIGN (U+2212)
-        _check('  +12:34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-        _check('  -12:34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
-        _check('\t -12:34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
-        _check('-12: 34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
-        _check('-12 :34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
-        _check('-12 : 34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
-        _check('-12 :  34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
-        _check('-12  : 34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
-        _check('-12:  34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
-        _check('-12  :34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
-        _check('-12  :  34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
-        _checkError('12:34 ', [item], .invalid);
-        _checkError(' 12:34', [item], .invalid);
-        _checkError('', [item], .tooShort);
-        _checkError('+', [item], .tooShort);
-        _check(
-          '+12345',
-          [item, const .day()],
-          ChronoParsed()
-            ..offset = TimeDelta(seconds: 45_240)
-            ..day = 5,
-        );
-        _check(
-          '+12:345',
-          [item, const .day()],
-          ChronoParsed()
-            ..offset = TimeDelta(seconds: 45_240)
-            ..day = 5,
-        );
-        _check('+12:34:', [
-          item,
-          const .literal(':'),
-        ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-        _checkError('Z12:34', [item], .invalid);
-        _checkError('X12:34', [item], .invalid);
-        _checkError('Z+12:34', [item], .invalid);
-        _checkError('X+12:34', [item], .invalid);
-        _checkError('X−12:34', [item], .invalid); // MINUS SIGN (U+2212)
-        _checkError('🤠+12:34', [item], .invalid);
-        _checkError('+12:34🤠', [item], .tooLong);
-        _checkError('+12:🤠34', [item], .invalid);
-        _check('+1234🤠', [
-          item,
-          const .literal('🤠'),
-        ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-        _check('-1234🤠', [
-          item,
-          const .literal('🤠'),
-        ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
-        _check(
-          '−1234🤠',
-          [item, const .literal('🤠')],
-          ChronoParsed()..offset = TimeDelta(seconds: -45_240),
-        ); // MINUS SIGN (U+2212)
-        _check('+12:34🤠', [
-          item,
-          const .literal('🤠'),
-        ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-        _check('-12:34🤠', [
-          item,
-          const .literal('🤠'),
-        ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
-        _check(
-          '−12:34🤠',
-          [item, const .literal('🤠')],
-          ChronoParsed()..offset = TimeDelta(seconds: -45_240),
-        ); // MINUS SIGN (U+2212)
-        _check('🤠+12:34', [
-          const .literal('🤠'),
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-        _checkError('Z', [item], .invalid);
-        _checkError('A', [item], .invalid);
-        _checkError('PST', [item], .invalid);
-        _checkError('#Z', [item], .invalid);
-        _checkError(':Z', [item], .invalid);
-        _checkError('+Z', [item], .tooShort);
-        _checkError('+:Z', [item], .invalid);
-        _checkError('+Z:', [item], .invalid);
-        _checkError('z', [item], .invalid);
-        _checkError(' :Z', [item], .invalid);
-        _checkError(' Z', [item], .invalid);
-        _checkError(' z', [item], .invalid);
-      },
-    );
+    test('.timezoneOffset(precision: .minute, allowZulu: false, printColon: false)', () {
+      const item = ChronoFormatItem.timezoneOffset(
+        allowZulu: false,
+        printColon: false,
+      );
+      _checkError('1', [item], .invalid);
+      _checkError('12', [item], .invalid);
+      _checkError('123', [item], .invalid);
+      _checkError('1234', [item], .invalid);
+      _checkError('12345', [item], .invalid);
+      _checkError('123456', [item], .invalid);
+      _checkError('1234567', [item], .invalid);
+      _checkError('+1', [item], .tooShort);
+      _checkError('+12', [item], .tooShort);
+      _checkError('+123', [item], .tooShort);
+      _check('+1234', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
+      _checkError('+12345', [item], .tooLong);
+      _checkError('+123456', [item], .tooLong);
+      _checkError('+1234567', [item], .tooLong);
+      _checkError('+12345678', [item], .tooLong);
+      _checkError('+12:', [item], .tooShort);
+      _checkError('+12:3', [item], .tooShort);
+      _check('+12:34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
+      _check('-12:34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
+      _check(
+        '−12:34',
+        [item],
+        ChronoParsed()..offset = TimeDelta(seconds: -45_240),
+      ); // MINUS SIGN (U+2212)
+      _checkError('+12:34:', [item], .tooLong);
+      _checkError('+12:34:5', [item], .tooLong);
+      _checkError('+12:34:56', [item], .tooLong);
+      _checkError('+12:34:56:', [item], .tooLong);
+      _check('+12 34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
+      _check('+12  34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
+      _checkError('12:34', [item], .invalid);
+      _checkError('12:34:56', [item], .invalid);
+      _check('+12::34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
+      _check('+12: :34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
+      _check('+12:::34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
+      _check('+12::::34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
+      _check('+12::34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
+      _checkError('+12:34:56', [item], .tooLong);
+      _checkError('+12:3456', [item], .tooLong);
+      _checkError('+1234:56', [item], .tooLong);
+      _checkError('+1234:567', [item], .tooLong);
+      _check('+00:00', [item], ChronoParsed()..offset = TimeDelta());
+      _check('-00:00', [item], ChronoParsed()..offset = TimeDelta());
+      _check('−00:00', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta()); // MINUS SIGN (U+2212)
+      _check('+00:01', [item], ChronoParsed()..offset = TimeDelta(seconds: 60));
+      _check('-00:01', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: -60));
+      _check('+00:30', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: 1_800));
+      _check('-00:30', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: -1_800));
+      _check('+24:00', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: 86_400));
+      _check('-24:00', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: -86_400));
+      _check(
+        '−24:00',
+        [item],
+        ChronoParsed()..offset = TimeDelta(seconds: -86_400),
+      ); // MINUS SIGN (U+2212)
+      _check('+99:59', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: 359_940));
+      _check('-99:59', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: -359_940));
+      _checkError('+00:60', [item], .outOfRange);
+      _checkError('+00:99', [item], .outOfRange);
+      _checkError('#12:34', [item], .invalid);
+      _checkError('+12:34 ', [item], .tooLong);
+      _checkError('+12 34 ', [item], .tooLong);
+      _check(' +12:34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
+      _check(' -12:34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
+      _check(
+        ' −12:34',
+        [item],
+        ChronoParsed()..offset = TimeDelta(seconds: -45_240),
+      ); // MINUS SIGN (U+2212)
+      _check('  +12:34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
+      _check('  -12:34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
+      _check('\t -12:34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
+      _check('-12: 34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
+      _check('-12 :34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
+      _check('-12 : 34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
+      _check('-12 :  34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
+      _check('-12  : 34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
+      _check('-12:  34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
+      _check('-12  :34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
+      _check('-12  :  34', [
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
+      _checkError('12:34 ', [item], .invalid);
+      _checkError(' 12:34', [item], .invalid);
+      _checkError('', [item], .tooShort);
+      _checkError('+', [item], .tooShort);
+      _check(
+        '+12345',
+        [item, const .day()],
+        ChronoParsed()
+          ..offset = TimeDelta(seconds: 45_240)
+          ..day = 5,
+      );
+      _check(
+        '+12:345',
+        [item, const .day()],
+        ChronoParsed()
+          ..offset = TimeDelta(seconds: 45_240)
+          ..day = 5,
+      );
+      _check('+12:34:', [
+        item,
+        const .literal(':'),
+      ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
+      _checkError('Z12:34', [item], .invalid);
+      _checkError('X12:34', [item], .invalid);
+      _checkError('Z+12:34', [item], .invalid);
+      _checkError('X+12:34', [item], .invalid);
+      _checkError('X−12:34', [item], .invalid); // MINUS SIGN (U+2212)
+      _checkError('🤠+12:34', [item], .invalid);
+      _checkError('+12:34🤠', [item], .tooLong);
+      _checkError('+12:🤠34', [item], .invalid);
+      _check('+1234🤠', [
+        item,
+        const .literal('🤠'),
+      ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
+      _check('-1234🤠', [
+        item,
+        const .literal('🤠'),
+      ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
+      _check(
+        '−1234🤠',
+        [item, const .literal('🤠')],
+        ChronoParsed()..offset = TimeDelta(seconds: -45_240),
+      ); // MINUS SIGN (U+2212)
+      _check('+12:34🤠', [
+        item,
+        const .literal('🤠'),
+      ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
+      _check('-12:34🤠', [
+        item,
+        const .literal('🤠'),
+      ], ChronoParsed()..offset = TimeDelta(seconds: -45_240));
+      _check(
+        '−12:34🤠',
+        [item, const .literal('🤠')],
+        ChronoParsed()..offset = TimeDelta(seconds: -45_240),
+      ); // MINUS SIGN (U+2212)
+      _check('🤠+12:34', [
+        const .literal('🤠'),
+        item,
+      ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
+      _checkError('Z', [item], .invalid);
+      _checkError('A', [item], .invalid);
+      _checkError('PST', [item], .invalid);
+      _checkError('#Z', [item], .invalid);
+      _checkError(':Z', [item], .invalid);
+      _checkError('+Z', [item], .tooShort);
+      _checkError('+:Z', [item], .invalid);
+      _checkError('+Z:', [item], .invalid);
+      _checkError('z', [item], .invalid);
+      _checkError(' :Z', [item], .invalid);
+      _checkError(' Z', [item], .invalid);
+      _checkError(' z', [item], .invalid);
+    });
 
     test(
       '.timezoneOffset(precision: .minute, allowZulu: false, printColon: true)',
@@ -1877,9 +1872,9 @@ ZonedDateTime<FixedOffset> _ymdhmsn(
   int nanos,
   int offsetHours,
 ) =>
-    FixedOffset.east(
-      TimeDelta(hours: offsetHours),
-    ).with_ymd_and_hms(year, month, day, hour, minute, second).unwrap() +
+    FixedOffset.east(TimeDelta(hours: offsetHours))
+        .with_ymd_and_hms(year, month, day, hour, minute, second)
+        .unwrap() +
     TimeDelta(nanos: nanos);
 
 void _parses(String string, List<ChronoFormatItem> items) {

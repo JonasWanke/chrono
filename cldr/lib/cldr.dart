@@ -16,21 +16,20 @@ export 'src/dates.dart';
 part 'cldr.freezed.dart';
 
 @freezed
-class CommonLocaleData with _$CommonLocaleData implements ToExpression {
-  const factory CommonLocaleData({
+sealed class const CommonLocaleData._()
+    with _$CommonLocaleData
+    implements ToExpression {
+  const factory({
     required Dates dates,
     // TODO(JonasWanke): `<localeDisplayNames>`, `<contextTransforms>`,
     // `<characters>`, `<delimiters>`, `<numbers>`, `<units>`, `<listPatterns>`,
     // `<posix>`, `<characterLabels>`, `<typographicNames>`, `<personNames>`
   }) = _CommonLocaleData;
-  const CommonLocaleData._();
 
-  factory CommonLocaleData.fromXml(List<XmlDocument> documents) {
+  factory fromXml(List<XmlDocument> documents) {
     final xml = CldrXml(documents);
     const path = CldrPath([CldrPathSegment('ldml')]);
-    return CommonLocaleData(
-      dates: Dates.fromXml(xml, path.child('dates')),
-    );
+    return CommonLocaleData(dates: Dates.fromXml(xml, path.child('dates')));
   }
 
   @override
@@ -58,22 +57,24 @@ class CommonLocaleData with _$CommonLocaleData implements ToExpression {
 
 Future<void> main() async {
   print('Parsing XML files…');
-  final dataDirectory =
-      Directory('/home/user/GitHub/unicode-org/cldr/common/main/');
+  final dataDirectory = Directory(
+    '/home/user/GitHub/unicode-org/cldr/common/main/',
+  );
   final localeFiles = await dataDirectory
       .list()
       .where((it) => it is File)
       .cast<File>()
       .toList();
-  final localeFilesXml = (await localeFiles
-          .map(
-            (it) async => (
-              it.nameWithoutExtension,
-              XmlDocument.parse(await it.readAsString()),
-            ),
-          )
-          .wait)
-      .associate((it) => MapEntry(it.$1, it.$2));
+  final localeFilesXml =
+      (await localeFiles
+              .map(
+                (it) async => (
+                  it.nameWithoutExtension,
+                  XmlDocument.parse(await it.readAsString()),
+                ),
+              )
+              .wait)
+          .associate((it) => MapEntry(it.$1, it.$2));
   final rootXml = localeFilesXml['root']!;
 
   const sampleLocales = {
@@ -115,8 +116,9 @@ Future<void> main() async {
             (b) => b
               ..modifier = FieldModifier.final$
               ..name = it.key.replaceAll('-', '_')
-              ..assignment =
-                  CommonLocaleData.fromXml(documents).toExpression().code,
+              ..assignment = CommonLocaleData.fromXml(documents)
+                  .toExpression()
+                  .code,
           );
         }),
       ),
@@ -131,7 +133,8 @@ Future<void> main() async {
   print('Parsing took ${DateTime.now().difference(startedAt)}');
 
   // final code = data.toLibrary('de');
-  final codeString =
-      DartFormatter().format(library.accept(DartEmitter.scoped()).toString());
+  final codeString = DartFormatter(
+    languageVersion: DartFormatter.latestLanguageVersion,
+  ).format(library.accept(DartEmitter.scoped()).toString());
   await File('../chrono/lib/cldr.dart').writeAsString(codeString);
 }

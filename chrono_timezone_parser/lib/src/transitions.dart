@@ -8,21 +8,19 @@ import '../chrono_timezone_parser.dart';
 /// A set of timespans, separated by the instances at which the timespans
 /// change over. There will always be one more timespan than transitions.
 @immutable
-class FixedTimespanSet {
-  const FixedTimespanSet(this.first, this.rest);
-
+class const FixedTimespanSet(
   /// The first timespan, which is assumed to have been in effect up until
   /// the initial transition instant (if any). Each set has to have at
   /// least one timespan.
-  final FixedTimespan first;
+  final FixedTimespan first,
 
   /// The rest of the timespans, as a list of tuples, each containing:
   ///
   /// 1. A transition instant at which the previous timespan ends and the
   ///    next one begins, stored as a Unix timestamp.
   /// 2. The actual timespan to transition into.
-  final List<(int, FixedTimespan)> rest;
-
+  final List<(int, FixedTimespan)> rest,
+) {
   @useResult
   FixedTimespanSet optimize() =>
       FixedTimespanSet(first, List.of(rest)).._optimize();
@@ -71,22 +69,16 @@ class FixedTimespanSet {
 
 /// An individual timespan with a fixed offset.
 @immutable
-class FixedTimespan {
-  const FixedTimespan(
-    this.name, {
-    required this.utcOffsetSeconds,
-    required this.dstOffsetSeconds,
-  });
-
+class const FixedTimespan(
   /// The abbreviation in use during this timespan.
-  final String name;
+  final String name, {
 
   /// The number of seconds offset from UTC during this timespan.
-  final int utcOffsetSeconds;
+  required final int utcOffsetSeconds,
 
   /// The number of *extra* daylight-saving seconds during this timespan.
-  final int dstOffsetSeconds;
-
+  required final int dstOffsetSeconds,
+}) {
   /// The total offset in effect during this timespan.
   int get totalOffsetSeconds => utcOffsetSeconds + dstOffsetSeconds;
 

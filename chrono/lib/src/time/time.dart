@@ -11,10 +11,14 @@ import '../utils.dart';
 /// This class doesn't store or care about timezones, each day is exactly
 /// 24 hours long.
 @immutable
-final class Time
-    with ComparisonOperatorsFromComparable<Time>
+final class const Time._unchecked(
+  final int hour,
+  final int minute,
+  final int second,
+  final int subSecondNanos,
+) with ComparisonOperatorsFromComparable<Time>
     implements Comparable<Time>, ChronoFormattable<TimeFormatItem> {
-  Time.from(
+  new from(
     int hour, [
     int minute = 0,
     int second = 0,
@@ -50,14 +54,7 @@ final class Time
          ),
        );
 
-  const Time._unchecked(
-    this.hour,
-    this.minute,
-    this.second,
-    this.subSecondNanos,
-  );
-
-  factory Time.fromTimeSinceMidnight(TimeDelta timeSinceMidnight) {
+  factory fromTimeSinceMidnight(TimeDelta timeSinceMidnight) {
     if (timeSinceMidnight.isNegative) {
       throw ArgumentError.value(
         timeSinceMidnight,
@@ -82,10 +79,9 @@ final class Time
     );
   }
 
-  factory Time.nowInLocalZone({Clock? clock}) =>
+  factory nowInLocalZone({Clock? clock}) =>
       CDateTime.nowInLocalZone(clock: clock).time;
-  factory Time.nowInUtc({Clock? clock}) =>
-      CDateTime.nowInUtc(clock: clock).time;
+  factory nowInUtc({Clock? clock}) => CDateTime.nowInUtc(clock: clock).time;
 
   // TODO(JonasWanke): comments
   static Time? lerpNullable(
@@ -105,7 +101,7 @@ final class Time
     return Time.fromTimeSinceMidnight(duration);
   }
 
-  factory Time.lerp(
+  factory lerp(
     Time a,
     Time b,
     double t, {
@@ -128,8 +124,6 @@ final class Time
     TimeDelta.nanosPerSecond - 1,
   );
 
-  final int hour;
-
   /// The hour number from 1 to 12.
   int get hour12 {
     final hour = this.hour % 12;
@@ -140,9 +134,6 @@ final class Time
   bool get isAm => hour < 12;
   bool get isPm => !isAm;
 
-  final int minute;
-  final int second;
-  final int subSecondNanos;
   TimeDelta get subSecond => TimeDelta(nanos: subSecondNanos);
   // TODO(JonasWanke): store only `secondsSinceMidnight` & `subSecondNanos`
 
@@ -287,7 +278,7 @@ final class Time
     .subsecond(.variable),
   ];
 
-  factory Time.parse(String string, [List<TimeFormatItem> items = isoFormat]) =>
+  factory parse(String string, [List<TimeFormatItem> items = isoFormat]) =>
       ChronoParser.parse(string, items).toTime();
   static ({Time time, String rest}) parseAndRest(
     String string, [
@@ -305,11 +296,9 @@ final class Time
 enum AmPm { am, pm }
 
 /// Encodes a [Time] as a string, defaulting to [Time.isoFormat].
-class TimeAsStringCodec extends CodecAndJsonConverter<Time, String> {
-  const TimeAsStringCodec([this.formatItems = Time.isoFormat]);
-
-  final List<TimeFormatItem> formatItems;
-
+class const TimeAsStringCodec([
+  final List<TimeFormatItem> formatItems = Time.isoFormat,
+]) extends CodecAndJsonConverter<Time, String> {
   @override
   String encode(Time input) => input.toString(formatItems);
   @override
@@ -325,16 +314,10 @@ extension RangeOfTimeExtension on Range<Time> {
 }
 
 /// Encodes a [Range] of [Time]s as a string `start/end`.
-class RangeOfTimeAsStringCodec
-    extends CodecAndJsonConverter<Range<Time>, String> {
-  const RangeOfTimeAsStringCodec({
-    this.formatItems = Time.isoFormat,
-    this.intervalDesignator = '/',
-  });
-
-  final List<TimeFormatItem> formatItems;
-  final String intervalDesignator;
-
+class const RangeOfTimeAsStringCodec({
+  final List<TimeFormatItem> formatItems = Time.isoFormat,
+  final String intervalDesignator = '/',
+}) extends CodecAndJsonConverter<Range<Time>, String> {
   @override
   String encode(Range<Time> input) =>
       '${input.start.toString(formatItems)}$intervalDesignator'

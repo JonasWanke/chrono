@@ -16,14 +16,18 @@ import 'week/week_config.dart';
 ///
 /// This class does not store any time or timezone information.
 @immutable
-final class Date
-    with ComparisonOperatorsFromComparable<Date>, StepUnlimited<Date>
+final class const Date._unchecked(
+  final YearMonth yearMonth,
+
+  /// The one-based day of the month.
+  final int day,
+) with ComparisonOperatorsFromComparable<Date>, StepUnlimited<Date>
     implements Comparable<Date>, ChronoFormattable<DateFormatItem> {
-  Date.from(Year year, Month month, int day)
+  new from(Year year, Month month, int day)
     : this.fromYearMonthAndDay(YearMonth(year, month), day);
-  Date.fromRaw(int year, int month, int day)
+  new fromRaw(int year, int month, int day)
     : this.from(Year(year), Month.fromNumber(month), day);
-  Date.fromYearMonthAndDay(YearMonth yearMonth, int day)
+  new fromYearMonthAndDay(YearMonth yearMonth, int day)
     : this._unchecked(
         yearMonth,
         RangeError.checkValueInInterval(
@@ -34,12 +38,12 @@ final class Date
           'Invalid day for $yearMonth.',
         ),
       );
-  Date.fromYearAndMonthDay(Year year, MonthDay monthDay)
+  new fromYearAndMonthDay(Year year, MonthDay monthDay)
     : this.from(year, monthDay.month, monthDay.day);
 
   /// Creates a date from a [Year] and a one-based ordinal day of the year,
   /// e.g., the 113th day of 2023.
-  factory Date.fromYearAndOrdinal(Year year, int dayOfYear) {
+  factory fromYearAndOrdinal(Year year, int dayOfYear) {
     RangeError.checkValueInInterval(
       dayOfYear,
       1,
@@ -64,7 +68,7 @@ final class Date
     return Date._unchecked(month, dayOfMonth);
   }
 
-  factory Date.fromIsoYearAndWeekAndWeekday(
+  factory fromIsoYearAndWeekAndWeekday(
     Year weekBasedYear,
     int week,
     Weekday weekday,
@@ -75,10 +79,7 @@ final class Date
 
   /// Creates a date from a year week and weekday, e.g., Sunday in the 16th week
   /// of 2023.
-  factory Date.fromIsoYearWeekAndWeekday(
-    IsoYearWeek isoYearWeek,
-    Weekday weekday,
-  ) {
+  factory fromIsoYearWeekAndWeekday(IsoYearWeek isoYearWeek, Weekday weekday) {
     // https://en.wikipedia.org/wiki/ISO_week_date#Calculating_an_ordinal_or_month_date_from_a_week_date
     final january4 = Date.from(isoYearWeek.weekBasedYear, Month.january, 4);
 
@@ -104,8 +105,6 @@ final class Date
     return Date.fromYearAndOrdinal(year, dayOfYear);
   }
 
-  const Date._unchecked(this.yearMonth, this.day);
-
   /// The UNIX epoch: 1970-01-01.
   ///
   /// https://en.wikipedia.org/wiki/Unix_time
@@ -115,7 +114,7 @@ final class Date
   );
 
   /// The date corresponding to the given number of days since the [unixEpoch].
-  factory Date.fromDaysSinceUnixEpoch(Days sinceUnixEpoch) {
+  factory fromDaysSinceUnixEpoch(Days sinceUnixEpoch) {
     // https://howardhinnant.github.io/date_algorithms.html#civil_from_days
     var daysSinceUnixEpoch = sinceUnixEpoch.inDays;
     daysSinceUnixEpoch += 719468;
@@ -162,15 +161,14 @@ final class Date
   /// This uses the [DateTime.year], [DateTime.month], and [DateTime.day]
   /// getters and ignores whether that [DateTime] is in UTC or the local
   /// timezone.
-  Date.fromCore(DateTime dateTime)
+  new fromCore(DateTime dateTime)
     : this._unchecked(
         YearMonth(Year(dateTime.year), Month.fromNumber(dateTime.month)),
         dateTime.day,
       );
-  factory Date.todayInLocalZone({Clock? clock}) =>
+  factory todayInLocalZone({Clock? clock}) =>
       CDateTime.nowInLocalZone(clock: clock).date;
-  factory Date.todayInUtc({Clock? clock}) =>
-      CDateTime.nowInUtc(clock: clock).date;
+  factory todayInUtc({Clock? clock}) => CDateTime.nowInUtc(clock: clock).date;
 
   static final _streamEverySecond = Stream<void>.periodic(
     const Duration(seconds: 1),
@@ -187,13 +185,9 @@ final class Date
         .distinct();
   }
 
-  final YearMonth yearMonth;
   Year get year => yearMonth.year;
   Quarter get quarter => month.quarter;
   Month get month => yearMonth.month;
-
-  /// The one-based day of the month.
-  final int day;
 
   /// The one-based day of the year.
   int get dayOfYear {
@@ -461,7 +455,7 @@ final class Date
     .weekday(),
   ];
 
-  factory Date.parse(String string, [List<DateFormatItem> items = isoFormat]) =>
+  factory parse(String string, [List<DateFormatItem> items = isoFormat]) =>
       ChronoParser.parse(string, items).toDate();
   static ({Date date, String rest}) parseAndRest(
     String string, [
@@ -477,11 +471,9 @@ final class Date
 }
 
 /// Encodes a [Date] as a string, defaulting to [Date.isoFormat].
-class DateAsStringCodec extends CodecAndJsonConverter<Date, String> {
-  const DateAsStringCodec([this.formatItems = Date.isoFormat]);
-
-  final List<DateFormatItem> formatItems;
-
+class const DateAsStringCodec([
+  final List<DateFormatItem> formatItems = Date.isoFormat,
+]) extends CodecAndJsonConverter<Date, String> {
   @override
   String encode(Date input) => input.toString(formatItems);
   @override
@@ -505,16 +497,10 @@ extension RangeInclusiveOfDateChrono on RangeInclusive<Date> {
 }
 
 /// Encodes a [RangeInclusive] of [Date]s as a string `start/end`.
-class RangeInclusiveOfDateAsStringCodec
-    extends CodecAndJsonConverter<RangeInclusive<Date>, String> {
-  const RangeInclusiveOfDateAsStringCodec({
-    this.formatItems = Date.isoFormat,
-    this.intervalDesignator = '/',
-  });
-
-  final List<DateFormatItem> formatItems;
-  final String intervalDesignator;
-
+class const RangeInclusiveOfDateAsStringCodec({
+  final List<DateFormatItem> formatItems = Date.isoFormat,
+  final String intervalDesignator = '/',
+}) extends CodecAndJsonConverter<RangeInclusive<Date>, String> {
   @override
   String encode(RangeInclusive<Date> input) =>
       '${input.start.toString(formatItems)}$intervalDesignator'

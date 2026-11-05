@@ -9,15 +9,14 @@ import 'common.dart';
 part 'dates.freezed.dart';
 
 @freezed
-class Dates with _$Dates implements ToExpression {
-  const factory Dates({
+sealed class const Dates._() with _$Dates implements ToExpression {
+  const factory({
     required Calendars calendars,
     required Fields fields,
     // TODO(JonasWanke): `<timeZoneNames>`
   }) = _Dates;
-  const Dates._();
 
-  factory Dates.fromXml(CldrXml xml, CldrPath path) {
+  factory fromXml(CldrXml xml, CldrPath path) {
     return Dates(
       calendars: Calendars.fromXml(xml, path.child('calendars')),
       fields: Fields.fromXml(xml, path.child('fields')),
@@ -26,22 +25,18 @@ class Dates with _$Dates implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('Dates').newInstance(
-      [],
-      {
-        'calendars': calendars.toExpression(),
-        'fields': fields.toExpression(),
-      },
-    );
+    return referCldr('Dates').newInstance([], {
+      'calendars': calendars.toExpression(),
+      'fields': fields.toExpression(),
+    });
   }
 }
 
 @freezed
-class Calendars with _$Calendars implements ToExpression {
-  const factory Calendars({required Calendar gregorian}) = _Calendars;
-  const Calendars._();
+sealed class const Calendars._() with _$Calendars implements ToExpression {
+  const factory({required Calendar gregorian}) = _Calendars;
 
-  factory Calendars.fromXml(CldrXml xml, CldrPath path) {
+  factory fromXml(CldrXml xml, CldrPath path) {
     Calendar resolve(String type) {
       return Calendar.fromXml(
         xml,
@@ -53,13 +48,14 @@ class Calendars with _$Calendars implements ToExpression {
   }
 
   @override
-  Expression toExpression() => referCldr('Calendars')
-      .newInstance([], {'gregorian': gregorian.toExpression()});
+  Expression toExpression() =>
+      referCldr('Calendars')
+          .newInstance([], {'gregorian': gregorian.toExpression()});
 }
 
 @freezed
-class Calendar with _$Calendar implements ToExpression {
-  const factory Calendar({
+sealed class const Calendar._() with _$Calendar implements ToExpression {
+  const factory({
     required Context<Widths<Map<int, String>>> months,
     required Context<DayWidths> days,
     // TODO(JonasWanke): `<quarters>`
@@ -69,15 +65,16 @@ class Calendar with _$Calendar implements ToExpression {
     required DateOrTimeFormats<DateOrTimeFormat<TimeField>> timeFormats,
     required DateTimeFormats dateTimeFormats,
   }) = _Calendar;
-  const Calendar._();
 
-  factory Calendar.fromXml(CldrXml xml, CldrPath path) {
+  factory fromXml(CldrXml xml, CldrPath path) {
     return Calendar(
       months: Context.fromXml(
         path.child('months').child('monthContext'),
         (path) => Widths.fromXml(
           path.child('monthWidth'),
-          (path) => 1.rangeTo(12).associateWith(
+          (path) => 1
+              .rangeTo(12)
+              .associateWith(
                 (number) => xml.resolveString(
                   path.child('month', attributes: {'type': number.toString()}),
                 ),
@@ -106,31 +103,30 @@ class Calendar with _$Calendar implements ToExpression {
         'timeFormat',
         (path) => DateOrTimeFormat.fromXml(xml, path, TimeField.parse),
       ),
-      dateTimeFormats:
-          DateTimeFormats.fromXml(xml, path.child('dateTimeFormats')),
+      dateTimeFormats: DateTimeFormats.fromXml(
+        xml,
+        path.child('dateTimeFormats'),
+      ),
     );
   }
 
   @override
   Expression toExpression() {
-    return referCldr('Calendar').newInstance(
-      [],
-      {
-        'months': months.toExpression(),
-        'days': days.toExpression(),
-        'dayPeriods': dayPeriods.toExpression(),
-        'eras': eras.toExpression(),
-        'dateFormats': dateFormats.toExpression(),
-        'timeFormats': timeFormats.toExpression(),
-        'dateTimeFormats': dateTimeFormats.toExpression(),
-      },
-    );
+    return referCldr('Calendar').newInstance([], {
+      'months': months.toExpression(),
+      'days': days.toExpression(),
+      'dayPeriods': dayPeriods.toExpression(),
+      'eras': eras.toExpression(),
+      'dateFormats': dateFormats.toExpression(),
+      'timeFormats': timeFormats.toExpression(),
+      'dateTimeFormats': dateTimeFormats.toExpression(),
+    });
   }
 }
 
 @freezed
-class DayWidths with _$DayWidths implements ToExpression {
-  const factory DayWidths({
+sealed class const DayWidths._() with _$DayWidths implements ToExpression {
+  const factory({
     required Days wide,
     required Days abbreviated,
 
@@ -140,9 +136,8 @@ class DayWidths with _$DayWidths implements ToExpression {
     required Days short,
     required Days narrow,
   }) = _DayWidths;
-  const DayWidths._();
 
-  factory DayWidths.fromXml(CldrXml xml, CldrPath path) {
+  factory fromXml(CldrXml xml, CldrPath path) {
     Days resolve(String type) =>
         Days.fromXml(xml, path.child('dayWidth', attributes: {'type': type}));
     return DayWidths(
@@ -164,15 +159,12 @@ class DayWidths with _$DayWidths implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('DayWidths').constInstance(
-      [],
-      {
-        'wide': wide.toExpression(),
-        'abbreviated': abbreviated.toExpression(),
-        'short': short.toExpression(),
-        'narrow': narrow.toExpression(),
-      },
-    );
+    return referCldr('DayWidths').constInstance([], {
+      'wide': wide.toExpression(),
+      'abbreviated': abbreviated.toExpression(),
+      'short': short.toExpression(),
+      'narrow': narrow.toExpression(),
+    });
   }
 }
 
@@ -187,8 +179,8 @@ enum DayFieldWidth implements ToExpression {
 }
 
 @freezed
-class Days with _$Days implements ToExpression {
-  const factory Days({
+sealed class const Days._() with _$Days implements ToExpression {
+  const factory({
     required String sunday,
     required String monday,
     required String tuesday,
@@ -197,9 +189,8 @@ class Days with _$Days implements ToExpression {
     required String friday,
     required String saturday,
   }) = _Days;
-  const Days._();
 
-  factory Days.fromXml(CldrXml xml, CldrPath path) {
+  factory fromXml(CldrXml xml, CldrPath path) {
     String resolve(String type) =>
         xml.resolveString(path.child('day', attributes: {'type': type}));
     return Days(
@@ -215,24 +206,21 @@ class Days with _$Days implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('Days').constInstance(
-      [],
-      {
-        'sunday': literalString(sunday),
-        'monday': literalString(monday),
-        'tuesday': literalString(tuesday),
-        'wednesday': literalString(wednesday),
-        'thursday': literalString(thursday),
-        'friday': literalString(friday),
-        'saturday': literalString(saturday),
-      },
-    );
+    return referCldr('Days').constInstance([], {
+      'sunday': literalString(sunday),
+      'monday': literalString(monday),
+      'tuesday': literalString(tuesday),
+      'wednesday': literalString(wednesday),
+      'thursday': literalString(thursday),
+      'friday': literalString(friday),
+      'saturday': literalString(saturday),
+    });
   }
 }
 
 @freezed
-class DayPeriods with _$DayPeriods implements ToExpression {
-  const factory DayPeriods({
+sealed class const DayPeriods._() with _$DayPeriods implements ToExpression {
+  const factory({
     required String am,
     required String pm,
     required String? midnight,
@@ -246,9 +234,8 @@ class DayPeriods with _$DayPeriods implements ToExpression {
     required String? night1,
     required String? night2,
   }) = _DayPeriods;
-  const DayPeriods._();
 
-  factory DayPeriods.fromXml(CldrXml xml, CldrPath path) {
+  factory fromXml(CldrXml xml, CldrPath path) {
     CldrPath getPath(String type) =>
         path.child('dayPeriod', attributes: {'type': type});
     return DayPeriods(
@@ -269,36 +256,33 @@ class DayPeriods with _$DayPeriods implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('DayPeriods').constInstance(
-      [],
-      {
-        'am': literalString(am),
-        'pm': literalString(pm),
-        'midnight': midnight == null ? literalNull : literalString(midnight!),
-        'morning1': morning1 == null ? literalNull : literalString(morning1!),
-        'morning2': morning2 == null ? literalNull : literalString(morning2!),
-        'noon': noon == null ? literalNull : literalString(noon!),
-        'afternoon1':
-            afternoon1 == null ? literalNull : literalString(afternoon1!),
-        'afternoon2':
-            afternoon2 == null ? literalNull : literalString(afternoon2!),
-        'evening1': evening1 == null ? literalNull : literalString(evening1!),
-        'evening2': evening2 == null ? literalNull : literalString(evening2!),
-        'night1': night1 == null ? literalNull : literalString(night1!),
-        'night2': night2 == null ? literalNull : literalString(night2!),
-      },
-    );
+    return referCldr('DayPeriods').constInstance([], {
+      'am': literalString(am),
+      'pm': literalString(pm),
+      'midnight': midnight == null ? literalNull : literalString(midnight!),
+      'morning1': morning1 == null ? literalNull : literalString(morning1!),
+      'morning2': morning2 == null ? literalNull : literalString(morning2!),
+      'noon': noon == null ? literalNull : literalString(noon!),
+      'afternoon1': afternoon1 == null
+          ? literalNull
+          : literalString(afternoon1!),
+      'afternoon2': afternoon2 == null
+          ? literalNull
+          : literalString(afternoon2!),
+      'evening1': evening1 == null ? literalNull : literalString(evening1!),
+      'evening2': evening2 == null ? literalNull : literalString(evening2!),
+      'night1': night1 == null ? literalNull : literalString(night1!),
+      'night2': night2 == null ? literalNull : literalString(night2!),
+    });
   }
 }
 
 @freezed
-class Eras with _$Eras implements ToExpression {
-  const factory Eras({
-    required Map<int, Widths<ValueWithVariant<String>>> eras,
-  }) = _Eras;
-  const Eras._();
+sealed class const Eras._() with _$Eras implements ToExpression {
+  const factory({required Map<int, Widths<ValueWithVariant<String>>> eras}) =
+      _Eras;
 
-  factory Eras.fromXml(CldrXml xml, CldrPath path) {
+  factory fromXml(CldrXml xml, CldrPath path) {
     // In the root document, `<eraNames>` and `<eraNarrow>` are aliases to
     // `<eraAbbr>`, so we use that as the source of truth.
     final eraTypes = xml
@@ -307,8 +291,10 @@ class Eras with _$Eras implements ToExpression {
         .toSet();
 
     final eras = eraTypes.associateWith((type) {
-      final lastSegment =
-          CldrPathSegment('era', attributes: {'type': type.toString()});
+      final lastSegment = CldrPathSegment(
+        'era',
+        attributes: {'type': type.toString()},
+      );
       return Widths(
         wide: ValueWithVariant.fromXml(
           xml,
@@ -329,42 +315,37 @@ class Eras with _$Eras implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('Eras').constInstance(
-      [],
-      {
-        'eras': literalMap(
-          eras.map(
-            (key, value) => MapEntry(literalNum(key), value.toExpression()),
-          ),
+    return referCldr('Eras').constInstance([], {
+      'eras': literalMap(
+        eras.map(
+          (key, value) => MapEntry(literalNum(key), value.toExpression()),
         ),
-      },
-    );
+      ),
+    });
   }
 }
 
 @freezed
-class DateOrTimeFormats<T extends ToExpression>
+sealed class const DateOrTimeFormats<T extends ToExpression>._()
     with _$DateOrTimeFormats<T>
     implements ToExpression {
-  const factory DateOrTimeFormats({
+  const factory({
     required T full,
     required T long,
     required T medium,
     required T short,
   }) = _DateOrTimeFormats<T>;
-  const DateOrTimeFormats._();
 
-  factory DateOrTimeFormats.fromXml(
+  factory fromXml(
     CldrPath path,
     String elementName,
     T Function(CldrPath path) valueFromXml,
   ) {
     T resolve(String length) {
       return valueFromXml(
-        path.child(
-          '${elementName}Length',
-          attributes: {'type': length},
-        ).child(elementName),
+        path
+            .child('${elementName}Length', attributes: {'type': length})
+            .child(elementName),
       );
     }
 
@@ -387,31 +368,27 @@ class DateOrTimeFormats<T extends ToExpression>
 
   @override
   Expression toExpression() {
-    return referCldr('DateOrTimeFormats').constInstance(
-      [],
-      {
-        'full': full.toExpression(),
-        'long': long.toExpression(),
-        'medium': medium.toExpression(),
-        'short': short.toExpression(),
-      },
-    );
+    return referCldr('DateOrTimeFormats').constInstance([], {
+      'full': full.toExpression(),
+      'long': long.toExpression(),
+      'medium': medium.toExpression(),
+      'short': short.toExpression(),
+    });
   }
 }
 
 enum DateOrTimeFormatLength { full, long, medium, short }
 
 @freezed
-class DateOrTimeFormat<F extends ToExpression>
+sealed class const DateOrTimeFormat<F extends ToExpression>._()
     with _$DateOrTimeFormat<F>
     implements ToExpression {
-  const factory DateOrTimeFormat({
+  const factory({
     required List<DateOrTimePatternPart<F>> pattern,
     required String? displayName,
   }) = _DateOrTimeFormat<F>;
-  const DateOrTimeFormat._();
 
-  factory DateOrTimeFormat.fromXml(
+  factory fromXml(
     CldrXml xml,
     CldrPath path,
     ParseDateOrTimePatternField<F> parseField,
@@ -427,29 +404,30 @@ class DateOrTimeFormat<F extends ToExpression>
 
   @override
   Expression toExpression() {
-    return referCldr('DateOrTimeFormat').constInstance(
-      [],
-      {
-        'pattern': pattern.toExpression(),
-        'displayName':
-            displayName == null ? literalNull : literalString(displayName!),
-      },
-    );
+    return referCldr('DateOrTimeFormat').constInstance([], {
+      'pattern': pattern.toExpression(),
+      'displayName': displayName == null
+          ? literalNull
+          : literalString(displayName!),
+    });
   }
 }
 
 @freezed
-class DateTimeFormats with _$DateTimeFormats implements ToExpression {
-  const factory DateTimeFormats({
+sealed class const DateTimeFormats._()
+    with _$DateTimeFormats
+    implements ToExpression {
+  const factory({
     required DateOrTimeFormats<DateTimeVariants> formats,
-    required Map<DateTimeSkeleton,
-            Plural<List<DateOrTimePatternPart<DateTimeField>>>>
-        availableFormats,
+    required Map<
+      DateTimeSkeleton,
+      Plural<List<DateOrTimePatternPart<DateTimeField>>>
+    >
+    availableFormats,
     // `TODO`(JonasWanke): `<appendItems>`, `<intervalFormats>`
   }) = _DateTimeFormats;
-  const DateTimeFormats._();
 
-  factory DateTimeFormats.fromXml(CldrXml xml, CldrPath path) {
+  factory fromXml(CldrXml xml, CldrPath path) {
     return DateTimeFormats(
       formats: DateOrTimeFormats.fromXml(
         path,
@@ -485,29 +463,25 @@ class DateTimeFormats with _$DateTimeFormats implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('DateTimeFormats').newInstance(
-      [],
-      {
-        'formats': formats.toExpression(),
-        'availableFormats': literalMap(
-          availableFormats.map(
-            (key, value) => MapEntry(key.toExpression(), value.toExpression()),
-          ),
+    return referCldr('DateTimeFormats').newInstance([], {
+      'formats': formats.toExpression(),
+      'availableFormats': literalMap(
+        availableFormats.map(
+          (key, value) => MapEntry(key.toExpression(), value.toExpression()),
         ),
-      },
-    );
+      ),
+    });
   }
 }
 
 @freezed
-class DateTimeVariants with _$DateTimeVariants implements ToExpression {
-  const factory DateTimeVariants(
-    DateTimeFormat standard, {
-    required DateTimeFormat? atTime,
-  }) = _DateTimeVariants;
-  const DateTimeVariants._();
+sealed class const DateTimeVariants._()
+    with _$DateTimeVariants
+    implements ToExpression {
+  const factory(DateTimeFormat standard, {required DateTimeFormat? atTime}) =
+      _DateTimeVariants;
 
-  factory DateTimeVariants.fromXml(CldrXml xml, CldrPath path) {
+  factory fromXml(CldrXml xml, CldrPath path) {
     final atTimePath = path.withAttribute('type', 'atTime');
     return DateTimeVariants(
       DateTimeFormat.fromXml(xml, path),
@@ -527,43 +501,42 @@ class DateTimeVariants with _$DateTimeVariants implements ToExpression {
 }
 
 @freezed
-class DateTimeFormat with _$DateTimeFormat implements ToExpression {
-  const factory DateTimeFormat({
+sealed class const DateTimeFormat._()
+    with _$DateTimeFormat
+    implements ToExpression {
+  const factory({
     required List<DateTimePatternPart> pattern,
     required String? displayName,
   }) = _DateTimeFormat;
-  const DateTimeFormat._();
 
-  factory DateTimeFormat.fromXml(CldrXml xml, CldrPath path) {
+  factory fromXml(CldrXml xml, CldrPath path) {
     return DateTimeFormat(
-      pattern:
-          DateTimePatternPart.parse(xml.resolveString(path.child('pattern'))),
+      pattern: DateTimePatternPart.parse(
+        xml.resolveString(path.child('pattern')),
+      ),
       displayName: xml.resolveOptionalString(path.child('displayName')),
     );
   }
 
   @override
   Expression toExpression() {
-    return referCldr('DateTimeFormat').constInstance(
-      [],
-      {
-        'pattern': pattern.toExpression(),
-        'displayName':
-            displayName == null ? literalNull : literalString(displayName!),
-      },
-    );
+    return referCldr('DateTimeFormat').constInstance([], {
+      'pattern': pattern.toExpression(),
+      'displayName': displayName == null
+          ? literalNull
+          : literalString(displayName!),
+    });
   }
 }
 
 @freezed
-class DateTimePatternPart with _$DateTimePatternPart implements ToExpression {
-  const factory DateTimePatternPart.literal(String value) =
-      _DateTimePatternPartLiteral;
-  const factory DateTimePatternPart.date() = _DateTimePatternPartDate;
-  const factory DateTimePatternPart.time() = _DateTimePatternPartTime;
-  const factory DateTimePatternPart.field(DateTimeField field) =
-      _DateTimePatternPartField;
-  const DateTimePatternPart._();
+sealed class const DateTimePatternPart._()
+    with _$DateTimePatternPart
+    implements ToExpression {
+  const factory literal(String value) = _DateTimePatternPartLiteral;
+  const factory date() = _DateTimePatternPartDate;
+  const factory time() = _DateTimePatternPartTime;
+  const factory field(DateTimeField field) = _DateTimePatternPartField;
 
   static List<DateTimePatternPart> parse(String pattern) {
     final raw = DateOrTimePatternPart.parse(pattern, DateTimeField.parse);
@@ -639,14 +612,11 @@ class DateTimePatternPart with _$DateTimePatternPart implements ToExpression {
 }
 
 @freezed
-sealed class DateOrTimePatternPart<F extends ToExpression>
+sealed class const DateOrTimePatternPart<F extends ToExpression>._()
     with _$DateOrTimePatternPart<F>
     implements ToExpression {
-  const factory DateOrTimePatternPart.literal(String value) =
-      _DateOrTimePatternPartLiteral<F>;
-  const factory DateOrTimePatternPart.field(F field) =
-      _DateOrTimePatternPartField<F>;
-  const DateOrTimePatternPart._();
+  const factory literal(String value) = _DateOrTimePatternPartLiteral<F>;
+  const factory field(F field) = _DateOrTimePatternPartField<F>;
 
   static List<DateOrTimePatternPart<F>> parse<F extends ToExpression>(
     String pattern,
@@ -700,7 +670,8 @@ sealed class DateOrTimePatternPart<F extends ToExpression>
               pattern[offset + length] == character) {
             length++;
           }
-          final field = parseField(character, length) ??
+          final field =
+              parseField(character, length) ??
               (throw FormatException('Unknown field: `${character * length}`'));
           parts.add(DateOrTimePatternPart.field(field));
           offset += length;
@@ -740,8 +711,10 @@ typedef ParseDateOrTimePatternField<F extends ToExpression> = F? Function(
 );
 
 @freezed
-sealed class DateTimeSkeleton with _$DateTimeSkeleton implements ToExpression {
-  const factory DateTimeSkeleton({
+sealed class const DateTimeSkeleton._()
+    with _$DateTimeSkeleton
+    implements ToExpression {
+  const factory({
     EraStyle? era,
     YearStyle? year,
     QuarterStyle? quarter,
@@ -755,9 +728,8 @@ sealed class DateTimeSkeleton with _$DateTimeSkeleton implements ToExpression {
     SecondStyle? second,
     ZoneStyle? zone,
   }) = _DateTimeSkeleton;
-  const DateTimeSkeleton._();
 
-  factory DateTimeSkeleton.parse(String skeleton) {
+  factory parse(String skeleton) {
     final fields = DateOrTimePatternPart.parse(skeleton, DateTimeField.parse)
         .map((it) => (it as _DateOrTimePatternPartField<DateTimeField>).field)
         .toList();
@@ -827,12 +799,11 @@ sealed class DateTimeSkeleton with _$DateTimeSkeleton implements ToExpression {
 }
 
 @freezed
-sealed class DateTimeField with _$DateTimeField implements ToExpression {
-  const factory DateTimeField.dateField(DateField field) =
-      _DateTimeFieldDateField;
-  const factory DateTimeField.timeField(TimeField field) =
-      _DateTimeFieldTimeField;
-  const DateTimeField._();
+sealed class const DateTimeField._()
+    with _$DateTimeField
+    implements ToExpression {
+  const factory dateField(DateField field) = _DateTimeFieldDateField;
+  const factory timeField(TimeField field) = _DateTimeFieldTimeField;
 
   static DateTimeField? parse(String character, int length) {
     return DateField.parse(character, length)?.let(DateTimeField.dateField) ??
@@ -850,16 +821,14 @@ sealed class DateTimeField with _$DateTimeField implements ToExpression {
 }
 
 @freezed
-sealed class DateField with _$DateField implements ToExpression {
-  const factory DateField.era(EraStyle style) = _DateFieldEra;
-  const factory DateField.year(YearStyle style) = _DateFieldYear;
-  const factory DateField.quarter(QuarterStyle style) = _DateFieldQuarter;
-  const factory DateField.month(MonthStyle style) = _DateFieldMonth;
-  const factory DateField.week(WeekStyle style) = _DateFieldWeek;
-  const factory DateField.day(DayStyle style) = _DateFieldDay;
-  const factory DateField.weekday(WeekdayStyle style) = _DateFieldWeekday;
-
-  const DateField._();
+sealed class const DateField._() with _$DateField implements ToExpression {
+  const factory era(EraStyle style) = _DateFieldEra;
+  const factory year(YearStyle style) = _DateFieldYear;
+  const factory quarter(QuarterStyle style) = _DateFieldQuarter;
+  const factory month(MonthStyle style) = _DateFieldMonth;
+  const factory week(WeekStyle style) = _DateFieldWeek;
+  const factory day(DayStyle style) = _DateFieldDay;
+  const factory weekday(WeekdayStyle style) = _DateFieldWeekday;
 
   static DateField? parse(String character, int length) {
     return EraStyle.parse(character, length)?.let(DateField.era) ??
@@ -898,7 +867,7 @@ enum DayOfYearPadding implements ToExpression {
 }
 
 @freezed
-sealed class EraStyle with _$EraStyle implements ToExpression {
+sealed class const EraStyle._() with _$EraStyle implements ToExpression {
   /// Era name:
   ///
   /// | Width         | Example                           | Unicode Shorthand |
@@ -906,12 +875,8 @@ sealed class EraStyle with _$EraStyle implements ToExpression {
   /// | `wide`        | Anno Domini (variant: Common Era) | `GGGG`            |
   /// | `abbreviated` | AD (variant: CE)                  | `G`, `GG`, `GGG`  |
   /// | `narrow`      | A                                 | `GGGGG`           |
-  const factory EraStyle(
-    FieldWidth width, {
-    @Default(false) bool useVariant,
-  }) = _EraStyle;
-
-  const EraStyle._();
+  const factory(FieldWidth width, {@Default(false) bool useVariant}) =
+      _EraStyle;
 
   static EraStyle? parse(String character, int length) {
     return switch ((character, length)) {
@@ -932,7 +897,7 @@ sealed class EraStyle with _$EraStyle implements ToExpression {
 }
 
 @freezed
-sealed class YearStyle with _$YearStyle implements ToExpression {
+sealed class const YearStyle._() with _$YearStyle implements ToExpression {
   /// Calendar year number, e.g., “1996”.
   ///
   /// | Year     |     1 |     2 |     3 |     4 |     5 |
@@ -945,14 +910,12 @@ sealed class YearStyle with _$YearStyle implements ToExpression {
   ///
   /// Unicode Shorthand: `y`, `yyy`, `yyyy`, `yyyyy`, etc.
   @Assert('minDigits >= 1')
-  const factory YearStyle.calendarYear({required int minDigits}) =
-      _YearStyleCalendarYear;
+  const factory calendarYear({required int minDigits}) = _YearStyleCalendarYear;
 
   /// Two-digit year number, e.g., “96”.
   ///
   /// Unicode Shorthand: `yy`
-  const factory YearStyle.calendarYearTwoDigits() =
-      _YearStyleCalendarYearTwoDigits;
+  const factory calendarYearTwoDigits() = _YearStyleCalendarYearTwoDigits;
 
   /// Year number (in "Week of Year"-based calendars), e.g., “1996”.
   ///
@@ -966,14 +929,13 @@ sealed class YearStyle with _$YearStyle implements ToExpression {
   ///
   /// Unicode Shorthand: `Y`, `YYY`, `YYYY`, `YYYYY`, etc.
   @Assert('minDigits >= 1')
-  const factory YearStyle.weekBasedYear({required int minDigits}) =
+  const factory weekBasedYear({required int minDigits}) =
       _YearStyleWeekBasedYear;
 
   /// Two-digit year number (in "Week of Year"-based calendars), e.g., “96”.
   ///
   /// Unicode Shorthand: `YY`
-  const factory YearStyle.weekBasedYearTwoDigits() =
-      _YearStyleWeekBasedYearTwoDigits;
+  const factory weekBasedYearTwoDigits() = _YearStyleWeekBasedYearTwoDigits;
 
   /// Extended year, e.g., “4601”.
   ///
@@ -984,8 +946,7 @@ sealed class YearStyle with _$YearStyle implements ToExpression {
   /// years and negative values to BCE years, with 1 BCE being year 0.
   ///
   /// Unicode Shorthand: `u`, `uu`, `uuu`, etc.
-  const factory YearStyle.extendedYear({required int minDigits}) =
-      _YearStyleExtendedYear;
+  const factory extendedYear({required int minDigits}) = _YearStyleExtendedYear;
 
   /// Cyclic year name.
   ///
@@ -1001,8 +962,7 @@ sealed class YearStyle with _$YearStyle implements ToExpression {
   /// | `wide`        | 甲子           | `UUUU`            |
   /// | `abbreviated` | 甲子 (for now) | `U`, `UU`, `UUU`  |
   /// | `narrow`      | 甲子 (for now) | `UUUUU`           |
-  const factory YearStyle.cyclicYearName(FieldWidth width) =
-      _YearStyleCyclicYearName;
+  const factory cyclicYearName(FieldWidth width) = _YearStyleCyclicYearName;
 
   /// Related Gregorian year (numeric).
   ///
@@ -1018,10 +978,8 @@ sealed class YearStyle with _$YearStyle implements ToExpression {
   /// For the Gregorian calendar, the ‘r’ year is the same as the ‘u’ year.
   ///
   /// Unicode Shorthand: `r`, `rr`, `rrr`, etc.
-  const factory YearStyle.relatedGregorianYear({required int minDigits}) =
+  const factory relatedGregorianYear({required int minDigits}) =
       _YearStyleRelatedGregorianYear;
-
-  const YearStyle._();
 
   static YearStyle? parse(String character, int length) {
     return switch ((character, length)) {
@@ -1030,8 +988,9 @@ sealed class YearStyle with _$YearStyle implements ToExpression {
       ('Y', 2) => const YearStyle.weekBasedYearTwoDigits(),
       ('Y', _) => YearStyle.weekBasedYear(minDigits: length),
       ('u', _) => YearStyle.extendedYear(minDigits: length),
-      ('U', >= 1 && <= 3) =>
-        const YearStyle.cyclicYearName(FieldWidth.abbreviated),
+      ('U', >= 1 && <= 3) => const YearStyle.cyclicYearName(
+        FieldWidth.abbreviated,
+      ),
       ('U', 4) => const YearStyle.cyclicYearName(FieldWidth.wide),
       ('U', 5) => const YearStyle.cyclicYearName(FieldWidth.narrow),
       ('r', _) => YearStyle.relatedGregorianYear(minDigits: length),
@@ -1053,17 +1012,17 @@ sealed class YearStyle with _$YearStyle implements ToExpression {
           create('extendedYear', [], {'minDigits': literalNum(minDigits)}),
       cyclicYearName: (width) =>
           create('cyclicYearName', [width.toExpression()]),
-      relatedGregorianYear: (minDigits) => create(
-        'relatedGregorianYear',
-        [],
-        {'minDigits': literalNum(minDigits)},
-      ),
+      relatedGregorianYear: (minDigits) => create('relatedGregorianYear', [], {
+        'minDigits': literalNum(minDigits),
+      }),
     );
   }
 }
 
 @freezed
-sealed class QuarterStyle with _$QuarterStyle implements ToExpression {
+sealed class const QuarterStyle._()
+    with _$QuarterStyle
+    implements ToExpression {
   /// The form used within a date format string (such as “2nd quarter 2024”).
   ///
   /// | Width         | Example     | Unicode Shorthand |
@@ -1071,13 +1030,13 @@ sealed class QuarterStyle with _$QuarterStyle implements ToExpression {
   /// | `wide`        | 2nd quarter | `QQQQ`            |
   /// | `abbreviated` | Q2          | `QQQ`             |
   /// | `narrow`      | 2           | `QQQQQ`           |
-  const factory QuarterStyle.format(FieldWidth width) = _QuarterStyleFormat;
+  const factory format(FieldWidth width) = _QuarterStyleFormat;
 
   /// Numeric version of [QuarterStyle.format], e.g., “2” (not padded) or “02”
   /// (padded).
   ///
   /// Unicode Shorthand: `Q` (one digit), `QQ` (padded to two digits)
-  const factory QuarterStyle.formatNumeric({required bool isPadded}) =
+  const factory formatNumeric({required bool isPadded}) =
       _QuarterStyleFormatNumeric;
 
   /// The form used independently, e.g., in a calendar header.
@@ -1087,17 +1046,14 @@ sealed class QuarterStyle with _$QuarterStyle implements ToExpression {
   /// | `wide`        | 2nd quarter | `qqqq`            |
   /// | `abbreviated` | Q2          | `qqq`             |
   /// | `narrow`      | 2           | `qqqqL`           |
-  const factory QuarterStyle.standalone(FieldWidth width) =
-      _QuarterStyleStandalone;
+  const factory standalone(FieldWidth width) = _QuarterStyleStandalone;
 
   /// Numeric version of [QuarterStyle.standalone], e.g., “2” (not padded) or
   /// “02” (padded).
   ///
   /// Unicode Shorthand: `q` (one digit), `qq` (padded to two digits)
-  const factory QuarterStyle.standaloneNumeric({required bool isPadded}) =
+  const factory standaloneNumeric({required bool isPadded}) =
       _QuarterStyleStandaloneNumeric;
-
-  const QuarterStyle._();
 
   static QuarterStyle? parse(String character, int length) {
     return switch ((character, length)) {
@@ -1130,7 +1086,7 @@ sealed class QuarterStyle with _$QuarterStyle implements ToExpression {
 }
 
 @freezed
-sealed class MonthStyle with _$MonthStyle implements ToExpression {
+sealed class const MonthStyle._() with _$MonthStyle implements ToExpression {
   /// The form used within a date format string (such as “Saturday, November
   /// 12th”).
   ///
@@ -1148,13 +1104,13 @@ sealed class MonthStyle with _$MonthStyle implements ToExpression {
   /// | `wide`        | September | `MMMM`            |
   /// | `abbreviated` | Sep       | `MMM`             |
   /// | `narrow`      | S         | `MMMMM`           |
-  const factory MonthStyle.format(FieldWidth width) = _MonthStyleFormat;
+  const factory format(FieldWidth width) = _MonthStyleFormat;
 
   /// Numeric version of [MonthStyle.format], e.g., “9” (not padded) or “09”
   /// (padded).
   ///
   /// Unicode Shorthand: `M` (one digit), `MM` (padded to two digits)
-  const factory MonthStyle.formatNumeric({required bool isPadded}) =
+  const factory formatNumeric({required bool isPadded}) =
       _MonthStyleFormatNumeric;
 
   /// The form used independently, e.g., in a calendar header.
@@ -1164,16 +1120,14 @@ sealed class MonthStyle with _$MonthStyle implements ToExpression {
   /// | `wide`        | September | `LLLL`            |
   /// | `abbreviated` | Sep       | `LLL`             |
   /// | `narrow`      | S         | `LLLLL`           |
-  const factory MonthStyle.standalone(FieldWidth width) = _MonthStyleStandalone;
+  const factory standalone(FieldWidth width) = _MonthStyleStandalone;
 
   /// Numeric version of [MonthStyle.standalone], e.g., “9” (not padded) or “09”
   /// (padded).
   ///
   /// Unicode Shorthand: `L` (one digit), `LL` (padded to two digits)
-  const factory MonthStyle.standaloneNumeric({required bool isPadded}) =
+  const factory standaloneNumeric({required bool isPadded}) =
       _MonthStyleStandaloneNumeric;
-
-  const MonthStyle._();
 
   static MonthStyle? parse(String character, int length) {
     return switch ((character, length)) {
@@ -1206,19 +1160,16 @@ sealed class MonthStyle with _$MonthStyle implements ToExpression {
 }
 
 @freezed
-sealed class WeekStyle with _$WeekStyle implements ToExpression {
+sealed class const WeekStyle._() with _$WeekStyle implements ToExpression {
   /// Week of Year, e.g., “27”.
   ///
   /// Unicode Shorthand: `w` (not padded), `ww` (padded)
-  const factory WeekStyle.weekOfYear({required bool isPadded}) =
-      _WeekStyleWeekOfYear;
+  const factory weekOfYear({required bool isPadded}) = _WeekStyleWeekOfYear;
 
   /// Week of Month, e.g., “3”.
   ///
   /// Unicode Shorthand: `W`
-  const factory WeekStyle.weekOfMonth() = _WeekStyleWeekOfMonth;
-
-  const WeekStyle._();
+  const factory weekOfMonth() = _WeekStyleWeekOfMonth;
 
   static WeekStyle? parse(String character, int length) {
     return switch ((character, length)) {
@@ -1241,18 +1192,17 @@ sealed class WeekStyle with _$WeekStyle implements ToExpression {
 }
 
 @freezed
-sealed class DayStyle with _$DayStyle implements ToExpression {
+sealed class const DayStyle._() with _$DayStyle implements ToExpression {
   /// Date - Day of the month, e.g., “1”.
   ///
   /// Unicode Shorthand: `d` (not padded), `dd` (padded)
-  const factory DayStyle.dayOfMonth({required bool isPadded}) =
-      _DayStyleDayOfMonth;
+  const factory dayOfMonth({required bool isPadded}) = _DayStyleDayOfMonth;
 
   /// Day of year, e.g., “345”.
   ///
   /// Unicode Shorthand: `D` (one digit), `DD` (padded to two digits),
   /// `DDD` (padded to three digits)
-  const factory DayStyle.dayOfYear({required DayOfYearPadding padding}) =
+  const factory dayOfYear({required DayOfYearPadding padding}) =
       _DayStyleDayOfYear;
 
   /// Day of Week in Month, e.g., “2”.
@@ -1260,7 +1210,7 @@ sealed class DayStyle with _$DayStyle implements ToExpression {
   /// The example is for the 2nd Wed in July
   ///
   /// Unicode Shorthand: `F`
-  const factory DayStyle.dayOfWeekInMonth() = _DayStyleDayOfWeekInMonth;
+  const factory dayOfWeekInMonth() = _DayStyleDayOfWeekInMonth;
 
   /// Modified Julian day.
   ///
@@ -1271,9 +1221,7 @@ sealed class DayStyle with _$DayStyle implements ToExpression {
   /// date-related fields.
   ///
   /// Unicode Shorthand: `g`
-  const factory DayStyle.modifiedJulianDay() = _DayStyleModifiedJulianDay;
-
-  const DayStyle._();
+  const factory modifiedJulianDay() = _DayStyleModifiedJulianDay;
 
   static DayStyle? parse(String character, int length) {
     return switch ((character, length)) {
@@ -1303,7 +1251,9 @@ sealed class DayStyle with _$DayStyle implements ToExpression {
 }
 
 @freezed
-sealed class WeekdayStyle with _$WeekdayStyle implements ToExpression {
+sealed class const WeekdayStyle._()
+    with _$WeekdayStyle
+    implements ToExpression {
   /// The form used within a date format string (such as “Saturday, November
   /// 12th”).
   ///
@@ -1313,12 +1263,12 @@ sealed class WeekdayStyle with _$WeekdayStyle implements ToExpression {
   /// | `abbreviated` | Tue     | `E`, `EE`, `EEE`, `eee` |
   /// | `short`       | Tu      | `EEEEEE`, `eeeeee`      |
   /// | `narrow`      | T       | `EEEEE`, `eeeee`        |
-  const factory WeekdayStyle.format(DayFieldWidth width) = _WeekdayStyleFormat;
+  const factory format(DayFieldWidth width) = _WeekdayStyleFormat;
 
   /// Local weekday (numeric), e.g., “2”.
   ///
   /// Unicode Shorthand: `e` (one digit), `ee` (padded to two digits)
-  const factory WeekdayStyle.formatNumeric({required bool isPadded}) =
+  const factory formatNumeric({required bool isPadded}) =
       _WeekdayStyleFormatNumeric;
 
   /// The form used independently, e.g., in a calendar header.
@@ -1329,22 +1279,17 @@ sealed class WeekdayStyle with _$WeekdayStyle implements ToExpression {
   /// | `abbreviated` | Tue     | `ccc`             |
   /// | `short`       | Tu      | `cccccc`          |
   /// | `narrow`      | T       | `ccccc`           |
-  const factory WeekdayStyle.standalone(DayFieldWidth width) =
-      _WeekdayStyleStandalone;
+  const factory standalone(DayFieldWidth width) = _WeekdayStyleStandalone;
 
   /// Standalone local day of week number, e.g., “2”.
   ///
   /// Unicode Shorthand: `c`, `cc`
-  const factory WeekdayStyle.standaloneNumeric() =
-      _WeekdayStyleStandaloneNumeric;
-
-  const WeekdayStyle._();
+  const factory standaloneNumeric() = _WeekdayStyleStandaloneNumeric;
 
   static WeekdayStyle? parse(String character, int length) {
     return switch ((character, length)) {
       ('E', >= 1 && <= 3) ||
-      ('e', 3) =>
-        const WeekdayStyle.format(DayFieldWidth.abbreviated),
+      ('e', 3) => const WeekdayStyle.format(DayFieldWidth.abbreviated),
       ('E' || 'e', 4) => const WeekdayStyle.format(DayFieldWidth.wide),
       ('E' || 'e', 5) => const WeekdayStyle.format(DayFieldWidth.narrow),
       ('E' || 'e', 6) => const WeekdayStyle.format(DayFieldWidth.short),
@@ -1364,11 +1309,8 @@ sealed class WeekdayStyle with _$WeekdayStyle implements ToExpression {
     final create = referCldr('WeekdayStyle').constInstanceNamed;
     return when(
       format: (width) => create('format', [width.toExpression()]),
-      formatNumeric: (isPadded) => create(
-        'formatNumeric',
-        [],
-        {'isPadded': literalBool(isPadded)},
-      ),
+      formatNumeric: (isPadded) =>
+          create('formatNumeric', [], {'isPadded': literalBool(isPadded)}),
       standalone: (width) => create('standalone', [width.toExpression()]),
       standaloneNumeric: () => create('standaloneNumeric', []),
     );
@@ -1376,13 +1318,12 @@ sealed class WeekdayStyle with _$WeekdayStyle implements ToExpression {
 }
 
 @freezed
-sealed class TimeField with _$TimeField implements ToExpression {
-  const factory TimeField.period(PeriodStyle style) = _TimeFieldPeriod;
-  const factory TimeField.hour(HourStyle style) = _TimeFieldHour;
-  const factory TimeField.minute(MinuteStyle style) = _TimeFieldMinute;
-  const factory TimeField.second(SecondStyle style) = _TimeFieldSecond;
-  const factory TimeField.zone(ZoneStyle style) = _TimeFieldZone;
-  const TimeField._();
+sealed class const TimeField._() with _$TimeField implements ToExpression {
+  const factory period(PeriodStyle style) = _TimeFieldPeriod;
+  const factory hour(HourStyle style) = _TimeFieldHour;
+  const factory minute(MinuteStyle style) = _TimeFieldMinute;
+  const factory second(SecondStyle style) = _TimeFieldSecond;
+  const factory zone(ZoneStyle style) = _TimeFieldZone;
 
   static TimeField? parse(String character, int length) {
     return PeriodStyle.parse(character, length)?.let(TimeField.period) ??
@@ -1406,7 +1347,7 @@ sealed class TimeField with _$TimeField implements ToExpression {
 }
 
 @freezed
-sealed class PeriodStyle with _$PeriodStyle implements ToExpression {
+sealed class const PeriodStyle._() with _$PeriodStyle implements ToExpression {
   /// Period (AM or PM), e.g., “AM”.
   ///
   /// May be uppercase or lowercase depending on the locale and other options.
@@ -1419,7 +1360,7 @@ sealed class PeriodStyle with _$PeriodStyle implements ToExpression {
   /// | `wide`        | am. (e.g., 12 am.) | `aaaa`            |
   /// | `abbreviated` | am. (e.g., 12 am.) | `a`, `aa`, `aaa`  |
   /// | `narrow`      | a (e.g., 12a)      | `aaaaa`           |
-  const factory PeriodStyle.amPm(FieldWidth width) = _PeriodStyleAmPm;
+  const factory amPm(FieldWidth width) = _PeriodStyleAmPm;
 
   /// Period (AM or PM) with optional values for noon and midnight, e.g., “AM”.
   ///
@@ -1433,7 +1374,7 @@ sealed class PeriodStyle with _$PeriodStyle implements ToExpression {
   /// | `wide`        | midnight (e.g., 12 midnight) | `bbbb`            |
   /// | `abbreviated` | mid. (e.g., 12 mid.)         | `b`, `bb`, `bbb`  |
   /// | `narrow`      | md (e.g., 12 md)             | `bbbbb`           |
-  const factory PeriodStyle.amPmNoonMidnight(FieldWidth width) =
+  const factory amPmNoonMidnight(FieldWidth width) =
       _PeriodStyleAmPmNoonMidnight;
 
   /// Flexible day period, e.g., “at night”.
@@ -1446,17 +1387,16 @@ sealed class PeriodStyle with _$PeriodStyle implements ToExpression {
   /// | `wide`        | at night (e.g., 3:00 at night) | `BBBB`            |
   /// | `abbreviated` | at night (e.g., 3:00 at night) | `B`, `BB`, `BBB`  |
   /// | `narrow`      | at night (e.g., 3:00 at night) | `BBBBB`           |
-  const factory PeriodStyle.flexible(FieldWidth width) = _PeriodStyleFlexible;
-
-  const PeriodStyle._();
+  const factory flexible(FieldWidth width) = _PeriodStyleFlexible;
 
   static PeriodStyle? parse(String character, int length) {
     return switch ((character, length)) {
       ('a', >= 1 && <= 3) => const PeriodStyle.amPm(FieldWidth.abbreviated),
       ('a', 4) => const PeriodStyle.amPm(FieldWidth.wide),
       ('a', 5) => const PeriodStyle.amPm(FieldWidth.narrow),
-      ('b', >= 1 && <= 3) =>
-        const PeriodStyle.amPmNoonMidnight(FieldWidth.abbreviated),
+      ('b', >= 1 && <= 3) => const PeriodStyle.amPmNoonMidnight(
+        FieldWidth.abbreviated,
+      ),
       ('b', 4) => const PeriodStyle.amPmNoonMidnight(FieldWidth.wide),
       ('b', 5) => const PeriodStyle.amPmNoonMidnight(FieldWidth.narrow),
       ('B', >= 1 && <= 3) => const PeriodStyle.flexible(FieldWidth.abbreviated),
@@ -1480,32 +1420,26 @@ sealed class PeriodStyle with _$PeriodStyle implements ToExpression {
 }
 
 @freezed
-sealed class HourStyle with _$HourStyle implements ToExpression {
+sealed class const HourStyle._() with _$HourStyle implements ToExpression {
   /// Hour (0 – 23), e.g., “13”.
   ///
   /// Unicode Shorthand: `H`, `HH`
-  const factory HourStyle.from0To23({required bool isPadded}) =
-      _HourStyleFrom0To23;
+  const factory from0To23({required bool isPadded}) = _HourStyleFrom0To23;
 
   /// Hour (1 – 24), e.g., “24”.
   ///
   /// Unicode Shorthand: `k`, `kk`
-  const factory HourStyle.from1To24({required bool isPadded}) =
-      _HourStyleFrom1To24;
+  const factory from1To24({required bool isPadded}) = _HourStyleFrom1To24;
 
   /// Hour (0 – 11), e.g., “0” or “00”.
   ///
   /// Unicode Shorthand: `K`, `KK`
-  const factory HourStyle.from0To11({required bool isPadded}) =
-      _HourStyleFrom0To11;
+  const factory from0To11({required bool isPadded}) = _HourStyleFrom0To11;
 
   /// Hour (1 – 12), e.g., “11”.
   ///
   /// Unicode Shorthand: `h`, `hh`
-  const factory HourStyle.from1To12({required bool isPadded}) =
-      _HourStyleFrom1To12;
-
-  const HourStyle._();
+  const factory from1To12({required bool isPadded}) = _HourStyleFrom1To12;
 
   static HourStyle? parse(String character, int length) {
     return switch ((character, length)) {
@@ -1550,12 +1484,11 @@ sealed class HourStyle with _$HourStyle implements ToExpression {
 }
 
 @freezed
-sealed class MinuteStyle with _$MinuteStyle implements ToExpression {
+sealed class const MinuteStyle._() with _$MinuteStyle implements ToExpression {
   /// Minute, e.g., “59”.
   ///
   /// Unicode Shorthand: `m`, `mm`
-  const factory MinuteStyle({required bool isPadded}) = _MinuteStyle;
-  const MinuteStyle._();
+  const factory({required bool isPadded}) = _MinuteStyle;
 
   static MinuteStyle? parse(String character, int length) {
     return switch ((character, length)) {
@@ -1573,12 +1506,11 @@ sealed class MinuteStyle with _$MinuteStyle implements ToExpression {
 }
 
 @freezed
-sealed class SecondStyle with _$SecondStyle implements ToExpression {
+sealed class const SecondStyle._() with _$SecondStyle implements ToExpression {
   /// Second in minute, e.g., “12”.
   ///
   /// Unicode Shorthand: `s`, `ss`
-  const factory SecondStyle.second({required bool isPadded}) =
-      _SecondStyleSecond;
+  const factory second({required bool isPadded}) = _SecondStyleSecond;
 
   /// Fractional Second, e.g., “3456”.
   ///
@@ -1586,7 +1518,7 @@ sealed class SecondStyle with _$SecondStyle implements ToExpression {
   ///
   /// Unicode Shorthand: `S`, `SS`, etc.
   @Assert('digits >= 1')
-  const factory SecondStyle.fractionalSecond({required int digits}) =
+  const factory fractionalSecond({required int digits}) =
       _SecondStyleFractionalSecond;
 
   /// Milliseconds in day, e.g., “69540000”.
@@ -1600,10 +1532,8 @@ sealed class SecondStyle with _$SecondStyle implements ToExpression {
   ///
   /// Unicode Shorthand: `A`, `AA`, etc.
   @Assert('minDigits >= 1')
-  const factory SecondStyle.millisecondsInDay({required int minDigits}) =
+  const factory millisecondsInDay({required int minDigits}) =
       _SecondStyleMillisecondsInDay;
-
-  const SecondStyle._();
 
   static SecondStyle? parse(String character, int length) {
     return switch ((character, length)) {
@@ -1631,7 +1561,7 @@ sealed class SecondStyle with _$SecondStyle implements ToExpression {
 }
 
 @freezed
-sealed class ZoneStyle with _$ZoneStyle implements ToExpression {
+sealed class const ZoneStyle._() with _$ZoneStyle implements ToExpression {
   /// The specific non-location format, e.g., “PDT” (short) or “Pacific Daylight
   /// Time” (long).
   ///
@@ -1642,17 +1572,15 @@ sealed class ZoneStyle with _$ZoneStyle implements ToExpression {
   /// format (“OOOO”).
   ///
   /// Unicode Shorthand: `z`, `zz`, `zzz` (short), `zzzz` (long)
-  const factory ZoneStyle.specificNonLocation({
-    required ZoneLength length,
-  }) = _ZoneStyleSpecificNonLocation;
+  const factory specificNonLocation({required ZoneLength length}) =
+      _ZoneStyleSpecificNonLocation;
 
   /// The localized GMT format, e.g., “GMT-8” (short) or “GMT-08:00” (long).
   ///
   /// Unicode Shorthand: `O` (short), `ZZZZ`, `OOOO` (long)
   // `TODO`(JonasWanke): check example since the spec conflicts itself
-  const factory ZoneStyle.localizedGmt({
-    required ZoneLength length,
-  }) = _ZoneStyleLocalizedGmt;
+  const factory localizedGmt({required ZoneLength length}) =
+      _ZoneStyleLocalizedGmt;
 
   /// The generic non-location format, e.g., “PT” (short) or “Pacific Time”
   /// (long).
@@ -1665,9 +1593,8 @@ sealed class ZoneStyle with _$ZoneStyle implements ToExpression {
   /// (“VVVV”).
   ///
   /// Unicode Shorthand: `v` (short), `vvvv` (long)
-  const factory ZoneStyle.genericNonLocation({
-    required ZoneLength length,
-  }) = _ZoneStyleGenericNonLocation;
+  const factory genericNonLocation({required ZoneLength length}) =
+      _ZoneStyleGenericNonLocation;
 
   /// The time zone ID, e.g., “uslax” (short) or “America/Los_Angeles” (long).
   ///
@@ -1680,7 +1607,7 @@ sealed class ZoneStyle with _$ZoneStyle implements ToExpression {
   /// changed to designate a short time zone ID.
   ///
   /// Unicode Shorthand: `V` (short), `VV` (long)
-  const factory ZoneStyle.id({required ZoneLength length}) = _ZoneStyleID;
+  const factory id({required ZoneLength length}) = _ZoneStyleID;
 
   /// The exemplar city (location) for the time zone, e.g., “Los Angeles”.
   ///
@@ -1689,7 +1616,7 @@ sealed class ZoneStyle with _$ZoneStyle implements ToExpression {
   /// City”).
   ///
   /// Unicode Shorthand: `VVV`
-  const factory ZoneStyle.exemplarCity() = _ZoneStyleExemplarCity;
+  const factory exemplarCity() = _ZoneStyleExemplarCity;
 
   /// The generic location format, e.g., “Los Angeles Time”.
   ///
@@ -1700,8 +1627,7 @@ sealed class ZoneStyle with _$ZoneStyle implements ToExpression {
   /// the `v` format.
   ///
   /// Unicode Shorthand: `VVVV`
-  const factory ZoneStyle.genericLocationFormat() =
-      _ZoneStyleGenericLocationFormat;
+  const factory genericLocationFormat() = _ZoneStyleGenericLocationFormat;
 
   /// An ISO 8601 basic format, see [ZoneIso8601Style] for details.
   ///
@@ -1709,17 +1635,16 @@ sealed class ZoneStyle with _$ZoneStyle implements ToExpression {
   /// used when local time offset is 0.
   ///
   /// Unicode Shorthand: See [ZoneIso8601Style]
-  const factory ZoneStyle.iso8601({
+  const factory iso8601({
     required ZoneIso8601Style style,
     required bool useZForZeroOffset,
   }) = _ZoneStyleIso8601Basic;
 
-  const ZoneStyle._();
-
   static ZoneStyle? parse(String character, int length) {
     return switch ((character, length)) {
-      ('z', >= 1 && <= 3) =>
-        const ZoneStyle.specificNonLocation(length: ZoneLength.short),
+      ('z', >= 1 && <= 3) => const ZoneStyle.specificNonLocation(
+        length: ZoneLength.short,
+      ),
       ('z', 4) => const ZoneStyle.specificNonLocation(length: ZoneLength.long),
       ('Z' || 'O', 4) => const ZoneStyle.localizedGmt(length: ZoneLength.long),
       ('O', 1) => const ZoneStyle.localizedGmt(length: ZoneLength.short),
@@ -1730,45 +1655,45 @@ sealed class ZoneStyle with _$ZoneStyle implements ToExpression {
       ('V', 3) => const ZoneStyle.exemplarCity(),
       ('V', 4) => const ZoneStyle.genericLocationFormat(),
       ('X', 1) => const ZoneStyle.iso8601(
-          style: ZoneIso8601Style.basicWithHoursOptionalMinutes,
-          useZForZeroOffset: true,
-        ),
+        style: ZoneIso8601Style.basicWithHoursOptionalMinutes,
+        useZForZeroOffset: true,
+      ),
       ('X', 2) => const ZoneStyle.iso8601(
-          style: ZoneIso8601Style.basicWithHoursMinutes,
-          useZForZeroOffset: true,
-        ),
+        style: ZoneIso8601Style.basicWithHoursMinutes,
+        useZForZeroOffset: true,
+      ),
       ('X', 3) => const ZoneStyle.iso8601(
-          style: ZoneIso8601Style.extendedWithHoursMinutes,
-          useZForZeroOffset: true,
-        ),
+        style: ZoneIso8601Style.extendedWithHoursMinutes,
+        useZForZeroOffset: true,
+      ),
       ('X', 4) => const ZoneStyle.iso8601(
-          style: ZoneIso8601Style.basicWithHoursMinutesOptionalSeconds,
-          useZForZeroOffset: true,
-        ),
+        style: ZoneIso8601Style.basicWithHoursMinutesOptionalSeconds,
+        useZForZeroOffset: true,
+      ),
       ('X' || 'Z', 5) => const ZoneStyle.iso8601(
-          style: ZoneIso8601Style.extendedWithHoursMinutesOptionalSeconds,
-          useZForZeroOffset: true,
-        ),
+        style: ZoneIso8601Style.extendedWithHoursMinutesOptionalSeconds,
+        useZForZeroOffset: true,
+      ),
       ('x', 1) => const ZoneStyle.iso8601(
-          style: ZoneIso8601Style.basicWithHoursOptionalMinutes,
-          useZForZeroOffset: false,
-        ),
+        style: ZoneIso8601Style.basicWithHoursOptionalMinutes,
+        useZForZeroOffset: false,
+      ),
       ('x', 2) => const ZoneStyle.iso8601(
-          style: ZoneIso8601Style.basicWithHoursMinutes,
-          useZForZeroOffset: false,
-        ),
+        style: ZoneIso8601Style.basicWithHoursMinutes,
+        useZForZeroOffset: false,
+      ),
       ('x', 3) => const ZoneStyle.iso8601(
-          style: ZoneIso8601Style.extendedWithHoursMinutes,
-          useZForZeroOffset: false,
-        ),
+        style: ZoneIso8601Style.extendedWithHoursMinutes,
+        useZForZeroOffset: false,
+      ),
       ('x', 4) || ('Z', >= 1 && <= 3) => const ZoneStyle.iso8601(
-          style: ZoneIso8601Style.basicWithHoursMinutesOptionalSeconds,
-          useZForZeroOffset: false,
-        ),
+        style: ZoneIso8601Style.basicWithHoursMinutesOptionalSeconds,
+        useZForZeroOffset: false,
+      ),
       ('x', 5) => const ZoneStyle.iso8601(
-          style: ZoneIso8601Style.extendedWithHoursMinutesOptionalSeconds,
-          useZForZeroOffset: false,
-        ),
+        style: ZoneIso8601Style.extendedWithHoursMinutesOptionalSeconds,
+        useZForZeroOffset: false,
+      ),
       _ => null,
     };
   }
@@ -1778,18 +1703,12 @@ sealed class ZoneStyle with _$ZoneStyle implements ToExpression {
     final create = referCldr('ZoneStyle').constInstanceNamed;
 
     return when(
-      specificNonLocation: (length) => create(
-        'specificNonLocation',
-        [],
-        {'length': length.toExpression()},
-      ),
+      specificNonLocation: (length) =>
+          create('specificNonLocation', [], {'length': length.toExpression()}),
       localizedGmt: (length) =>
           create('localizedGmt', [], {'length': length.toExpression()}),
-      genericNonLocation: (length) => create(
-        'genericNonLocation',
-        [],
-        {'length': length.toExpression()},
-      ),
+      genericNonLocation: (length) =>
+          create('genericNonLocation', [], {'length': length.toExpression()}),
       id: (length) => create('id', [], {'length': length.toExpression()}),
       exemplarCity: () => create('exemplarCity', []),
       genericLocationFormat: () => create('genericLocationFormat', []),
@@ -1856,8 +1775,8 @@ enum ZoneIso8601Style implements ToExpression {
 }
 
 @freezed
-class Fields with _$Fields implements ToExpression {
-  const factory Fields({
+sealed class const Fields._() with _$Fields implements ToExpression {
+  const factory({
     required FieldWidths era,
     required FieldWidths year,
     required FieldWidths quarter,
@@ -1881,13 +1800,14 @@ class Fields with _$Fields implements ToExpression {
     required FieldWidths second,
     required FieldWidths zone,
   }) = _Fields;
-  const Fields._();
 
-  factory Fields.fromXml(CldrXml xml, CldrPath path) {
+  factory fromXml(CldrXml xml, CldrPath path) {
     FieldWidths fieldFromXml(String type) {
       return FieldWidths(
-        full:
-            Field.fromXml(xml, path.child('field', attributes: {'type': type})),
+        full: Field.fromXml(
+          xml,
+          path.child('field', attributes: {'type': type}),
+        ),
         short: Field.fromXml(
           xml,
           path.child('field', attributes: {'type': '$type-short'}),
@@ -1927,73 +1847,67 @@ class Fields with _$Fields implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('Fields').constInstance(
-      [],
-      {
-        'era': era.toExpression(),
-        'year': year.toExpression(),
-        'quarter': quarter.toExpression(),
-        'month': month.toExpression(),
-        'week': week.toExpression(),
-        'weekOfMonth': weekOfMonth.toExpression(),
-        'day': day.toExpression(),
-        'dayOfYear': dayOfYear.toExpression(),
-        'weekday': weekday.toExpression(),
-        'weekdayOfMonth': weekdayOfMonth.toExpression(),
-        'sun': sun.toExpression(),
-        'mon': mon.toExpression(),
-        'tue': tue.toExpression(),
-        'wed': wed.toExpression(),
-        'thu': thu.toExpression(),
-        'fri': fri.toExpression(),
-        'sat': sat.toExpression(),
-        'dayperiod': dayperiod.toExpression(),
-        'hour': hour.toExpression(),
-        'minute': minute.toExpression(),
-        'second': second.toExpression(),
-        'zone': zone.toExpression(),
-      },
-    );
+    return referCldr('Fields').constInstance([], {
+      'era': era.toExpression(),
+      'year': year.toExpression(),
+      'quarter': quarter.toExpression(),
+      'month': month.toExpression(),
+      'week': week.toExpression(),
+      'weekOfMonth': weekOfMonth.toExpression(),
+      'day': day.toExpression(),
+      'dayOfYear': dayOfYear.toExpression(),
+      'weekday': weekday.toExpression(),
+      'weekdayOfMonth': weekdayOfMonth.toExpression(),
+      'sun': sun.toExpression(),
+      'mon': mon.toExpression(),
+      'tue': tue.toExpression(),
+      'wed': wed.toExpression(),
+      'thu': thu.toExpression(),
+      'fri': fri.toExpression(),
+      'sat': sat.toExpression(),
+      'dayperiod': dayperiod.toExpression(),
+      'hour': hour.toExpression(),
+      'minute': minute.toExpression(),
+      'second': second.toExpression(),
+      'zone': zone.toExpression(),
+    });
   }
 }
 
 @freezed
-class FieldWidths with _$FieldWidths implements ToExpression {
-  const factory FieldWidths({
+sealed class const FieldWidths._() with _$FieldWidths implements ToExpression {
+  const factory({
     required Field full,
     required Field short,
     required Field narrow,
   }) = _FieldWidths;
-  const FieldWidths._();
 
   @override
   Expression toExpression() {
-    return referCldr('FieldWidths').constInstance(
-      [],
-      {
-        'full': full.toExpression(),
-        'short': short.toExpression(),
-        'narrow': narrow.toExpression(),
-      },
-    );
+    return referCldr('FieldWidths').constInstance([], {
+      'full': full.toExpression(),
+      'short': short.toExpression(),
+      'narrow': narrow.toExpression(),
+    });
   }
 }
 
 @freezed
-class Field with _$Field implements ToExpression {
-  const factory Field({
+sealed class const Field._() with _$Field implements ToExpression {
+  const factory({
     required String? displayName,
     required Map<int, String> relative,
     // `TODO`(JonasWanke): parse placeholder position
     required Plural<String>? relativeTimePast,
     required Plural<String>? relativeTimeFuture,
   }) = _Field;
-  const Field._();
 
-  factory Field.fromXml(CldrXml xml, CldrPath path) {
+  factory fromXml(CldrXml xml, CldrPath path) {
     return Field(
       displayName: xml.resolveOptionalString(path.child('displayName')),
-      relative: xml.listChildElements(path.child('relative')).associate(
+      relative: xml
+          .listChildElements(path.child('relative'))
+          .associate(
             (it) => MapEntry(int.parse(it.getAttribute('type')!), it.innerText),
           ),
       relativeTimePast: xml
@@ -2017,34 +1931,32 @@ class Field with _$Field implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('Field').constInstance(
-      [],
-      {
-        'displayName':
-            displayName == null ? literalNull : literalString(displayName!),
-        'relative': literalMap(
-          relative.map(
-            (key, value) => MapEntry(literalNum(key), literalString(value)),
-          ),
+    return referCldr('Field').constInstance([], {
+      'displayName': displayName == null
+          ? literalNull
+          : literalString(displayName!),
+      'relative': literalMap(
+        relative.map(
+          (key, value) => MapEntry(literalNum(key), literalString(value)),
         ),
-        'relativeTimePast': relativeTimePast == null
-            ? literalNull
-            : relativeTimePast!.toExpression(),
-        'relativeTimeFuture': relativeTimeFuture == null
-            ? literalNull
-            : relativeTimeFuture!.toExpression(),
-      },
-    );
+      ),
+      'relativeTimePast': relativeTimePast == null
+          ? literalNull
+          : relativeTimePast!.toExpression(),
+      'relativeTimeFuture': relativeTimeFuture == null
+          ? literalNull
+          : relativeTimeFuture!.toExpression(),
+    });
   }
 }
 
 // Common
 
 @freezed
-class Context<T extends ToExpression>
+sealed class const Context<T extends ToExpression>._()
     with _$Context<T>
     implements ToExpression {
-  const factory Context({
+  const factory({
     /// The form used within a date format string (such as "Saturday, November
     /// 12th").
     required T format,
@@ -2052,12 +1964,8 @@ class Context<T extends ToExpression>
     /// The form used independently, such as in calendar headers.
     required T standalone,
   }) = _Context<T>;
-  const Context._();
 
-  factory Context.fromXml(
-    CldrPath path,
-    T Function(CldrPath path) valueFromXml,
-  ) {
+  factory fromXml(CldrPath path, T Function(CldrPath path) valueFromXml) {
     return Context(
       format: valueFromXml(path.withAttribute('type', 'format')),
       standalone: valueFromXml(path.withAttribute('type', 'stand-alone')),
@@ -2066,30 +1974,25 @@ class Context<T extends ToExpression>
 
   @override
   Expression toExpression() {
-    return referCldr('Context').constInstance(
-      [],
-      {
-        'format': format.toExpression(),
-        'standalone': standalone.toExpression(),
-      },
-    );
+    return referCldr('Context').constInstance([], {
+      'format': format.toExpression(),
+      'standalone': standalone.toExpression(),
+    });
   }
 }
 
 @freezed
-class Widths<T extends Object> with _$Widths<T> implements ToExpression {
-  const factory Widths({
+sealed class const Widths<T extends Object>._()
+    with _$Widths<T>
+    implements ToExpression {
+  const factory({
     /// The default.
     required T wide,
     required T abbreviated,
     required T narrow,
   }) = _Widths<T>;
-  const Widths._();
 
-  factory Widths.fromXml(
-    CldrPath path,
-    T Function(CldrPath path) valueFromXml,
-  ) {
+  factory fromXml(CldrPath path, T Function(CldrPath path) valueFromXml) {
     return Widths(
       wide: valueFromXml(path.withAttribute('type', 'wide')),
       abbreviated: valueFromXml(path.withAttribute('type', 'abbreviated')),
@@ -2107,14 +2010,11 @@ class Widths<T extends Object> with _$Widths<T> implements ToExpression {
 
   @override
   Expression toExpression() {
-    return referCldr('Widths').constInstance(
-      [],
-      {
-        'wide': ToExpression.convert(wide),
-        'abbreviated': ToExpression.convert(abbreviated),
-        'narrow': ToExpression.convert(narrow),
-      },
-    );
+    return referCldr('Widths').constInstance([], {
+      'wide': ToExpression.convert(wide),
+      'abbreviated': ToExpression.convert(abbreviated),
+      'narrow': ToExpression.convert(narrow),
+    });
   }
 }
 

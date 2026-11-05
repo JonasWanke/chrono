@@ -353,9 +353,8 @@ abstract final class LineParser {
     }
     // Check if it’s a relative expression with the regex.
     else if (_dayField.firstMatch(input) case final match?) {
-      final weekday = WeekdayExtension.parse(
-        match.namedGroup('weekday')!,
-      ).unwrap();
+      final weekday = WeekdayExtension.parse(match.namedGroup('weekday')!)
+          .unwrap();
       final day = int.parse(match.namedGroup('day')!);
 
       return switch (match.namedGroup('sign')) {
@@ -444,14 +443,10 @@ abstract final class LineParser {
 }
 
 @immutable
-sealed class Line {
-  const Line();
-}
+sealed class const Line();
 
 /// This line is empty.
-class Space extends Line {
-  const Space();
-
+class const Space() extends Line {
   @override
   bool operator ==(Object other) => other is Space;
   @override
@@ -477,15 +472,13 @@ class Space extends Line {
 ///
 /// A continuation rule line contains all the same fields apart from the `Name`
 /// column and the opening `Zone` identifier.
-class Zone extends Line {
-  const Zone(this.name, this.info);
-
+class const Zone(
   /// The name of the time zone.
-  final String name;
+  final String name,
 
   /// All the other fields of info.
-  final ZoneInfo info;
-
+  final ZoneInfo info,
+) extends Line {
   @override
   bool operator ==(Object other) =>
       other is Zone && other.name == name && other.info == info;
@@ -494,12 +487,10 @@ class Zone extends Line {
 }
 
 /// This line contains a **continuation** of a [Zone] definition.
-class ZoneContinuation extends Line {
-  const ZoneContinuation(this.info);
-
+class const ZoneContinuation(
   /// All the other fields of info.
-  final ZoneInfo info;
-
+  final ZoneInfo info,
+) extends Line {
   @override
   bool operator ==(Object other) =>
       other is ZoneContinuation && other.info == info;
@@ -510,29 +501,22 @@ class ZoneContinuation extends Line {
 /// The information contained in both [Zone] lines *and* [ZoneContinuation]
 /// lines.
 @immutable
-class ZoneInfo {
-  const ZoneInfo({
-    required this.utcOffset,
-    required this.saving,
-    required this.format,
-    required this.time,
-  });
-
+class const ZoneInfo({
   /// The amount of time that needs to be added to UTC to get the standard
   /// time in this zone.
-  final TimeSpec utcOffset;
+  required final TimeSpec utcOffset,
 
   /// The name of all the rules that should apply in the time zone, or the
   /// amount of time to add.
-  final Saving saving;
+  required final Saving saving,
 
   /// The format for time zone abbreviations, with `%s` as the string marker.
-  final String format;
+  required final String format,
 
   /// The time at which the rules change for this location, or `None` if
   /// these rules are in effect until the end of time (!).
-  final ChangeTime? time;
-
+  required final ChangeTime? time,
+}) {
   @override
   bool operator ==(Object other) {
     return other is ZoneInfo &&
@@ -552,15 +536,11 @@ class ZoneInfo {
 /// a special type for a certain field in a zone line, which can hold different
 /// types of value.
 @immutable
-sealed class Saving {
-  const Saving();
-}
+sealed class const Saving();
 
 /// Just stick to the base offset.
 // ignore: camel_case_types
-class Saving_None extends Saving {
-  const Saving_None();
-
+class const Saving_None() extends Saving {
   @override
   bool operator ==(Object other) => other is Saving_None;
   @override
@@ -572,11 +552,7 @@ class Saving_None extends Saving {
 /// This is the equivalent to there being a single one-off rule with the given
 /// amount of time to save.
 // ignore: camel_case_types
-class Saving_OneOff extends Saving {
-  const Saving_OneOff(this.timeSpec);
-
-  final TimeSpec timeSpec;
-
+class const Saving_OneOff(final TimeSpec timeSpec) extends Saving {
   @override
   bool operator ==(Object other) =>
       other is Saving_OneOff && other.timeSpec == timeSpec;
@@ -586,11 +562,7 @@ class Saving_OneOff extends Saving {
 
 /// All rules with the given name should apply while this timespan is in effect.
 // ignore: camel_case_types
-class Saving_Multiple extends Saving {
-  const Saving_Multiple(this.name);
-
-  final String name;
-
+class const Saving_Multiple(final String name) extends Saving {
   @override
   bool operator ==(Object other) =>
       other is Saving_Multiple && other.name == name;
@@ -607,9 +579,7 @@ class Saving_Multiple extends Saving {
 /// particular day has to list the year, month, and day, and one that occurs
 /// at a particular second has to list everything.
 @immutable
-sealed class ChangeTime {
-  const ChangeTime();
-
+sealed class const ChangeTime() {
   /// Convert this change time to an absolute timestamp, as the number of
   /// seconds since the Unix epoch that the change occurs at.
   int toTimestamp(int utcOffsetSeconds, int dstOffsetSeconds) {
@@ -686,11 +656,7 @@ sealed class ChangeTime {
 
 /// The earliest point in a particular **year**.
 // ignore: camel_case_types
-class ChangeTime_UntilYear extends ChangeTime {
-  const ChangeTime_UntilYear(this.year);
-
-  final YearSpec year;
-
+class const ChangeTime_UntilYear(final YearSpec year) extends ChangeTime {
   @override
   bool operator ==(Object other) =>
       other is ChangeTime_UntilYear && other.year == year;
@@ -700,12 +666,8 @@ class ChangeTime_UntilYear extends ChangeTime {
 
 /// The earliest point in a particular **month**.
 // ignore: camel_case_types
-class ChangeTime_UntilMonth extends ChangeTime {
-  const ChangeTime_UntilMonth(this.year, this.month);
-
-  final YearSpec year;
-  final Month month;
-
+class const ChangeTime_UntilMonth(final YearSpec year, final Month month)
+    extends ChangeTime {
   @override
   bool operator ==(Object other) {
     return other is ChangeTime_UntilMonth &&
@@ -719,13 +681,11 @@ class ChangeTime_UntilMonth extends ChangeTime {
 
 /// The earliest point in a particular **day**.
 // ignore: camel_case_types
-class ChangeTime_UntilDay extends ChangeTime {
-  const ChangeTime_UntilDay(this.year, this.month, this.day);
-
-  final YearSpec year;
-  final Month month;
-  final DaySpec day;
-
+class const ChangeTime_UntilDay(
+  final YearSpec year,
+  final Month month,
+  final DaySpec day,
+) extends ChangeTime {
   @override
   bool operator ==(Object other) {
     return other is ChangeTime_UntilDay &&
@@ -740,14 +700,12 @@ class ChangeTime_UntilDay extends ChangeTime {
 
 /// The earliest point in a particular **hour, minute, or second**.
 // ignore: camel_case_types
-class ChangeTime_UntilTime extends ChangeTime {
-  const ChangeTime_UntilTime(this.year, this.month, this.day, this.time);
-
-  final YearSpec year;
-  final Month month;
-  final DaySpec day;
-  final TimeSpecAndType time;
-
+class const ChangeTime_UntilTime(
+  final YearSpec year,
+  final Month month,
+  final DaySpec day,
+  final TimeSpecAndType time,
+) extends ChangeTime {
   @override
   bool operator ==(Object other) {
     return other is ChangeTime_UntilTime &&
@@ -771,9 +729,7 @@ class ChangeTime_UntilTime extends ChangeTime {
 ///   apply after the last rule with a specific year;
 /// - a year number, referring to a specific year.
 @immutable
-sealed class YearSpec {
-  const YearSpec();
-
+sealed class const YearSpec() {
   static Result<YearSpec, LineParserException> parse(String input) {
     return switch (input.toLowerCase()) {
       'min' || 'minimum' => const Ok(YearSpec_Minimum()),
@@ -794,9 +750,7 @@ sealed class YearSpec {
 
 /// The minimum year possible: `min` or `minimum`.
 // ignore: camel_case_types
-class YearSpec_Minimum extends YearSpec {
-  const YearSpec_Minimum();
-
+class const YearSpec_Minimum() extends YearSpec {
   @override
   bool operator ==(Object other) => other is YearSpec_Minimum;
   @override
@@ -805,9 +759,7 @@ class YearSpec_Minimum extends YearSpec {
 
 /// The maximum year possible: `max` or `maximum`.
 // ignore: camel_case_types
-class YearSpec_Maximum extends YearSpec {
-  const YearSpec_Maximum();
-
+class const YearSpec_Maximum() extends YearSpec {
   @override
   bool operator ==(Object other) => other is YearSpec_Maximum;
   @override
@@ -816,11 +768,7 @@ class YearSpec_Maximum extends YearSpec {
 
 /// A specific year number.
 // ignore: camel_case_types
-class YearSpec_Number extends YearSpec {
-  const YearSpec_Number(this.year);
-
-  final Year year;
-
+class const YearSpec_Number(final Year year) extends YearSpec {
   @override
   bool operator ==(Object other) =>
       other is YearSpec_Number && other.year == year;
@@ -874,9 +822,7 @@ extension WeekdayExtension on Weekday {
 /// Note that in the last example, it’s allowed for that particular Friday to
 /// *be* the 13th in question.
 @immutable
-sealed class DaySpec {
-  const DaySpec();
-
+sealed class const DaySpec() {
   /// Converts this day specification to a concrete date, given the year and
   /// month it should occur in.
   Date toConcreteDay(YearMonth yearMonth) {
@@ -895,11 +841,7 @@ sealed class DaySpec {
 
 /// A specific day of the month, given by its number.
 // ignore: camel_case_types
-class DaySpec_Ordinal extends DaySpec {
-  const DaySpec_Ordinal(this.day);
-
-  final int day;
-
+class const DaySpec_Ordinal(final int day) extends DaySpec {
   @override
   bool operator ==(Object other) =>
       other is DaySpec_Ordinal && other.day == day;
@@ -909,11 +851,7 @@ class DaySpec_Ordinal extends DaySpec {
 
 /// The last day of the month with a specific weekday.
 // ignore: camel_case_types
-class DaySpec_Last extends DaySpec {
-  const DaySpec_Last(this.weekday);
-
-  final Weekday weekday;
-
+class const DaySpec_Last(final Weekday weekday) extends DaySpec {
   @override
   bool operator ==(Object other) =>
       other is DaySpec_Last && other.weekday == weekday;
@@ -924,12 +862,8 @@ class DaySpec_Last extends DaySpec {
 /// The **last** day with the given weekday **before** (or including) a
 /// day with a specific number.
 // ignore: camel_case_types
-class DaySpec_LastOnOrBefore extends DaySpec {
-  const DaySpec_LastOnOrBefore(this.weekday, this.day);
-
-  final Weekday weekday;
-  final int day;
-
+class const DaySpec_LastOnOrBefore(final Weekday weekday, final int day)
+    extends DaySpec {
   @override
   bool operator ==(Object other) {
     return other is DaySpec_LastOnOrBefore &&
@@ -944,12 +878,8 @@ class DaySpec_LastOnOrBefore extends DaySpec {
 /// The **first** day with the given weekday **after** (or including) a
 /// day with a specific number.
 // ignore: camel_case_types
-class DaySpec_FirstOnOrAfter extends DaySpec {
-  const DaySpec_FirstOnOrAfter(this.weekday, this.day);
-
-  final Weekday weekday;
-  final int day;
-
+class const DaySpec_FirstOnOrAfter(final Weekday weekday, final int day)
+    extends DaySpec {
   @override
   bool operator ==(Object other) {
     return other is DaySpec_FirstOnOrAfter &&
@@ -971,9 +901,7 @@ class DaySpec_FirstOnOrAfter extends DaySpec {
 /// Hour 0 is midnight at the start of the day, and Hour 24 is midnight at the
 /// end of the day.
 @immutable
-sealed class TimeSpec {
-  const TimeSpec();
-
+sealed class const TimeSpec() {
   TimeSpecAndType withType(TimeType timeType) =>
       TimeSpecAndType(this, timeType);
 
@@ -1001,11 +929,7 @@ sealed class TimeSpec {
 
 /// A number of hours.
 // ignore: camel_case_types
-class TimeSpec_Hours extends TimeSpec {
-  const TimeSpec_Hours(this.hours);
-
-  final int hours;
-
+class const TimeSpec_Hours(final int hours) extends TimeSpec {
   @override
   bool operator ==(Object other) =>
       other is TimeSpec_Hours && other.hours == hours;
@@ -1015,12 +939,8 @@ class TimeSpec_Hours extends TimeSpec {
 
 /// A number of hours and minutes.
 // ignore: camel_case_types
-class TimeSpec_HoursMinutes extends TimeSpec {
-  const TimeSpec_HoursMinutes(this.hours, this.minutes);
-
-  final int hours;
-  final int minutes;
-
+class const TimeSpec_HoursMinutes(final int hours, final int minutes)
+    extends TimeSpec {
   @override
   bool operator ==(Object other) {
     return other is TimeSpec_HoursMinutes &&
@@ -1034,13 +954,11 @@ class TimeSpec_HoursMinutes extends TimeSpec {
 
 /// A number of hours, minutes, and seconds.
 // ignore: camel_case_types
-class TimeSpec_HoursMinutesSeconds extends TimeSpec {
-  const TimeSpec_HoursMinutesSeconds(this.hours, this.minutes, this.seconds);
-
-  final int hours;
-  final int minutes;
-  final int seconds;
-
+class const TimeSpec_HoursMinutesSeconds(
+  final int hours,
+  final int minutes,
+  final int seconds,
+) extends TimeSpec {
   @override
   bool operator ==(Object other) {
     return other is TimeSpec_HoursMinutesSeconds &&
@@ -1055,9 +973,7 @@ class TimeSpec_HoursMinutesSeconds extends TimeSpec {
 
 /// Zero, or midnight at the start of the day.
 // ignore: camel_case_types
-class TimeSpec_Zero extends TimeSpec {
-  const TimeSpec_Zero();
-
+class const TimeSpec_Zero() extends TimeSpec {
   @override
   bool operator ==(Object other) => other is TimeSpec_Zero;
   @override
@@ -1080,12 +996,7 @@ enum TimeType {
 }
 
 @immutable
-class TimeSpecAndType {
-  const TimeSpecAndType(this.timeSpec, this.timeType);
-
-  final TimeSpec timeSpec;
-  final TimeType timeType;
-
+class const TimeSpecAndType(final TimeSpec timeSpec, final TimeType timeType) {
   @override
   bool operator ==(Object other) {
     return other is TimeSpecAndType &&
@@ -1109,43 +1020,32 @@ class TimeSpecAndType {
 ///
 /// Apart from the opening `Rule` to specify which kind of line this is, and the
 /// `type` column, every column in the line has a field in this struct.
-class Rule extends Line {
-  const Rule(
-    this.name, {
-    required this.fromYear,
-    required this.toYear,
-    required this.month,
-    required this.day,
-    required this.time,
-    required this.timeToAdd,
-    this.letters,
-  });
-
+class const Rule(
   /// The name of the set of rules that this rule is part of.
-  final String name;
+  final String name, {
 
   /// The first year in which the rule applies.
-  final YearSpec fromYear;
+  required final YearSpec fromYear,
 
   /// The final year, or `null` if’s ‘only’.
-  final YearSpec? toYear;
+  required final YearSpec? toYear,
 
   /// The month in which the rule takes effect.
-  final Month month;
+  required final Month month,
 
   /// The day on which the rule takes effect.
-  final DaySpec day;
+  required final DaySpec day,
 
   /// The time of day at which the rule takes effect.
-  final TimeSpecAndType time;
+  required final TimeSpecAndType time,
 
   /// The amount of time to be added when the rule is in effect.
-  final TimeSpec timeToAdd;
+  required final TimeSpec timeToAdd,
 
   /// The variable part of time zone abbreviations to be used when this rule
   /// is in effect, if any.
-  final String? letters;
-
+  final String? letters,
+}) extends Line {
   @override
   bool operator ==(Object other) {
     return other is Rule &&
@@ -1165,12 +1065,10 @@ class Rule extends Line {
 }
 
 /// This line contains a **link** definition.
-class Link extends Line {
-  const Link({required this.existingName, required this.newName});
-
-  final String existingName;
-  final String newName;
-
+class const Link({
+  required final String existingName,
+  required final String newName,
+}) extends Line {
   @override
   bool operator ==(Object other) {
     return other is Link &&
@@ -1184,23 +1082,22 @@ class Link extends Line {
 
 @immutable
 class LineParserException extends FormatException {
-  const LineParserException.failedYearParse(String s)
+  const new failedYearParse(String s)
     : super('Failed to parse as a year value: "$s".');
-  const LineParserException.failedMonthParse(String s)
+  const new failedMonthParse(String s)
     : super('Failed to parse as a month value: "$s".');
-  const LineParserException.failedWeekdayParse(String s)
+  const new failedWeekdayParse(String s)
     : super('Failed to parse as a weekday value: "$s".');
-  const LineParserException.invalidLineType(String s)
+  const new invalidLineType(String s)
     : super('Line with invalid format: "$s".');
-  const LineParserException.typeColumnContainedNonHyphen(String s)
+  const new typeColumnContainedNonHyphen(String s)
     : super('"type" column is not a hyphen but has the value: "$s".');
-  const LineParserException.couldNotParseSaving(String s)
+  const new couldNotParseSaving(String s)
     : super('Failed to parse RULES column: "$s".');
-  const LineParserException.invalidDaySpec(String s)
+  const new invalidDaySpec(String s)
     : super('Invalid day specification (column "ON"): "$s".');
-  const LineParserException.invalidTimeSpecAndType(String s)
-    : super('Invalid time: "$s".');
-  const LineParserException.nonWallClockInTimeSpec(String s)
+  const new invalidTimeSpecAndType(String s) : super('Invalid time: "$s".');
+  const new nonWallClockInTimeSpec(String s)
     : super('Time value not given as wall time: "$s".');
 
   @override

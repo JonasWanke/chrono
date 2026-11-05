@@ -15,21 +15,18 @@ import '../time/time.dart';
 
 /// ISO 8601 combined date and time with a time zone.
 @immutable
-class ZonedDateTime<Tz extends TimeZone<Tz>>
-    implements ChronoFormattable<ZonedDateTimeFormatItem> {
+class const ZonedDateTime<Tz extends TimeZone<Tz>>.fromUtcDateTimeAndOffset(
   /// The UTC [CDateTime].
-  final CDateTime utcDateTime;
+  final CDateTime utcDateTime,
 
+  /// The associated offset from UTC.
+  final Offset<Tz> offset,
+) implements ChronoFormattable<ZonedDateTimeFormatItem> {
   /// Returns a view to the naive local datetime.
   CDateTime get localDateTime => utcDateTime.addOffset(offset.fix());
 
-  /// The associated offset from UTC.
-  final Offset<Tz> offset;
-
   /// The associated [TimeZone].
   Tz get timeZone => offset.timeZone;
-
-  const ZonedDateTime.fromUtcDateTimeAndOffset(this.utcDateTime, this.offset);
 
   /// The date corresponding to the given duration since the [unixEpoch].
   static ZonedDateTime<Utc> fromDurationSinceUnixEpoch(

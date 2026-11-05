@@ -31,11 +31,9 @@ import 'weekday.dart';
 ///
 /// There is no limitation on the range of years.
 @immutable
-final class Year
+final class const Year(final int number)
     with ComparisonOperatorsFromComparable<Year>, StepUnlimited<Year>
     implements Comparable<Year> {
-  const Year(this.number);
-
   /// The UNIX epoch: 1970.
   ///
   /// https://en.wikipedia.org/wiki/Unix_time
@@ -44,10 +42,9 @@ final class Year
   /// The number of years until the Gregorian calendar cycles repeat: 400.
   static const perGregorianRepeat = 400;
 
-  factory Year.currentInLocalZone({Clock? clock}) =>
+  factory currentInLocalZone({Clock? clock}) =>
       Date.todayInLocalZone(clock: clock).year;
-  factory Year.currentInUtc({Clock? clock}) =>
-      Date.todayInUtc(clock: clock).year;
+  factory currentInUtc({Clock? clock}) => Date.todayInUtc(clock: clock).year;
 
   Era get era => number >= 1 ? Era.common : Era.beforeCommon;
 
@@ -61,8 +58,6 @@ final class Year
       Era.beforeCommon => -number + 1,
     };
   }
-
-  final int number;
 
   bool isCurrentInLocalZone({Clock? clock}) =>
       this == Year.currentInLocalZone(clock: clock);
@@ -102,9 +97,9 @@ final class Year
 
   int numberOfWeeks(WeekConfig config) {
     return 1 +
-        lastDayOfWeekBasedYear(
-              config,
-            ).daysSince(firstDayOfWeekBasedYear(config)).inDays ~/
+        lastDayOfWeekBasedYear(config)
+                .daysSince(firstDayOfWeekBasedYear(config))
+                .inDays ~/
             Days.perWeek;
   }
 
@@ -229,9 +224,7 @@ extension RangeInclusiveOfYearChrono on RangeInclusive<Year> {
 ///
 /// See also:
 /// - [YearAsIntCodec], which encodes a year as an integer.
-class YearAsIsoStringCodec extends CodecAndJsonConverter<Year, String> {
-  const YearAsIsoStringCodec();
-
+class const YearAsIsoStringCodec() extends CodecAndJsonConverter<Year, String> {
   @override
   String encode(Year input) => input.toString();
   @override
@@ -243,9 +236,7 @@ class YearAsIsoStringCodec extends CodecAndJsonConverter<Year, String> {
 /// See also:
 /// - [YearAsIsoStringCodec], which encodes a year as a string.
 @immutable
-class YearAsIntCodec extends CodecAndJsonConverter<Year, int> {
-  const YearAsIntCodec();
-
+class const YearAsIntCodec() extends CodecAndJsonConverter<Year, int> {
   @override
   int encode(Year input) => input.number;
   @override

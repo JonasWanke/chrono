@@ -17,9 +17,7 @@ import '../utils.dart';
 /// - [MonthsDays], which combines [Months] and [Days].
 /// - [TimeDelta], which covers durations based on a fixed time like seconds.
 /// - [ChronoDelta], which is the base class for date and time durations.
-abstract class CalendarDelta extends ChronoDelta {
-  const CalendarDelta();
-
+abstract class const CalendarDelta() extends ChronoDelta {
   MonthsDays get asMonthsDays;
   @override
   DateTimeDelta get asDateTimeDelta =>
@@ -39,12 +37,10 @@ abstract class CalendarDelta extends ChronoDelta {
 
 /// [CalendarDelta] subclass that can represent any days-based duration by
 /// combining [Months] and [Days].
-final class MonthsDays extends CalendarDelta {
-  const MonthsDays({this.months = const Months(0), this.days = const Days(0)});
-
-  final Months months;
-  final Days days;
-
+final class const MonthsDays({
+  final Months months = const Months(0),
+  final Days days = const Days(0),
+}) extends CalendarDelta {
   @override
   MonthsDays get asMonthsDays => this;
 
@@ -84,18 +80,16 @@ final class MonthsDays extends CalendarDelta {
 ///
 /// Members of this enum are units rather than types precisely because they are
 /// exact multiples of each other – a year is *always* twelve months.
-enum MonthUnit {
+enum MonthUnit(
+  /// The number of months in one of this unit.
+  final int monthsPer,
+) {
   months(1),
   quarters(3),
   years(Months.perYear),
   decades(10 * Months.perYear),
   centuries(100 * Months.perYear),
   millennia(1000 * Months.perYear);
-
-  const MonthUnit(this.monthsPer);
-
-  /// The number of months in one of this unit.
-  final int monthsPer;
 
   /// How many of `this` fit in one [larger], e.g.,
   /// `MonthUnit.months.per(MonthUnit.years) == 12`.
@@ -113,9 +107,7 @@ enum MonthUnit {
 ///
 /// All components share the sign of the duration they were split from.
 @immutable
-final class MonthParts extends ChronoParts<MonthUnit> {
-  const MonthParts._(super.values);
-
+final class const MonthParts._(super.values) extends ChronoParts<MonthUnit> {
   @override
   List<MonthUnit> get allUnitsOrdered => MonthUnit.values;
 
@@ -131,22 +123,20 @@ final class MonthParts extends ChronoParts<MonthUnit> {
 ///
 /// This is different to [TimeDelta] because months have a varying number of
 /// days.
-final class Months extends CalendarDelta
+final class const Months(final int inMonths)
+    extends CalendarDelta
     with ComparisonOperatorsFromComparable<Months>
     implements Comparable<Months> {
-  const Months(this.inMonths);
-  const Months.fromJson(int json) : this(json);
+  const new fromJson(int json) : this(json);
 
   /// The months in [years] years.
-  const Months.fromYears(int years) : inMonths = years * perYear;
+  const new fromYears(int years) : this(years * perYear);
 
   /// The number of months in a year.
   static const perYear = 12;
 
   /// The months in a year.
   static const year = Months(perYear);
-
-  final int inMonths;
 
   @override
   MonthsDays get asMonthsDays => MonthsDays(months: this);
@@ -226,15 +216,13 @@ final class Months extends CalendarDelta
 ///
 /// Members of this enum are units rather than types precisely because they are
 /// exact multiples of each other – a week is *always* seven days.
-enum DayUnit {
+enum DayUnit(
+  /// The number of days in one of this unit.
+  final int daysPer,
+) {
   days(1),
   weeks(Days.perWeek),
   fortnights(2 * Days.perWeek);
-
-  const DayUnit(this.daysPer);
-
-  /// The number of days in one of this unit.
-  final int daysPer;
 
   /// How many of `this` fit in one [larger], e.g.,
   /// `DayUnit.days.per(.weeks) == 7`.
@@ -252,9 +240,7 @@ enum DayUnit {
 ///
 /// All components share the sign of the duration they were split from.
 @immutable
-final class DayParts extends ChronoParts<DayUnit> {
-  const DayParts._(super.values);
-
+final class const DayParts._(super.values) extends ChronoParts<DayUnit> {
   @override
   List<DayUnit> get allUnitsOrdered => DayUnit.values;
 
@@ -267,14 +253,14 @@ final class DayParts extends ChronoParts<DayUnit> {
 ///
 /// This is different to [TimeDelta] because days can be shorter or longer than
 /// 24 hours due to daylight savings time changes.
-final class Days extends CalendarDelta
+final class const Days(final int inDays)
+    extends CalendarDelta
     with ComparisonOperatorsFromComparable<Days>
     implements Comparable<Days> {
-  const Days(this.inDays);
-  const Days.fromJson(int json) : this(json);
+  const new fromJson(int json) : this(json);
 
   /// The days in [weeks] weeks.
-  const Days.fromWeeks(int weeks) : inDays = weeks * perWeek;
+  const new fromWeeks(int weeks) : this(weeks * perWeek);
 
   /// The number of days in a week.
   static const perWeek = 7;
@@ -293,8 +279,6 @@ final class Days extends CalendarDelta
 
   /// The days in a leap year.
   static const leapYear = Days(perLeapYear);
-
-  final int inDays;
 
   TimeDelta get asTime => TimeDelta(normalDays: inDays);
   int get asNormalHours => TimeUnit.hours.per(.normalDays) * inDays;

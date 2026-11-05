@@ -5,57 +5,37 @@ import '../../chrono.dart';
 /// A single formatting item.
 ///
 /// This is used for both formatting and parsing.
-sealed class ChronoFormatItem {
-  const ChronoFormatItem();
-
-  const factory ChronoFormatItem.literal(String text) = ChronoFormatItemLiteral;
-  const factory ChronoFormatItem.space(String text) = ChronoFormatItemSpace;
-  const factory ChronoFormatItem.year({
-    YearFormat format,
-    ChronoPadding padding,
-  }) = ChronoFormatYear;
-  const factory ChronoFormatItem.isoYear({
-    YearFormat format,
-    ChronoPadding padding,
-  }) = ChronoFormatIsoYear;
-  const factory ChronoFormatItem.quarter({ChronoPadding padding}) =
-      ChronoFormatQuarter;
-  const factory ChronoFormatItem.month({ChronoPadding padding}) =
-      ChronoFormatMonth;
-  const factory ChronoFormatItem.day({ChronoPadding padding}) = ChronoFormatDay;
-  const factory ChronoFormatItem.weekFromSun({ChronoPadding padding}) =
-      ChronoFormatWeekFromSun;
-  const factory ChronoFormatItem.weekFromMon({ChronoPadding padding}) =
-      ChronoFormatWeekFromMon;
-  const factory ChronoFormatItem.isoWeek({ChronoPadding padding}) =
-      ChronoFormatIsoWeek;
-  const factory ChronoFormatItem.numDaysFromSun({ChronoPadding padding}) =
+sealed class const ChronoFormatItem() {
+  const factory literal(String text) = ChronoFormatItemLiteral;
+  const factory space(String text) = ChronoFormatItemSpace;
+  const factory year({YearFormat format, ChronoPadding padding}) =
+      ChronoFormatYear;
+  const factory isoYear({YearFormat format, ChronoPadding padding}) =
+      ChronoFormatIsoYear;
+  const factory quarter({ChronoPadding padding}) = ChronoFormatQuarter;
+  const factory month({ChronoPadding padding}) = ChronoFormatMonth;
+  const factory day({ChronoPadding padding}) = ChronoFormatDay;
+  const factory weekFromSun({ChronoPadding padding}) = ChronoFormatWeekFromSun;
+  const factory weekFromMon({ChronoPadding padding}) = ChronoFormatWeekFromMon;
+  const factory isoWeek({ChronoPadding padding}) = ChronoFormatIsoWeek;
+  const factory numDaysFromSun({ChronoPadding padding}) =
       ChronoFormatNumDaysFromSun;
-  const factory ChronoFormatItem.weekday({ChronoPadding padding}) =
-      ChronoFormatWeekday;
-  const factory ChronoFormatItem.ordinal({ChronoPadding padding}) =
-      ChronoFormatOrdinal;
-  const factory ChronoFormatItem.hour({ChronoPadding padding}) =
-      ChronoFormatHour;
-  const factory ChronoFormatItem.hour12({ChronoPadding padding}) =
-      ChronoFormatHour12;
-  const factory ChronoFormatItem.minute({ChronoPadding padding}) =
-      ChronoFormatMinute;
-  const factory ChronoFormatItem.second({ChronoPadding padding}) =
-      ChronoFormatSecond;
-  const factory ChronoFormatItem.nanosecond({ChronoPadding padding}) =
-      ChronoFormatNanosecond;
-  const factory ChronoFormatItem.timestamp({ChronoPadding padding}) =
-      ChronoFormatTimestamp;
-  const factory ChronoFormatItem.monthName(ChronoFormatLength length) =
-      ChronoFormatMonthName;
-  const factory ChronoFormatItem.weekdayName(ChronoFormatLength length) =
+  const factory weekday({ChronoPadding padding}) = ChronoFormatWeekday;
+  const factory ordinal({ChronoPadding padding}) = ChronoFormatOrdinal;
+  const factory hour({ChronoPadding padding}) = ChronoFormatHour;
+  const factory hour12({ChronoPadding padding}) = ChronoFormatHour12;
+  const factory minute({ChronoPadding padding}) = ChronoFormatMinute;
+  const factory second({ChronoPadding padding}) = ChronoFormatSecond;
+  const factory nanosecond({ChronoPadding padding}) = ChronoFormatNanosecond;
+  const factory timestamp({ChronoPadding padding}) = ChronoFormatTimestamp;
+  const factory monthName(ChronoFormatLength length) = ChronoFormatMonthName;
+  const factory weekdayName(ChronoFormatLength length) =
       ChronoFormatWeekdayName;
-  const factory ChronoFormatItem.amPm(ChronoCasing casing) = ChronoFormatAmPm;
-  const factory ChronoFormatItem.subsecond(ChronoSubsecondAccuracy accuracy) =
+  const factory amPm(ChronoCasing casing) = ChronoFormatAmPm;
+  const factory subsecond(ChronoSubsecondAccuracy accuracy) =
       ChronoFormatSubsecond;
-  const factory ChronoFormatItem.timezoneName() = ChronoFormatTimezoneName;
-  const factory ChronoFormatItem.timezoneOffset({
+  const factory timezoneName() = ChronoFormatTimezoneName;
+  const factory timezoneOffset({
     TimezoneOffsetPrecision precision,
     bool allowZulu,
     bool printColon,
@@ -63,20 +43,14 @@ sealed class ChronoFormatItem {
 }
 
 /// A literally printed and parsed text.
-class ChronoFormatItemLiteral extends ChronoFormatItem
-    implements DateFormatItem, TimeFormatItem {
-  const ChronoFormatItemLiteral(this.text);
-
-  final String text;
-}
+class const ChronoFormatItemLiteral(final String text)
+    extends ChronoFormatItem
+    implements DateFormatItem, TimeFormatItem;
 
 /// Whitespace. Prints literally but reads zero or more whitespace.
-class ChronoFormatItemSpace extends ChronoFormatItem
-    implements DateFormatItem, TimeFormatItem {
-  const ChronoFormatItemSpace(this.text);
-
-  final String text;
-}
+class const ChronoFormatItemSpace(final String text)
+    extends ChronoFormatItem
+    implements DateFormatItem, TimeFormatItem;
 
 /// Numeric items.
 ///
@@ -92,11 +66,9 @@ class ChronoFormatItemSpace extends ChronoFormatItem
 /// trims the preceding whitespace if any. It cannot parse the negative number,
 /// so some date and time cannot be formatted then parsed with the same
 /// formatting items.
-sealed class ChronoFormatItemNumeric extends ChronoFormatItem {
-  const ChronoFormatItemNumeric({this.padding = .zero});
-
-  final ChronoPadding padding;
-}
+sealed class const ChronoFormatItemNumeric({
+  final ChronoPadding padding = .zero,
+}) extends ChronoFormatItem;
 
 /// Padding characters for [ChronoFormatItemNumeric].
 enum ChronoPadding {
@@ -127,13 +99,11 @@ enum ChronoFormatLength {
 ///
 /// Unless otherwise noted, they print in the specified case but parse
 /// case-insensitively.
-sealed class ChronoFormatItemFixed extends ChronoFormatItem {
-  const ChronoFormatItemFixed();
-}
+sealed class const ChronoFormatItemFixed() extends ChronoFormatItem;
 
 /// Issues a formatting error. Used to signal an invalid format string.
 // TODO(JonasWanke): Is this necessary?
-class ChronoFormatItemError extends ChronoFormatItem {}
+class ChronoFormatItemError extends ChronoFormatItem;
 
 abstract interface class ChronoFormattable<I extends ChronoFormatItem> {
   @override
@@ -147,59 +117,35 @@ abstract interface class ChronoFormattable<I extends ChronoFormatItem> {
 /// This includes all [CDateTimeFormatItem]s, applied to the local date and
 /// time, plus items for the time zone.
 sealed class ZonedDateTimeFormatItem extends ChronoFormatItem {
-  const factory ZonedDateTimeFormatItem.literal(String text) =
-      ChronoFormatItemLiteral;
-  const factory ZonedDateTimeFormatItem.space(String text) =
-      ChronoFormatItemSpace;
-  const factory ZonedDateTimeFormatItem.year({
-    YearFormat format,
-    ChronoPadding padding,
-  }) = ChronoFormatYear;
-  const factory ZonedDateTimeFormatItem.isoYear({
-    YearFormat format,
-    ChronoPadding padding,
-  }) = ChronoFormatIsoYear;
-  const factory ZonedDateTimeFormatItem.quarter({ChronoPadding padding}) =
-      ChronoFormatQuarter;
-  const factory ZonedDateTimeFormatItem.month({ChronoPadding padding}) =
-      ChronoFormatMonth;
-  const factory ZonedDateTimeFormatItem.day({ChronoPadding padding}) =
-      ChronoFormatDay;
-  const factory ZonedDateTimeFormatItem.weekFromSun({ChronoPadding padding}) =
-      ChronoFormatWeekFromSun;
-  const factory ZonedDateTimeFormatItem.weekFromMon({ChronoPadding padding}) =
-      ChronoFormatWeekFromMon;
-  const factory ZonedDateTimeFormatItem.isoWeek({ChronoPadding padding}) =
-      ChronoFormatIsoWeek;
-  const factory ZonedDateTimeFormatItem.numDaysFromSun({
-    ChronoPadding padding,
-  }) = ChronoFormatNumDaysFromSun;
-  const factory ZonedDateTimeFormatItem.weekday({ChronoPadding padding}) =
-      ChronoFormatWeekday;
-  const factory ZonedDateTimeFormatItem.ordinal({ChronoPadding padding}) =
-      ChronoFormatOrdinal;
-  const factory ZonedDateTimeFormatItem.hour({ChronoPadding padding}) =
-      ChronoFormatHour;
-  const factory ZonedDateTimeFormatItem.hour12({ChronoPadding padding}) =
-      ChronoFormatHour12;
-  const factory ZonedDateTimeFormatItem.minute({ChronoPadding padding}) =
-      ChronoFormatMinute;
-  const factory ZonedDateTimeFormatItem.second({ChronoPadding padding}) =
-      ChronoFormatSecond;
-  const factory ZonedDateTimeFormatItem.nanosecond({ChronoPadding padding}) =
-      ChronoFormatNanosecond;
-  const factory ZonedDateTimeFormatItem.monthName(ChronoFormatLength length) =
-      ChronoFormatMonthName;
-  const factory ZonedDateTimeFormatItem.weekdayName(ChronoFormatLength length) =
+  const factory literal(String text) = ChronoFormatItemLiteral;
+  const factory space(String text) = ChronoFormatItemSpace;
+  const factory year({YearFormat format, ChronoPadding padding}) =
+      ChronoFormatYear;
+  const factory isoYear({YearFormat format, ChronoPadding padding}) =
+      ChronoFormatIsoYear;
+  const factory quarter({ChronoPadding padding}) = ChronoFormatQuarter;
+  const factory month({ChronoPadding padding}) = ChronoFormatMonth;
+  const factory day({ChronoPadding padding}) = ChronoFormatDay;
+  const factory weekFromSun({ChronoPadding padding}) = ChronoFormatWeekFromSun;
+  const factory weekFromMon({ChronoPadding padding}) = ChronoFormatWeekFromMon;
+  const factory isoWeek({ChronoPadding padding}) = ChronoFormatIsoWeek;
+  const factory numDaysFromSun({ChronoPadding padding}) =
+      ChronoFormatNumDaysFromSun;
+  const factory weekday({ChronoPadding padding}) = ChronoFormatWeekday;
+  const factory ordinal({ChronoPadding padding}) = ChronoFormatOrdinal;
+  const factory hour({ChronoPadding padding}) = ChronoFormatHour;
+  const factory hour12({ChronoPadding padding}) = ChronoFormatHour12;
+  const factory minute({ChronoPadding padding}) = ChronoFormatMinute;
+  const factory second({ChronoPadding padding}) = ChronoFormatSecond;
+  const factory nanosecond({ChronoPadding padding}) = ChronoFormatNanosecond;
+  const factory monthName(ChronoFormatLength length) = ChronoFormatMonthName;
+  const factory weekdayName(ChronoFormatLength length) =
       ChronoFormatWeekdayName;
-  const factory ZonedDateTimeFormatItem.amPm(ChronoCasing casing) =
-      ChronoFormatAmPm;
-  const factory ZonedDateTimeFormatItem.subsecond(
-    ChronoSubsecondAccuracy accuracy,
-  ) = ChronoFormatSubsecond;
-  const factory ZonedDateTimeFormatItem.timezoneName() =
-      ChronoFormatTimezoneName;
-  const factory ZonedDateTimeFormatItem.timezoneOffset({
+  const factory amPm(ChronoCasing casing) = ChronoFormatAmPm;
+  const factory subsecond(ChronoSubsecondAccuracy accuracy) =
+      ChronoFormatSubsecond;
+  const factory timezoneName() = ChronoFormatTimezoneName;
+  const factory timezoneOffset({
     TimezoneOffsetPrecision precision,
     bool allowZulu,
     bool printColon,
@@ -211,125 +157,83 @@ sealed class ZonedDateTimeFormatItem extends ChronoFormatItem {
 /// A [ChronoFormatItem] that is used for formatting and parsing [CDateTime]s.
 sealed class CDateTimeFormatItem extends ChronoFormatItem
     implements ZonedDateTimeFormatItem {
-  const factory CDateTimeFormatItem.literal(String text) =
-      ChronoFormatItemLiteral;
-  const factory CDateTimeFormatItem.space(String text) = ChronoFormatItemSpace;
-  const factory CDateTimeFormatItem.year({
-    YearFormat format,
-    ChronoPadding padding,
-  }) = ChronoFormatYear;
-  const factory CDateTimeFormatItem.isoYear({
-    YearFormat format,
-    ChronoPadding padding,
-  }) = ChronoFormatIsoYear;
-  const factory CDateTimeFormatItem.quarter({ChronoPadding padding}) =
-      ChronoFormatQuarter;
-  const factory CDateTimeFormatItem.month({ChronoPadding padding}) =
-      ChronoFormatMonth;
-  const factory CDateTimeFormatItem.day({ChronoPadding padding}) =
-      ChronoFormatDay;
-  const factory CDateTimeFormatItem.weekFromSun({ChronoPadding padding}) =
-      ChronoFormatWeekFromSun;
-  const factory CDateTimeFormatItem.weekFromMon({ChronoPadding padding}) =
-      ChronoFormatWeekFromMon;
-  const factory CDateTimeFormatItem.isoWeek({ChronoPadding padding}) =
-      ChronoFormatIsoWeek;
-  const factory CDateTimeFormatItem.numDaysFromSun({ChronoPadding padding}) =
+  const factory literal(String text) = ChronoFormatItemLiteral;
+  const factory space(String text) = ChronoFormatItemSpace;
+  const factory year({YearFormat format, ChronoPadding padding}) =
+      ChronoFormatYear;
+  const factory isoYear({YearFormat format, ChronoPadding padding}) =
+      ChronoFormatIsoYear;
+  const factory quarter({ChronoPadding padding}) = ChronoFormatQuarter;
+  const factory month({ChronoPadding padding}) = ChronoFormatMonth;
+  const factory day({ChronoPadding padding}) = ChronoFormatDay;
+  const factory weekFromSun({ChronoPadding padding}) = ChronoFormatWeekFromSun;
+  const factory weekFromMon({ChronoPadding padding}) = ChronoFormatWeekFromMon;
+  const factory isoWeek({ChronoPadding padding}) = ChronoFormatIsoWeek;
+  const factory numDaysFromSun({ChronoPadding padding}) =
       ChronoFormatNumDaysFromSun;
-  const factory CDateTimeFormatItem.weekday({ChronoPadding padding}) =
-      ChronoFormatWeekday;
-  const factory CDateTimeFormatItem.ordinal({ChronoPadding padding}) =
-      ChronoFormatOrdinal;
-  const factory CDateTimeFormatItem.hour({ChronoPadding padding}) =
-      ChronoFormatHour;
-  const factory CDateTimeFormatItem.hour12({ChronoPadding padding}) =
-      ChronoFormatHour12;
-  const factory CDateTimeFormatItem.minute({ChronoPadding padding}) =
-      ChronoFormatMinute;
-  const factory CDateTimeFormatItem.second({ChronoPadding padding}) =
-      ChronoFormatSecond;
-  const factory CDateTimeFormatItem.nanosecond({ChronoPadding padding}) =
-      ChronoFormatNanosecond;
-  const factory CDateTimeFormatItem.monthName(ChronoFormatLength length) =
-      ChronoFormatMonthName;
-  const factory CDateTimeFormatItem.weekdayName(ChronoFormatLength length) =
+  const factory weekday({ChronoPadding padding}) = ChronoFormatWeekday;
+  const factory ordinal({ChronoPadding padding}) = ChronoFormatOrdinal;
+  const factory hour({ChronoPadding padding}) = ChronoFormatHour;
+  const factory hour12({ChronoPadding padding}) = ChronoFormatHour12;
+  const factory minute({ChronoPadding padding}) = ChronoFormatMinute;
+  const factory second({ChronoPadding padding}) = ChronoFormatSecond;
+  const factory nanosecond({ChronoPadding padding}) = ChronoFormatNanosecond;
+  const factory monthName(ChronoFormatLength length) = ChronoFormatMonthName;
+  const factory weekdayName(ChronoFormatLength length) =
       ChronoFormatWeekdayName;
-  const factory CDateTimeFormatItem.amPm(ChronoCasing casing) =
-      ChronoFormatAmPm;
-  const factory CDateTimeFormatItem.subsecond(
-    ChronoSubsecondAccuracy accuracy,
-  ) = ChronoFormatSubsecond;
+  const factory amPm(ChronoCasing casing) = ChronoFormatAmPm;
+  const factory subsecond(ChronoSubsecondAccuracy accuracy) =
+      ChronoFormatSubsecond;
 }
 
 // Date
 
 /// A [ChronoFormatItem] that is used for formatting and parsing [Date]s.
 sealed class DateFormatItem extends CDateTimeFormatItem {
-  const factory DateFormatItem.literal(String text) = ChronoFormatItemLiteral;
-  const factory DateFormatItem.space(String text) = ChronoFormatItemSpace;
-  const factory DateFormatItem.year({
-    YearFormat format,
-    ChronoPadding padding,
-  }) = ChronoFormatYear;
-  const factory DateFormatItem.isoYear({
-    YearFormat format,
-    ChronoPadding padding,
-  }) = ChronoFormatIsoYear;
-  const factory DateFormatItem.quarter({ChronoPadding padding}) =
-      ChronoFormatQuarter;
-  const factory DateFormatItem.month({ChronoPadding padding}) =
-      ChronoFormatMonth;
-  const factory DateFormatItem.day({ChronoPadding padding}) = ChronoFormatDay;
-  const factory DateFormatItem.weekFromSun({ChronoPadding padding}) =
-      ChronoFormatWeekFromSun;
-  const factory DateFormatItem.weekFromMon({ChronoPadding padding}) =
-      ChronoFormatWeekFromMon;
-  const factory DateFormatItem.isoWeek({ChronoPadding padding}) =
-      ChronoFormatIsoWeek;
-  const factory DateFormatItem.numDaysFromSun({ChronoPadding padding}) =
+  const factory literal(String text) = ChronoFormatItemLiteral;
+  const factory space(String text) = ChronoFormatItemSpace;
+  const factory year({YearFormat format, ChronoPadding padding}) =
+      ChronoFormatYear;
+  const factory isoYear({YearFormat format, ChronoPadding padding}) =
+      ChronoFormatIsoYear;
+  const factory quarter({ChronoPadding padding}) = ChronoFormatQuarter;
+  const factory month({ChronoPadding padding}) = ChronoFormatMonth;
+  const factory day({ChronoPadding padding}) = ChronoFormatDay;
+  const factory weekFromSun({ChronoPadding padding}) = ChronoFormatWeekFromSun;
+  const factory weekFromMon({ChronoPadding padding}) = ChronoFormatWeekFromMon;
+  const factory isoWeek({ChronoPadding padding}) = ChronoFormatIsoWeek;
+  const factory numDaysFromSun({ChronoPadding padding}) =
       ChronoFormatNumDaysFromSun;
-  const factory DateFormatItem.weekday({ChronoPadding padding}) =
-      ChronoFormatWeekday;
-  const factory DateFormatItem.ordinal({ChronoPadding padding}) =
-      ChronoFormatOrdinal;
-  const factory DateFormatItem.monthName(ChronoFormatLength length) =
-      ChronoFormatMonthName;
-  const factory DateFormatItem.weekdayName(ChronoFormatLength length) =
+  const factory weekday({ChronoPadding padding}) = ChronoFormatWeekday;
+  const factory ordinal({ChronoPadding padding}) = ChronoFormatOrdinal;
+  const factory monthName(ChronoFormatLength length) = ChronoFormatMonthName;
+  const factory weekdayName(ChronoFormatLength length) =
       ChronoFormatWeekdayName;
 }
 
 sealed class TimeFormatItem extends CDateTimeFormatItem {
-  const factory TimeFormatItem.literal(String text) = ChronoFormatItemLiteral;
-  const factory TimeFormatItem.space(String text) = ChronoFormatItemSpace;
-  const factory TimeFormatItem.hour({ChronoPadding padding}) = ChronoFormatHour;
-  const factory TimeFormatItem.hour12({ChronoPadding padding}) =
-      ChronoFormatHour12;
-  const factory TimeFormatItem.minute({ChronoPadding padding}) =
-      ChronoFormatMinute;
-  const factory TimeFormatItem.second({ChronoPadding padding}) =
-      ChronoFormatSecond;
-  const factory TimeFormatItem.nanosecond({ChronoPadding padding}) =
-      ChronoFormatNanosecond;
-  const factory TimeFormatItem.amPm(ChronoCasing casing) = ChronoFormatAmPm;
-  const factory TimeFormatItem.subsecond(ChronoSubsecondAccuracy accuracy) =
+  const factory literal(String text) = ChronoFormatItemLiteral;
+  const factory space(String text) = ChronoFormatItemSpace;
+  const factory hour({ChronoPadding padding}) = ChronoFormatHour;
+  const factory hour12({ChronoPadding padding}) = ChronoFormatHour12;
+  const factory minute({ChronoPadding padding}) = ChronoFormatMinute;
+  const factory second({ChronoPadding padding}) = ChronoFormatSecond;
+  const factory nanosecond({ChronoPadding padding}) = ChronoFormatNanosecond;
+  const factory amPm(ChronoCasing casing) = ChronoFormatAmPm;
+  const factory subsecond(ChronoSubsecondAccuracy accuracy) =
       ChronoFormatSubsecond;
 }
 
 /// Gregorian year.
-class ChronoFormatYear extends ChronoFormatItemNumeric
-    implements DateFormatItem {
-  const ChronoFormatYear({this.format = .full, super.padding});
-
-  final YearFormat format;
-}
+class const ChronoFormatYear({final YearFormat format = .full, super.padding})
+    extends ChronoFormatItemNumeric
+    implements DateFormatItem;
 
 /// Year in the ISO week date.
-class ChronoFormatIsoYear extends ChronoFormatItemNumeric
-    implements DateFormatItem {
-  const ChronoFormatIsoYear({this.format = .full, super.padding});
-
-  final YearFormat format;
-}
+class const ChronoFormatIsoYear({
+  final YearFormat format = .full,
+  super.padding,
+}) extends ChronoFormatItemNumeric implements DateFormatItem;
 
 /// How to format [ChronoFormatYear] and [ChronoFormatIsoYear].
 enum YearFormat {
@@ -347,95 +251,77 @@ enum YearFormat {
 }
 
 /// Quarter (FW=PW=1).
-class ChronoFormatQuarter extends ChronoFormatItemNumeric
-    implements DateFormatItem {
-  const ChronoFormatQuarter({super.padding});
-}
+class const ChronoFormatQuarter({super.padding})
+    extends ChronoFormatItemNumeric
+    implements DateFormatItem;
 
 /// Month (FW=PW=2).
-class ChronoFormatMonth extends ChronoFormatItemNumeric
-    implements DateFormatItem {
-  const ChronoFormatMonth({super.padding});
-}
+class const ChronoFormatMonth({super.padding})
+    extends ChronoFormatItemNumeric
+    implements DateFormatItem;
 
 /// Month names.
 ///
 /// Prints a name in title case, reads the name in any case.
-class ChronoFormatMonthName extends ChronoFormatItemFixed
-    implements DateFormatItem {
-  const ChronoFormatMonthName(this.length);
-
-  final ChronoFormatLength length;
-}
+class const ChronoFormatMonthName(final ChronoFormatLength length)
+    extends ChronoFormatItemFixed
+    implements DateFormatItem;
 
 /// Weekday names.
 ///
 /// Prints a name in title case, reads the name in any case.
-class ChronoFormatWeekdayName extends ChronoFormatItemFixed
-    implements DateFormatItem {
-  const ChronoFormatWeekdayName(this.length);
-
-  final ChronoFormatLength length;
-}
+class const ChronoFormatWeekdayName(final ChronoFormatLength length)
+    extends ChronoFormatItemFixed
+    implements DateFormatItem;
 
 /// Day of the month (FW=PW=2).
-class ChronoFormatDay extends ChronoFormatItemNumeric
-    implements DateFormatItem {
-  const ChronoFormatDay({super.padding});
-}
+class const ChronoFormatDay({super.padding})
+    extends ChronoFormatItemNumeric
+    implements DateFormatItem;
 
 // TODO(JonasWanke): merge?
 /// Week number, where week 1 starts at the first Sunday of January (FW=PW=2).
-class ChronoFormatWeekFromSun extends ChronoFormatItemNumeric
-    implements DateFormatItem {
-  const ChronoFormatWeekFromSun({super.padding});
-}
+class const ChronoFormatWeekFromSun({super.padding})
+    extends ChronoFormatItemNumeric
+    implements DateFormatItem;
 
 /// Week number, where week 1 starts at the first Monday of January (FW=PW=2).
-class ChronoFormatWeekFromMon extends ChronoFormatItemNumeric
-    implements DateFormatItem {
-  const ChronoFormatWeekFromMon({super.padding});
-}
+class const ChronoFormatWeekFromMon({super.padding})
+    extends ChronoFormatItemNumeric
+    implements DateFormatItem;
 
 /// Week number in the ISO week date (FW=PW=2).
-class ChronoFormatIsoWeek extends ChronoFormatItemNumeric
-    implements DateFormatItem {
-  const ChronoFormatIsoWeek({super.padding});
-}
+class const ChronoFormatIsoWeek({super.padding})
+    extends ChronoFormatItemNumeric
+    implements DateFormatItem;
 
 // TODO(JonasWanke): merge?
 /// Day of the week, where Sunday = 0 and Saturday = 6 (FW=PW=1).
-class ChronoFormatNumDaysFromSun extends ChronoFormatItemNumeric
-    implements DateFormatItem {
-  const ChronoFormatNumDaysFromSun({super.padding});
-}
+class const ChronoFormatNumDaysFromSun({super.padding})
+    extends ChronoFormatItemNumeric
+    implements DateFormatItem;
 
 /// ISO weekday number, where Monday = 1 and Sunday = 7 (FW=PW=1).
-class ChronoFormatWeekday extends ChronoFormatItemNumeric
-    implements DateFormatItem {
-  const ChronoFormatWeekday({super.padding});
-}
+class const ChronoFormatWeekday({super.padding})
+    extends ChronoFormatItemNumeric
+    implements DateFormatItem;
 
 /// Day of the year (FW=PW=3).
-class ChronoFormatOrdinal extends ChronoFormatItemNumeric
-    implements DateFormatItem {
-  const ChronoFormatOrdinal({super.padding});
-}
+class const ChronoFormatOrdinal({super.padding})
+    extends ChronoFormatItemNumeric
+    implements DateFormatItem;
 
 // Time
 
 /// Hour number in the 24-hour clocks (FW=PW=2).
-class ChronoFormatHour extends ChronoFormatItemNumeric
-    implements TimeFormatItem {
-  const ChronoFormatHour({super.padding});
-}
+class const ChronoFormatHour({super.padding})
+    extends ChronoFormatItemNumeric
+    implements TimeFormatItem;
 
 /// AM/PM
-class ChronoFormatAmPm extends ChronoFormatItemFixed implements TimeFormatItem {
-  const ChronoFormatAmPm(this.casing);
-
-  final ChronoCasing casing;
-}
+class const ChronoFormatAmPm(final ChronoCasing casing)
+    extends ChronoFormatItemFixed
+    implements TimeFormatItem;
 
 enum ChronoCasing {
   /// Prints in lower case, reads in any case.
@@ -446,38 +332,31 @@ enum ChronoCasing {
 }
 
 /// Hour number in the 12-hour clocks (FW=PW=2).
-class ChronoFormatHour12 extends ChronoFormatItemNumeric
-    implements TimeFormatItem {
-  const ChronoFormatHour12({super.padding});
-}
+class const ChronoFormatHour12({super.padding})
+    extends ChronoFormatItemNumeric
+    implements TimeFormatItem;
 
 /// The number of minutes since the last whole hour (FW=PW=2).
-class ChronoFormatMinute extends ChronoFormatItemNumeric
-    implements TimeFormatItem {
-  const ChronoFormatMinute({super.padding});
-}
+class const ChronoFormatMinute({super.padding})
+    extends ChronoFormatItemNumeric
+    implements TimeFormatItem;
 
 /// The number of seconds since the last whole minute (FW=PW=2).
-class ChronoFormatSecond extends ChronoFormatItemNumeric
-    implements TimeFormatItem {
-  const ChronoFormatSecond({super.padding});
-}
+class const ChronoFormatSecond({super.padding})
+    extends ChronoFormatItemNumeric
+    implements TimeFormatItem;
 
 /// The number of nanoseconds since the last whole second (FW=PW=9).
 ///
 /// Note that this is *not* left-aligned, see also [ChronoFormatSubsecond].
-class ChronoFormatNanosecond extends ChronoFormatItemNumeric
-    implements TimeFormatItem {
-  const ChronoFormatNanosecond({super.padding});
-}
+class const ChronoFormatNanosecond({super.padding})
+    extends ChronoFormatItemNumeric
+    implements TimeFormatItem;
 
 /// An optional dot plus one or more digits for millis/micros/nanos.
-class ChronoFormatSubsecond extends ChronoFormatItemFixed
-    implements TimeFormatItem {
-  const ChronoFormatSubsecond(this.accuracy);
-
-  final ChronoSubsecondAccuracy accuracy;
-}
+class const ChronoFormatSubsecond(final ChronoSubsecondAccuracy accuracy)
+    extends ChronoFormatItemFixed
+    implements TimeFormatItem;
 
 enum ChronoSubsecondAccuracy {
   /// May print nothing, 3, 6, or 9 digits according to the available accuracy.
@@ -493,9 +372,8 @@ enum ChronoSubsecondAccuracy {
 /// (FW=1, PW=∞).
 ///
 /// For formatting, it assumes UTC upon the absence of time zone offset.
-class ChronoFormatTimestamp extends ChronoFormatItemNumeric {
-  const ChronoFormatTimestamp({super.padding});
-}
+class const ChronoFormatTimestamp({super.padding})
+    extends ChronoFormatItemNumeric;
 
 // ZonedDateTime
 
@@ -505,10 +383,9 @@ class ChronoFormatTimestamp extends ChronoFormatItemNumeric {
 /// “EDT”, “+09:30”, or “UTC”.
 ///
 /// It does not support parsing, its use in the parser is an immediate failure.
-class ChronoFormatTimezoneName extends ChronoFormatItemFixed
-    implements ZonedDateTimeFormatItem {
-  const ChronoFormatTimezoneName();
-}
+class const ChronoFormatTimezoneName()
+    extends ChronoFormatItemFixed
+    implements ZonedDateTimeFormatItem;
 
 /// Offset from the local time to UTC (`+09:00` or `-04` or `+00:00:00`).
 ///
@@ -517,24 +394,17 @@ class ChronoFormatTimezoneName extends ChronoFormatItemFixed
 ///
 /// The offset is limited from `-24:00:00` to `+24:00:00` (exclusive), which is
 /// the same as [FixedOffset]'s range.
-class ChronoFormatTimezoneOffset extends ChronoFormatItemFixed
-    implements ZonedDateTimeFormatItem {
-  const ChronoFormatTimezoneOffset({
-    this.precision = .minutes,
-    this.allowZulu = true,
-    this.printColon = true,
-  });
-
-  final TimezoneOffsetPrecision precision;
+class const ChronoFormatTimezoneOffset({
+  final TimezoneOffsetPrecision precision = .minutes,
 
   /// Whether to allow `Z` (or `z`) for the zero offset in parsing.
-  final bool allowZulu;
+  final bool allowZulu = true,
 
   /// Whether to print the colon in the offset.
   ///
   /// Parsing allows the colon to be omitted regardless of this flag.
-  final bool printColon;
-}
+  final bool printColon = true,
+}) extends ChronoFormatItemFixed implements ZonedDateTimeFormatItem;
 
 enum TimezoneOffsetPrecision {
   hours,

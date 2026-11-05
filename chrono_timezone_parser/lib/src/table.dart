@@ -3,22 +3,16 @@ import 'package:chrono/chrono.dart';
 import '../chrono_timezone_parser.dart';
 
 /// A **table** of all the data in one or more zoneinfo files.
-class Table {
-  const Table({
-    required this.rulesets,
-    required this.zonesets,
-    this.links = const {},
-  });
-
+class const Table({
   /// Mapping of ruleset names to rulesets.
-  final Map<String, List<TableRuleInfo>> rulesets;
+  required final Map<String, List<TableRuleInfo>> rulesets,
 
   /// Mapping of zoneset names to zonesets.
-  final Map<String, List<TableZoneInfo>> zonesets;
+  required final Map<String, List<TableZoneInfo>> zonesets,
 
   /// Mapping of link timezone names to the names they link to.
-  final Map<String, String> links;
-
+  final Map<String, String> links = const {},
+}) {
   /// Tries to find the zoneset with the given name by looking it up in either
   /// [zonesets] or [links].
   List<TableZoneInfo>? getZoneset(String zoneName) =>
@@ -194,42 +188,57 @@ class TableBuilder {
 class TableBuildException extends FormatException {
   /// A continuation line was passed in, but the previous line wasn’t a zone
   /// definition line.
-  TableBuildException.surpriseContinuationLine()
+  new surpriseContinuationLine()
     : super(
         "Continuation line follows line that isn't a zone definition line.",
       );
 
   /// A zone definition referred to a ruleset that hadn’t been defined.
-  TableBuildException.unknownRuleset(String name)
+  new unknownRuleset(String name)
     : super(
         'Zone definition refers to a ruleset that isn\'t defined: "$name".',
       );
 
   /// A link line was passed in, but there’s already a link with that name.
-  TableBuildException.duplicateLink(String name)
+  new duplicateLink(String name)
     : super('Link line with name that already exists: "$name".');
 
   /// A zone line was passed in, but there’s already a zone with that name.
-  TableBuildException.duplicateZone(String name)
+  new duplicateZone(String name)
     : super('Zone line with name that already exists: "$name".');
 }
 
 /// A rule definition line.
 ///
 /// This mimics the [Rule] class, but has had some pre-processing applied to it.
-class TableRuleInfo {
-  const TableRuleInfo({
-    required this.fromYear,
-    required this.toYear,
-    required this.month,
-    required this.day,
-    required this.time,
-    required this.timeType,
-    required this.timeToAdd,
-    required this.letters,
-  });
+class const TableRuleInfo({
+  /// The year that this rule *starts* applying.
+  required final YearSpec fromYear,
 
-  factory TableRuleInfo.from(Rule info) {
+  /// The year that this rule *finishes* applying, inclusive, or `None` if it
+  /// applies up until the end of this timespan.
+  required final YearSpec? toYear,
+
+  /// The month it applies on.
+  required final Month month,
+
+  /// The day it applies on.
+  required final DaySpec day,
+
+  /// The exact time it applies on.
+  required final int time,
+
+  /// The type of time that time is.
+  required final TimeType timeType,
+
+  /// The amount of time to save.
+  required final int timeToAdd,
+
+  /// Any extra letters that should be added to this time zone’s abbreviation,
+  /// in place of `%s`.
+  required final String? letters,
+}) {
+  factory from(Rule info) {
     return TableRuleInfo(
       fromYear: info.fromYear,
       toYear: info.toYear,
@@ -241,32 +250,6 @@ class TableRuleInfo {
       letters: info.letters,
     );
   }
-
-  /// The year that this rule *starts* applying.
-  final YearSpec fromYear;
-
-  /// The year that this rule *finishes* applying, inclusive, or `None` if it
-  /// applies up until the end of this timespan.
-  final YearSpec? toYear;
-
-  /// The month it applies on.
-  final Month month;
-
-  /// The day it applies on.
-  final DaySpec day;
-
-  /// The exact time it applies on.
-  final int time;
-
-  /// The type of time that time is.
-  final TimeType timeType;
-
-  /// The amount of time to save.
-  final int timeToAdd;
-
-  /// Any extra letters that should be added to this time zone’s abbreviation,
-  /// in place of `%s`.
-  final String? letters;
 
   /// Returns whether this rule is in effect during the given year.
   bool appliesToYear(Year year) {
@@ -295,15 +278,23 @@ class TableRuleInfo {
 ///
 /// This mimics the [ZoneInfo] class, *not* the [Zone] class, which is the key
 /// name in the map – this is just the value.
-class TableZoneInfo {
-  const TableZoneInfo({
-    required this.offsetSeconds,
-    required this.saving,
-    required this.format,
-    required this.endTime,
-  });
+class const TableZoneInfo({
+  /// The number of seconds that need to be added to UTC to get the standard
+  /// time in this zone.
+  required final int offsetSeconds,
 
-  factory TableZoneInfo.from(ZoneInfo info) {
+  /// The name of all the rules that should apply in the time zone, or the
+  /// amount of daylight-saving time to add.
+  required final Saving saving,
+
+  /// The format for time zone abbreviations.
+  required final Format format,
+
+  /// The time at which the rules change for this time zone, or `None` if these
+  /// rules are in effect until the end of time (!).
+  required final ChangeTime? endTime,
+}) {
+  factory from(ZoneInfo info) {
     return TableZoneInfo(
       offsetSeconds: info.utcOffset.asSeconds(),
       saving: info.saving,
@@ -311,21 +302,6 @@ class TableZoneInfo {
       endTime: info.time,
     );
   }
-
-  /// The number of seconds that need to be added to UTC to get the standard
-  /// time in this zone.
-  final int offsetSeconds;
-
-  /// The name of all the rules that should apply in the time zone, or the
-  /// amount of daylight-saving time to add.
-  final Saving saving;
-
-  /// The format for time zone abbreviations.
-  final Format format;
-
-  /// The time at which the rules change for this time zone, or `None` if these
-  /// rules are in effect until the end of time (!).
-  final ChangeTime? endTime;
 }
 
 // Format
@@ -335,7 +311,7 @@ sealed class Format {
   /// Convert the template into one of the `Format` variants. This can’t fail,
   /// as any syntax that doesn’t match one of the two formats will just be a
   /// [Format_Constant].
-  factory Format(String template) {
+  factory(String template) {
     final slashIndex = template.indexOf('/');
     if (slashIndex >= 0) {
       return Format_Alternative(
@@ -350,7 +326,7 @@ sealed class Format {
       return Format_Constant(template);
     }
   }
-  const Format._();
+  const new _();
 
   String format(int utcOffsetSeconds, int dstOffsetSeconds, String? letters);
 }
@@ -358,10 +334,8 @@ sealed class Format {
 /// A constant format, which remains the same throughout both standard and DST
 /// timespans.
 // ignore: camel_case_types
-class Format_Constant extends Format {
-  const Format_Constant(this.value) : super._();
-
-  final String value;
+class const Format_Constant(final String value) extends Format {
+  this : super._();
 
   @override
   String format(int utcOffsetSeconds, int dstOffsetSeconds, String? letters) =>
@@ -371,15 +345,14 @@ class Format_Constant extends Format {
 /// An alternate format, such as “PST/PDT”, which changes between standard and
 /// DST timespans.
 // ignore: camel_case_types
-class Format_Alternative extends Format {
-  const Format_Alternative({required this.standard, required this.dst})
-    : super._();
-
+class const Format_Alternative({
   /// Abbreviation to use during Standard Time.
-  final String standard;
+  required final String standard,
 
   /// Abbreviation to use during Summer Time.
-  final String dst;
+  required final String dst,
+}) extends Format {
+  this : super._();
 
   @override
   String format(int utcOffsetSeconds, int dstOffsetSeconds, String? letters) =>
@@ -389,10 +362,8 @@ class Format_Alternative extends Format {
 /// A format with a placeholder `%s`, which uses [TableRuleInfo.letters] to
 /// generate the time zone abbreviation.
 // ignore: camel_case_types
-class Format_Placeholder extends Format {
-  const Format_Placeholder(this.pattern) : super._();
-
-  final String pattern;
+class const Format_Placeholder(final String pattern) extends Format {
+  this : super._();
 
   @override
   String format(int utcOffsetSeconds, int dstOffsetSeconds, String? letters) =>
@@ -401,8 +372,8 @@ class Format_Placeholder extends Format {
 
 /// The special `%z` placeholder that gets formatted as a numeric offset.
 // ignore: camel_case_types
-class Format_Offset extends Format {
-  const Format_Offset() : super._();
+class const Format_Offset() extends Format {
+  this : super._();
 
   @override
   String format(int utcOffsetSeconds, int dstOffsetSeconds, String? letters) {

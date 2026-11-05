@@ -16,7 +16,11 @@ import '../utils.dart';
 ///
 /// [centis] and [decis] exist so timer-style displays (`05:03.25`) are exact
 /// rather than `millis ~/ 10`.
-enum TimeUnit {
+enum TimeUnit(
+  /// Nanoseconds in one of this unit. Derived from the primitives, never
+  /// hand-written as an independent product.
+  final int nanosPer,
+) {
   nanos(1),
   micros(TimeDelta.nanosPerMicro),
   millis(TimeDelta.nanosPerMicro * TimeDelta.microsPerMilli),
@@ -43,12 +47,6 @@ enum TimeUnit {
         Days.perWeek,
   );
 
-  const TimeUnit(this.nanosPer);
-
-  /// Nanoseconds in one of this unit. Derived from the primitives, never
-  /// hand-written as an independent product.
-  final int nanosPer;
-
   /// How many of `this` fit in one [larger] — e.g.,
   /// `TimeUnit.normalDays.per(.normalWeeks) == 7`.
   int per(TimeUnit larger) {
@@ -65,9 +63,7 @@ enum TimeUnit {
 ///
 /// All components share the sign of the duration they were split from.
 @immutable
-final class TimeParts extends ChronoParts<TimeUnit> {
-  const TimeParts._(super.values);
-
+final class const TimeParts._(super.values) extends ChronoParts<TimeUnit> {
   @override
   List<TimeUnit> get allUnitsOrdered => TimeUnit.values;
 
@@ -90,10 +86,22 @@ final class TimeParts extends ChronoParts<TimeUnit> {
 /// - [CalendarDelta], which covers durations based on an integer number of
 ///   days or months.
 /// - [ChronoDelta], which is the base class for all durations.
-class TimeDelta extends ChronoDelta
+class const TimeDelta.raw(
+  /// The whole seconds in this duration, truncated towards zero.
+  ///
+  /// This is one of the two canonical stored fields — the other is
+  /// [subSecondNanos]. Neither can be misread as the total: use [totalIn] for
+  /// that.
+  final int wholeSeconds,
+
+  /// The sub-second nanoseconds in this duration, in `-999_999_999 …
+  /// 999_999_999`, with the same sign as [wholeSeconds] (or either sign if
+  /// [wholeSeconds] is zero).
+  final int subSecondNanos,
+) extends ChronoDelta
     with ComparisonOperatorsFromComparable<TimeDelta>
     implements Comparable<TimeDelta> {
-  factory TimeDelta({
+  factory({
     int normalLeapYears = 0,
     int normalYears = 0,
     int normalWeeks = 0,
@@ -133,7 +141,7 @@ class TimeDelta extends ChronoDelta
     }
     return TimeDelta.raw(wholeSeconds, subSecondNanos);
   }
-  const TimeDelta.raw(this.wholeSeconds, this.subSecondNanos)
+  this
     : assert(
         wholeSeconds >= 0 && subSecondNanos >= 0 ||
             wholeSeconds <= 0 && subSecondNanos <= 0,
@@ -143,7 +151,7 @@ class TimeDelta extends ChronoDelta
             nanosPerSecond,
       );
 
-  factory TimeDelta.fromCore(Duration duration) =>
+  factory fromCore(Duration duration) =>
       TimeDelta(micros: duration.inMicroseconds);
 
   // TODO(JonasWanke): add `lerp(…)`, `lerpNullable(…)` in other classes
@@ -216,25 +224,13 @@ class TimeDelta extends ChronoDelta
       BigInt.from(wholeSeconds) * BigInt.from(nanosPerSecond) +
       BigInt.from(subSecondNanos);
 
-  factory TimeDelta._fromNanosBig(BigInt nanos) {
+  factory _fromNanosBig(BigInt nanos) {
     final perSecond = BigInt.from(nanosPerSecond);
     return TimeDelta(
       seconds: (nanos ~/ perSecond).toInt(),
       nanos: nanos.remainder(perSecond).toInt(),
     );
   }
-
-  /// The whole seconds in this duration, truncated towards zero.
-  ///
-  /// This is one of the two canonical stored fields — the other is
-  /// [subSecondNanos]. Neither can be misread as the total: use [totalIn] for
-  /// that.
-  final int wholeSeconds;
-
-  /// The sub-second nanoseconds in this duration, in `-999_999_999 …
-  /// 999_999_999`, with the same sign as [wholeSeconds] (or either sign if
-  /// [wholeSeconds] is zero).
-  final int subSecondNanos;
 
   /// This duration expressed in [unit], including a fractional part.
   double totalIn(TimeUnit unit) {
@@ -307,19 +303,15 @@ class TimeDelta extends ChronoDelta
   bool get isNegative => wholeSeconds < 0 || subSecondNanos < 0;
   bool get isNonNegative => !isNegative;
 
-  TimeDelta operator +(TimeDelta other) {
-    return TimeDelta(
-      seconds: wholeSeconds + other.wholeSeconds,
-      nanos: subSecondNanos + other.subSecondNanos,
-    );
-  }
+  TimeDelta operator +(TimeDelta other) => TimeDelta(
+    seconds: wholeSeconds + other.wholeSeconds,
+    nanos: subSecondNanos + other.subSecondNanos,
+  );
 
-  TimeDelta operator -(TimeDelta other) {
-    return TimeDelta(
-      seconds: wholeSeconds - other.wholeSeconds,
-      nanos: subSecondNanos - other.subSecondNanos,
-    );
-  }
+  TimeDelta operator -(TimeDelta other) => TimeDelta(
+    seconds: wholeSeconds - other.wholeSeconds,
+    nanos: subSecondNanos - other.subSecondNanos,
+  );
 
   @override
   TimeDelta operator -() => TimeDelta.raw(-wholeSeconds, -subSecondNanos);
@@ -474,10 +466,8 @@ extension IterableOfTimeDeltaChrono on Iterable<TimeDelta> {
 // `TimeDeltaAsNanosIntCodec`
 
 /// Encodes a [TimeDelta] as an ISO 8601 string, e.g., “PT123.456S”.
-class TimeDeltaAsIsoStringCodec
+class const TimeDeltaAsIsoStringCodec()
     extends CodecAndJsonConverter<TimeDelta, String> {
-  const TimeDeltaAsIsoStringCodec();
-
   @override
   String encode(TimeDelta input) {
     final (value, sign) = input.isNegative ? (-input, '-') : (input, '');
@@ -500,10 +490,8 @@ class TimeDeltaAsIsoStringCodec
 }
 
 /// Encodes a [TimeDelta] as a simple string, e.g., “01:00:12.001002”.
-class TimeDeltaAsSimpleStringCodec
+class const TimeDeltaAsSimpleStringCodec()
     extends CodecAndJsonConverter<TimeDelta, String> {
-  const TimeDeltaAsSimpleStringCodec();
-
   @override
   String encode(TimeDelta input) {
     final (value, sign) = input.isNegative ? (-input, '-') : (input, '');
@@ -574,10 +562,8 @@ extension on StringBuffer {
 
 /// Encodes [TimeDelta] as a map: `{'seconds': <seconds>, 'nanos': <nanos>}`.
 @immutable
-class TimeDeltaAsMapCodec
+class const TimeDeltaAsMapCodec()
     extends CodecAndJsonConverter<TimeDelta, Map<String, dynamic>> {
-  const TimeDeltaAsMapCodec();
-
   @override
   Map<String, dynamic> encode(TimeDelta input) => {
     'seconds': input.wholeSeconds,
@@ -594,13 +580,9 @@ class TimeDeltaAsMapCodec
 
 /// Encodes [TimeDelta] as a (rounded) integer number of seconds.
 @immutable
-class TimeDeltaAsSecondsIntCodec extends CodecAndJsonConverter<TimeDelta, int> {
-  const TimeDeltaAsSecondsIntCodec({
-    this.rounding = Rounding.nearestAwayFromZero,
-  });
-
-  final Rounding rounding;
-
+class const TimeDeltaAsSecondsIntCodec({
+  final Rounding rounding = Rounding.nearestAwayFromZero,
+}) extends CodecAndJsonConverter<TimeDelta, int> {
   @override
   int encode(TimeDelta input) => input.roundTo(.seconds, rounding: rounding);
   @override
@@ -609,13 +591,9 @@ class TimeDeltaAsSecondsIntCodec extends CodecAndJsonConverter<TimeDelta, int> {
 
 /// Encodes [TimeDelta] as a (rounded) integer number of minutes.
 @immutable
-class TimeDeltaAsMinutesIntCodec extends CodecAndJsonConverter<TimeDelta, int> {
-  const TimeDeltaAsMinutesIntCodec({
-    this.rounding = Rounding.nearestAwayFromZero,
-  });
-
-  final Rounding rounding;
-
+class const TimeDeltaAsMinutesIntCodec({
+  final Rounding rounding = Rounding.nearestAwayFromZero,
+}) extends CodecAndJsonConverter<TimeDelta, int> {
   @override
   int encode(TimeDelta input) => input.roundTo(.minutes, rounding: rounding);
   @override
@@ -624,13 +602,9 @@ class TimeDeltaAsMinutesIntCodec extends CodecAndJsonConverter<TimeDelta, int> {
 
 /// Encodes [TimeDelta] as a (rounded) integer number of hours.
 @immutable
-class TimeDeltaAsHoursIntCodec extends CodecAndJsonConverter<TimeDelta, int> {
-  const TimeDeltaAsHoursIntCodec({
-    this.rounding = Rounding.nearestAwayFromZero,
-  });
-
-  final Rounding rounding;
-
+class const TimeDeltaAsHoursIntCodec({
+  final Rounding rounding = Rounding.nearestAwayFromZero,
+}) extends CodecAndJsonConverter<TimeDelta, int> {
   @override
   int encode(TimeDelta input) => input.roundTo(.hours, rounding: rounding);
   @override

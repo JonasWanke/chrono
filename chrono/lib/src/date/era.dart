@@ -15,7 +15,7 @@ enum Era
   ///
   /// The index must be 0 for Before the Common Era or 1 for Common Era. For any
   /// other number, a [RangeError] is thrown.
-  factory Era.fromIndex(int index) {
+  factory fromIndex(int index) {
     RangeError.checkValueInInterval(index, minIndex, maxIndex, 'index');
     return values[index - minIndex];
   }
@@ -27,10 +27,9 @@ enum Era
   static Era? fromIndexOrNull(int index) =>
       minIndex <= index && index <= maxIndex ? values[index - minIndex] : null;
 
-  factory Era.currentInLocalZone({Clock? clock}) =>
+  factory currentInLocalZone({Clock? clock}) =>
       Year.currentInLocalZone(clock: clock).era;
-  factory Era.currentInUtc({Clock? clock}) =>
-      Year.currentInUtc(clock: clock).era;
+  factory currentInUtc({Clock? clock}) => Year.currentInUtc(clock: clock).era;
 
   static const minIndex = 0; // Era.beforeCommon.index
   static const maxIndex = 1; // Era.common.index

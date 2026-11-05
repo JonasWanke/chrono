@@ -13,23 +13,20 @@ void main() {
     });
     test('after the epoch', () {
       expect(
-        ZonedDateTime.fromDurationSinceUnixEpoch(
-          TimeDelta(hours: 5),
-        ).utcDateTime,
+        ZonedDateTime.fromDurationSinceUnixEpoch(TimeDelta(hours: 5))
+            .utcDateTime,
         CDateTime.fromRaw(1970, 1, 1, 5),
       );
     });
     test('before the epoch', () {
       expect(
-        ZonedDateTime.fromDurationSinceUnixEpoch(
-          TimeDelta(hours: -5),
-        ).utcDateTime,
+        ZonedDateTime.fromDurationSinceUnixEpoch(TimeDelta(hours: -5))
+            .utcDateTime,
         CDateTime.fromRaw(1969, 12, 31, 19),
       );
       expect(
-        ZonedDateTime.fromDurationSinceUnixEpoch(
-          TimeDelta(normalDays: -1),
-        ).utcDateTime,
+        ZonedDateTime.fromDurationSinceUnixEpoch(TimeDelta(normalDays: -1))
+            .utcDateTime,
         CDateTime.fromRaw(1969, 12, 31),
       );
     });
@@ -37,9 +34,8 @@ void main() {
       duration,
     ) {
       expect(
-        ZonedDateTime.fromDurationSinceUnixEpoch(
-          duration,
-        ).durationSinceUnixEpoch,
+        ZonedDateTime.fromDurationSinceUnixEpoch(duration)
+            .durationSinceUnixEpoch,
         duration,
       );
     });
@@ -67,24 +63,21 @@ void main() {
     });
     test('with seconds', () {
       expect(
-        FixedOffset.east(
-          TimeDelta(hours: 1, minutes: 2, seconds: 3),
-        ).toString(),
+        FixedOffset.east(TimeDelta(hours: 1, minutes: 2, seconds: 3))
+            .toString(),
         '+01:02:03',
       );
       expect(
-        FixedOffset.west(
-          TimeDelta(hours: 1, minutes: 2, seconds: 3),
-        ).toString(),
+        FixedOffset.west(TimeDelta(hours: 1, minutes: 2, seconds: 3))
+            .toString(),
         '-01:02:03',
       );
     });
   });
 
   group('toString(…)', () {
-    final dateTime = FixedOffset.east(
-      TimeDelta(hours: 9, minutes: 30),
-    ).fromUtcDateTime(CDateTime.fromRaw(2000, 9, 1, 13, 0, 15));
+    final dateTime = FixedOffset.east(TimeDelta(hours: 9, minutes: 30))
+        .fromUtcDateTime(CDateTime.fromRaw(2000, 9, 1, 13, 0, 15));
 
     test('default', () {
       expect(dateTime.toString(), '2000-09-01T22:30:15 +09:30');

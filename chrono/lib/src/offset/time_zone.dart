@@ -25,9 +25,7 @@ import '../../chrono.dart';
 ///
 /// [T] is usually a [ZonedDateTime] but may also be only an [Offset].
 @immutable
-sealed class MappedLocalTime<T> {
-  const MappedLocalTime();
-
+sealed class const MappedLocalTime<T>() {
   /// If the time zone mapping has a single result, this result is returned.
   ///
   /// If the local time falls in a _fold_ or _gap_, or if there was an error,
@@ -127,11 +125,8 @@ sealed class MappedLocalTime<T> {
 
 /// The local time maps to a single unique result.
 // ignore: camel_case_types
-class MappedLocalTime_Single<T> extends MappedLocalTime<T> {
-  const MappedLocalTime_Single(this.value);
-
-  final T value;
-
+class const MappedLocalTime_Single<T>(final T value)
+    extends MappedLocalTime<T> {
   @override
   bool operator ==(Object other) =>
       other is MappedLocalTime_Single && other.value == value;
@@ -143,14 +138,10 @@ class MappedLocalTime_Single<T> extends MappedLocalTime<T> {
 ///
 /// This variant contains the two possible results.
 // ignore: camel_case_types
-class MappedLocalTime_Ambiguous<T> extends MappedLocalTime<T> {
-  const MappedLocalTime_Ambiguous(this.earliest, this.latest);
-
-  @override
-  final T earliest;
-  @override
-  final T latest;
-
+class const MappedLocalTime_Ambiguous<T>(
+  @override final T earliest,
+  @override final T latest,
+) extends MappedLocalTime<T> {
   @override
   bool operator ==(Object other) =>
       other is MappedLocalTime_Ambiguous &&
@@ -165,9 +156,7 @@ class MappedLocalTime_Ambiguous<T> extends MappedLocalTime<T> {
 /// This variant may also be returned if there was an error while resolving the local time,
 /// caused by for example missing time zone data files, an error in an OS API, or overflow.
 // ignore: camel_case_types
-class MappedLocalTime_None<T> extends MappedLocalTime<T> {
-  const MappedLocalTime_None();
-
+class const MappedLocalTime_None<T>() extends MappedLocalTime<T> {
   @override
   bool operator ==(Object other) => other is MappedLocalTime_None;
   @override
@@ -188,9 +177,7 @@ abstract interface class Offset<Tz extends TimeZone<Tz>> {
 ///
 /// The methods here are the primary constructors for the [ZonedDateTime] type.
 @immutable
-abstract class TimeZone<Tz extends TimeZone<Tz>> {
-  const TimeZone();
-
+abstract class const TimeZone<Tz extends TimeZone<Tz>>() {
   /// Make a new `DateTime` from year, month, day, time components and current time zone.
   ///
   /// This assumes the proleptic Gregorian calendar, with the year 0 being 1 BCE.

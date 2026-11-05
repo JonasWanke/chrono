@@ -13,10 +13,13 @@ import 'week_config.dart';
 /// of 2023.
 // TODO(JonasWanke): more docs and comparison to [IsoYearWeek]
 @immutable
-final class YearWeek
-    with ComparisonOperatorsFromComparable<YearWeek>, StepUnlimited<YearWeek>
+final class const YearWeek._unchecked(
+  final Year weekBasedYear,
+  final int week,
+  final WeekConfig config,
+) with ComparisonOperatorsFromComparable<YearWeek>, StepUnlimited<YearWeek>
     implements Comparable<YearWeek> {
-  YearWeek.from(Year weekBasedYear, int week, WeekConfig config)
+  new from(Year weekBasedYear, int week, WeekConfig config)
     : this._unchecked(
         weekBasedYear,
         RangeError.checkValueInInterval(
@@ -27,18 +30,13 @@ final class YearWeek
         ),
         config,
       );
-  YearWeek.fromRaw(int weekBasedYear, int week, WeekConfig config)
+  new fromRaw(int weekBasedYear, int week, WeekConfig config)
     : this.from(Year(weekBasedYear), week, config);
-  const YearWeek._unchecked(this.weekBasedYear, this.week, this.config);
 
-  factory YearWeek.currentInLocalZone(WeekConfig config, {Clock? clock}) =>
+  factory currentInLocalZone(WeekConfig config, {Clock? clock}) =>
       Date.todayInLocalZone(clock: clock).yearWeek(config);
-  factory YearWeek.currentInUtc(WeekConfig config, {Clock? clock}) =>
+  factory currentInUtc(WeekConfig config, {Clock? clock}) =>
       Date.todayInUtc(clock: clock).yearWeek(config);
-
-  final Year weekBasedYear;
-  final int week;
-  final WeekConfig config;
 
   bool isCurrentInLocalZone({Clock? clock}) =>
       this == YearWeek.currentInLocalZone(config, clock: clock);

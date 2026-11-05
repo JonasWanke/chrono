@@ -21,11 +21,10 @@ import '../utils.dart';
 /// - [Date], which represents the date part.
 /// - [Time], which represents the time part.
 @immutable
-final class CDateTime
+final class const CDateTime(final Date date, final Time time)
     with ComparisonOperatorsFromComparable<CDateTime>
     implements Comparable<CDateTime>, ChronoFormattable<CDateTimeFormatItem> {
-  const CDateTime(this.date, this.time);
-  CDateTime.fromRaw(
+  new fromRaw(
     int year,
     int month,
     int day, [
@@ -47,7 +46,7 @@ final class CDateTime
   // TODO(JonasWanke): remove in favor of
   // `zonedDateTime.fromDurationSinceUnixEpoch(…)`
   /// The date corresponding to the given duration since the [unixEpoch].
-  factory CDateTime.fromDurationSinceUnixEpoch(TimeDelta sinceUnixEpoch) {
+  factory fromDurationSinceUnixEpoch(TimeDelta sinceUnixEpoch) {
     final (days, time) = sinceUnixEpoch.toDaysAndTime();
     final date = Date.fromDaysSinceUnixEpoch(days);
     return CDateTime(date, time);
@@ -58,22 +57,21 @@ final class CDateTime
   /// This uses the [DateTime.year], [DateTime.month], [DateTime.day],
   /// [DateTime.hour], etc. getters and ignores whether that [DateTime] is in
   /// UTC or the local timezone.
-  CDateTime.fromCore(DateTime dateTime)
-    : date = Date.fromCore(dateTime),
-      time = Time.from(
-        dateTime.hour,
-        dateTime.minute,
-        dateTime.second,
-        dateTime.millisecond,
-        dateTime.microsecond,
+  new fromCore(DateTime dateTime)
+    : this(
+        Date.fromCore(dateTime),
+        Time.from(
+          dateTime.hour,
+          dateTime.minute,
+          dateTime.second,
+          dateTime.millisecond,
+          dateTime.microsecond,
+        ),
       );
-  CDateTime.nowInLocalZone({Clock? clock})
+  new nowInLocalZone({Clock? clock})
     : this.fromCore((clock ?? cl.clock).now().toLocal());
-  CDateTime.nowInUtc({Clock? clock})
+  new nowInUtc({Clock? clock})
     : this.fromCore((clock ?? cl.clock).now().toUtc());
-
-  final Date date;
-  final Time time;
 
   /// The duration since the [unixEpoch].
   // TODO(JonasWanke): remove in favor of `zonedDateTime.durationSinceUnixEpoch`
@@ -221,10 +219,7 @@ final class CDateTime
     ...Time.isoFormat,
   ];
 
-  factory CDateTime.parse(
-    String string, [
-    List<CDateTimeFormatItem> items = isoFormat,
-  ]) {
+  factory parse(String string, [List<CDateTimeFormatItem> items = isoFormat]) {
     final parsed = ChronoParser.parse(string, items);
     return parsed.toDate().at(parsed.toTime());
   }
@@ -264,11 +259,9 @@ extension on TimeDelta {
 }
 
 /// Encodes a [CDateTime] as a string, defaulting to [CDateTime.isoFormat].
-class CDateTimeAsStringCodec extends CodecAndJsonConverter<CDateTime, String> {
-  const CDateTimeAsStringCodec([this.formatItems = CDateTime.isoFormat]);
-
-  final List<CDateTimeFormatItem> formatItems;
-
+class const CDateTimeAsStringCodec([
+  final List<CDateTimeFormatItem> formatItems = CDateTime.isoFormat,
+]) extends CodecAndJsonConverter<CDateTime, String> {
   @override
   String encode(CDateTime input) => input.toString(formatItems);
   @override
@@ -291,16 +284,10 @@ extension RangeOfCDateTimeExtension on Range<CDateTime> {
 }
 
 /// Encodes a [Range] of [CDateTime]s as a string `start/end`.
-class RangeOfCDateTimeAsStringCodec
-    extends CodecAndJsonConverter<Range<CDateTime>, String> {
-  const RangeOfCDateTimeAsStringCodec({
-    this.formatItems = CDateTime.isoFormat,
-    this.intervalDesignator = '/',
-  });
-
-  final List<CDateTimeFormatItem> formatItems;
-  final String intervalDesignator;
-
+class const RangeOfCDateTimeAsStringCodec({
+  final List<CDateTimeFormatItem> formatItems = CDateTime.isoFormat,
+  final String intervalDesignator = '/',
+}) extends CodecAndJsonConverter<Range<CDateTime>, String> {
   @override
   String encode(Range<CDateTime> input) =>
       '${input.start.toString(formatItems)}$intervalDesignator'

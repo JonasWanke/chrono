@@ -29,7 +29,7 @@ enum Month
   ///
   /// The index must be in the range 0 for January, …, 11 for December. For any
   /// other number, a [RangeError] is thrown.
-  factory Month.fromIndex(int index) {
+  factory fromIndex(int index) {
     RangeError.checkValueInInterval(index, minIndex, maxIndex, 'index');
     return values[index - minIndex];
   }
@@ -45,7 +45,7 @@ enum Month
   ///
   /// The number must be in the range 1 for January, …, 12 for December. For any
   /// other number, a [RangeError] is thrown.
-  factory Month.fromNumber(int number) {
+  factory fromNumber(int number) {
     RangeError.checkValueInInterval(number, minNumber, maxNumber, 'number');
     return values[number - minNumber];
   }
@@ -180,9 +180,8 @@ enum Month
 }
 
 /// Encodes a [Month] as an int: 1 for January, …, 12 for December.
-class MonthAsIntJsonConverter extends CodecAndJsonConverter<Month, int> {
-  const MonthAsIntJsonConverter();
-
+class const MonthAsIntJsonConverter()
+    extends CodecAndJsonConverter<Month, int> {
   @override
   int encode(Month input) => input.number;
   @override

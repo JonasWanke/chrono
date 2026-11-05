@@ -9,16 +9,14 @@ import 'utils.dart';
 /// For example, [Tz.us_eastern] is composed of at least two [FixedTimespan]s:
 /// `EST` and `EDT`, that are variously in effect.
 @immutable
-class FixedTimespan {
-  const FixedTimespan(this.name, {required this.offsetSeconds});
-
+class const FixedTimespan(
   /// The name of this timezone, for example, the difference between `EDT`/`EST`
-  final String name;
+  final String name, {
 
   /// The base offset from UTC; this usually doesn't change unless the
   /// government changes something.
-  final int offsetSeconds;
-
+  required final int offsetSeconds,
+}) {
   @override
   bool operator ==(Object other) =>
       other is FixedTimespan &&
@@ -32,13 +30,8 @@ class FixedTimespan {
 }
 
 @immutable
-class TzOffset implements Offset<Tz> {
-  const TzOffset(this.timeZone, this.offset);
-
-  @override
-  final Tz timeZone;
-  final FixedTimespan offset;
-
+class const TzOffset(@override final Tz timeZone, final FixedTimespan offset)
+    implements Offset<Tz> {
   /// The IANA TZDB identifier (e.g., "America/New_York").
   String get tzId => timeZone.name;
 
@@ -88,12 +81,7 @@ class TzOffset implements Offset<Tz> {
 /// > the clock goes from 01:59:59 to 01:00:00. This is an arbitrary choice, and
 /// > I could not find a source to confirm whether or not this is correct.
 @immutable
-class Span implements Comparable<int> {
-  const Span(this.begin, this.end);
-
-  final int? begin;
-  final int? end;
-
+class const Span(final int? begin, final int? end) implements Comparable<int> {
   bool contains(int x) {
     return switch ((begin, end)) {
       (final a?, final b?) when a <= x && x < b => true,
@@ -120,12 +108,10 @@ class Span implements Comparable<int> {
 }
 
 @immutable
-class FixedTimespanSet {
-  const FixedTimespanSet(this.first, this.rest);
-
-  final FixedTimespan first;
-  final List<(int, FixedTimespan)> rest;
-
+class const FixedTimespanSet(
+  final FixedTimespan first,
+  final List<(int, FixedTimespan)> rest,
+) {
   int get length => 1 + rest.length;
 
   Span utcSpan(int index) {
@@ -165,9 +151,19 @@ class FixedTimespanSet {
 /// [CDateTime] to a timezone-aware [ZonedDateTime] with
 /// [TimeZone.fromLocalDateTime] and a gap ([MappedLocalTime_None]) is found.
 @immutable
-class GapInfo {
-  const GapInfo(this.begin, this.end);
+class const GapInfo(
+  /// When available, it contains information about the beginning of the gap.
+  ///
+  /// The time represents the first instant in which the gap starts.
+  /// This means that it is the first instant that, when used with
+  /// [TimeZone.fromLocalDateTime], will return [MappedLocalTime_None].
+  ///
+  /// The offset represents the offset of the first instant before the gap.
+  final (CDateTime, TzOffset)? begin,
 
+  /// When available, it contains the first instant after the gap.
+  final ZonedDateTime<Tz>? end,
+) {
   /// Return information about a gap.
   ///
   /// It returns `null` if [local] is not in a gap for the current timezone.
@@ -194,9 +190,8 @@ class GapInfo {
             if (end == null) return null;
 
             return (
-              ZonedDateTime.fromDurationSinceUnixEpoch(
-                TimeDelta(seconds: end),
-              ).localDateTime,
+              ZonedDateTime.fromDurationSinceUnixEpoch(TimeDelta(seconds: end))
+                  .localDateTime,
               TzOffset(tz, timespans.get(startIndex)),
             );
           }();
@@ -220,18 +215,6 @@ class GapInfo {
 
     return GapInfo(begin, end);
   }
-
-  /// When available, it contains information about the beginning of the gap.
-  ///
-  /// The time represents the first instant in which the gap starts.
-  /// This means that it is the first instant that, when used with
-  /// [TimeZone.fromLocalDateTime], will return [MappedLocalTime_None].
-  ///
-  /// The offset represents the offset of the first instant before the gap.
-  final (CDateTime, TzOffset)? begin;
-
-  /// When available, it contains the first instant after the gap.
-  final ZonedDateTime<Tz>? end;
 
   @override
   bool operator ==(Object other) =>
