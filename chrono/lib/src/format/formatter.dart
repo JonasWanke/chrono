@@ -1,5 +1,3 @@
-import 'package:meta/meta.dart';
-
 import '../../chrono.dart';
 
 // Based on Rust Chrono's formatter: https://github.com/chronotope/chrono/blob/3ffcd1b107fd3085bc184a1f5f7445b97a0d655f/src/format/formatting.rs
@@ -33,70 +31,6 @@ class ChronoFormatter {
     time: time,
     offset: offset,
   ).toString();
-
-  /// Writes the date, time, and offset to a string.
-  ///
-  // TODO(JonasWanke): improve comment
-  /// Same as `%Y-%m-%dT%H:%M:%S%.f%:z`.
-  @internal
-  static String formatRfc3339(
-    CDateTime dateTime,
-    FixedOffset offset,
-    ChronoSecondsFormat secondsFormat, {
-    bool allowZulu = true,
-  }) {
-    final formatter = ChronoFormatter._(const []);
-    formatter._writeYear(dateTime.date.year, .zero);
-    formatter._buffer.write('-');
-    formatter._writeTwo(dateTime.date.month.number, .zero);
-    formatter._buffer.write('-');
-    formatter._writeTwo(dateTime.date.day, .zero);
-
-    formatter._buffer.write('T');
-
-    formatter._writeTwo(dateTime.time.hour, .zero);
-    formatter._buffer.write(':');
-    formatter._writeTwo(dateTime.time.minute, .zero);
-    formatter._buffer.write(':');
-    var second = dateTime.time.second;
-    var nanos = dateTime.time.subSecondNanos;
-    if (nanos >= TimeDelta.nanosPerSecond) {
-      second++;
-      nanos -= TimeDelta.nanosPerSecond;
-    }
-    formatter._writeTwo(second, .zero);
-
-    switch (secondsFormat) {
-      case .seconds:
-        break;
-      case .millis:
-        formatter._writeSubsecond(
-          const ChronoFormatSubsecond(.millis),
-          dateTime.time,
-        );
-      case .micros:
-        formatter._writeSubsecond(
-          const ChronoFormatSubsecond(.micros),
-          dateTime.time,
-        );
-      case .nanos:
-        formatter._writeSubsecond(
-          const ChronoFormatSubsecond(.nanos),
-          dateTime.time,
-        );
-      case .variable:
-        formatter._writeSubsecond(
-          const ChronoFormatSubsecond(.variable),
-          dateTime.time,
-        );
-    }
-
-    formatter._writeOffset(
-      ChronoFormatTimezoneOffset(allowZulu: allowZulu),
-      offset,
-    );
-    return formatter._buffer.toString();
-  }
 
   // TODO(JonasWanke): convert
   // #[cfg(feature = "alloc")]
@@ -238,6 +172,20 @@ class ChronoFormatter {
       // case (ChronoFormatAmPm(casing: .lower), _, final time?, _):
       case (final ChronoFormatSubsecond item, _, final time?, _):
         _writeSubsecond(item, time);
+      case (
+        ChronoFormatRFC3339(),
+        final date?,
+        final time?,
+        (:final name, :final offset)?,
+      ):
+        _buffer.write(
+          ChronoFormatter.format(
+            ZonedDateTime.rfc3339Format(),
+            date: date,
+            time: time,
+            offset: (name: name, offset: offset),
+          ),
+        );
       case (ChronoFormatTimezoneName(), _, _, (:final name, offset: _)?):
         _buffer.write(name);
       case (

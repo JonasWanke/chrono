@@ -236,16 +236,17 @@ void main() {
     testInverse('Tahiti', Tz.pacific_tahiti, 1911, 1914);
   });
 
-  // test('string_representation', () {
-  //     final dt = UTC
-  //         .with_ymd_and_hms(2000, 9, 1, 12, 30, 15)
-  //         .unwrap()
-  //         .withTimezone(&Adelaide);
-  //     expect(dt.to_string(), "2000-09-01 22:00:15 ACST");
-  //     expect(format!("{dt:?}"), "2000-09-01T22:00:15ACST");
-  //     expect(dt.to_rfc3339(), "2000-09-01T22:00:15+09:30");
-  //     expect(format!("{dt}"), "2000-09-01 22:00:15 ACST");
-  // });
+  test('string representation', () {
+    final dt = Tz.utc
+        .with_ymd_and_hms(2000, 9, 1, 12, 30, 15)
+        .unwrap()
+        .withTimezone(Tz.australia_adelaide);
+    expect(dt.toString(), '2000-09-01T22:00:15 ACST');
+    expect(
+      dt.toString(ZonedDateTime.rfc3339Format()),
+      '2000-09-01T22:00:15+09:30',
+    );
+  });
 
   test('Tahiti', () {
     final dt = Tz.utc

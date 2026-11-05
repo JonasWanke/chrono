@@ -180,6 +180,38 @@ class ZonedDateTime<Tz extends TimeZone<Tz>>
     .timezoneName(),
   ];
 
+  /// Returns the items to format a [ZonedDateTime] as RFC 3339 and ISO 8601,
+  /// e.g., “2023-04-23T18:24:20.123+09:30”.
+  ///
+  /// [secondsFormat] controls the number of subsecond digits, and [useZ]
+  /// whether a zero offset is written as `Z` instead of `+00:00`.
+  ///
+  /// With the default options, this is the same as [ChronoFormatItem.rfc3339].
+  @useResult
+  static List<ZonedDateTimeFormatItem> rfc3339Format({
+    ChronoSecondsFormat secondsFormat = .variable,
+    bool useZ = false,
+  }) {
+    final subsecondAccuracy = switch (secondsFormat) {
+      .seconds => null,
+      .millis => ChronoSubsecondAccuracy.millis,
+      .micros => ChronoSubsecondAccuracy.micros,
+      .nanos => ChronoSubsecondAccuracy.nanos,
+      .variable => ChronoSubsecondAccuracy.variable,
+    };
+    return [
+      ...Date.isoFormat,
+      const .literal('T'),
+      const .hour(),
+      const .literal(':'),
+      const .minute(),
+      const .literal(':'),
+      const .second(),
+      if (subsecondAccuracy != null) .subsecond(subsecondAccuracy),
+      .timezoneOffset(allowZulu: useZ),
+    ];
+  }
+
   @override
   String toString([List<ZonedDateTimeFormatItem> items = defaultFormat]) =>
       ChronoFormatter.format(

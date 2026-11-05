@@ -199,6 +199,7 @@ sealed class ZonedDateTimeFormatItem extends ChronoFormatItem {
   const factory ZonedDateTimeFormatItem.subsecond(
     ChronoSubsecondAccuracy accuracy,
   ) = ChronoFormatSubsecond;
+  const factory ZonedDateTimeFormatItem.rfc3339() = ChronoFormatRFC3339;
   const factory ZonedDateTimeFormatItem.timezoneName() =
       ChronoFormatTimezoneName;
   const factory ZonedDateTimeFormatItem.timezoneOffset({
@@ -555,13 +556,17 @@ class ChronoFormatRFC2822 extends ChronoFormatItemFixed {
 }
 
 /// RFC 3339 & ISO 8601 date and time syntax.
-class ChronoFormatRFC3339 extends ChronoFormatItemFixed {
+///
+/// When formatting, this is the same as [ZonedDateTime.rfc3339Format] with its
+/// default options.
+class ChronoFormatRFC3339 extends ChronoFormatItemFixed
+    implements ZonedDateTimeFormatItem {
   const ChronoFormatRFC3339();
 }
 
 /// Specific formatting options for seconds.
 ///
-/// See [TimeZone.to_rfc3339_opts] for usage.
+/// See [ZonedDateTime.rfc3339Format] for usage.
 enum ChronoSecondsFormat {
   /// Format whole seconds only, with no decimal point or subseconds.
   seconds,

@@ -109,4 +109,54 @@ void main() {
       expect(utc.toString(const [.timezoneOffset(allowZulu: false)]), '+00:00');
     });
   });
+
+  group('rfc3339Format(…)', () {
+    final offset = FixedOffset.east(TimeDelta(hours: 9, minutes: 30));
+    final whole = offset.fromUtcDateTime(
+      CDateTime.fromRaw(2000, 9, 1, 13, 0, 15),
+    );
+    final fractional = whole + TimeDelta(nanos: 123456789);
+
+    test('default', () {
+      expect(
+        whole.toString(ZonedDateTime.rfc3339Format()),
+        '2000-09-01T22:30:15+09:30',
+      );
+      expect(
+        fractional.toString(ZonedDateTime.rfc3339Format()),
+        '2000-09-01T22:30:15.123456789+09:30',
+      );
+    });
+    test('the rfc3339 item is the default', () {
+      expect(
+        fractional.toString(const [.rfc3339()]),
+        fractional.toString(ZonedDateTime.rfc3339Format()),
+      );
+    });
+    test('secondsFormat', () {
+      String format(ChronoSecondsFormat secondsFormat) => fractional.toString(
+        ZonedDateTime.rfc3339Format(secondsFormat: secondsFormat),
+      );
+      expect(format(.seconds), '2000-09-01T22:30:15+09:30');
+      expect(format(.millis), '2000-09-01T22:30:15.123+09:30');
+      expect(format(.micros), '2000-09-01T22:30:15.123456+09:30');
+      expect(format(.nanos), '2000-09-01T22:30:15.123456789+09:30');
+      expect(format(.variable), '2000-09-01T22:30:15.123456789+09:30');
+      expect(
+        whole.toString(ZonedDateTime.rfc3339Format(secondsFormat: .millis)),
+        '2000-09-01T22:30:15.000+09:30',
+      );
+    });
+    test('useZ', () {
+      final utc = whole.withTimezone(FixedOffset.zero);
+      expect(
+        utc.toString(ZonedDateTime.rfc3339Format()),
+        '2000-09-01T13:00:15+00:00',
+      );
+      expect(
+        utc.toString(ZonedDateTime.rfc3339Format(useZ: true)),
+        '2000-09-01T13:00:15Z',
+      );
+    });
+  });
 }
