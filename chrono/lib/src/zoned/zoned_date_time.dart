@@ -180,13 +180,18 @@ class ZonedDateTime<Tz extends TimeZone<Tz>>
     .timezoneName(),
   ];
 
+  // TODO(JonasWanke): Add `parseRfc3339(…)` (Rust's `parse_from_rfc3339`) and
+  // `parseRfc2822(…)` as dedicated functions. The lenient grammars (RFC 2822
+  // comments and obsolete zone names, relaxed RFC 3339 for `%+` that also
+  // accepts `UTC`) can't be expressed as format items. Test data is in
+  // `test/format/parser_test.dart`.
   /// Returns the items to format a [ZonedDateTime] as RFC 3339 and ISO 8601,
   /// e.g., “2023-04-23T18:24:20.123+09:30”.
   ///
   /// [secondsFormat] controls the number of subsecond digits, and [useZ]
   /// whether a zero offset is written as `Z` instead of `+00:00`.
   ///
-  /// With the default options, this is the same as [ChronoFormatItem.rfc3339].
+  /// With the default options, this is Rust's `to_rfc3339()`.
   @useResult
   static List<ZonedDateTimeFormatItem> rfc3339Format({
     ChronoSecondsFormat secondsFormat = .variable,

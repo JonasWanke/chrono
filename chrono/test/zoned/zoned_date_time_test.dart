@@ -127,12 +127,6 @@ void main() {
         '2000-09-01T22:30:15.123456789+09:30',
       );
     });
-    test('the rfc3339 item is the default', () {
-      expect(
-        fractional.toString(const [.rfc3339()]),
-        fractional.toString(ZonedDateTime.rfc3339Format()),
-      );
-    });
     test('secondsFormat', () {
       String format(ChronoSecondsFormat secondsFormat) => fractional.toString(
         ZonedDateTime.rfc3339Format(secondsFormat: secondsFormat),

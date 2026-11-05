@@ -60,8 +60,6 @@ sealed class ChronoFormatItem {
     bool allowZulu,
     bool printColon,
   }) = ChronoFormatTimezoneOffset;
-  const factory ChronoFormatItem.rfc2822() = ChronoFormatRFC2822;
-  const factory ChronoFormatItem.rfc3339() = ChronoFormatRFC3339;
 }
 
 /// A literally printed and parsed text.
@@ -199,7 +197,6 @@ sealed class ZonedDateTimeFormatItem extends ChronoFormatItem {
   const factory ZonedDateTimeFormatItem.subsecond(
     ChronoSubsecondAccuracy accuracy,
   ) = ChronoFormatSubsecond;
-  const factory ZonedDateTimeFormatItem.rfc3339() = ChronoFormatRFC3339;
   const factory ZonedDateTimeFormatItem.timezoneName() =
       ChronoFormatTimezoneName;
   const factory ZonedDateTimeFormatItem.timezoneOffset({
@@ -546,22 +543,6 @@ enum TimezoneOffsetPrecision {
   optionalMinutesAndSeconds,
   optionalSeconds,
   seconds,
-}
-
-/// RFC 2822 date and time syntax.
-///
-/// Commonly used for email and MIME date and time.
-class ChronoFormatRFC2822 extends ChronoFormatItemFixed {
-  const ChronoFormatRFC2822();
-}
-
-/// RFC 3339 & ISO 8601 date and time syntax.
-///
-/// When formatting, this is the same as [ZonedDateTime.rfc3339Format] with its
-/// default options.
-class ChronoFormatRFC3339 extends ChronoFormatItemFixed
-    implements ZonedDateTimeFormatItem {
-  const ChronoFormatRFC3339();
 }
 
 /// Specific formatting options for seconds.

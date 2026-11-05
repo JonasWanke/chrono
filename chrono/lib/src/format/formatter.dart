@@ -172,20 +172,6 @@ class ChronoFormatter {
       // case (ChronoFormatAmPm(casing: .lower), _, final time?, _):
       case (final ChronoFormatSubsecond item, _, final time?, _):
         _writeSubsecond(item, time);
-      case (
-        ChronoFormatRFC3339(),
-        final date?,
-        final time?,
-        (:final name, :final offset)?,
-      ):
-        _buffer.write(
-          ChronoFormatter.format(
-            ZonedDateTime.rfc3339Format(),
-            date: date,
-            time: time,
-            offset: (name: name, offset: offset),
-          ),
-        );
       case (ChronoFormatTimezoneName(), _, _, (:final name, offset: _)?):
         _buffer.write(name);
       case (
