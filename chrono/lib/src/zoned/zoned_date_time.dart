@@ -68,8 +68,10 @@ class ZonedDateTime<Tz extends TimeZone<Tz>> {
   ZonedDateTime<Utc> toUtc() =>
       ZonedDateTime.fromUtcDateTimeAndOffset(utcDateTime, const Utc());
 
+  /// Adds [duration] and re-resolves the offset, since it may differ at the new
+  /// instant (e.g., across a DST transition).
   ZonedDateTime<Tz> operator +(ChronoDelta duration) =>
-      ZonedDateTime.fromUtcDateTimeAndOffset(utcDateTime + duration, offset);
+      timeZone.fromUtcDateTime(utcDateTime + duration);
   ZonedDateTime<Tz> operator -(ChronoDelta duration) => this + (-duration);
 
   // TODO(JonasWanke): more arithmetic

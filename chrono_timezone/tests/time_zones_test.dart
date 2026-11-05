@@ -211,23 +211,23 @@ void main() {
 
   test('ambiguous_time_3', () {
     final ambiguous = Tz.europe_moscow.with_ymd_and_hms(2014, 10, 26, 1, 30, 0);
-    final earliestUtc = CDateTime.fromRaw(2014, 10, 25, 1, 30);
+    final earliestUtc = CDateTime.fromRaw(2014, 10, 25, 21, 30);
     expect(
       ambiguous.earliest!.toFixedOffset(),
       Tz.europe_moscow.fromUtcDateTime(earliestUtc).toFixedOffset(),
     );
-    final latestUtc = CDateTime.fromRaw(2014, 10, 25, 2, 30);
+    final latestUtc = CDateTime.fromRaw(2014, 10, 25, 22, 30);
     expect(ambiguous.latest!, Tz.europe_moscow.fromUtcDateTime(latestUtc));
   });
 
   test('ambiguous_time_4', () {
     final ambiguous = Tz.europe_moscow.with_ymd_and_hms(2014, 10, 26, 1, 0, 0);
-    final earliestUtc = CDateTime.fromRaw(2014, 10, 25, 1);
+    final earliestUtc = CDateTime.fromRaw(2014, 10, 25, 21);
     expect(
       ambiguous.earliest!.toFixedOffset(),
       Tz.europe_moscow.fromUtcDateTime(earliestUtc).toFixedOffset(),
     );
-    final latestUtc = CDateTime.fromRaw(2014, 10, 25, 2);
+    final latestUtc = CDateTime.fromRaw(2014, 10, 25, 22);
     expect(ambiguous.latest!, Tz.europe_moscow.fromUtcDateTime(latestUtc));
   });
 

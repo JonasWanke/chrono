@@ -177,12 +177,14 @@ class GapInfo {
   static GapInfo? of(CDateTime local, Tz tz) {
     final timestamp = local.andUtc().durationSinceUnixEpoch.wholeSeconds;
     final timespans = tz.timespans;
-    final endIndex = binarySearch(
+    final search = binarySearchWithInsertionPoint(
       timespans.length,
       (it) => timespans.localSpan(it).compareTo(timestamp),
     );
 
-    if (endIndex == null) return null;
+    // A found timespan means the local time exists, i.e., it's not in a gap.
+    if (search.found) return null;
+    final endIndex = search.index;
 
     final begin = endIndex == 0
         ? null
