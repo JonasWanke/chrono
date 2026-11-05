@@ -46,7 +46,7 @@ final class const IsoYearWeek._unchecked(
   bool isCurrentInUtc({Clock? clock}) =>
       this == IsoYearWeek.currentInUtc(clock: clock);
 
-  /// The [Date]s in this month.
+  /// The [Date]s in this week.
   RangeInclusive<Date> get dates {
     return RangeInclusive(
       Date.fromIsoYearWeekAndWeekday(this, Weekday.values.first),

@@ -26,6 +26,7 @@ final class const YearWeek._unchecked(
           week,
           1,
           weekBasedYear.numberOfWeeks(config),
+          'week',
           'Invalid week for year $weekBasedYear.',
         ),
         config,
@@ -78,11 +79,12 @@ final class const YearWeek._unchecked(
 
   /// Returns `this - other` as a number of weeks.
   ///
-  /// Both [YearWeek]s must have the same [config].
+  /// Both [YearWeek]s must have the same [config], otherwise an
+  /// [ArgumentError] is thrown.
   // ignore: lines_longer_than_80_chars
   // TODO(JonasWanke): rename to `differenceInWeeks`, add `differenceInYearAndWeeks`
   int difference(YearWeek other) {
-    assert(config == other.config);
+    _checkSameConfig(other);
 
     final difference = dates.start.daysSince(other.dates.start);
     assert(difference.isMultipleOf(.weeks));
@@ -99,7 +101,7 @@ final class const YearWeek._unchecked(
 
   @override
   int compareTo(YearWeek other) {
-    assert(config == other.config);
+    _checkSameConfig(other);
 
     final result = weekBasedYear.compareTo(other.weekBasedYear);
     if (result != 0) return result;
@@ -126,6 +128,16 @@ final class const YearWeek._unchecked(
 
   @override
   String toString() => 'Week $week of $weekBasedYear with $config';
+
+  void _checkSameConfig(YearWeek other) {
+    if (config != other.config) {
+      throw ArgumentError.value(
+        other,
+        'other',
+        'Must have the same config as $this.',
+      );
+    }
+  }
 }
 
 extension RangeOfYearWeekChrono on Range<YearWeek> {
