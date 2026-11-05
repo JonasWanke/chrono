@@ -168,6 +168,97 @@ void main() {
     });
   });
 
+  group('durations beyond 2^63 nanoseconds (about 292 years)', () {
+    // 1000 normal years plus one nanosecond.
+    final big = TimeDelta(normalYears: 1000, nanos: 1);
+    final bigWhole = TimeDelta(normalYears: 1000);
+    final day = TimeDelta(normalDays: 1);
+
+    test('totalIn', () {
+      expect(big.totalIn(.hours), closeTo(8760000, 1e-6));
+      expect(big.totalIn(.normalDays), closeTo(365000, 1e-6));
+    });
+    test('roundTo', () {
+      expect(big.roundTo(.hours), 8760000);
+      expect(big.roundTo(.normalDays), 365000);
+      expect(big.roundTo(.normalDays, rounding: .up), 365001);
+    });
+    test('round', () {
+      expect(big.round(.normalDays), TimeDelta(normalDays: 365000));
+      expect(
+        big.round(.normalDays, increment: 1000, rounding: .up),
+        TimeDelta(normalDays: 366000),
+      );
+    });
+    test('isMultipleOf', () {
+      expect(bigWhole.isMultipleOf(.normalDays), true);
+      expect(big.isMultipleOf(.normalDays), false);
+    });
+    test('split', () {
+      final parts = big.split({.hours, .nanos});
+      expect(parts.hours, 8760000);
+      expect(parts.nanos, 1);
+
+      final weeks = big.split({.normalWeeks, .normalDays, .nanos});
+      expect(weeks.normalWeeks, 52142);
+      expect(weeks.normalDays, 6);
+      expect(weeks.nanos, 1);
+    });
+    test('operator /', () {
+      expect(big / big, 1);
+      expect(bigWhole / TimeDelta(normalYears: 500), 2);
+      expect(bigWhole / TimeDelta(normalYears: 250), 4);
+      expect(bigWhole / day, 365000);
+      expect(day / bigWhole, closeTo(1 / 365000, 1e-12));
+    });
+    test('operator % and remainder', () {
+      expect(big % day, 1.nanos);
+      expect(big.remainder(day), 1.nanos);
+      expect((-big).remainder(day), (-1).nanos);
+      expect((-big) % day, day - 1.nanos);
+    });
+    test('operator ~/ with a divisor above 2^33', () {
+      expect(bigWhole ~/ 20000000000, TimeDelta(seconds: 1, nanos: 576800000));
+      expect(
+        (-bigWhole) ~/ 20000000000,
+        TimeDelta(seconds: -1, nanos: -576800000),
+      );
+      expect(bigWhole ~/ 2, TimeDelta(normalYears: 500));
+    });
+    test('timesDouble', () {
+      expect(bigWhole.timesDouble(0.5), TimeDelta(normalYears: 500));
+    });
+  });
+
+  group('rounding is exact for large totals', () {
+    test('just below and at a half', () {
+      // The total is above 2^53 nanoseconds, so it's not exactly representable
+      // as a `double`.
+      expect(
+        TimeDelta(seconds: 9000000000, nanos: 499999999).roundTo(.seconds),
+        9000000000,
+      );
+      expect(
+        TimeDelta(seconds: 9000000000, nanos: 500000000).roundTo(.seconds),
+        9000000001,
+      );
+      expect(
+        TimeDelta(
+          seconds: 9000000000,
+          nanos: 1,
+        ).roundTo(.seconds, rounding: .up),
+        9000000001,
+      );
+      expect(
+        TimeDelta(
+          seconds: -9000000000,
+          nanos: -1,
+        ).roundTo(.seconds, rounding: .down),
+        -9000000001,
+      );
+    });
+  });
+
   group('TimeParts', () {
     test('unrequested units throw', () {
       final parts = TimeDelta(hours: 1).split({.hours});

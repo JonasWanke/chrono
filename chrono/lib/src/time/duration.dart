@@ -203,8 +203,26 @@ class TimeDelta extends ChronoDelta
   static const nanosPerSecond =
       nanosPerMicro * microsPerMilli * millisPerSecond;
 
-  // TODO(JonasWanke): avoid `_totalNanos` to avoid overflows
+  /// Whether [_totalNanos] fits in an [int] without overflowing.
+  ///
+  /// A 64-bit [int] holds about 292 years of nanoseconds. Everything that needs
+  /// the total uses the fast [int] path when this is `true` and falls back to
+  /// [BigInt] (or splitting into seconds) otherwise.
+  bool get _totalNanosFit => wholeSeconds.abs() < _maxWholeSecondsForNanos;
+  static const _maxWholeSecondsForNanos = 9223372035; // (2^63 - 1) ~/ 1e9 - 1
+
   int get _totalNanos => wholeSeconds * nanosPerSecond + subSecondNanos;
+  BigInt get _totalNanosBig =>
+      BigInt.from(wholeSeconds) * BigInt.from(nanosPerSecond) +
+      BigInt.from(subSecondNanos);
+
+  factory TimeDelta._fromNanosBig(BigInt nanos) {
+    final perSecond = BigInt.from(nanosPerSecond);
+    return TimeDelta(
+      seconds: (nanos ~/ perSecond).toInt(),
+      nanos: nanos.remainder(perSecond).toInt(),
+    );
+  }
 
   /// The whole seconds in this duration, truncated towards zero.
   ///
@@ -219,13 +237,17 @@ class TimeDelta extends ChronoDelta
   final int subSecondNanos;
 
   /// This duration expressed in [unit], including a fractional part.
-  double totalIn(TimeUnit unit) => _totalNanos / unit.nanosPer;
+  double totalIn(TimeUnit unit) {
+    if (_totalNanosFit) return _totalNanos / unit.nanosPer;
+    return wholeSeconds * (nanosPerSecond / unit.nanosPer) +
+        subSecondNanos / unit.nanosPer;
+  }
 
   /// This duration rounded to a whole number of [unit].
   int roundTo(
     TimeUnit unit, {
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) => roundDivide(_totalNanos, unit.nanosPer, rounding);
+  }) => _roundDivideTotal(unit.nanosPer, rounding);
 
   /// This duration rounded to a multiple of [increment] × [unit].
   TimeDelta round(
@@ -234,13 +256,22 @@ class TimeDelta extends ChronoDelta
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) {
     final step = unit.nanosPer * increment;
-    return TimeDelta(nanos: roundDivide(_totalNanos, step, rounding) * step);
+    if (_totalNanosFit) {
+      return TimeDelta(nanos: roundDivide(_totalNanos, step, rounding) * step);
+    }
+
+    final bigStep = BigInt.from(step);
+    final rounded = roundDivideBig(_totalNanosBig, bigStep, rounding);
+    return ._fromNanosBig(rounded * bigStep);
   }
 
   /// Whether this duration is a whole multiple of [increment] × [unit], i.e.,
   /// whether [round] with the same arguments would leave it unchanged.
-  bool isMultipleOf(TimeUnit unit, {int increment = 1}) =>
-      _totalNanos % (unit.nanosPer * increment) == 0;
+  bool isMultipleOf(TimeUnit unit, {int increment = 1}) {
+    final step = unit.nanosPer * increment;
+    if (_totalNanosFit) return _totalNanos % step == 0;
+    return _totalNanosBig.remainder(BigInt.from(step)) == BigInt.zero;
+  }
 
   /// Decomposes this duration into the given [units].
   ///
@@ -254,9 +285,17 @@ class TimeDelta extends ChronoDelta
   TimeParts split(
     Set<TimeUnit> units, {
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) => TimeParts._(
-    splitIntoUnits(_totalNanos, units, (it) => it.nanosPer, rounding),
-  );
+  }) {
+    final values = _totalNanosFit
+        ? splitIntoUnits(_totalNanos, units, (it) => it.nanosPer, rounding)
+        : splitIntoUnitsBig(
+            _totalNanosBig,
+            units,
+            (it) => it.nanosPer,
+            rounding,
+          );
+    return TimeParts._(values);
+  }
 
   @override
   DateTimeDelta get asDateTimeDelta => DateTimeDelta(time: this);
@@ -292,19 +331,45 @@ class TimeDelta extends ChronoDelta
   TimeDelta timesDouble(
     double factor, {
     Rounding rounding = Rounding.nearestAwayFromZero,
-  }) => TimeDelta(nanos: rounding.round(_totalNanos * factor));
+  }) {
+    if (_totalNanosFit) {
+      return TimeDelta(nanos: rounding.round(_totalNanos * factor));
+    }
+
+    // Scale the whole seconds separately so the nanosecond total never has to
+    // be formed. Only the fractional remainder is rounded.
+    final scaledSeconds = wholeSeconds * factor;
+    final wholeScaledSeconds = scaledSeconds.truncate();
+    final nanos =
+        (scaledSeconds - wholeScaledSeconds) * nanosPerSecond +
+        subSecondNanos * factor;
+    return TimeDelta(seconds: wholeScaledSeconds, nanos: rounding.round(nanos));
+  }
 
   @override
   TimeDelta operator ~/(int divisor) {
     final wholeSeconds = this.wholeSeconds ~/ divisor;
     final carry = this.wholeSeconds - wholeSeconds * divisor;
+    if (carry.abs() >= _maxWholeSecondsForNanos) {
+      // `carry * nanosPerSecond` would overflow for divisors this large.
+      final subSecondNanos =
+          (BigInt.from(carry) * BigInt.from(nanosPerSecond) +
+              BigInt.from(this.subSecondNanos)) ~/
+          BigInt.from(divisor);
+      return TimeDelta(seconds: wholeSeconds, nanos: subSecondNanos.toInt());
+    }
+
     final subSecondNanos =
         (carry * nanosPerSecond + this.subSecondNanos) ~/ divisor;
     return TimeDelta(seconds: wholeSeconds, nanos: subSecondNanos);
   }
 
-  // TODO(JonasWanke): avoid `_totalNanos` to avoid overflows
-  double operator /(TimeDelta divisor) => _totalNanos / divisor._totalNanos;
+  double operator /(TimeDelta divisor) {
+    if (_totalNanosFit && divisor._totalNanosFit) {
+      return _totalNanos / divisor._totalNanos;
+    }
+    return totalIn(.seconds) / divisor.totalIn(.seconds);
+  }
   // Nanoseconds dividedByInt(
   //   int divisor, {
   //   Rounding rounding = Rounding.nearestAwayFromZero,
@@ -315,11 +380,20 @@ class TimeDelta extends ChronoDelta
   // }) => Nanoseconds(rounding.round(inNanoseconds.toDouble() / divisor));
 
   @override
-  TimeDelta operator %(TimeDelta divisor) =>
-      TimeDelta(nanos: _totalNanos % divisor._totalNanos);
+  TimeDelta operator %(TimeDelta divisor) {
+    if (_totalNanosFit && divisor._totalNanosFit) {
+      return TimeDelta(nanos: _totalNanos % divisor._totalNanos);
+    }
+    return ._fromNanosBig(_totalNanosBig % divisor._totalNanosBig);
+  }
+
   @override
-  TimeDelta remainder(TimeDelta divisor) =>
-      TimeDelta(nanos: _totalNanos.remainder(divisor._totalNanos));
+  TimeDelta remainder(TimeDelta divisor) {
+    if (_totalNanosFit && divisor._totalNanosFit) {
+      return TimeDelta(nanos: _totalNanos.remainder(divisor._totalNanos));
+    }
+    return ._fromNanosBig(_totalNanosBig.remainder(divisor._totalNanosBig));
+  }
 
   /// The number of whole normal (24 h) days in this duration.
   ///
@@ -330,6 +404,11 @@ class TimeDelta extends ChronoDelta
   Duration roundToCoreDuration({
     Rounding rounding = Rounding.nearestAwayFromZero,
   }) => Duration(microseconds: roundTo(.micros, rounding: rounding));
+
+  int _roundDivideTotal(int step, Rounding rounding) {
+    if (_totalNanosFit) return roundDivide(_totalNanos, step, rounding);
+    return roundDivideBig(_totalNanosBig, BigInt.from(step), rounding).toInt();
+  }
 
   /// This duration rounded to a multiple of [duration].
   ///
