@@ -73,6 +73,32 @@ class ChronoParser {
     return parser._parsed;
   }
 
+  /// Parses [string] as an RFC 2822 date and time, e.g.,
+  /// “Tue, 20 Jan 2015 17:35:20 -0800”.
+  ///
+  /// This is the grammar of Rust's `DateTime::parse_from_rfc2822`:
+  ///
+  /// - The weekday is optional, but must match the date if present.
+  /// - Whitespace between tokens is flexible, and trailing parenthesized
+  ///   comments (which may be nested and contain backslash escapes) are
+  ///   ignored.
+  /// - The year may have two digits (`00` to `49` mean 20xx, `50` to `99` mean
+  ///   19xx), three digits (add 1900), or four or more digits.
+  /// - The seconds are optional.
+  /// - The zone is a signed `hhmm` offset or one of the names `GMT`, `UT`,
+  ///   `EST`, `EDT`, `CST`, `CDT`, `MST`, `MDT`, `PST`, `PDT` (in any case).
+  ///   The military single-letter zones, except `J`, are treated as `+0000`.
+  ///   `Z` is accepted as a military zone, but must be separated from the time
+  ///   by whitespace.
+  ///
+  /// Throws a [ChronoParseException] if [string] doesn't match.
+  static ChronoParsed parseRfc2822(String string) {
+    final parser = ChronoParser._(string);
+    parser._parseRfc2822();
+    if (parser._string.isNotEmpty) throw const ChronoParseException(.tooLong);
+    return parser._parsed;
+  }
+
   void _parseAndRemainder(List<ChronoFormatItem> items) {
     for (final item in items) {
       switch (item) {
@@ -293,12 +319,143 @@ class ChronoParser {
     _parsed.offset = offset;
   }
 
+  void _parseRfc2822() {
+    // date-time   = [ day-of-week "," ] date 1*S time *S *comment
+    // date        = day month year
+    // time        = time-of-day 1*S zone
+    // time-of-day = hour ":" minute [ ":" second ]
+    //
+    // See RFC 2822 sections 3.3 and 4.3. Folding whitespace is accepted as any
+    // sequence of Unicode whitespace (denoted `S`), and comments only after the
+    // zone.
+    _string = _string.trimLeft();
+
+    // The weekday is optional, so a failure to scan one is not an error.
+    Weekday? weekday;
+    try {
+      weekday = _scanShortWeekday();
+    } on ChronoParseException {
+      // Not a weekday; `_string` is unchanged.
+    }
+    if (weekday != null) {
+      if (!_string.startsWith(',')) throw const ChronoParseException(.invalid);
+
+      _string = _string.substring(1);
+      _parsed.weekday = weekday;
+    }
+
+    _string = _string.trimLeft();
+    _parsed.day = _scanNumber(1, 2);
+    _scanSpace();
+    _parsed.month = _scanShortMonth();
+    _scanSpace();
+
+    // Two- and three-digit years are shifted, four-digit years are not.
+    final lengthBeforeYear = _string.length;
+    var year = _scanNumber(2, null);
+    switch ((lengthBeforeYear - _string.length, year)) {
+      case (2, < 50):
+        year += 2000;
+      case (2, _):
+        year += 1900;
+      case (3, _):
+        year += 1900;
+    }
+    _parsed.year = Year(year);
+
+    _scanSpace();
+    _parsed.hour = _scanNumber(2, 2);
+    _string = _string.trimLeft();
+    _scanChar(':');
+    _string = _string.trimLeft();
+    _parsed.minute = _scanNumber(2, 2);
+    final beforeSeconds = _string.trimLeft();
+    if (beforeSeconds.startsWith(':')) {
+      _string = beforeSeconds.substring(1).trimLeft();
+      _parsed.second = _scanNumber(2, 2);
+    }
+
+    _scanSpace();
+    _parsed.offset = _scanTimezoneOffset2822();
+
+    while (_scanComment2822()) {}
+  }
+
   /// Consumes exactly the character [expected].
   void _scanChar(String expected) {
     if (_string.isEmpty) throw const ChronoParseException(.tooShort);
     if (_string[0] != expected) throw const ChronoParseException(.invalid);
 
     _string = _string.substring(1);
+  }
+
+  /// Consumes one mandatory whitespace character and all whitespace after it.
+  void _scanSpace() {
+    if (_string.isEmpty) throw const ChronoParseException(.tooShort);
+    if (_string.trimLeft().length == _string.length) {
+      throw const ChronoParseException(.invalid);
+    }
+
+    _string = _string.trimLeft();
+  }
+
+  /// Parses an RFC 2822 zone: either a legacy name or a signed `hhmm` offset.
+  TimeDelta _scanTimezoneOffset2822() {
+    final name = RegExp('^[A-Za-z]+').stringMatch(_string);
+    if (name == null) {
+      return _scanTimezoneOffset(
+        consumeColon: () {},
+        allowZulu: false,
+        allowMissingMinutes: false,
+        allowTzMinusSign: false,
+      );
+    }
+
+    // RFC 2822 requires a few North American zones. The military single-letter
+    // zones are treated as `+0000` (“-0000” in the RFC), except for `J`.
+    final lowercase = name.toLowerCase();
+    final offsetHours = switch (lowercase) {
+      'gmt' || 'ut' || 'z' => 0,
+      'edt' => -4,
+      'est' || 'cdt' => -5,
+      'cst' || 'mdt' => -6,
+      'mst' || 'pdt' => -7,
+      'pst' => -8,
+      _ when lowercase.length == 1 && lowercase != 'j' => 0,
+      _ => throw const ChronoParseException(.invalid),
+    };
+    _string = _string.substring(name.length);
+    return TimeDelta(hours: offsetHours);
+  }
+
+  /// Consumes a comment `( … )` (which may contain nested comments and
+  /// backslash escapes) and all whitespace before it.
+  ///
+  /// Returns whether a comment was consumed. If not, nothing is consumed.
+  bool _scanComment2822() {
+    final string = _string.trimLeft();
+    if (!string.startsWith('(')) return false;
+
+    var depth = 0;
+    var isEscaped = false;
+    for (var i = 0; i < string.length; i++) {
+      final character = string[i];
+      if (isEscaped) {
+        isEscaped = false;
+      } else if (character == r'\') {
+        isEscaped = true;
+      } else if (character == '(') {
+        depth++;
+      } else if (character == ')') {
+        depth--;
+        if (depth == 0) {
+          _string = string.substring(i + 1);
+          return true;
+        }
+      }
+    }
+    // The comment isn't closed.
+    return false;
   }
 
   /// Tries to parse the non-negative number from [minDigits] to [maxDigits].

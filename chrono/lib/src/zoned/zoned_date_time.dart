@@ -184,6 +184,18 @@ class ZonedDateTime<Tz extends TimeZone<Tz>>
   static ZonedDateTime<FixedOffset> parseRfc3339(String string) =>
       ChronoParser.parseRfc3339(string).toZonedDateTime();
 
+  /// Parses [string] as an RFC 2822 date and time, e.g.,
+  /// “Tue, 20 Jan 2015 17:35:20 -0800”.
+  ///
+  /// The weekday and seconds are optional, whitespace is flexible, and
+  /// trailing comments are ignored. The zone is a signed `hhmm` offset or a
+  /// legacy name like `GMT` or `EST`. See [ChronoParser.parseRfc2822] for the
+  /// full grammar.
+  ///
+  /// Throws a [ChronoParseException] if [string] is not valid.
+  static ZonedDateTime<FixedOffset> parseRfc2822(String string) =>
+      ChronoParser.parseRfc2822(string).toZonedDateTime();
+
   /// Represents a [ZonedDateTime] as an ISO 8601 date and time, followed by a
   /// space and the name of the [offset], e.g., “2023-04-23T18:24:20 EDT”.
   static const defaultFormat = <ZonedDateTimeFormatItem>[
@@ -192,9 +204,6 @@ class ZonedDateTime<Tz extends TimeZone<Tz>>
     .timezoneName(),
   ];
 
-  // TODO(JonasWanke): Add `parseRfc2822(…)` (Rust's `parse_from_rfc2822`) as a
-  // dedicated function. Its grammar (comments, obsolete zone names) can't be
-  // expressed as format items. Test data is in `test/format/parser_test.dart`.
   /// Returns the items to format a [ZonedDateTime] as RFC 3339 and ISO 8601,
   /// e.g., “2023-04-23T18:24:20.123+09:30”.
   ///

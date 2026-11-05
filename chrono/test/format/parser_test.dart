@@ -1547,98 +1547,154 @@ void main() {
   //     assert_eq!(parsed, expected);
   // }
 
-  // test('rfc2822', () {
-  //     let ymd_hmsn = |y, m, d, h, n, s, nano, off| {
-  //         FixedOffset::east_opt(off * 60 * 60)
-  //             .unwrap()
-  //             .with_ymd_and_hms(y, m, d, h, n, s)
-  //             .unwrap()
-  //             .with_nanosecond(nano)
-  //             .unwrap()
-  //     };
+  test('parseRfc2822', () {
+    // Test data: input and either the expected result or the expected error.
+    final testDates = <(String, Object)>[
+      (
+        'Tue, 20 Jan 2015 17:35:20 -0800',
+        _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8),
+      ),
+      (
+        'Fri,  2 Jan 2015 17:35:20 -0800',
+        _ymdhmsn(2015, 1, 2, 17, 35, 20, 0, -8),
+      ),
+      (
+        'Fri, 02 Jan 2015 17:35:20 -0800',
+        _ymdhmsn(2015, 1, 2, 17, 35, 20, 0, -8),
+      ),
+      (
+        'Tue, 20 Jan 2015 17:35:20 -0800 (UTC)',
+        _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8),
+      ),
+      (
+        r'Tue, 20 Jan 2015 17:35:20 -0800 ( (UTC ) (\( (a)\(( \t ) ) \\( \) ))',
+        _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8),
+      ),
+      (
+        r'Tue, 20 Jan 2015 17:35:20 -0800 (UTC\)',
+        ChronoParseExceptionKind.tooLong,
+      ),
+      (
+        'Tue, 20 Jan 2015 17:35:20 -0800 (UTC)\t \r\n(Anothercomment)',
+        _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8),
+      ),
+      (
+        'Tue, 20 Jan 2015 17:35:20 -0800 (UTC) ',
+        ChronoParseExceptionKind.tooLong,
+      ),
+      ('20 Jan 2015 17:35:20 -0800', _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8)),
+      ('20 JAN 2015 17:35:20 -0800', _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8)),
+      ('Tue, 20 Jan 2015 17:35 -0800', _ymdhmsn(2015, 1, 20, 17, 35, 0, 0, -8)),
+      ('11 Sep 2001 09:45:00 +0000', _ymdhmsn(2001, 9, 11, 9, 45, 0, 0, 0)),
+      ('11 Sep 2001 09:45:00 EST', _ymdhmsn(2001, 9, 11, 9, 45, 0, 0, -5)),
+      ('11 Sep 2001 09:45:00 GMT', _ymdhmsn(2001, 9, 11, 9, 45, 0, 0, 0)),
+      ('30 Feb 2015 17:35:20 -0800', ChronoParseExceptionKind.outOfRange),
+      ('Tue, 20 Jan 2015', ChronoParseExceptionKind.tooShort),
+      ('Tue, 20 Avr 2015 17:35:20 -0800', ChronoParseExceptionKind.invalid),
+      ('Tue, 20 Jan 2015 25:35:20 -0800', ChronoParseExceptionKind.outOfRange),
+      ('Tue, 20 Jan 2015 7:35:20 -0800', ChronoParseExceptionKind.invalid),
+      ('Tue, 20 Jan 2015 17:65:20 -0800', ChronoParseExceptionKind.outOfRange),
+      ('Tue, 20 Jan 2015 17:35:90 -0800', ChronoParseExceptionKind.outOfRange),
+      ('Tue, 20 Jan 2015 17:35:20 -0890', ChronoParseExceptionKind.outOfRange),
+      ('6 Jun 1944 04:00:00Z', ChronoParseExceptionKind.invalid),
+      (
+        'Tue, 20 Jan 2015 17:35:20 GMT',
+        _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, 0),
+      ),
+      ('Tue, 20 Jan 2015 17:35:20 UT', _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, 0)),
+      ('Tue, 20 Jan 2015 17:35:20 ut', _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, 0)),
+      (
+        'Tue, 20 Jan 2015 17:35:20 EDT',
+        _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -4),
+      ),
+      (
+        'Tue, 20 Jan 2015 17:35:20 EST',
+        _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -5),
+      ),
+      (
+        'Tue, 20 Jan 2015 17:35:20 CDT',
+        _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -5),
+      ),
+      (
+        'Tue, 20 Jan 2015 17:35:20 CST',
+        _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -6),
+      ),
+      (
+        'Tue, 20 Jan 2015 17:35:20 MDT',
+        _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -6),
+      ),
+      (
+        'Tue, 20 Jan 2015 17:35:20 MST',
+        _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -7),
+      ),
+      (
+        'Tue, 20 Jan 2015 17:35:20 PDT',
+        _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -7),
+      ),
+      (
+        'Tue, 20 Jan 2015 17:35:20 PST',
+        _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8),
+      ),
+      (
+        'Tue, 20 Jan 2015 17:35:20 pst',
+        _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8),
+      ),
+      ('Tue, 20 Jan 2015 17:35:20 Z', _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, 0)),
+      ('Tue, 20 Jan 2015 17:35:20 A', _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, 0)),
+      ('Tue, 20 Jan 2015 17:35:20 a', _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, 0)),
+      ('Tue, 20 Jan 2015 17:35:20 K', _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, 0)),
+      ('Tue, 20 Jan 2015 17:35:20 k', _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, 0)),
+      ('Tue, 20 Jan 2015 17:35:20 J', ChronoParseExceptionKind.invalid),
+      ('Tue, 20 Jan 2015 17:35:20 -0890', ChronoParseExceptionKind.outOfRange),
+      ('Tue, 20 Jan 2015 17:35:20Z', ChronoParseExceptionKind.invalid),
+      ('Tue, 20 Jan 2015 17:35:20 Zulu', ChronoParseExceptionKind.invalid),
+      ('Tue, 20 Jan 2015 17:35:20 ZULU', ChronoParseExceptionKind.invalid),
+      ('Tue, 20 Jan 2015 17:35:20 −0800', ChronoParseExceptionKind.invalid),
+      ('Tue, 20 Jan 2015 17:35:20 0800', ChronoParseExceptionKind.invalid),
+      ('Tue, 20 Jan 2015 17:35:20 HAS', ChronoParseExceptionKind.invalid),
+      ('Tue, 20 Jan 2015😈17:35:20 -0800', ChronoParseExceptionKind.invalid),
+    ];
 
-  //     // Test data - (input, Ok(expected result) or Err(error code))
-  //     let testdates = [
-  //         ("Tue, 20 Jan 2015 17:35:20 -0800", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, -8))), // normal case
-  //         ("Fri,  2 Jan 2015 17:35:20 -0800", Ok(ymd_hmsn(2015, 1, 2, 17, 35, 20, 0, -8))), // folding whitespace
-  //         ("Fri, 02 Jan 2015 17:35:20 -0800", Ok(ymd_hmsn(2015, 1, 2, 17, 35, 20, 0, -8))), // leading zero
-  //         ("Tue, 20 Jan 2015 17:35:20 -0800 (UTC)", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, -8))), // trailing comment
-  //         (
-  //             r"Tue, 20 Jan 2015 17:35:20 -0800 ( (UTC ) (\( (a)\(( \t ) ) \\( \) ))",
-  //             Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, -8)),
-  //         ), // complex trailing comment
-  //         (r"Tue, 20 Jan 2015 17:35:20 -0800 (UTC\)", .tooLong), // incorrect comment, not enough closing parentheses
-  //         (
-  //             "Tue, 20 Jan 2015 17:35:20 -0800 (UTC)\t \r\n(Anothercomment)",
-  //             Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, -8)),
-  //         ), // multiple comments
-  //         ("Tue, 20 Jan 2015 17:35:20 -0800 (UTC) ", .tooLong), // trailing whitespace after comment
-  //         ("20 Jan 2015 17:35:20 -0800", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, -8))), // no day of week
-  //         ("20 JAN 2015 17:35:20 -0800", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, -8))), // upper case month
-  //         ("Tue, 20 Jan 2015 17:35 -0800", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 0, 0, -8))), // no second
-  //         ("11 Sep 2001 09:45:00 +0000", Ok(ymd_hmsn(2001, 9, 11, 9, 45, 0, 0, 0))),
-  //         ("11 Sep 2001 09:45:00 EST", Ok(ymd_hmsn(2001, 9, 11, 9, 45, 0, 0, -5))),
-  //         ("11 Sep 2001 09:45:00 GMT", Ok(ymd_hmsn(2001, 9, 11, 9, 45, 0, 0, 0))),
-  //         ("30 Feb 2015 17:35:20 -0800", .outOfRange), // bad day of month
-  //         ("Tue, 20 Jan 2015", .tooShort),              // omitted fields
-  //         ("Tue, 20 Avr 2015 17:35:20 -0800", .invalid), // bad month name
-  //         ("Tue, 20 Jan 2015 25:35:20 -0800", .outOfRange), // bad hour
-  //         ("Tue, 20 Jan 2015 7:35:20 -0800", .invalid),  // bad # of digits in hour
-  //         ("Tue, 20 Jan 2015 17:65:20 -0800", .outOfRange), // bad minute
-  //         ("Tue, 20 Jan 2015 17:35:90 -0800", .outOfRange), // bad second
-  //         ("Tue, 20 Jan 2015 17:35:20 -0890", .outOfRange), // bad offset
-  //         ("6 Jun 1944 04:00:00Z", .invalid),            // bad offset (zulu not allowed)
-  //         // named timezones that have specific timezone offsets
-  //         // see https://www.rfc-editor.org/rfc/rfc2822#section-4.3
-  //         ("Tue, 20 Jan 2015 17:35:20 GMT", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, 0))),
-  //         ("Tue, 20 Jan 2015 17:35:20 UT", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, 0))),
-  //         ("Tue, 20 Jan 2015 17:35:20 ut", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, 0))),
-  //         ("Tue, 20 Jan 2015 17:35:20 EDT", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, -4))),
-  //         ("Tue, 20 Jan 2015 17:35:20 EST", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, -5))),
-  //         ("Tue, 20 Jan 2015 17:35:20 CDT", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, -5))),
-  //         ("Tue, 20 Jan 2015 17:35:20 CST", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, -6))),
-  //         ("Tue, 20 Jan 2015 17:35:20 MDT", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, -6))),
-  //         ("Tue, 20 Jan 2015 17:35:20 MST", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, -7))),
-  //         ("Tue, 20 Jan 2015 17:35:20 PDT", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, -7))),
-  //         ("Tue, 20 Jan 2015 17:35:20 PST", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, -8))),
-  //         ("Tue, 20 Jan 2015 17:35:20 pst", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, -8))),
-  //         // named single-letter military timezones must fallback to +0000
-  //         ("Tue, 20 Jan 2015 17:35:20 Z", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, 0))),
-  //         ("Tue, 20 Jan 2015 17:35:20 A", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, 0))),
-  //         ("Tue, 20 Jan 2015 17:35:20 a", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, 0))),
-  //         ("Tue, 20 Jan 2015 17:35:20 K", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, 0))),
-  //         ("Tue, 20 Jan 2015 17:35:20 k", Ok(ymd_hmsn(2015, 1, 20, 17, 35, 20, 0, 0))),
-  //         // named single-letter timezone "J" is specifically not valid
-  //         ("Tue, 20 Jan 2015 17:35:20 J", .invalid),
-  //         ("Tue, 20 Jan 2015 17:35:20 -0890", .outOfRange), // bad offset minutes
-  //         ("Tue, 20 Jan 2015 17:35:20Z", .invalid),           // bad offset: zulu not allowed
-  //         ("Tue, 20 Jan 2015 17:35:20 Zulu", .invalid),       // bad offset: zulu not allowed
-  //         ("Tue, 20 Jan 2015 17:35:20 ZULU", .invalid),       // bad offset: zulu not allowed
-  //         ("Tue, 20 Jan 2015 17:35:20 −0800", .invalid), // bad offset: timezone offset using MINUS SIGN (U+2212), not specified for RFC 2822
-  //         ("Tue, 20 Jan 2015 17:35:20 0800", .invalid),  // missing offset sign
-  //         ("Tue, 20 Jan 2015 17:35:20 HAS", .invalid),   // bad named timezone
-  //         ("Tue, 20 Jan 2015😈17:35:20 -0800", .invalid), // bad character!
-  //     ];
+    for (final (date, expected) in testDates) {
+      final Object actual;
+      try {
+        actual = ZonedDateTime.parseRfc2822(date);
+      } on ChronoParseException catch (e) {
+        expect(e.kind, expected, reason: 'Input: $date');
+        continue;
+      }
+      expect(actual, expected, reason: 'Input: $date');
+    }
+  });
 
-  //     fn rfc2822_to_datetime(date: &str) -> ParseResult<DateTime<FixedOffset>> {
-  //         let mut parsed = Parsed::new();
-  //         parse(&mut parsed, date, [Item::Fixed(Fixed::RFC2822)].iter())?;
-  //         parsed.to_datetime()
-  //     }
+  test('parseRfc2822 years and weekday', () {
+    ZonedDateTime<FixedOffset> parse(String string) =>
+        ZonedDateTime.parseRfc2822(string);
 
-  //     // Test against test data above
-  //     for &(date, checkdate) in testdates.iter() {
-  //         #[cfg(feature = "std")]
-  //         eprintln!("Test input: {date:?}\n    Expect: {checkdate:?}");
-  //         let dt = rfc2822_to_datetime(date); // parse a date
-  //         if dt != checkdate {
-  //             // check for expected result
-  //             panic!(
-  //                 "Date conversion failed for {date}\nReceived: {dt:?}\nExpected: {checkdate:?}"
-  //             );
-  //         }
-  //     }
-  // });
+    // Two-digit years are shifted by 2000 below 50 and by 1900 otherwise.
+    expect(parse('1 Jan 49 00:00 +0000'), _ymdhmsn(2049, 1, 1, 0, 0, 0, 0, 0));
+    expect(parse('1 Jan 50 00:00 +0000'), _ymdhmsn(1950, 1, 1, 0, 0, 0, 0, 0));
+    // Three-digit years are shifted by 1900.
+    expect(parse('1 Jan 112 00:00 +0000'), _ymdhmsn(2012, 1, 1, 0, 0, 0, 0, 0));
+    // Years with four or more digits are not shifted.
+    expect(parse('1 Jan 0654 00:00 +0000'), _ymdhmsn(654, 1, 1, 0, 0, 0, 0, 0));
+
+    // A weekday that doesn't match the date is an error.
+    expect(
+      parse('Tue, 20 Jan 2015 17:35:20 -0800'),
+      _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8),
+    );
+    expect(
+      () => parse('Wed, 20 Jan 2015 17:35:20 -0800'),
+      throwsA(
+        isA<ChronoParseException>().having(
+          (it) => it.kind,
+          'kind',
+          ChronoParseExceptionKind.impossible,
+        ),
+      ),
+    );
+  });
 
   // test('_rfc850', () {
   //     static RFC850_FMT: &str = "%A, %d-%b-%y %T GMT";
@@ -1709,57 +1765,42 @@ void main() {
   // });
 
   test('parseRfc3339', () {
-    ZonedDateTime<FixedOffset> ymdhmsn(
-      int year,
-      int month,
-      int day,
-      int hour,
-      int minute,
-      int second,
-      int nanos,
-      int offsetHours,
-    ) =>
-        FixedOffset.east(
-          TimeDelta(hours: offsetHours),
-        ).with_ymd_and_hms(year, month, day, hour, minute, second).unwrap() +
-        TimeDelta(nanos: nanos);
-
     // Test data: input and either the expected result or the expected error.
     final testDates = <(String, Object)>[
-      ('2015-01-20T17:35:20-08:00', ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8)),
-      ('2015-01-20T17:35:20−08:00', ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8)),
-      ('1944-06-06T04:04:00Z', ymdhmsn(1944, 6, 6, 4, 4, 0, 0, 0)),
-      ('2001-09-11T09:45:00-08:00', ymdhmsn(2001, 9, 11, 9, 45, 0, 0, -8)),
+      ('2015-01-20T17:35:20-08:00', _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8)),
+      ('2015-01-20T17:35:20−08:00', _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8)),
+      ('1944-06-06T04:04:00Z', _ymdhmsn(1944, 6, 6, 4, 4, 0, 0, 0)),
+      ('2001-09-11T09:45:00-08:00', _ymdhmsn(2001, 9, 11, 9, 45, 0, 0, -8)),
       (
         '2015-01-20T17:35:20.001-08:00',
-        ymdhmsn(2015, 1, 20, 17, 35, 20, 1000000, -8),
+        _ymdhmsn(2015, 1, 20, 17, 35, 20, 1000000, -8),
       ),
       (
         '2015-01-20T17:35:20.001−08:00',
-        ymdhmsn(2015, 1, 20, 17, 35, 20, 1000000, -8),
+        _ymdhmsn(2015, 1, 20, 17, 35, 20, 1000000, -8),
       ),
       (
         '2015-01-20T17:35:20.000031-08:00',
-        ymdhmsn(2015, 1, 20, 17, 35, 20, 31000, -8),
+        _ymdhmsn(2015, 1, 20, 17, 35, 20, 31000, -8),
       ),
       (
         '2015-01-20T17:35:20.000000004-08:00',
-        ymdhmsn(2015, 1, 20, 17, 35, 20, 4, -8),
+        _ymdhmsn(2015, 1, 20, 17, 35, 20, 4, -8),
       ),
       (
         '2015-01-20T17:35:20.000000004−08:00',
-        ymdhmsn(2015, 1, 20, 17, 35, 20, 4, -8),
+        _ymdhmsn(2015, 1, 20, 17, 35, 20, 4, -8),
       ),
       (
         '2015-01-20T17:35:20.000000000452-08:00',
-        ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8),
+        _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8),
       ),
       (
         '2015-01-20T17:35:20.000000000452−08:00',
-        ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8),
+        _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8),
       ),
-      ('2023-11-05T01:30:00-04:00', ymdhmsn(2023, 11, 5, 1, 30, 0, 0, -4)),
-      ('2015-01-20 17:35:20-08:00', ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8)),
+      ('2023-11-05T01:30:00-04:00', _ymdhmsn(2023, 11, 5, 1, 30, 0, 0, -4)),
+      ('2015-01-20 17:35:20-08:00', _ymdhmsn(2015, 1, 20, 17, 35, 20, 0, -8)),
       ('2015-01-20_17:35:20-08:00', ChronoParseExceptionKind.invalid),
       ('2015/01/20T17:35:20.001-08:00', ChronoParseExceptionKind.invalid),
       ('2015-01/20T17:35:20.001-08:00', ChronoParseExceptionKind.invalid),
@@ -1825,6 +1866,21 @@ void main() {
   //     assert_eq!(dt, .parseerrorParseErrorKind::Invalid)));
   // });
 }
+
+ZonedDateTime<FixedOffset> _ymdhmsn(
+  int year,
+  int month,
+  int day,
+  int hour,
+  int minute,
+  int second,
+  int nanos,
+  int offsetHours,
+) =>
+    FixedOffset.east(
+      TimeDelta(hours: offsetHours),
+    ).with_ymd_and_hms(year, month, day, hour, minute, second).unwrap() +
+    TimeDelta(nanos: nanos);
 
 void _parses(String string, List<ChronoFormatItem> items) {
   ChronoParser.parse(string, items);
