@@ -14,7 +14,7 @@ dependencies:
     # path: ../../deranged
     git:
       url: https://github.com/JonasWanke/deranged.git
-      ref: 5c4686fdf389919fb01790ea5f73e454bf79d00f
+      ref: cd171ce9b7103bb7967c97ddc4d3b6405d626791
   meta: ^1.3.0
   oxidized: ^6.0.0
 

@@ -157,8 +157,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "5c4686fdf389919fb01790ea5f73e454bf79d00f"
-      resolved-ref: "5c4686fdf389919fb01790ea5f73e454bf79d00f"
+      ref: cd171ce9b7103bb7967c97ddc4d3b6405d626791
+      resolved-ref: cd171ce9b7103bb7967c97ddc4d3b6405d626791
       url: "https://github.com/JonasWanke/deranged.git"
     source: git
     version: "0.0.0"
@@ -564,4 +564,4 @@ packages:
     source: hosted
     version: "3.1.3"
 sdks:
-  dart: ">=3.8.0 <4.0.0"
+  dart: ">=3.11.0 <4.0.0"
