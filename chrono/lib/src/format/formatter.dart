@@ -397,7 +397,7 @@ class ChronoFormatter {
         // TODO(JonasWanke): localization
         _buffer.write('.');
         _buffer.write(
-          (time.subSecondNanos ~/ TimeDelta.nanosPerSecond).toString().padLeft(
+          (time.subSecondNanos % TimeDelta.nanosPerSecond).toString().padLeft(
             9,
             '0',
           ),
