@@ -76,6 +76,7 @@ class Table {
             startDstOffset: startDstOffset,
           );
           dstOffsetSeconds = result.dstOffsetSeconds;
+          insertStartTransition = result.insertStartTransition;
           startZoneId = result.startZoneId;
           startUtcOffset = result.startUtcOffset;
           startDstOffset = result.startDstOffset;

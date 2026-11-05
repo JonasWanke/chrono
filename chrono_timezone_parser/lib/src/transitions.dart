@@ -148,6 +148,7 @@ class FixedTimespanSetBuilder {
 
   ({
     int dstOffsetSeconds,
+    bool insertStartTransition,
     String? startZoneId,
     int startUtcOffset,
     int startDstOffset,
@@ -237,6 +238,7 @@ class FixedTimespanSetBuilder {
     }
     return (
       dstOffsetSeconds: dstOffsetSeconds,
+      insertStartTransition: insertStartTransition,
       startZoneId: startZoneId,
       startUtcOffset: startUtcOffset,
       startDstOffset: startDstOffset,

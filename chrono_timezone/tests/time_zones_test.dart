@@ -361,16 +361,12 @@ void main() {
   });
 
   group('numeric names', () {
-    test(
-      'Scoresbysund',
-      () {
-        final dt = Tz.america_scoresbysund
-            .with_ymd_and_hms(2024, 5, 1, 0, 0, 0)
-            .unwrap();
-        expect(dt.offset.toString(), '-01');
-      },
-      skip: 'time_zones.dart lacks the 2024 DST period of Scoresbysund',
-    );
+    test('Scoresbysund', () {
+      final dt = Tz.america_scoresbysund
+          .with_ymd_and_hms(2024, 5, 1, 0, 0, 0)
+          .unwrap();
+      expect(dt.offset.toString(), '-01');
+    });
     test('Casey', () {
       final dt = Tz.antarctica_casey
           .with_ymd_and_hms(2022, 11, 1, 0, 0, 0)

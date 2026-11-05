@@ -3,6 +3,56 @@ import 'package:chrono_timezone_parser/chrono_timezone_parser.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('rule starting exactly at a zone change', () {
+    // Modeled on America/Scoresbysund in 2024: the zone changes from -1 to -2
+    // at the same instant as the EU rules start summer time.
+    final builder = TableBuilder();
+    for (final line in const [
+      'Rule\tR\t2023\tonly\t-\tMar\t26\t1:00u\t1:00\tS',
+      'Rule\tR\t2023\tonly\t-\tOct\t29\t1:00u\t0\t-',
+      'Rule\tR\t2024\tonly\t-\tMar\t31\t1:00u\t1:00\tS',
+      'Rule\tR\t2024\tonly\t-\tOct\t27\t1:00u\t0\t-',
+      'Zone\tTest/Zone\t-1:00\t-\t%z\t2000',
+      '\t\t\t-1:00\tR\t%z\t2024 Mar 31',
+      '\t\t\t-2:00\tR\t%z',
+    ]) {
+      builder.add(LineParser.parse(line).unwrap());
+    }
+
+    expect(
+      builder.build().timespans('Test/Zone'),
+      const FixedTimespanSet(
+        FixedTimespan('-01', utcOffsetSeconds: -3600, dstOffsetSeconds: 0),
+        [
+          (
+            1679792400, // 2023-03-26 01:00 UTC
+            FixedTimespan(
+              '+00',
+              utcOffsetSeconds: -3600,
+              dstOffsetSeconds: 3600,
+            ),
+          ),
+          (
+            1698541200, // 2023-10-29 01:00 UTC
+            FixedTimespan('-01', utcOffsetSeconds: -3600, dstOffsetSeconds: 0),
+          ),
+          (
+            1711846800, // 2024-03-31 01:00 UTC
+            FixedTimespan(
+              '-01',
+              utcOffsetSeconds: -7200,
+              dstOffsetSeconds: 3600,
+            ),
+          ),
+          (
+            1729990800, // 2024-10-27 01:00 UTC
+            FixedTimespan('-02', utcOffsetSeconds: -7200, dstOffsetSeconds: 0),
+          ),
+        ],
+      ),
+    );
+  });
+
   test('no transitions', () {
     final table = Table(
       rulesets: {},
