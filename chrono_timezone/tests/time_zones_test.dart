@@ -66,10 +66,15 @@ void main() {
   //         .withTimezone(&London);
   //     expect(
   //         dt,
-  //         Tz.europe_london.with_ymd_and_hms(1847, 11, 30, 23, 59, 59).unwrap()
+  //         Tz.europe_london
+  //             .with_ymd_and_hms(1847, 11, 30, 23, 59, 59)
+  //             .unwrap()
   //     );
   //     final dt = dt + Duration::seconds(1);
-  //     expect(dt, Tz.europe_london.with_ymd_and_hms(1847, 12, 1, 0, 1, 15).unwrap());
+  //     expect(
+  //         dt,
+  //         Tz.europe_london.with_ymd_and_hms(1847, 12, 1, 0, 1, 15).unwrap(),
+  //     );
   // });
 
   test('London DST', () {
@@ -118,7 +123,8 @@ void main() {
   //             final date = NaiveDate::from_yo_opt(y, d).unwrap();
   //             for h in 0..24 {
   //                 for m in 0..60 {
-  //                     final dt = date.and_hms_opt(h, m, 0).unwrap().and_utc();
+  //                     final dt =
+  //                         date.and_hms_opt(h, m, 0).unwrap().and_utc();
   //                     final with_tz = dt.withTimezone(&tz);
   //                     final utc = with_tz.withTimezone(&UTC);
   //                     expect(dt, utc);
