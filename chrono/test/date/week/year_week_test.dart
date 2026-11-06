@@ -60,6 +60,13 @@ void main() {
     });
   });
 
+  Glados2<YearWeek, Weekday>().test('dateOn', (yearWeek, weekday) {
+    final date = yearWeek.dateOn(weekday);
+    expect(date.weekday, weekday);
+    expect(yearWeek.dates.contains(date), true);
+    expect(date.yearWeek(yearWeek.config), yearWeek);
+  });
+
   test('comparing different configs throws', () {
     final a = YearWeek.fromRaw(2023, 10, WeekConfig.iso);
     final b = YearWeek.fromRaw(

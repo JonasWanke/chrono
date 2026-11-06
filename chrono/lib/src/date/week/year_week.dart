@@ -8,6 +8,7 @@ import '../../parser.dart';
 import '../../utils.dart';
 import '../date.dart';
 import '../duration.dart';
+import '../weekday.dart';
 import '../year.dart';
 import 'week_config.dart';
 
@@ -56,6 +57,10 @@ final class const YearWeek._unchecked(
         Days.fromWeeks(week - 1);
     return RangeInclusive(firstDay, firstDay + const Days(Days.perWeek - 1));
   }
+
+  /// The [Date] of the given [weekday] in this week.
+  Date dateOn(Weekday weekday) =>
+      dates.start + Days(weekday.indexFrom(config.firstDay));
 
   /// The [DateTime]s in this week.
   Range<CDateTime> get dateTimes => dates.dateTimes;
