@@ -91,9 +91,7 @@ final class const YearWeek._unchecked(
   ///
   /// Both [YearWeek]s must have the same [config], otherwise an
   /// [ArgumentError] is thrown.
-  // ignore: lines_longer_than_80_chars
-  // TODO(JonasWanke): rename to `differenceInWeeks`, add `differenceInYearAndWeeks`
-  int difference(YearWeek other) {
+  int differenceInWeeks(YearWeek other) {
     _checkSameConfig(other);
 
     final difference = dates.start.daysSince(other.dates.start);
@@ -122,7 +120,7 @@ final class const YearWeek._unchecked(
   @override
   YearWeek stepBy(int count) => this + count;
   @override
-  int stepsUntil(YearWeek other) => other.difference(this);
+  int stepsUntil(YearWeek other) => other.differenceInWeeks(this);
 
   @override
   bool operator ==(Object other) {

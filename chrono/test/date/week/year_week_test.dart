@@ -60,6 +60,10 @@ void main() {
     });
   });
 
+  Glados2<YearWeek, int>().test('differenceInWeeks', (yearWeek, weeks) {
+    expect((yearWeek + weeks).differenceInWeeks(yearWeek), weeks);
+  });
+
   Glados2<YearWeek, Weekday>().test('dateOn', (yearWeek, weekday) {
     final date = yearWeek.dateOn(weekday);
     expect(date.weekday, weekday);
@@ -75,7 +79,7 @@ void main() {
       WeekConfig.from(firstDay: Weekday.sunday, minDaysInFirstWeek: 1),
     );
     expect(() => a.compareTo(b), throwsArgumentError);
-    expect(() => a.difference(b), throwsArgumentError);
+    expect(() => a.differenceInWeeks(b), throwsArgumentError);
   });
 
   test('invalid week reports the argument name', () {
