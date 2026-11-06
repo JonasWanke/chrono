@@ -4,7 +4,7 @@ import 'date/date.dart';
 import 'date/month/month.dart';
 import 'date/month/month_day.dart';
 import 'date/month/year_month.dart';
-import 'date/week/iso_year_week.dart';
+import 'date/week/year_week.dart';
 import 'date/weekday.dart';
 import 'date/year.dart';
 import 'date_time/date_time.dart';
@@ -28,7 +28,7 @@ final class Parser._(final String _source) {
   static Year parseYear(String value) => _parse(value, (it) => it._parseYear());
   static YearMonth parseYearMonth(String value) =>
       _parse(value, (it) => it._parseYearMonth());
-  static IsoYearWeek parseIsoYearWeek(String value) =>
+  static YearWeek parseIsoYearWeek(String value) =>
       _parse(value, (it) => it._parseIsoYearWeek());
   static MonthDay parseMonthDay(String value) =>
       _parse(value, (it) => it._parseMonthDay());
@@ -76,7 +76,7 @@ final class Parser._(final String _source) {
     final isoYearWeek = _parseIsoYearWeek();
     _requireSeparator({'-'}, 'week number', 'weekday');
     final weekday = _parseWeekday();
-    return Date.fromIsoYearWeekAndWeekday(isoYearWeek, weekday);
+    return Date.fromYearWeekAndWeekday(isoYearWeek, weekday);
   }
 
   Date _parseOrdinalDate() {
@@ -99,11 +99,11 @@ final class Parser._(final String _source) {
     return YearMonth(year, month);
   }
 
-  IsoYearWeek _parseIsoYearWeek() {
+  YearWeek _parseIsoYearWeek() {
     final year = _parseYear();
     _requireSeparator({'-'}, 'year', 'week number');
-    final week = _parseWeek(year.numberOfIsoWeeks);
-    return IsoYearWeek.from(year, week);
+    final week = _parseWeek(year.numberOfWeeks(.iso));
+    return YearWeek.from(year, week, .iso);
   }
 
   MonthDay _parseMonthDay() {

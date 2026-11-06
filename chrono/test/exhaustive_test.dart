@@ -68,7 +68,7 @@ void main() {
         final weekday = date.weekday;
         expect(previous.weekday.next, weekday);
         expect(weekday.previous, previous.weekday);
-        expect(date, Date.fromIsoYearWeekAndWeekday(date.isoYearWeek, weekday));
+        expect(date, Date.fromYearWeekAndWeekday(date.yearWeek(.iso), weekday));
 
         previous = (
           daysSinceUnixEpoch: daysSinceEpoch,

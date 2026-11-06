@@ -2,7 +2,6 @@ import 'date/date.dart';
 import 'date/month/month.dart';
 import 'date/month/month_day.dart';
 import 'date/month/year_month.dart';
-import 'date/week/iso_year_week.dart';
 import 'date/week/week_config.dart';
 import 'date/week/year_week.dart';
 import 'date/weekday.dart';
@@ -20,7 +19,6 @@ extension DateTimeChronoExtension on DateTime {
   Month get asChronoMonth => Month.fromNumber(month);
   YearMonth get asChronoYearMonth => YearMonth(asChronoYear, asChronoMonth);
   MonthDay get asChronoMonthDay => MonthDay.from(asChronoMonth, day);
-  IsoYearWeek get asChronoIsoYearWeek => asChronoDate.isoYearWeek;
   YearWeek asChronoYearWeek(WeekConfig config) => asChronoDate.yearWeek(config);
   Weekday get asChronoWeekday => Weekday.fromNumber(weekday);
   Time get asChronoTime => asChronoDateTime.time;

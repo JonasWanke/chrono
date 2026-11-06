@@ -11,10 +11,8 @@ import 'duration.dart';
 import 'era.dart';
 import 'month/month.dart';
 import 'month/year_month.dart';
-import 'week/iso_year_week.dart';
 import 'week/week_config.dart';
 import 'week/year_week.dart';
-import 'weekday.dart';
 
 /// A year in the ISO 8601 calendar, e.g., 2023.
 ///
@@ -78,22 +76,6 @@ final class const Year(final int number)
   /// The [YearMonth]s of this year.
   RangeInclusive<YearMonth> get months =>
       YearMonth(this, Month.january).rangeTo(YearMonth(this, Month.december));
-
-  int get numberOfIsoWeeks {
-    // https://en.wikipedia.org/wiki/ISO_week_date#Weeks_per_year
-    final isLongWeek =
-        dates.end.weekday == Weekday.thursday ||
-        previous.dates.end.weekday == Weekday.wednesday;
-    return isLongWeek ? 53 : 52;
-  }
-
-  /// The [IsoYearWeek]s in this year.
-  RangeInclusive<IsoYearWeek> get isoWeeks {
-    return RangeInclusive(
-      IsoYearWeek.from(this, 1),
-      IsoYearWeek.from(this, numberOfIsoWeeks),
-    );
-  }
 
   int numberOfWeeks(WeekConfig config) {
     return 1 +
@@ -168,9 +150,6 @@ extension RangeOfYearChrono on Range<Year> {
   /// The [YearMonth]s in these years.
   RangeInclusive<YearMonth> get months => inclusive.months;
 
-  /// The [IsoYearWeek]s in these years.
-  RangeInclusive<IsoYearWeek> get isoWeeks => inclusive.isoWeeks;
-
   /// The [YearWeek]s in these years.
   RangeInclusive<YearWeek> weeks(WeekConfig config) => inclusive.weeks(config);
 
@@ -186,10 +165,6 @@ extension RangeInclusiveOfYearChrono on RangeInclusive<Year> {
   /// The [YearMonth]s in these years.
   RangeInclusive<YearMonth> get months =>
       start.months.start.rangeTo(end.months.end);
-
-  /// The [IsoYearWeek]s in these years.
-  RangeInclusive<IsoYearWeek> get isoWeeks =>
-      start.isoWeeks.start.rangeTo(end.isoWeeks.end);
 
   /// The [YearWeek]s in these years.
   RangeInclusive<YearWeek> weeks(WeekConfig config) =>

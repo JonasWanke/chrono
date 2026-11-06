@@ -7,7 +7,6 @@ import 'package:meta/meta.dart';
 import '../../chrono.dart';
 import '../codec.dart';
 import '../utils.dart';
-import 'week/week_config.dart';
 
 /// A date in the ISO 8601 calendar, e.g., April 23, 2023.
 ///
@@ -68,41 +67,11 @@ final class const Date._unchecked(
     return Date._unchecked(month, dayOfMonth);
   }
 
-  factory fromIsoYearAndWeekAndWeekday(
-    Year weekBasedYear,
-    int week,
-    Weekday weekday,
-  ) => Date.fromIsoYearWeekAndWeekday(
-    IsoYearWeek.from(weekBasedYear, week),
-    weekday,
-  );
-
-  /// Creates a date from a year week and weekday, e.g., Sunday in the 16th week
-  /// of 2023.
-  factory fromIsoYearWeekAndWeekday(IsoYearWeek isoYearWeek, Weekday weekday) {
-    // https://en.wikipedia.org/wiki/ISO_week_date#Calculating_an_ordinal_or_month_date_from_a_week_date
-    final january4 = Date.from(isoYearWeek.weekBasedYear, Month.january, 4);
-
-    final rawDayOfYear =
-        Days.perWeek * isoYearWeek.week +
-        weekday.number -
-        (january4.weekday.number + 3);
-    final Year year;
-    final int dayOfYear;
-    if (rawDayOfYear < 1) {
-      year = isoYearWeek.weekBasedYear - 1;
-      dayOfYear = rawDayOfYear + year.length.inDays;
-    } else {
-      final daysInCurrentYear = isoYearWeek.weekBasedYear.length.inDays;
-      if (rawDayOfYear > daysInCurrentYear) {
-        year = isoYearWeek.weekBasedYear + 1;
-        dayOfYear = rawDayOfYear - daysInCurrentYear;
-      } else {
-        year = isoYearWeek.weekBasedYear;
-        dayOfYear = rawDayOfYear;
-      }
-    }
-    return Date.fromYearAndOrdinal(year, dayOfYear);
+  /// Creates a date from a [YearWeek] and a [weekday], e.g., Sunday in the 16th
+  /// week of 2023.
+  factory fromYearWeekAndWeekday(YearWeek yearWeek, Weekday weekday) {
+    return yearWeek.dates.start +
+        Days(weekday.indexFrom(yearWeek.config.firstDay));
   }
 
   /// The UNIX epoch: 1970-01-01.
@@ -203,16 +172,6 @@ final class const Date._unchecked(
   }
 
   MonthDay get monthDay => MonthDay.from(month, day);
-
-  IsoYearWeek get isoYearWeek {
-    // Algorithm from https://en.wikipedia.org/wiki/ISO_week_date#Algorithms
-    final weekOfYear = (dayOfYear - weekday.number + 10) ~/ Days.perWeek;
-    return switch (weekOfYear) {
-      0 => year.previous.isoWeeks.end,
-      53 when year.numberOfIsoWeeks == 52 => year.next.isoWeeks.start,
-      _ => IsoYearWeek.from(year, weekOfYear),
-    };
-  }
 
   YearWeek yearWeek(WeekConfig config) {
     final first = year.firstDayOfWeekBasedYear(config);

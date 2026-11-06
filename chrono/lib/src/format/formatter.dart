@@ -106,11 +106,14 @@ class ChronoFormatter {
       case (ChronoFormatYear(format: .mod100), final date?, _):
         _writeTwo(date.year.number % 100, item.padding);
       case (ChronoFormatIsoYear(format: .full), final date?, _):
-        _writeYear(date.isoYearWeek.weekBasedYear, item.padding);
+        _writeYear(date.yearWeek(.iso).weekBasedYear, item.padding);
       case (ChronoFormatIsoYear(format: .div100), final date?, _):
-        _writeTwo(date.isoYearWeek.weekBasedYear.number ~/ 100, item.padding);
+        _writeTwo(
+          date.yearWeek(.iso).weekBasedYear.number ~/ 100,
+          item.padding,
+        );
       case (ChronoFormatIsoYear(format: .mod100), final date?, _):
-        _writeTwo(date.isoYearWeek.weekBasedYear.number % 100, item.padding);
+        _writeTwo(date.yearWeek(.iso).weekBasedYear.number % 100, item.padding);
       case (ChronoFormatQuarter(), final date?, _):
         _writeOne(date.month.index ~/ 3 + 1);
       case (ChronoFormatMonth(), final date?, _):
@@ -126,7 +129,7 @@ class ChronoFormatter {
         // (WeekFromMon, Some(d), _) => write_two(w, d.weeks_from(Weekday::Mon) as u8, pad),
         throw UnimplementedError();
       case (ChronoFormatIsoWeek(), final date?, _):
-        _writeTwo(date.isoYearWeek.week, item.padding);
+        _writeTwo(date.yearWeek(.iso).week, item.padding);
       case (ChronoFormatNumDaysFromSun(), final date?, _):
         _writeOne(date.weekday.indexFrom(.sunday));
       case (ChronoFormatWeekday(), final date?, _):

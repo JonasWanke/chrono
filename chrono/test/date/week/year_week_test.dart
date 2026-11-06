@@ -9,6 +9,22 @@ void main() {
   // ignore: missing-test-assertion
   testDataClassBasics<YearWeek>(testCompareTo: false, preciseCodecs: const []);
 
+  Glados<YearWeek>(any.isoYearWeek)
+      .test(const YearWeekAsIsoStringCodec().runtimeType.toString(), (value) {
+        const codec = YearWeekAsIsoStringCodec();
+        expect(codec.decode(codec.encode(value)), value);
+      });
+  test('ISO codec rejects other configs', () {
+    final week = YearWeek.fromRaw(2023, 10, WeekConfig.usSunday);
+    expect(
+      () => const YearWeekAsIsoStringCodec().encode(week),
+      throwsArgumentError,
+    );
+  });
+  test('ISO toString', () {
+    expect(YearWeek.fromRaw(2023, 6, .iso).toString(), '2023-W06');
+  });
+
   Glados2<YearWeek, int>().test('+ and -', (yearWeek, duration) {
     expect(yearWeek + duration - duration, yearWeek);
   });
@@ -16,12 +32,12 @@ void main() {
     expect(yearWeek.next.previous, yearWeek);
   });
 
-  Glados<Date>().test('ISO week matches YearWeek with ISO config', (date) {
-    final iso = date.isoYearWeek;
-    final general = date.yearWeek(WeekConfig.iso);
-    expect(general.weekBasedYear, iso.weekBasedYear);
-    expect(general.week, iso.week);
-    expect(general.dates, iso.dates);
+  Glados<Year>().test('ISO week 1 starts on Monday and contains January 4th', (
+    year,
+  ) {
+    final dates = year.weeks(.iso).start.dates;
+    expect(dates.start.weekday, Weekday.monday);
+    expect(dates.contains(Date.from(year, Month.january, 4)), true);
   });
 
   group('WeekConfig presets', () {

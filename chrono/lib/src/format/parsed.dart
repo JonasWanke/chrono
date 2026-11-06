@@ -651,7 +651,7 @@ class ChronoParsed {
 
     // Verify the ISO week date.
     bool verifyIsoWeekDate(Date date) {
-      final week = date.isoYearWeek;
+      final week = date.yearWeek(.iso);
       final isoYear = week.weekBasedYear;
       final isoWeek = week.week;
       final weekday = date.weekday;
@@ -723,7 +723,10 @@ class ChronoParsed {
           // ISO year, week, day of the week
           final Date date;
           try {
-            date = Date.fromIsoYearAndWeekAndWeekday(isoYear, isoWeek, weekday);
+            date = Date.fromYearWeekAndWeekday(
+              .from(isoYear, isoWeek, .iso),
+              weekday,
+            );
             // ignore: avoid_catching_errors
           } on RangeError {
             throw const ChronoParseException(.outOfRange);

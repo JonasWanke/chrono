@@ -2,7 +2,9 @@ import 'package:clock/clock.dart';
 import 'package:deranged/deranged.dart';
 import 'package:meta/meta.dart';
 
+import '../../codec.dart';
 import '../../date_time/date_time.dart';
+import '../../parser.dart';
 import '../../utils.dart';
 import '../date.dart';
 import '../duration.dart';
@@ -11,7 +13,11 @@ import 'week_config.dart';
 
 /// A specific week of a year as defined by a [WeekConfig], e.g., the 16th week
 /// of 2023.
-// TODO(JonasWanke): more docs and comparison to [IsoYearWeek]
+///
+/// Use [WeekConfig.iso] (e.g., `date.yearWeek(.iso)`) for ISO 8601 weeks.
+/// Weeks with different configs can't be compared or subtracted.
+///
+/// https://en.wikipedia.org/wiki/ISO_week_date
 @immutable
 final class const YearWeek._unchecked(
   final Year weekBasedYear,
@@ -33,7 +39,6 @@ final class const YearWeek._unchecked(
       );
   new fromRaw(int weekBasedYear, int week, WeekConfig config)
     : this.from(Year(weekBasedYear), week, config);
-
   factory currentInLocalZone(WeekConfig config, {Clock? clock}) =>
       Date.todayInLocalZone(clock: clock).yearWeek(config);
   factory currentInUtc(WeekConfig config, {Clock? clock}) =>
@@ -126,8 +131,15 @@ final class const YearWeek._unchecked(
   @override
   int get hashCode => Object.hash(weekBasedYear, week, config);
 
+  /// ISO weeks are formatted as “2023-W16”, others as, e.g.,
+  /// “Week 16 of 2023 with WeekConfig(…)”.
   @override
-  String toString() => 'Week $week of $weekBasedYear with $config';
+  String toString() {
+    if (config == WeekConfig.iso) {
+      return '$weekBasedYear-W${week.toString().padLeft(2, '0')}';
+    }
+    return 'Week $week of $weekBasedYear with $config';
+  }
 
   void _checkSameConfig(YearWeek other) {
     if (config != other.config) {
@@ -154,4 +166,22 @@ extension RangeInclusiveOfYearWeekChrono on RangeInclusive<YearWeek> {
 
   /// The [DateTime]s in these weeks.
   Range<CDateTime> get dateTimes => exclusive.dateTimes;
+}
+
+/// Encodes an ISO [YearWeek] (see [WeekConfig.iso]) as an ISO 8601 string,
+/// e.g., “2023-W16”.
+///
+/// [encode] throws an [ArgumentError] for weeks with another config.
+class const YearWeekAsIsoStringCodec()
+    extends CodecAndJsonConverter<YearWeek, String> {
+  @override
+  String encode(YearWeek input) {
+    if (input.config != WeekConfig.iso) {
+      throw ArgumentError.value(input, 'input', 'Must be an ISO week.');
+    }
+    return input.toString();
+  }
+
+  @override
+  YearWeek decode(String encoded) => Parser.parseIsoYearWeek(encoded);
 }

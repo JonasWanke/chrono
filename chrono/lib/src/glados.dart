@@ -5,7 +5,6 @@ import 'date/duration.dart';
 import 'date/month/month.dart';
 import 'date/month/month_day.dart';
 import 'date/month/year_month.dart';
-import 'date/week/iso_year_week.dart';
 import 'date/week/week_config.dart';
 import 'date/week/year_week.dart';
 import 'date/weekday.dart';
@@ -30,7 +29,6 @@ void setChronoGladosDefaults() {
   Any.setDefault(any.time);
   Any.setDefault(any.year);
   Any.setDefault(any.yearMonth);
-  Any.setDefault(any.isoYearWeek);
   Any.setDefault(any.yearWeek);
   Any.setDefault(any.weekConfig);
   Any.setDefault(any.monthDay);
@@ -99,11 +97,13 @@ extension ChronoAny on Any {
 
   Generator<Year> get year => this.int.map(Year.new);
   Generator<YearMonth> get yearMonth => combine2(year, month, YearMonth.new);
-  Generator<IsoYearWeek> get isoYearWeek {
+
+  /// Generates ISO [YearWeek]s.
+  Generator<YearWeek> get isoYearWeek {
     return simple(
       generate: (random, size) {
         final weekBasedYear = year(random, size);
-        final week = intInRange(1, weekBasedYear.value.numberOfIsoWeeks + 1)(
+        final week = intInRange(1, weekBasedYear.value.numberOfWeeks(.iso) + 1)(
           random,
           size,
         );
@@ -112,16 +112,17 @@ extension ChronoAny on Any {
       shrink: (input) sync* {
         final (weekBasedYear, week) = input;
         yield* weekBasedYear.shrink().map((weekBasedYear) {
-          final actualWeek = week.value <= weekBasedYear.value.numberOfIsoWeeks
+          final actualWeek =
+              week.value <= weekBasedYear.value.numberOfWeeks(.iso)
               ? week
               : week.shrink().firstWhere(
-                  (it) => it.value <= weekBasedYear.value.numberOfIsoWeeks,
+                  (it) => it.value <= weekBasedYear.value.numberOfWeeks(.iso),
                 );
           return (weekBasedYear, actualWeek);
         });
         yield* week.shrink().map((it) => (weekBasedYear, it));
       },
-    ).map((it) => IsoYearWeek.from(it.$1.value, it.$2.value));
+    ).map((it) => YearWeek.from(it.$1.value, it.$2.value, .iso));
   }
 
   Generator<WeekConfig> get weekConfig {

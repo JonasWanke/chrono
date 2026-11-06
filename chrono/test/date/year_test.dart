@@ -53,7 +53,7 @@ void main() {
 
     for (var number = 0; number < 400; number++) {
       expect(
-        Year(number).numberOfIsoWeeks,
+        Year(number).numberOfWeeks(.iso),
         longYears.contains(number) ? 53 : 52,
       );
     }
