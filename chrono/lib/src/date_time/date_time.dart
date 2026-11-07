@@ -27,7 +27,8 @@ final class const CDateTime.from(final Date date, final Time time)
   /// Creates a date and time from raw numbers, e.g.,
   /// `CDateTime(2023, 4, 23, 18, 24, 20)`.
   ///
-  /// [nanoseconds] is the sub-second part in nanoseconds.
+  /// [millis], [micros], and [nanos] are summed to form the sub-second part,
+  /// like in [Time.new].
   new(
     int year,
     int month,
@@ -35,10 +36,12 @@ final class const CDateTime.from(final Date date, final Time time)
     int hour = 0,
     int minute = 0,
     int second = 0,
-    int nanoseconds = 0,
+    int millis = 0,
+    int micros = 0,
+    int nanos = 0,
   ]) : this.from(
          Date(year, month, day),
-         Time(hour, minute, second, 0, 0, nanoseconds),
+         Time(hour, minute, second, millis, micros, nanos),
        );
 
   /// The UNIX epoch: 1970-01-01 at 00:00.
