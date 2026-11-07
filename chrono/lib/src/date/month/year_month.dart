@@ -12,6 +12,9 @@ import '../../utils.dart';
 final class const YearMonth.from(final Year year, final Month month)
     with ComparisonOperatorsFromComparable<YearMonth>, StepUnlimited<YearMonth>
     implements Comparable<YearMonth> {
+  /// Creates a year and month from raw numbers, e.g., `YearMonth(2023, 4)`.
+  ///
+  /// Throws a [RangeError] if [month] is not in 1 to 12.
   new(int year, int month) : this.from(Year(year), Month.fromNumber(month));
 
   factory currentInLocalZone({Clock? clock}) =>

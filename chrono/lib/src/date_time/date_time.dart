@@ -24,6 +24,10 @@ import '../utils.dart';
 final class const CDateTime.from(final Date date, final Time time)
     with ComparisonOperatorsFromComparable<CDateTime>
     implements Comparable<CDateTime>, ChronoFormattable<CDateTimeFormatItem> {
+  /// Creates a date and time from raw numbers, e.g.,
+  /// `CDateTime(2023, 4, 23, 18, 24, 20)`.
+  ///
+  /// [nanoseconds] is the sub-second part in nanoseconds.
   new(
     int year,
     int month,

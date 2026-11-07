@@ -117,6 +117,15 @@ For example, adding 1 month and -1 day to 2023-08-31 results in 2023-09-29:
 
 (If the order of operations was reversed, the result would be 2023-09-30.)
 
+## Constructing and Converting Values
+
+- `Date(2023, 4, 23)` takes raw numbers, `Date.from(Year(2023), Month.april, 23)` takes typed components, and `from…` constructors name other sources, e.g., `Date.fromCore(dateTime)`.
+- Parts convert to wholes via methods on the part: `Year(2023).atMonth(.april).atDay(23)`, `MonthDay(4, 23).inYear(Year(2023))`, and `date.at(Time(18, 24, 20))`.
+  Methods that can fail on invalid input have an `…OrNull` variant.
+- To Dart Core, use methods like `instant.toCoreInUtc()`.
+  From Core, use `fromCore(…)` or the `chrono…` getters on `DateTime`, e.g., `dateTime.chronoDate`.
+  These read the fields as they are and ignore `isUtc`.
+
 ## Serialization
 
 All timestamp, date, and time classes support JSON serialization.

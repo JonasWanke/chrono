@@ -22,6 +22,16 @@ final class const Date._unchecked(
   final int day,
 ) with ComparisonOperatorsFromComparable<Date>, StepUnlimited<Date>
     implements Comparable<Date>, ChronoFormattable<DateFormatItem> {
+  /// Creates a date from raw numbers, e.g., `Date(2023, 4, 23)`.
+  ///
+  /// Throws a [RangeError] if [month] or [day] is out of range.
+  new(int year, int month, int day)
+    : this.from(Year(year), Month.fromNumber(month), day);
+
+  /// Creates a date from typed components, e.g.,
+  /// `Date.from(Year(2023), Month.april, 23)`.
+  ///
+  /// Throws a [RangeError] if [day] is invalid for the given month.
   new from(Year year, Month month, int day)
     : this._unchecked(
         YearMonth.from(year, month),
@@ -33,8 +43,6 @@ final class const Date._unchecked(
           'Invalid day for ${YearMonth.from(year, month)}.',
         ),
       );
-  new(int year, int month, int day)
-    : this.from(Year(year), Month.fromNumber(month), day);
 
   /// Creates a date from a calendar [year], a [weekNumber] (see
   /// [weekNumberStartingOn]), and a [weekday], e.g., Thursday in week 3.

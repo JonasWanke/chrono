@@ -31,6 +31,17 @@ final class const YearWeek._unchecked(
   final WeekConfig config,
 ) with ComparisonOperatorsFromComparable<YearWeek>, StepUnlimited<YearWeek>
     implements Comparable<YearWeek> {
+  /// Creates a year week from raw numbers, e.g.,
+  /// `YearWeek(2023, 16, WeekConfig.iso)`.
+  ///
+  /// Throws a [RangeError] if [week] is not valid for the week-based year.
+  new(int weekBasedYear, int week, WeekConfig config)
+    : this.from(Year(weekBasedYear), week, config);
+
+  /// Creates a year week from typed components, e.g.,
+  /// `YearWeek.from(Year(2023), 16, WeekConfig.iso)`.
+  ///
+  /// Throws a [RangeError] if [week] is not valid for [weekBasedYear].
   new from(Year weekBasedYear, int week, WeekConfig config)
     : this._unchecked(
         weekBasedYear,
@@ -43,8 +54,6 @@ final class const YearWeek._unchecked(
         ),
         config,
       );
-  new(int weekBasedYear, int week, WeekConfig config)
-    : this.from(Year(weekBasedYear), week, config);
   factory currentInLocalZone(WeekConfig config, {Clock? clock}) =>
       Date.todayInLocalZone(clock: clock).yearWeek(config);
   factory currentInUtc(WeekConfig config, {Clock? clock}) =>

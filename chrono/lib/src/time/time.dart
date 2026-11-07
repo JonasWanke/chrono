@@ -18,6 +18,9 @@ final class const Time._unchecked(
   final int subSecondNanos,
 ) with ComparisonOperatorsFromComparable<Time>
     implements Comparable<Time>, ChronoFormattable<TimeFormatItem> {
+  /// Creates a time from raw numbers, e.g., `Time(18, 24, 20)`.
+  ///
+  /// [millis], [micros], and [nanos] are summed to form the sub-second part.
   new(
     int hour, [
     int minute = 0,

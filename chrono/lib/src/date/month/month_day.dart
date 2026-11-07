@@ -23,6 +23,16 @@ final class const MonthDay._unchecked(
   final int day,
 ) with ComparisonOperatorsFromComparable<MonthDay>
     implements Comparable<MonthDay> {
+  /// Creates a month and day from raw numbers, e.g., `MonthDay(4, 23)`.
+  ///
+  /// Throws a [RangeError] if [month] or [day] is out of range.
+  new(int month, int day) : this.from(Month.fromNumber(month), day);
+
+  /// Creates a month and day from typed components, e.g.,
+  /// `MonthDay.from(Month.april, 23)`.
+  ///
+  /// Throws a [RangeError] if [day] is invalid for [month]. February 29 is
+  /// valid.
   new from(Month month, int day)
     : this._unchecked(
         month,
@@ -34,7 +44,6 @@ final class const MonthDay._unchecked(
           'Invalid day for $month.',
         ),
       );
-  new(int month, int day) : this.from(Month.fromNumber(month), day);
 
   factory todayInLocalZone({Clock? clock}) =>
       Date.todayInLocalZone(clock: clock).monthDay;
