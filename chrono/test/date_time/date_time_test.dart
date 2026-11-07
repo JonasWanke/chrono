@@ -15,6 +15,15 @@ void main() {
     ],
   );
 
+  test('unnamed constructor', () {
+    expect(
+      CDateTime(2023, 4, 23, 12, 34, 56, 123456789),
+      CDateTime.from(Date(2023, 4, 23), Time.from(12, 34, 56, 123, 456, 789)),
+    );
+    expect(CDateTime(2023, 4, 23), Date(2023, 4, 23).atMidnight);
+    expect(CDateTime(2023, 4, 23, 1, 2, 3, 1).time.subSecondNanos, 1);
+  });
+
   Glados<CDateTime>().test('fromDurationSinceUnixEpoch', (dateTime) {
     expect(
       CDateTime.fromDurationSinceUnixEpoch(dateTime.durationSinceUnixEpoch),
