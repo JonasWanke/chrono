@@ -11,6 +11,7 @@ import 'duration.dart';
 import 'era.dart';
 import 'month/month.dart';
 import 'month/year_month.dart';
+import 'weekday.dart';
 import 'week/week_config.dart';
 import 'week/year_week.dart';
 
@@ -102,6 +103,28 @@ final class const Year(final int number)
     final month = dayOfYear > monthEnd ? rawMonth.next : rawMonth;
 
     return month.atDay(dayOfYear - firstDayOfYear(month.month) + 1);
+  }
+
+  /// The [Date] with the given [weekNumber] (see [Date.weekNumberStartingOn])
+  /// and [weekday] in this calendar year, e.g., Thursday in week 3.
+  ///
+  /// Week 1 starts at the first [firstDay] of the year, and days before it are
+  /// in week 0.
+  ///
+  /// Throws a [RangeError] if the date isn't in this year.
+  Date atWeekNumber(
+    int weekNumber,
+    Weekday weekday, {
+    required Weekday firstDay,
+  }) {
+    final january1 = atMonth(Month.january).atDay(1);
+    final firstWeekStart =
+        january1.weekday.untilNextOrSame(firstDay).inDays + 1;
+    final ordinal =
+        firstWeekStart +
+        (weekNumber - 1) * Days.perWeek +
+        weekday.indexFrom(firstDay);
+    return atOrdinalDay(ordinal);
   }
 
   /// The [YearWeek] with the given one-based [week] number in this

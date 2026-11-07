@@ -682,12 +682,7 @@ class ChronoParsed {
       Weekday firstDay,
     ) {
       try {
-        return Date.fromYearAndWeekNumber(
-          year,
-          week,
-          weekday,
-          firstDay: firstDay,
-        );
+        return year.atWeekNumber(week, weekday, firstDay: firstDay);
         // ignore: avoid_catching_errors
       } on RangeError {
         throw const ChronoParseException(.outOfRange);

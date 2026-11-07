@@ -44,29 +44,6 @@ final class const Date._unchecked(
         ),
       );
 
-  /// Creates a date from a calendar [year], a [weekNumber] (see
-  /// [weekNumberStartingOn]), and a [weekday], e.g., Thursday in week 3.
-  ///
-  /// Week 1 starts at the first [firstDay] of the year, and days before it are
-  /// in week 0.
-  ///
-  /// Throws a [RangeError] if the date isn't in [year].
-  factory fromYearAndWeekNumber(
-    Year year,
-    int weekNumber,
-    Weekday weekday, {
-    required Weekday firstDay,
-  }) {
-    final january1 = Date.from(year, Month.january, 1);
-    final firstWeekStart =
-        january1.weekday.untilNextOrSame(firstDay).inDays + 1;
-    final ordinal =
-        firstWeekStart +
-        (weekNumber - 1) * Days.perWeek +
-        weekday.indexFrom(firstDay);
-    return year.atOrdinalDay(ordinal);
-  }
-
   /// The UNIX epoch: 1970-01-01.
   ///
   /// https://en.wikipedia.org/wiki/Unix_time
