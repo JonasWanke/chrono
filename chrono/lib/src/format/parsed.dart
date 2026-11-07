@@ -815,7 +815,7 @@ class ChronoParsed {
       nano += nanosecond;
     }
 
-    return Time.from(hour, minute, second, 0, 0, nano);
+    return Time(hour, minute, second, 0, 0, nano);
   }
 
   /// Returns a parsed [CDateTime] out of the given fields, except for the

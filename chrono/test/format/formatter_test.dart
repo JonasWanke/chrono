@@ -94,7 +94,7 @@ void main() {
 
   group('AM/PM', () {
     String format(int hour, ChronoCasing casing) =>
-        Time.from(hour)
+        Time(hour)
             .toString([const .hour12(), const .literal(' '), .amPm(casing)]);
 
     test('after midnight and before noon', () {

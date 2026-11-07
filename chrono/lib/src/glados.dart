@@ -91,7 +91,7 @@ extension ChronoAny on Any {
       intInRange(0, TimeDelta.millisPerSecond),
       intInRange(0, TimeDelta.microsPerMilli),
       intInRange(0, TimeDelta.nanosPerMicro),
-      Time.from,
+      Time.new,
     );
   }
 

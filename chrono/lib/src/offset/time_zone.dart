@@ -192,7 +192,7 @@ abstract class const TimeZone<Tz extends TimeZone<Tz>>() {
     int second,
   ) {
     return fromLocalDateTime(
-      Date(year, month, day).at(Time.from(hour, minute, second)),
+      Date(year, month, day).at(Time(hour, minute, second)),
     );
   }
 

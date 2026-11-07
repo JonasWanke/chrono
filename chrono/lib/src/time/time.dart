@@ -18,7 +18,7 @@ final class const Time._unchecked(
   final int subSecondNanos,
 ) with ComparisonOperatorsFromComparable<Time>
     implements Comparable<Time>, ChronoFormattable<TimeFormatItem> {
-  new from(
+  new(
     int hour, [
     int minute = 0,
     int second = 0,
@@ -239,7 +239,7 @@ final class const Time._unchecked(
   }
 
   Time copyWith({int? hour, int? minute, int? second, int? subSecondNanos}) {
-    return Time.from(
+    return Time(
       hour ?? this.hour,
       minute ?? this.minute,
       second ?? this.second,

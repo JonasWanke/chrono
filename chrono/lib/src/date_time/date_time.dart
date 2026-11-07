@@ -34,7 +34,7 @@ final class const CDateTime.from(final Date date, final Time time)
     int nanoseconds = 0,
   ]) : this.from(
          Date(year, month, day),
-         Time.from(hour, minute, second, 0, 0, nanoseconds),
+         Time(hour, minute, second, 0, 0, nanoseconds),
        );
 
   /// The UNIX epoch: 1970-01-01 at 00:00.
@@ -60,7 +60,7 @@ final class const CDateTime.from(final Date date, final Time time)
   new fromCore(DateTime dateTime)
     : this.from(
         Date.fromCore(dateTime),
-        Time.from(
+        Time(
           dateTime.hour,
           dateTime.minute,
           dateTime.second,

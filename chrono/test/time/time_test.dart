@@ -25,42 +25,39 @@ void main() {
     final offset = FixedOffset.east(TimeDelta(hours: 1, minutes: 30));
 
     test('edge cases', () {
-      expect(Time.from(0, 30).overflowingSubOffset(offset), (
-        Time.from(23),
+      expect(Time(0, 30).overflowingSubOffset(offset), (
+        Time(23),
         const Days(-1),
       ));
-      expect(Time.from(23).overflowingAddOffset(offset), (
-        Time.from(0, 30),
+      expect(Time(23).overflowingAddOffset(offset), (
+        Time(0, 30),
         const Days(1),
       ));
-      expect(Time.from(12).overflowingAddOffset(offset), (
-        Time.from(13, 30),
+      expect(Time(12).overflowingAddOffset(offset), (
+        Time(13, 30),
         const Days(0),
       ));
       expect(
-        Time.from(12).overflowingAddOffset(
+        Time(12).overflowingAddOffset(
           FixedOffset.west(TimeDelta(hours: 12, minutes: 30)),
         ),
-        (Time.from(23, 30), const Days(-1)),
+        (Time(23, 30), const Days(-1)),
       );
       expect(
-        Time.from(
-          0,
-          30,
-        ).overflowingAddOffset(FixedOffset.west(TimeDelta(hours: 1))),
-        (Time.from(23, 30), const Days(-1)),
+        Time(0, 30).overflowingAddOffset(FixedOffset.west(TimeDelta(hours: 1))),
+        (Time(23, 30), const Days(-1)),
       );
     });
     test('with sub-second nanos', () {
       final nanosOffset = FixedOffset.east(
         TimeDelta(hours: 1, nanos: 600000000),
       );
-      expect(Time.from(12, 0, 0, 700).overflowingAddOffset(nanosOffset), (
-        Time.from(13, 0, 1, 300),
+      expect(Time(12, 0, 0, 700).overflowingAddOffset(nanosOffset), (
+        Time(13, 0, 1, 300),
         const Days(0),
       ));
-      expect(Time.from(0, 0, 0, 100).overflowingSubOffset(nanosOffset), (
-        Time.from(22, 59, 59, 500),
+      expect(Time(0, 0, 0, 100).overflowingSubOffset(nanosOffset), (
+        Time(22, 59, 59, 500),
         const Days(-1),
       ));
     });

@@ -217,7 +217,7 @@ void main() {
             final date = Date.fromYearAndOrdinal(Year(year), dayOfYear);
             for (var hour = 0; hour < 24; hour++) {
               for (var minute = 0; minute < 60; minute++) {
-                final dt = date.at(Time.from(hour, minute)).andUtc();
+                final dt = date.at(Time(hour, minute)).andUtc();
                 final back = dt.withTimezone(tz).withTimezone(Tz.utc);
                 expect(back.utcDateTime, dt.utcDateTime, reason: '$tz $dt');
               }

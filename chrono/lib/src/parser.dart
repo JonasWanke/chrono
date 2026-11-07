@@ -129,7 +129,7 @@ final class Parser._(final String _source) {
             maxDigits: 9,
           ).let((it) => it.$1 * math.pow(10, 9 - it.$2).toInt())
         : 0;
-    return Time.from(hour, minute, second, 0, 0, fraction);
+    return Time(hour, minute, second, 0, 0, fraction);
   }
 
   Year _parseYear() {
