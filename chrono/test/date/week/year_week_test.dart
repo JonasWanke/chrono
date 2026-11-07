@@ -40,6 +40,19 @@ void main() {
     expect(dates.contains(Date.from(year, Month.january, 4)), true);
   });
 
+  test('WeekConfig validates minDaysInFirstWeek', () {
+    WeekConfig(firstDay: .monday, minDaysInFirstWeek: 1);
+    WeekConfig(firstDay: .monday, minDaysInFirstWeek: 7);
+    expect(
+      () => WeekConfig(firstDay: .monday, minDaysInFirstWeek: 0),
+      throwsRangeError,
+    );
+    expect(
+      () => WeekConfig(firstDay: .monday, minDaysInFirstWeek: 8),
+      throwsRangeError,
+    );
+  });
+
   group('WeekConfig presets', () {
     test('US weeks start on Sunday and week 1 contains January 1st', () {
       // 2023-01-01 is a Sunday, 2022-01-01 is a Saturday.

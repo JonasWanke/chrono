@@ -33,4 +33,8 @@ void main() {
       TimeDelta(seconds: 1, micros: 5),
     );
   });
+
+  test('chronoElapsed', () {
+    expect(Stopwatch().chronoElapsed, TimeDelta(micros: 0));
+  });
 }

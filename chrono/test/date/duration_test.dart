@@ -195,6 +195,15 @@ void main() {
     Glados2<Days, Days>().test('+ and -', (first, second) {
       expect(first + second - second, first);
     });
+    test('inNormal… units', () {
+      const days = Days(2);
+      expect(days.inNormalHours, 48);
+      expect(days.inNormalMinutes, 48 * 60);
+      expect(days.inNormalSeconds, 48 * 60 * 60);
+      expect(days.inNormalMillis, 48 * 60 * 60 * 1000);
+      expect(days.inNormalMicros, 48 * 60 * 60 * 1000000);
+      expect(days.inNormalNanos, 48 * 60 * 60 * 1000000000);
+    });
     Glados<Days>().test('absolute', (duration) {
       expect(duration.absolute.isNonNegative, true);
     });

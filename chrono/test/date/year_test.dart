@@ -20,6 +20,35 @@ void main() {
     expect(() => const Year(2023).atOrdinalDay(366), throwsRangeError);
     expect(() => const Year(2023).atOrdinalDay(0), throwsRangeError);
   });
+  Glados2<Date, Weekday>().test('atWeekNumber', (date, firstDay) {
+    expect(
+      date.year.atWeekNumber(
+        date.weekNumberStartingOn(firstDay),
+        date.weekday,
+        firstDay: firstDay,
+      ),
+      date,
+    );
+  });
+  test('atWeekNumber known values', () {
+    // 2023-01-01 is a Sunday: %U week 1 starts there, %W week 1 on January 2.
+    expect(
+      const Year(2023).atWeekNumber(1, .sunday, firstDay: .sunday),
+      Date(2023, 1, 1),
+    );
+    expect(
+      const Year(2023).atWeekNumber(1, .monday, firstDay: .monday),
+      Date(2023, 1, 2),
+    );
+    expect(
+      const Year(2023).atWeekNumber(0, .sunday, firstDay: .monday),
+      Date(2023, 1, 1),
+    );
+    expect(
+      () => const Year(2023).atWeekNumber(0, .monday, firstDay: .sunday),
+      throwsRangeError,
+    );
+  });
   test('atWeek', () {
     expect(
       const Year(2023).atWeek(16, .iso),

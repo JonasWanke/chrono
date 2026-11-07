@@ -1,4 +1,5 @@
 import 'package:chrono/chrono.dart';
+import 'package:clock/clock.dart';
 import 'package:glados/glados.dart';
 
 import 'utils.dart';
@@ -19,6 +20,11 @@ void main() {
       testCodecStartingFromEncoded(const InstantAsMicrosIntCodec());
       testCodecStartingFromEncoded(const InstantAsMillisIntCodec());
       testCodecStartingFromEncoded(const InstantAsSecondsIntCodec());
+    });
+
+    test('now uses the given clock', () {
+      final dateTime = DateTime.utc(2023, 4, 23, 12, 34, 56);
+      expect(Instant.now(clock: Clock.fixed(dateTime)).toCoreInUtc(), dateTime);
     });
 
     Glados<Instant>().test('fromDurationSinceUnixEpoch', (timestamp) {
