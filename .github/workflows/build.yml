@@ -60,3 +60,25 @@ jobs:
       - uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  chrono-timezone-test:
+    name: "Package chrono_timezone: Run Tests"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: chrono_timezone/
+    strategy:
+      matrix:
+        sdk: [stable, beta, dev]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The tests compare the generated data to the tz source files.
+          submodules: true
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ matrix.sdk }}
+      - run: dart pub get
+      # The tests compile the tz source files using the runner's `zic`.
+      - run: zic --version
+      - run: dart test
