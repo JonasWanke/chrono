@@ -112,7 +112,7 @@ final class const CDateTime.from(final Date date, final Time time)
   }
 
   CDateTime operator +(ChronoDelta duration) {
-    final compoundDuration = duration.asDateTimeDelta;
+    final compoundDuration = duration.toDateTimeDelta();
     var newDate = date + compoundDuration.months + compoundDuration.days;
 
     final (days, newTime) = (time.timeSinceMidnight + compoundDuration.time)

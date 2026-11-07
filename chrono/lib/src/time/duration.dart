@@ -294,7 +294,7 @@ class const TimeDelta.raw(
   }
 
   @override
-  DateTimeDelta get asDateTimeDelta => DateTimeDelta(time: this);
+  DateTimeDelta toDateTimeDelta() => DateTimeDelta(time: this);
 
   @override
   bool get isZero => wholeSeconds == 0 && subSecondNanos == 0;

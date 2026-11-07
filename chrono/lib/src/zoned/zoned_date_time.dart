@@ -45,7 +45,7 @@ class const ZonedDateTime<Tz extends TimeZone<Tz>>.fromUtcDateTimeAndOffset(
   /// (aka "UNIX timestamp").
   @useResult
   TimeDelta get durationSinceUnixEpoch =>
-      utcDateTime.date.daysSinceUnixEpoch.asTime +
+      utcDateTime.date.daysSinceUnixEpoch.toTimeDelta() +
       utcDateTime.time.timeSinceMidnight;
 
   /// Changes the associated time zone.
@@ -81,7 +81,7 @@ class const ZonedDateTime<Tz extends TimeZone<Tz>>.fromUtcDateTimeAndOffset(
   /// it doesn't exist (a gap), the result is shifted forward by the length of
   /// the gap.
   ZonedDateTime<Tz> operator +(ChronoDelta duration) {
-    final delta = duration.asDateTimeDelta;
+    final delta = duration.toDateTimeDelta();
     final withCalendar = delta.months.inMonths == 0 && delta.days.inDays == 0
         ? this
         : _addCalendarDelta(delta.months, delta.days);
@@ -100,7 +100,7 @@ class const ZonedDateTime<Tz extends TimeZone<Tz>>.fromUtcDateTimeAndOffset(
   /// fold). The time part is then added on the UTC timeline.
   @useResult
   MappedLocalTime<ZonedDateTime<Tz>> checkedAdd(ChronoDelta duration) {
-    final delta = duration.asDateTimeDelta;
+    final delta = duration.toDateTimeDelta();
     final withCalendar = delta.months.inMonths == 0 && delta.days.inDays == 0
         ? MappedLocalTime_Single(this)
         : timeZone.fromLocalDateTime(

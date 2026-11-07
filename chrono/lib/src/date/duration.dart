@@ -18,10 +18,10 @@ import '../utils.dart';
 /// - [TimeDelta], which covers durations based on a fixed time like seconds.
 /// - [ChronoDelta], which is the base class for date and time durations.
 abstract class const CalendarDelta() extends ChronoDelta {
-  MonthsDays get asMonthsDays;
+  MonthsDays toMonthsDays();
   @override
-  DateTimeDelta get asDateTimeDelta =>
-      DateTimeDelta(monthsAndDays: asMonthsDays);
+  DateTimeDelta toDateTimeDelta() =>
+      DateTimeDelta(monthsAndDays: toMonthsDays());
 
   @override
   CalendarDelta operator -();
@@ -42,10 +42,10 @@ final class const MonthsDays({
   final Days days = const Days(0),
 }) extends CalendarDelta {
   @override
-  MonthsDays get asMonthsDays => this;
+  MonthsDays toMonthsDays() => this;
 
   MonthsDays operator +(CalendarDelta duration) {
-    final MonthsDays(:months, :days) = duration.asMonthsDays;
+    final MonthsDays(:months, :days) = duration.toMonthsDays();
     return MonthsDays(months: this.months + months, days: this.days + days);
   }
 
@@ -139,7 +139,7 @@ final class const Months(final int inMonths)
   static const year = Months(perYear);
 
   @override
-  MonthsDays get asMonthsDays => MonthsDays(months: this);
+  MonthsDays toMonthsDays() => MonthsDays(months: this);
 
   bool get isPositive => inMonths > 0;
   bool get isNonPositive => inMonths <= 0;
@@ -280,16 +280,16 @@ final class const Days(final int inDays)
   /// The days in a leap year.
   static const leapYear = Days(perLeapYear);
 
-  TimeDelta get asTime => TimeDelta(normalDays: inDays);
-  int get asNormalHours => TimeUnit.hours.per(.normalDays) * inDays;
-  int get asNormalMinutes => TimeUnit.minutes.per(.normalDays) * inDays;
-  int get asNormalSeconds => TimeUnit.seconds.per(.normalDays) * inDays;
-  int get asNormalMillis => TimeUnit.millis.per(.normalDays) * inDays;
-  int get asNormalMicros => TimeUnit.micros.per(.normalDays) * inDays;
-  int get asNormalNanos => TimeUnit.nanos.per(.normalDays) * inDays;
+  TimeDelta toTimeDelta() => TimeDelta(normalDays: inDays);
+  int get inNormalHours => TimeUnit.hours.per(.normalDays) * inDays;
+  int get inNormalMinutes => TimeUnit.minutes.per(.normalDays) * inDays;
+  int get inNormalSeconds => TimeUnit.seconds.per(.normalDays) * inDays;
+  int get inNormalMillis => TimeUnit.millis.per(.normalDays) * inDays;
+  int get inNormalMicros => TimeUnit.micros.per(.normalDays) * inDays;
+  int get inNormalNanos => TimeUnit.nanos.per(.normalDays) * inDays;
 
   @override
-  MonthsDays get asMonthsDays => MonthsDays(days: this);
+  MonthsDays toMonthsDays() => MonthsDays(days: this);
 
   bool get isPositive => inDays > 0;
   bool get isNonPositive => inDays <= 0;

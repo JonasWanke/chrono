@@ -45,9 +45,6 @@ final class Instant.fromDurationSinceUnixEpoch(
     );
   }
 
-  Instant asInstant() =>
-      Instant.fromDurationSinceUnixEpoch(durationSinceUnixEpoch);
-
   Instant operator +(TimeDelta duration) =>
       Instant.fromDurationSinceUnixEpoch(durationSinceUnixEpoch + duration);
   Instant operator -(TimeDelta duration) =>

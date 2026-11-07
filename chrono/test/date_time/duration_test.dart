@@ -27,16 +27,16 @@ void main() {
 
   group('equality', () {
     Glados<CalendarDelta>().test('CalendarDelta', (duration) {
-      expect(duration.asDateTimeDelta, duration);
+      expect(duration.toDateTimeDelta(), duration);
     });
     Glados<Months>().test('Months', (duration) {
-      expect(duration.asDateTimeDelta, duration);
+      expect(duration.toDateTimeDelta(), duration);
     });
     Glados<Days>().test('Days', (duration) {
-      expect(duration.asDateTimeDelta, duration);
+      expect(duration.toDateTimeDelta(), duration);
     });
     Glados<TimeDelta>().test('TimeDelta', (duration) {
-      expect(duration.asDateTimeDelta, duration);
+      expect(duration.toDateTimeDelta(), duration);
     });
   });
 }

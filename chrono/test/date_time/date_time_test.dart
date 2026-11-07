@@ -54,11 +54,11 @@ void main() {
 
     expect(
       (base + TimeDelta(hours: 5)).difference(base),
-      TimeDelta(hours: 5).asDateTimeDelta,
+      TimeDelta(hours: 5).toDateTimeDelta(),
     );
     expect(
       (base + const Days(1)).difference(base),
-      const Days(1).asDateTimeDelta,
+      const Days(1).toDateTimeDelta(),
     );
     expect(
       (base + const Days(1) + TimeDelta(hours: 5)).difference(base),
@@ -67,11 +67,11 @@ void main() {
 
     expect(
       (base - TimeDelta(hours: 5)).difference(base),
-      TimeDelta(hours: -5).asDateTimeDelta,
+      TimeDelta(hours: -5).toDateTimeDelta(),
     );
     expect(
       (base - const Days(1)).difference(base),
-      const Days(-1).asDateTimeDelta,
+      const Days(-1).toDateTimeDelta(),
     );
     expect(
       (base - const Days(1) - TimeDelta(hours: 5)).difference(base),

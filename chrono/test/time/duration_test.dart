@@ -89,7 +89,7 @@ void main() {
     });
     test('roundToMultipleOf', () {
       expect(
-        TimeDelta(normalDays: 15).roundToMultipleOf(Days.week.asTime),
+        TimeDelta(normalDays: 15).roundToMultipleOf(Days.week.toTimeDelta()),
         TimeDelta(normalDays: 14),
       );
     });

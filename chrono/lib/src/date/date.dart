@@ -255,7 +255,7 @@ final class const Date._unchecked(
   /// - 2023-03-31 + 1 month = 2023-04-30, since April only has 30 days.
   /// - 2023-03-31 + 1 month and 1 day = 2023-05-01
   Date operator +(CalendarDelta duration) {
-    final MonthsDays(:months, :days) = duration.asMonthsDays;
+    final MonthsDays(:months, :days) = duration.toMonthsDays();
     final yearMonthWithMonths = yearMonth + months;
     final dateWithMonths = Date._unchecked(
       yearMonthWithMonths,

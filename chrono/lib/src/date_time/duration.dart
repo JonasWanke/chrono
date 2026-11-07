@@ -17,10 +17,10 @@ import '../date/duration.dart';
 /// - [DateTimeDelta], which combines [CalendarDelta] and [TimeDelta].
 @immutable
 abstract class const ChronoDelta() {
-  DateTimeDelta get asDateTimeDelta;
+  DateTimeDelta toDateTimeDelta();
 
   bool get isZero {
-    final compoundDuration = asDateTimeDelta;
+    final compoundDuration = toDateTimeDelta();
     return compoundDuration.months.inMonths == 0 &&
         compoundDuration.days.inDays == 0 &&
         compoundDuration.time.isZero;
@@ -45,8 +45,8 @@ abstract class const ChronoDelta() {
     if (identical(this, other)) return true;
     if (other is! ChronoDelta) return false;
 
-    final thisCompound = asDateTimeDelta;
-    final otherCompound = other.asDateTimeDelta;
+    final thisCompound = toDateTimeDelta();
+    final otherCompound = other.toDateTimeDelta();
     return thisCompound.months.inMonths == otherCompound.months.inMonths &&
         thisCompound.days.inDays == otherCompound.days.inDays &&
         thisCompound.time.wholeSeconds == otherCompound.time.wholeSeconds &&
@@ -55,7 +55,7 @@ abstract class const ChronoDelta() {
 
   @override
   int get hashCode {
-    final compound = asDateTimeDelta;
+    final compound = toDateTimeDelta();
     return Object.hash(
       compound.months.inMonths,
       compound.days.inDays,
@@ -81,7 +81,7 @@ final class DateTimeDelta({
       );
 
   final monthsAndDays =
-      monthsAndDays?.asMonthsDays ??
+      monthsAndDays?.toMonthsDays() ??
       MonthsDays(
         months: months ?? const Months(0),
         days: days ?? const Days(0),
@@ -90,11 +90,11 @@ final class DateTimeDelta({
   Days get days => monthsAndDays.days;
 
   @override
-  DateTimeDelta get asDateTimeDelta => this;
+  DateTimeDelta toDateTimeDelta() => this;
 
   DateTimeDelta operator +(ChronoDelta duration) {
-    final DateTimeDelta(:monthsAndDays, time: seconds) =
-        duration.asDateTimeDelta;
+    final DateTimeDelta(:monthsAndDays, time: seconds) = duration
+        .toDateTimeDelta();
     return DateTimeDelta(
       monthsAndDays: this.monthsAndDays + monthsAndDays,
       time: time + seconds,
