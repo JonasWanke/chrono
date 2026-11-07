@@ -35,6 +35,15 @@ final class const YearMonth.from(final Year year, final Month month)
         : const Days(29);
   }
 
+  /// The [Date] with the given one-based [day] in this month.
+  ///
+  /// Throws a [RangeError] if [day] is not in `1..length.inDays`.
+  Date atDay(int day) => Date.fromYearMonthAndDay(this, day);
+
+  /// Like [atDay], but returns `null` if [day] is out of range.
+  Date? atDayOrNull(int day) =>
+      day < 1 || day > length.inDays ? null : atDay(day);
+
   /// The [Date]s in this month.
   RangeInclusive<Date> get dates {
     return RangeInclusive(

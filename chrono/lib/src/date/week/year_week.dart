@@ -64,7 +64,7 @@ final class const YearWeek._unchecked(
   }
 
   /// The [Date] of the given [weekday] in this week.
-  Date dateOn(Weekday weekday) =>
+  Date at(Weekday weekday) =>
       dates.start + Days(weekday.indexFrom(config.firstDay));
 
   /// The [DateTime]s in this week.

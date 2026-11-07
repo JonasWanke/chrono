@@ -11,6 +11,23 @@ void main() {
     preciseCodecs: const [YearAsIsoStringCodec(), YearAsIntCodec()],
   );
 
+  Glados2<Year, Month>().test('atMonth', (year, month) {
+    expect(year.atMonth(month), YearMonth.from(year, month));
+  });
+  test('atOrdinalDay', () {
+    expect(const Year(2023).atOrdinalDay(113), Date(2023, 4, 23));
+    expect(const Year(2024).atOrdinalDay(366), Date(2024, 12, 31));
+    expect(() => const Year(2023).atOrdinalDay(366), throwsRangeError);
+    expect(() => const Year(2023).atOrdinalDay(0), throwsRangeError);
+  });
+  test('atWeek', () {
+    expect(
+      const Year(2023).atWeek(16, .iso),
+      YearWeek.from(const Year(2023), 16, .iso),
+    );
+    expect(() => const Year(2023).atWeek(53, .iso), throwsRangeError);
+  });
+
   Glados<Year>().test('isLeapYear and isCommonYear', (year) {
     expect(year.isCommonYear, !year.isLeapYear);
   });

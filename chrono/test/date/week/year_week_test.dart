@@ -64,8 +64,8 @@ void main() {
     expect((yearWeek + weeks).differenceInWeeks(yearWeek), weeks);
   });
 
-  Glados2<YearWeek, Weekday>().test('dateOn', (yearWeek, weekday) {
-    final date = yearWeek.dateOn(weekday);
+  Glados2<YearWeek, Weekday>().test('at', (yearWeek, weekday) {
+    final date = yearWeek.at(weekday);
     expect(date.weekday, weekday);
     expect(yearWeek.dates.contains(date), true);
     expect(date.yearWeek(yearWeek.config), yearWeek);

@@ -73,7 +73,7 @@ final class const Date._unchecked(
   /// Creates a date from a [YearWeek] and a [weekday], e.g., Sunday in the 16th
   /// week of 2023.
   factory fromYearWeekAndWeekday(YearWeek yearWeek, Weekday weekday) =>
-      yearWeek.dateOn(weekday);
+      yearWeek.at(weekday);
 
   /// Creates a date from a calendar [year], a [weekNumber] (see
   /// [weekNumberStartingOn]), and a [weekday], e.g., Thursday in week 3.

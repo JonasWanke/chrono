@@ -73,6 +73,22 @@ final class const Year(final int number)
 
   Days get length => isLeapYear ? Days.leapYear : Days.normalYear;
 
+  /// The [YearMonth] of the given [month] in this year.
+  YearMonth atMonth(Month month) => YearMonth.from(this, month);
+
+  /// The [Date] with the given one-based ordinal day of this year, e.g., the
+  /// 113th day of 2023.
+  ///
+  /// Throws a [RangeError] if [dayOfYear] is not in `1..length.inDays`.
+  Date atOrdinalDay(int dayOfYear) => Date.fromYearAndOrdinal(this, dayOfYear);
+
+  /// The [YearWeek] with the given one-based [week] number in this
+  /// week-based year.
+  ///
+  /// Throws a [RangeError] if [week] is not in `1..numberOfWeeks(config)`.
+  YearWeek atWeek(int week, WeekConfig config) =>
+      YearWeek.from(this, week, config);
+
   /// The [YearMonth]s of this year.
   RangeInclusive<YearMonth> get months => YearMonth.from(
     this,

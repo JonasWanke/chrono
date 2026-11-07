@@ -5,6 +5,7 @@ import '../../codec.dart';
 import '../../parser.dart';
 import '../../utils.dart';
 import '../date.dart';
+import '../year.dart';
 import 'month.dart';
 
 /// The combination of a [Month] and a day of the month, e.g., April 23.
@@ -43,6 +44,14 @@ final class const MonthDay._unchecked(
       this == MonthDay.todayInLocalZone(clock: clock);
   bool isTodayInUtc({Clock? clock}) =>
       this == MonthDay.todayInUtc(clock: clock);
+
+  /// The [Date] of this month and day in the given [year].
+  ///
+  /// Throws a [RangeError] for February 29 in a common year.
+  Date inYear(Year year) => Date.fromYearAndMonthDay(year, this);
+
+  /// Like [inYear], but returns `null` for February 29 in a common year.
+  Date? inYearOrNull(Year year) => year.atMonth(month).atDayOrNull(day);
 
   MonthDay copyWith({Month? month, int? day}) =>
       MonthDay.from(month ?? this.month, day ?? this.day);
