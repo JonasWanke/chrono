@@ -72,6 +72,29 @@ final class const Date._unchecked(
   factory fromYearWeekAndWeekday(YearWeek yearWeek, Weekday weekday) =>
       yearWeek.dateOn(weekday);
 
+  /// Creates a date from a calendar [year], a [weekNumber] (see
+  /// [weekNumberStartingOn]), and a [weekday], e.g., Thursday in week 3.
+  ///
+  /// Week 1 starts at the first [firstDay] of the year, and days before it are
+  /// in week 0.
+  ///
+  /// Throws a [RangeError] if the date isn't in [year].
+  factory fromYearAndWeekNumber(
+    Year year,
+    int weekNumber,
+    Weekday weekday, {
+    required Weekday firstDay,
+  }) {
+    final january1 = Date.from(year, Month.january, 1);
+    final firstWeekStart =
+        january1.weekday.untilNextOrSame(firstDay).inDays + 1;
+    final ordinal =
+        firstWeekStart +
+        (weekNumber - 1) * Days.perWeek +
+        weekday.indexFrom(firstDay);
+    return Date.fromYearAndOrdinal(year, ordinal);
+  }
+
   /// The UNIX epoch: 1970-01-01.
   ///
   /// https://en.wikipedia.org/wiki/Unix_time
@@ -170,6 +193,16 @@ final class const Date._unchecked(
   }
 
   MonthDay get monthDay => MonthDay.from(month, day);
+
+  /// The week number within the calendar year, where week 1 starts at the first
+  /// [firstDay] of the year (from 0 to 53).
+  ///
+  /// Days before that first [firstDay] are in week 0. This is the numbering of
+  /// `%U` ([Weekday.sunday]) and `%W` ([Weekday.monday]) in `strftime`. See
+  /// [yearWeek] for weeks that can belong to the neighboring year.
+  int weekNumberStartingOn(Weekday firstDay) =>
+      (dayOfYear - 1 + Days.perWeek - weekday.indexFrom(firstDay)) ~/
+      Days.perWeek;
 
   YearWeek yearWeek(WeekConfig config) {
     final first = year.firstDayOfWeekBasedYear(config);

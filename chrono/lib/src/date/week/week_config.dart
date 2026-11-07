@@ -1,5 +1,6 @@
 import 'package:meta/meta.dart';
 
+import '../date.dart';
 import '../duration.dart';
 import '../weekday.dart';
 
@@ -10,6 +11,10 @@ import '../weekday.dart';
 /// belong to the last week of the previous year.
 ///
 /// See [iso], [usSunday], and [middleEast] for common configurations.
+///
+/// This doesn't cover strftime-style week numbers (`%U` and `%W`), which
+/// number partial leading weeks as week 0 within the calendar year. Use
+/// [Date.weekNumberStartingOn] for those.
 @immutable
 class const WeekConfig._unchecked({
   /// The first day of each week.

@@ -18,6 +18,11 @@ import 'week_config.dart';
 /// Use [WeekConfig.iso] (e.g., `date.yearWeek(.iso)`) for ISO 8601 weeks.
 /// Weeks with different configs can't be compared or subtracted.
 ///
+/// Every week has exactly 7 days and belongs to a week-based year that can
+/// differ from the calendar year at its edges. For strftime-style numbering
+/// (`%U` and `%W`), where leading days of a year form a partial week 0, see
+/// [Date.weekNumberStartingOn] instead.
+///
 /// https://en.wikipedia.org/wiki/ISO_week_date
 @immutable
 final class const YearWeek._unchecked(

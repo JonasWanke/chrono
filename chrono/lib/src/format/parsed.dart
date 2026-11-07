@@ -668,13 +668,30 @@ class ChronoParsed {
     // Verify the ordinal and other (non-ISO) week dates.
     bool verifyOrdinal(Date date) {
       final ordinal = date.dayOfYear;
-      // TODO(JonasWanke): implement
-      // final weekFromSun = date.weekFromSun;
-      // final weekFromMon = date.weekFromMon;
-      // return (this.ordinal ?? ordinal) == ordinal &&
-      //     (this.weekFromSun ?? weekFromSun) == weekFromSun &&
-      //     (this.weekFromMon ?? weekFromMon) == weekFromMon;
-      return (this.ordinal ?? ordinal) == ordinal;
+      final weekFromSun = date.weekNumberStartingOn(.sunday);
+      final weekFromMon = date.weekNumberStartingOn(.monday);
+      return (this.ordinal ?? ordinal) == ordinal &&
+          (this.weekFromSun ?? weekFromSun) == weekFromSun &&
+          (this.weekFromMon ?? weekFromMon) == weekFromMon;
+    }
+
+    Date resolveWeekDate(
+      Year year,
+      int week,
+      Weekday weekday,
+      Weekday firstDay,
+    ) {
+      try {
+        return Date.fromYearAndWeekNumber(
+          year,
+          week,
+          weekday,
+          firstDay: firstDay,
+        );
+        // ignore: avoid_catching_errors
+      } on RangeError {
+        throw const ChronoParseException(.outOfRange);
+      }
     }
 
     // Test several possibilities.
@@ -707,17 +724,24 @@ class ChronoParsed {
           date,
         );
       }(),
-      // TODO(JonasWanke): support weeks
-      // (final year?, _, ChronoParsed( :final weekFromSun?, :final weekday?)) => (){
-      //     // year, week (starting at 1st Sunday), day of the week
-      //     let date = resolve_week_date(year, weekFromSun, weekday, Weekday::Sun)?;
-      //     return (verifyYmd(date) && verifyIsoWeekDate(date) && verifyOrdinal(date), date);
-      // }(),
-      // (final year?, _, ChronoParsed( :final weekFromMon?, :final weekday?)) => (){
-      //     // year, week (starting at 1st Monday), day of the week
-      //     let date = resolve_week_date(year, weekFromMon, weekday, Weekday::Mon)?;
-      //     return (verifyYmd(date) && verifyIsoWeekDate(date) && verifyOrdinal(date), date);
-      // }(),
+      (final year?, _, ChronoParsed(:final weekFromSun?, :final weekday?)) =>
+        () {
+          // year, week (starting at 1st Sunday), day of the week
+          final date = resolveWeekDate(year, weekFromSun, weekday, .sunday);
+          return (
+            verifyYmd(date) && verifyIsoWeekDate(date) && verifyOrdinal(date),
+            date,
+          );
+        }(),
+      (final year?, _, ChronoParsed(:final weekFromMon?, :final weekday?)) =>
+        () {
+          // year, week (starting at 1st Monday), day of the week
+          final date = resolveWeekDate(year, weekFromMon, weekday, .monday);
+          return (
+            verifyYmd(date) && verifyIsoWeekDate(date) && verifyOrdinal(date),
+            date,
+          );
+        }(),
       (_, final isoYear?, ChronoParsed(:final isoWeek?, :final weekday?)) =>
         () {
           // ISO year, week, day of the week

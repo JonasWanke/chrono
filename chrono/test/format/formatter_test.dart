@@ -51,6 +51,47 @@ void main() {
     }
   });
 
+  group('week numbers from Sunday and Monday', () {
+    String format(Date date) =>
+        date.toString(const [.weekFromSun(), .literal(' '), .weekFromMon()]);
+
+    test('known dates', () {
+      // 2023-01-01 is a Sunday.
+      expect(format(Date.fromRaw(2023, 1, 1)), '01 00');
+      expect(format(Date.fromRaw(2023, 1, 2)), '01 01');
+      expect(format(Date.fromRaw(2023, 1, 7)), '01 01');
+      expect(format(Date.fromRaw(2023, 1, 8)), '02 01');
+      // 2022-01-01 is a Saturday.
+      expect(format(Date.fromRaw(2022, 1, 1)), '00 00');
+      expect(format(Date.fromRaw(2022, 1, 2)), '01 00');
+      expect(format(Date.fromRaw(2022, 1, 3)), '01 01');
+      expect(format(Date.fromRaw(2022, 12, 31)), '52 52');
+      expect(Date.fromRaw(2023, 1, 1).weekNumberStartingOn(.sunday), 1);
+      expect(Date.fromRaw(2023, 1, 1).weekNumberStartingOn(.monday), 0);
+    });
+
+    test('round trip through parsing', () {
+      const fromSun = <DateFormatItem>[
+        .year(),
+        .literal(' '),
+        .weekFromSun(),
+        .weekday(),
+      ];
+      const fromMon = <DateFormatItem>[
+        .year(),
+        .literal(' '),
+        .weekFromMon(),
+        .weekday(),
+      ];
+
+      var date = Date.fromRaw(2020, 1, 1);
+      for (var i = 0; i < 3 * 366; i++, date = date.next) {
+        expect(Date.parse(date.toString(fromSun), fromSun), date);
+        expect(Date.parse(date.toString(fromMon), fromMon), date);
+      }
+    });
+  });
+
   group('AM/PM', () {
     String format(int hour, ChronoCasing casing) =>
         Time.from(hour)
