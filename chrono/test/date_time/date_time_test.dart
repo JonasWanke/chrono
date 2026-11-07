@@ -32,13 +32,10 @@ void main() {
   });
 
   Glados<DateTime>().test('fromCore', (dateTime) {
-    expect(CDateTime.fromCore(dateTime).asCoreDateTimeInLocalZone, dateTime);
+    expect(CDateTime.fromCore(dateTime).toCoreInLocalZone(), dateTime);
 
     final dateTimeInUtc = dateTime.toUtc();
-    expect(
-      dateTimeInUtc,
-      CDateTime.fromCore(dateTimeInUtc).asCoreDateTimeInUtc,
-    );
+    expect(dateTimeInUtc, CDateTime.fromCore(dateTimeInUtc).toCoreInUtc());
   });
 
   Glados3<CDateTime, Days, TimeDelta>().test('+ and -', (

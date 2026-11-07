@@ -29,13 +29,10 @@ void main() {
     });
 
     Glados<DateTime>().test('core conversion', (dateTime) {
-      expect(Instant.fromCore(dateTime).asCoreDateTimeInLocalZone, dateTime);
+      expect(Instant.fromCore(dateTime).toCoreInLocalZone(), dateTime);
 
       final dateTimeInUtc = dateTime.toUtc();
-      expect(
-        dateTimeInUtc,
-        Instant.fromCore(dateTimeInUtc).asCoreDateTimeInUtc,
-      );
+      expect(dateTimeInUtc, Instant.fromCore(dateTimeInUtc).toCoreInUtc());
     });
 
     Glados<Instant>().test('DateTime conversion', (timestamp) {

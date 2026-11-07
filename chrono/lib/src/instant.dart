@@ -32,13 +32,12 @@ final class Instant.fromDurationSinceUnixEpoch(
     const TimeDelta.raw(0, 0),
   );
 
-  CDateTime get dateTimeInLocalZone =>
-      CDateTime.fromCore(asCoreDateTimeInLocalZone);
+  CDateTime get dateTimeInLocalZone => CDateTime.fromCore(toCoreInLocalZone());
   CDateTime get dateTimeInUtc =>
       CDateTime.fromDurationSinceUnixEpoch(durationSinceUnixEpoch);
 
-  DateTime get asCoreDateTimeInLocalZone => _getDateTime(isUtc: false);
-  DateTime get asCoreDateTimeInUtc => _getDateTime(isUtc: true);
+  DateTime toCoreInLocalZone() => _getDateTime(isUtc: false);
+  DateTime toCoreInUtc() => _getDateTime(isUtc: true);
   DateTime _getDateTime({required bool isUtc}) {
     return DateTime.fromMicrosecondsSinceEpoch(
       durationSinceUnixEpoch.roundTo(.micros),

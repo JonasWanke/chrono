@@ -80,7 +80,7 @@ final class const CDateTime.from(final Date date, final Time time)
         TimeDelta(normalDays: date.daysSinceUnixEpoch.inDays);
   }
 
-  Instant get inLocalZone => Instant.fromCore(asCoreDateTimeInLocalZone);
+  Instant get inLocalZone => Instant.fromCore(toCoreInLocalZone());
   Instant get inUtc =>
       Instant.fromDurationSinceUnixEpoch(durationSinceUnixEpoch);
 
@@ -96,8 +96,8 @@ final class const CDateTime.from(final Date date, final Time time)
   ZonedDateTime<Utc> andUtc() =>
       ZonedDateTime.fromUtcDateTimeAndOffset(this, const Utc());
 
-  DateTime get asCoreDateTimeInLocalZone => _getDartDateTime(isUtc: false);
-  DateTime get asCoreDateTimeInUtc => _getDartDateTime(isUtc: true);
+  DateTime toCoreInLocalZone() => _getDartDateTime(isUtc: false);
+  DateTime toCoreInUtc() => _getDartDateTime(isUtc: true);
   DateTime _getDartDateTime({required bool isUtc}) {
     return (isUtc ? DateTime.utc : DateTime.new)(
       date.year.number,

@@ -12,23 +12,22 @@ import 'time/duration.dart';
 import 'time/time.dart';
 
 extension DateTimeChronoExtension on DateTime {
-  Instant get asChronoInstant => Instant.fromCore(this);
-  CDateTime get asChronoDateTime => CDateTime.fromCore(this);
-  Date get asChronoDate => Date.fromCore(this);
-  Year get asChronoYear => Year(year);
-  Month get asChronoMonth => Month.fromNumber(month);
-  YearMonth get asChronoYearMonth =>
-      YearMonth.from(asChronoYear, asChronoMonth);
-  MonthDay get asChronoMonthDay => MonthDay.from(asChronoMonth, day);
-  YearWeek asChronoYearWeek(WeekConfig config) => asChronoDate.yearWeek(config);
-  Weekday get asChronoWeekday => Weekday.fromNumber(weekday);
-  Time get asChronoTime => asChronoDateTime.time;
+  Instant get chronoInstant => Instant.fromCore(this);
+  CDateTime get chronoDateTime => CDateTime.fromCore(this);
+  Date get chronoDate => Date.fromCore(this);
+  Year get chronoYear => Year(year);
+  Month get chronoMonth => Month.fromNumber(month);
+  YearMonth get chronoYearMonth => YearMonth.from(chronoYear, chronoMonth);
+  MonthDay get chronoMonthDay => MonthDay.from(chronoMonth, day);
+  YearWeek chronoYearWeek(WeekConfig config) => chronoDate.yearWeek(config);
+  Weekday get chronoWeekday => Weekday.fromNumber(weekday);
+  Time get chronoTime => chronoDateTime.time;
 }
 
 extension DurationChronoExtension on Duration {
-  TimeDelta get asChronoTimeDelta => TimeDelta.fromCore(this);
+  TimeDelta toChronoTimeDelta() => TimeDelta.fromCore(this);
 }
 
 extension StopwatchChronoExtension on Stopwatch {
-  TimeDelta get elapsedChrono => TimeDelta(micros: elapsedMicroseconds);
+  TimeDelta get chronoElapsed => TimeDelta(micros: elapsedMicroseconds);
 }
