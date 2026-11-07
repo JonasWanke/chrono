@@ -264,7 +264,7 @@ final class const Date._unchecked(
   bool isTodayInUtc({Clock? clock}) => this == Date.todayInUtc(clock: clock);
 
   /// A [CDateTime] combining this [Date] and the given [time].
-  CDateTime at(Time time) => CDateTime(this, time);
+  CDateTime at(Time time) => CDateTime.from(this, time);
 
   /// A [Range] of [CDateTime] combining this [Date] and the given time [range].
   Range<CDateTime> atRange(Range<Time> range) =>

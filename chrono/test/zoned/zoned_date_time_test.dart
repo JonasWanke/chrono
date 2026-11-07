@@ -15,19 +15,19 @@ void main() {
       expect(
         ZonedDateTime.fromDurationSinceUnixEpoch(TimeDelta(hours: 5))
             .utcDateTime,
-        CDateTime.fromRaw(1970, 1, 1, 5),
+        CDateTime(1970, 1, 1, 5),
       );
     });
     test('before the epoch', () {
       expect(
         ZonedDateTime.fromDurationSinceUnixEpoch(TimeDelta(hours: -5))
             .utcDateTime,
-        CDateTime.fromRaw(1969, 12, 31, 19),
+        CDateTime(1969, 12, 31, 19),
       );
       expect(
         ZonedDateTime.fromDurationSinceUnixEpoch(TimeDelta(normalDays: -1))
             .utcDateTime,
-        CDateTime.fromRaw(1969, 12, 31),
+        CDateTime(1969, 12, 31),
       );
     });
     Glados<TimeDelta>().test('roundtrips through durationSinceUnixEpoch', (
@@ -77,7 +77,7 @@ void main() {
 
   group('toString(…)', () {
     final dateTime = FixedOffset.east(TimeDelta(hours: 9, minutes: 30))
-        .fromUtcDateTime(CDateTime.fromRaw(2000, 9, 1, 13, 0, 15));
+        .fromUtcDateTime(CDateTime(2000, 9, 1, 13, 0, 15));
 
     test('default', () {
       expect(dateTime.toString(), '2000-09-01T22:30:15 +09:30');
@@ -105,9 +105,7 @@ void main() {
 
   group('rfc3339Format(…)', () {
     final offset = FixedOffset.east(TimeDelta(hours: 9, minutes: 30));
-    final whole = offset.fromUtcDateTime(
-      CDateTime.fromRaw(2000, 9, 1, 13, 0, 15),
-    );
+    final whole = offset.fromUtcDateTime(CDateTime(2000, 9, 1, 13, 0, 15));
     final fractional = whole + TimeDelta(nanos: 123456789);
 
     test('default', () {

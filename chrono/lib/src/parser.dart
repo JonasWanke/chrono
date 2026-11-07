@@ -62,7 +62,7 @@ final class Parser._(final String _source) {
     final date = _parseDate();
     _requireDesignator('T', 'time', isCaseSensitive: false);
     final time = _parseTime();
-    return CDateTime(date, time);
+    return CDateTime.from(date, time);
   }
 
   Date _parseDate() {

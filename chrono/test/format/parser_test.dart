@@ -1709,7 +1709,7 @@ void main() {
       .second(),
       .literal(' GMT'),
     ];
-    final dt = CDateTime.fromRaw(1994, 11, 6, 8, 49, 37);
+    final dt = CDateTime(1994, 11, 6, 8, 49, 37);
 
     // Check that the format is what we expect.
     expect(dt.toString(format), 'Sunday, 06-Nov-94 08:49:37 GMT');
@@ -1720,30 +1720,12 @@ void main() {
     // Check that the rest of the weekdays parse correctly (this test
     // originally failed in Rust because Sunday parsed incorrectly).
     final testDates = [
-      (
-        CDateTime.fromRaw(1994, 11, 7, 8, 49, 37),
-        'Monday, 07-Nov-94 08:49:37 GMT',
-      ),
-      (
-        CDateTime.fromRaw(1994, 11, 8, 8, 49, 37),
-        'Tuesday, 08-Nov-94 08:49:37 GMT',
-      ),
-      (
-        CDateTime.fromRaw(1994, 11, 9, 8, 49, 37),
-        'Wednesday, 09-Nov-94 08:49:37 GMT',
-      ),
-      (
-        CDateTime.fromRaw(1994, 11, 10, 8, 49, 37),
-        'Thursday, 10-Nov-94 08:49:37 GMT',
-      ),
-      (
-        CDateTime.fromRaw(1994, 11, 11, 8, 49, 37),
-        'Friday, 11-Nov-94 08:49:37 GMT',
-      ),
-      (
-        CDateTime.fromRaw(1994, 11, 12, 8, 49, 37),
-        'Saturday, 12-Nov-94 08:49:37 GMT',
-      ),
+      (CDateTime(1994, 11, 7, 8, 49, 37), 'Monday, 07-Nov-94 08:49:37 GMT'),
+      (CDateTime(1994, 11, 8, 8, 49, 37), 'Tuesday, 08-Nov-94 08:49:37 GMT'),
+      (CDateTime(1994, 11, 9, 8, 49, 37), 'Wednesday, 09-Nov-94 08:49:37 GMT'),
+      (CDateTime(1994, 11, 10, 8, 49, 37), 'Thursday, 10-Nov-94 08:49:37 GMT'),
+      (CDateTime(1994, 11, 11, 8, 49, 37), 'Friday, 11-Nov-94 08:49:37 GMT'),
+      (CDateTime(1994, 11, 12, 8, 49, 37), 'Saturday, 12-Nov-94 08:49:37 GMT'),
     ];
     for (final (expected, string) in testDates) {
       expect(CDateTime.parse(string, format), expected, reason: string);

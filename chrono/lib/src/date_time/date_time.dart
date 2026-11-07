@@ -21,10 +21,10 @@ import '../utils.dart';
 /// - [Date], which represents the date part.
 /// - [Time], which represents the time part.
 @immutable
-final class const CDateTime(final Date date, final Time time)
+final class const CDateTime.from(final Date date, final Time time)
     with ComparisonOperatorsFromComparable<CDateTime>
     implements Comparable<CDateTime>, ChronoFormattable<CDateTimeFormatItem> {
-  new fromRaw(
+  new(
     int year,
     int month,
     int day, [
@@ -32,7 +32,7 @@ final class const CDateTime(final Date date, final Time time)
     int minute = 0,
     int second = 0,
     int nanoseconds = 0,
-  ]) : this(
+  ]) : this.from(
          Date(year, month, day),
          Time.from(hour, minute, second, nanoseconds),
        );
@@ -49,7 +49,7 @@ final class const CDateTime(final Date date, final Time time)
   factory fromDurationSinceUnixEpoch(TimeDelta sinceUnixEpoch) {
     final (days, time) = sinceUnixEpoch.toDaysAndTime();
     final date = Date.fromDaysSinceUnixEpoch(days);
-    return CDateTime(date, time);
+    return CDateTime.from(date, time);
   }
 
   /// Creates a Chrono [CDateTime] from a Dart Core [DateTime].
@@ -58,7 +58,7 @@ final class const CDateTime(final Date date, final Time time)
   /// [DateTime.hour], etc. getters and ignores whether that [DateTime] is in
   /// UTC or the local timezone.
   new fromCore(DateTime dateTime)
-    : this(
+    : this.from(
         Date.fromCore(dateTime),
         Time.from(
           dateTime.hour,
@@ -118,7 +118,7 @@ final class const CDateTime(final Date date, final Time time)
     final (days, newTime) = (time.timeSinceMidnight + compoundDuration.time)
         .toDaysAndTime();
     newDate += days;
-    return CDateTime(newDate, newTime);
+    return CDateTime.from(newDate, newTime);
   }
 
   CDateTime operator -(ChronoDelta duration) => this + (-duration);
@@ -129,7 +129,7 @@ final class const CDateTime(final Date date, final Time time)
   @useResult
   CDateTime addOffset(FixedOffset offset) {
     final (time, days) = this.time.overflowingAddOffset(offset);
-    return CDateTime(date + days, time);
+    return CDateTime.from(date + days, time);
   }
 
   /// Subtracts the given [FixedOffset] from the current [CDateTime].
@@ -138,7 +138,7 @@ final class const CDateTime(final Date date, final Time time)
   @useResult
   CDateTime subOffset(FixedOffset offset) {
     final (time, days) = this.time.overflowingSubOffset(offset);
-    return CDateTime(date + days, time);
+    return CDateTime.from(date + days, time);
   }
 
   /// Returns `this - other` as days and fractional seconds.
@@ -176,7 +176,7 @@ final class const CDateTime(final Date date, final Time time)
   }) => date.at(time.roundToMultipleOf(duration, rounding: rounding));
 
   CDateTime copyWith({Date? date, Time? time}) =>
-      CDateTime(date ?? this.date, time ?? this.time);
+      CDateTime.from(date ?? this.date, time ?? this.time);
 
   @override
   int compareTo(CDateTime other) {

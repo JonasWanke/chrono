@@ -81,7 +81,7 @@ extension ChronoAny on Any {
   }
 
   Generator<CDateTime> get dateTimeChrono =>
-      combine2(date, time, CDateTime.new);
+      combine2(date, time, CDateTime.from);
   Generator<Month> get month => choose(Month.values);
   Generator<Time> get time {
     return combine6(
