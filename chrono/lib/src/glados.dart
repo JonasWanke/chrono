@@ -77,7 +77,7 @@ extension ChronoAny on Any {
         });
         yield* day.shrink().map((it) => (yearMonth, it));
       },
-    ).map((it) => Date.fromYearMonthAndDay(it.$1.value, it.$2.value));
+    ).map((it) => it.$1.value.atDay(it.$2.value));
   }
 
   Generator<CDateTime> get dateTimeChrono =>

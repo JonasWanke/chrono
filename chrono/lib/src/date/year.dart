@@ -80,7 +80,29 @@ final class const Year(final int number)
   /// 113th day of 2023.
   ///
   /// Throws a [RangeError] if [dayOfYear] is not in `1..length.inDays`.
-  Date atOrdinalDay(int dayOfYear) => Date.fromYearAndOrdinal(this, dayOfYear);
+  Date atOrdinalDay(int dayOfYear) {
+    RangeError.checkValueInInterval(
+      dayOfYear,
+      1,
+      length.inDays,
+      'dayOfYear',
+      'Invalid day of year for year $this.',
+    );
+
+    int firstDayOfYear(Month month) {
+      final firstDayOfYearList = isCommonYear
+          ? const [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335]
+          : const [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336];
+      return firstDayOfYearList[month.index];
+    }
+
+    final rawMonth = atMonth(Month.fromIndex((dayOfYear - 1) ~/ 31));
+    final monthEnd =
+        firstDayOfYear(rawMonth.month) + rawMonth.length.inDays - 1;
+    final month = dayOfYear > monthEnd ? rawMonth.next : rawMonth;
+
+    return month.atDay(dayOfYear - firstDayOfYear(month.month) + 1);
+  }
 
   /// The [YearWeek] with the given one-based [week] number in this
   /// week-based year.
@@ -110,10 +132,7 @@ final class const Year(final int number)
         Days(dates.start.weekday.numberFrom(config.firstDay) - 1);
     assert(weekDate.weekday == config.firstDay);
 
-    final reference = Date.fromYearMonthAndDay(
-      months.start,
-      config.minDaysInFirstWeek,
-    );
+    final reference = months.start.atDay(config.minDaysInFirstWeek);
     return weekDate > reference ? weekDate - Days.week : weekDate;
   }
 

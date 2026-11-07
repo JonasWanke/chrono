@@ -69,14 +69,14 @@ final class Parser._(final String _source) {
     final yearMonth = _parseYearMonth();
     _requireSeparator({'-'}, 'month', 'day');
     final day = _parseDay(maxLength: yearMonth.length.inDays);
-    return Date.fromYearMonthAndDay(yearMonth, day);
+    return yearMonth.atDay(day);
   }
 
   Date _parseWeekDate() {
     final isoYearWeek = _parseIsoYearWeek();
     _requireSeparator({'-'}, 'week number', 'weekday');
     final weekday = _parseWeekday();
-    return Date.fromYearWeekAndWeekday(isoYearWeek, weekday);
+    return isoYearWeek.at(weekday);
   }
 
   Date _parseOrdinalDate() {
@@ -89,7 +89,7 @@ final class Parser._(final String _source) {
       minValue: 1,
       maxValue: year.length.inDays,
     );
-    return Date.fromYearAndOrdinal(year, dayOfYear);
+    return year.atOrdinalDay(dayOfYear);
   }
 
   YearMonth _parseYearMonth() {

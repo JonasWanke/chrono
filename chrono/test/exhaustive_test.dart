@@ -63,12 +63,12 @@ void main() {
               ? 1
               : previous.dayOfYear + 1,
         );
-        expect(date, Date.fromYearAndOrdinal(year, dayOfYear));
+        expect(date, year.atOrdinalDay(dayOfYear));
 
         final weekday = date.weekday;
         expect(previous.weekday.next, weekday);
         expect(weekday.previous, previous.weekday);
-        expect(date, Date.fromYearWeekAndWeekday(date.yearWeek(.iso), weekday));
+        expect(date, date.yearWeek(.iso).at(weekday));
 
         previous = (
           daysSinceUnixEpoch: daysSinceEpoch,

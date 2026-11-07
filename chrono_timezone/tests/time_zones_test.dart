@@ -214,7 +214,7 @@ void main() {
       test(description, () {
         for (var year = begin; year < end; year++) {
           for (var dayOfYear = 1; dayOfYear < 366; dayOfYear++) {
-            final date = Date.fromYearAndOrdinal(Year(year), dayOfYear);
+            final date = Year(year).atOrdinalDay(dayOfYear);
             for (var hour = 0; hour < 24; hour++) {
               for (var minute = 0; minute < 60; minute++) {
                 final dt = date.at(Time(hour, minute)).andUtc();

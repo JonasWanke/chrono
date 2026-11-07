@@ -48,7 +48,7 @@ final class const MonthDay._unchecked(
   /// The [Date] of this month and day in the given [year].
   ///
   /// Throws a [RangeError] for February 29 in a common year.
-  Date inYear(Year year) => Date.fromYearAndMonthDay(year, this);
+  Date inYear(Year year) => Date.from(year, month, day);
 
   /// Like [inYear], but returns `null` for February 29 in a common year.
   Date? inYearOrNull(Year year) => year.atMonth(month).atDayOrNull(day);

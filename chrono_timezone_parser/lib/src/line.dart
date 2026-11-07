@@ -832,14 +832,14 @@ sealed class const DaySpec() {
   /// month it should occur in.
   Date toConcreteDay(YearMonth yearMonth) {
     return switch (this) {
-      DaySpec_Ordinal(:final day) => Date.fromYearMonthAndDay(yearMonth, day),
+      DaySpec_Ordinal(:final day) => yearMonth.atDay(day),
       DaySpec_Last(:final weekday) => yearMonth.dates.end.previousOrSame(
         weekday,
       ),
       DaySpec_LastOnOrBefore(:final weekday, :final day) =>
-        Date.fromYearMonthAndDay(yearMonth, day).previousOrSame(weekday),
+        yearMonth.atDay(day).previousOrSame(weekday),
       DaySpec_FirstOnOrAfter(:final weekday, :final day) =>
-        Date.fromYearMonthAndDay(yearMonth, day).nextOrSame(weekday),
+        yearMonth.atDay(day).nextOrSame(weekday),
     };
   }
 }

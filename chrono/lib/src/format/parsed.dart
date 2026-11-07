@@ -714,7 +714,7 @@ class ChronoParsed {
         // year, day of the year
         final Date date;
         try {
-          date = Date.fromYearAndOrdinal(year, ordinal);
+          date = year.atOrdinalDay(ordinal);
           // ignore: avoid_catching_errors
         } on RangeError {
           throw const ChronoParseException(.outOfRange);
@@ -747,10 +747,7 @@ class ChronoParsed {
           // ISO year, week, day of the week
           final Date date;
           try {
-            date = Date.fromYearWeekAndWeekday(
-              .from(isoYear, isoWeek, .iso),
-              weekday,
-            );
+            date = isoYear.atWeek(isoWeek, .iso).at(weekday);
             // ignore: avoid_catching_errors
           } on RangeError {
             throw const ChronoParseException(.outOfRange);

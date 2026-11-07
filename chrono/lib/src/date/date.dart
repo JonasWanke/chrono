@@ -23,57 +23,18 @@ final class const Date._unchecked(
 ) with ComparisonOperatorsFromComparable<Date>, StepUnlimited<Date>
     implements Comparable<Date>, ChronoFormattable<DateFormatItem> {
   new from(Year year, Month month, int day)
-    : this.fromYearMonthAndDay(YearMonth.from(year, month), day);
-  new(int year, int month, int day)
-    : this.from(Year(year), Month.fromNumber(month), day);
-  new fromYearMonthAndDay(YearMonth yearMonth, int day)
     : this._unchecked(
-        yearMonth,
+        YearMonth.from(year, month),
         RangeError.checkValueInInterval(
           day,
           1,
-          yearMonth.length.inDays,
+          YearMonth.from(year, month).length.inDays,
           'day',
-          'Invalid day for $yearMonth.',
+          'Invalid day for ${YearMonth.from(year, month)}.',
         ),
       );
-  new fromYearAndMonthDay(Year year, MonthDay monthDay)
-    : this.from(year, monthDay.month, monthDay.day);
-
-  /// Creates a date from a [Year] and a one-based ordinal day of the year,
-  /// e.g., the 113th day of 2023.
-  factory fromYearAndOrdinal(Year year, int dayOfYear) {
-    RangeError.checkValueInInterval(
-      dayOfYear,
-      1,
-      year.length.inDays,
-      'dayOfYear',
-      'Invalid day of year for year $year.',
-    );
-
-    int firstDayOfYear(Month month) {
-      final firstDayOfYearList = year.isCommonYear
-          ? const [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335]
-          : const [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336];
-      return firstDayOfYearList[month.index];
-    }
-
-    final rawMonth = YearMonth.from(
-      year,
-      Month.fromIndex((dayOfYear - 1) ~/ 31),
-    );
-    final monthEnd =
-        firstDayOfYear(rawMonth.month) + rawMonth.length.inDays - 1;
-    final month = dayOfYear > monthEnd ? rawMonth.next : rawMonth;
-
-    final dayOfMonth = dayOfYear - firstDayOfYear(month.month) + 1;
-    return Date._unchecked(month, dayOfMonth);
-  }
-
-  /// Creates a date from a [YearWeek] and a [weekday], e.g., Sunday in the 16th
-  /// week of 2023.
-  factory fromYearWeekAndWeekday(YearWeek yearWeek, Weekday weekday) =>
-      yearWeek.at(weekday);
+  new(int year, int month, int day)
+    : this.from(Year(year), Month.fromNumber(month), day);
 
   /// Creates a date from a calendar [year], a [weekNumber] (see
   /// [weekNumberStartingOn]), and a [weekday], e.g., Thursday in week 3.
@@ -95,7 +56,7 @@ final class const Date._unchecked(
         firstWeekStart +
         (weekNumber - 1) * Days.perWeek +
         weekday.indexFrom(firstDay);
-    return Date.fromYearAndOrdinal(year, ordinal);
+    return year.atOrdinalDay(ordinal);
   }
 
   /// The UNIX epoch: 1970-01-01.
@@ -398,10 +359,8 @@ final class const Date._unchecked(
   Date copyWith({YearMonth? yearMonth, Year? year, Month? month, int? day}) {
     assert(yearMonth == null || (year == null && month == null));
 
-    return Date.fromYearMonthAndDay(
-      yearMonth ?? YearMonth.from(year ?? this.year, month ?? this.month),
-      day ?? this.day,
-    );
+    return (yearMonth ?? YearMonth.from(year ?? this.year, month ?? this.month))
+        .atDay(day ?? this.day);
   }
 
   @override
