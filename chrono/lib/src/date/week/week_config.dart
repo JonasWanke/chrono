@@ -31,18 +31,16 @@ class const WeekConfig._unchecked({
   /// Creates a week configuration.
   ///
   /// Throws a [RangeError] if [minDaysInFirstWeek] isn't between 1 and 7.
-  factory from({required Weekday firstDay, required int minDaysInFirstWeek}) {
-    RangeError.checkValueInInterval(
-      minDaysInFirstWeek,
-      1,
-      Days.perWeek,
-      'minDaysInFirstWeek',
-    );
-    return WeekConfig._unchecked(
-      firstDay: firstDay,
-      minDaysInFirstWeek: minDaysInFirstWeek,
-    );
-  }
+  new({required Weekday firstDay, required int minDaysInFirstWeek})
+    : this._unchecked(
+        firstDay: firstDay,
+        minDaysInFirstWeek: RangeError.checkValueInInterval(
+          minDaysInFirstWeek,
+          1,
+          Days.perWeek,
+          'minDaysInFirstWeek',
+        ),
+      );
 
   /// ISO 8601: weeks start on Monday, and week 1 contains at least four days
   /// of the year (equivalently, it contains January 4th).
@@ -68,7 +66,7 @@ class const WeekConfig._unchecked({
   );
 
   WeekConfig copyWith({Weekday? firstDay, int? minDaysInFirstWeek}) {
-    return WeekConfig.from(
+    return WeekConfig(
       firstDay: firstDay ?? this.firstDay,
       minDaysInFirstWeek: minDaysInFirstWeek ?? this.minDaysInFirstWeek,
     );

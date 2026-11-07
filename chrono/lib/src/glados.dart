@@ -129,7 +129,7 @@ extension ChronoAny on Any {
     return combine2(
       weekday,
       intInRange(1, Days.perWeek),
-      (firstDay, minDaysInFirstWeek) => WeekConfig.from(
+      (firstDay, minDaysInFirstWeek) => WeekConfig(
         firstDay: firstDay,
         minDaysInFirstWeek: minDaysInFirstWeek,
       ),

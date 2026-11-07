@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart' as cl;
 import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 
@@ -22,8 +23,7 @@ final class Instant.fromDurationSinceUnixEpoch(
     : this.fromDurationSinceUnixEpoch(
         TimeDelta(micros: dateTime.microsecondsSinceEpoch),
       );
-  new now({Clock? clockOverride})
-    : this.fromCore((clockOverride ?? clock).now());
+  new now({Clock? clock}) : this.fromCore((clock ?? cl.clock).now());
 
   /// The UNIX epoch: 1970-01-01 at 00:00:00 in UTC.
   ///

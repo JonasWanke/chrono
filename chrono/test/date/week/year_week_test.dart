@@ -76,7 +76,7 @@ void main() {
     final b = YearWeek(
       2023,
       10,
-      WeekConfig.from(firstDay: Weekday.sunday, minDaysInFirstWeek: 1),
+      WeekConfig(firstDay: Weekday.sunday, minDaysInFirstWeek: 1),
     );
     expect(() => a.compareTo(b), throwsArgumentError);
     expect(() => a.differenceInWeeks(b), throwsArgumentError);
