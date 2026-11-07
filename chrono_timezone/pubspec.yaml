@@ -9,11 +9,7 @@ dependencies:
   chrono:
     path: ../chrono
   collection: ^1.19.1
-  deranged: # ^0.0.0
-    # path: ../../deranged
-    git:
-      url: https://github.com/JonasWanke/deranged.git
-      ref: cd171ce9b7103bb7967c97ddc4d3b6405d626791
+  deranged: ^0.1.0
   meta: ^1.3.0
   oxidized: ^6.0.0
 

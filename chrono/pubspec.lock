@@ -108,12 +108,11 @@ packages:
   deranged:
     dependency: "direct main"
     description:
-      path: "."
-      ref: cd171ce9b7103bb7967c97ddc4d3b6405d626791
-      resolved-ref: cd171ce9b7103bb7967c97ddc4d3b6405d626791
-      url: "https://github.com/JonasWanke/deranged.git"
-    source: git
-    version: "0.0.0"
+      name: deranged
+      sha256: b2330491e809e9b315c92307ca2c0afb661fe282906fed41dcc6088c799bbc86
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
   ffi:
     dependency: transitive
     description:
