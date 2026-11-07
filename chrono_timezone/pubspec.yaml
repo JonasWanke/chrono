@@ -5,6 +5,8 @@ homepage: https://github.com/JonasWanke/chrono
 environment:
   sdk: ^3.13.0
 
+resolution: workspace
+
 dependencies:
   chrono:
     path: ../chrono

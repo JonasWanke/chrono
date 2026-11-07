@@ -8,6 +8,24 @@ on:
     - cron: 0 4 * * 1
 
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sdk: [stable, beta, dev]
+    defaults:
+      run:
+        working-directory: chrono/
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ matrix.sdk }}
+      - run: dart pub get
+
+      - run: dart analyze
+
   chrono-test:
     name: "Package chrono: Run Tests"
     runs-on: ubuntu-latest
@@ -42,40 +60,3 @@ jobs:
       - uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-
-  chrono-lint:
-    name: "Package chrono: Lint"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        sdk: [stable, beta, dev]
-    defaults:
-      run:
-        working-directory: chrono/
-    steps:
-      - uses: actions/checkout@v7
-      - uses: dart-lang/setup-dart@v1
-        with:
-          sdk: ${{ matrix.sdk }}
-      - run: dart pub get
-
-      - run: dart analyze
-  chrono-timezone-compiler-lint:
-    name: "Package chrono_timezone_compiler: Lint"
-    runs-on: ubuntu-latest
-    if: false
-    strategy:
-      matrix:
-        sdk: [stable, beta, dev]
-    defaults:
-      run:
-        working-directory: chrono_timezone_compiler/
-    steps:
-      - uses: actions/checkout@v7
-      - uses: dart-lang/setup-dart@v1
-        with:
-          sdk: ${{ matrix.sdk }}
-      - run: dart pub get
-      - run: dart run build_runner build
-
-      - run: dart analyze

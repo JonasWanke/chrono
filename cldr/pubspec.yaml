@@ -6,6 +6,8 @@ repository: https://github.com/JonasWanke/chrono
 environment:
   sdk: ^3.13.0
 
+resolution: workspace
+
 dependencies:
   code_builder: ^4.10.0
   collection: ^1.18.0
