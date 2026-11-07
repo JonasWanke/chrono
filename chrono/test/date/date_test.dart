@@ -230,35 +230,32 @@ void main() {
     int ageOn(Date birthday, Date onDate) => birthday.age(onDate: onDate);
 
     test('birthday already happened this year', () {
-      expect(ageOn(Date.fromRaw(2000, 1, 1), Date.fromRaw(2024, 1, 15)), 24);
+      expect(ageOn(Date(2000, 1, 1), Date(2024, 1, 15)), 24);
     });
     test('birthday is today', () {
-      expect(ageOn(Date.fromRaw(2000, 1, 15), Date.fromRaw(2024, 1, 15)), 24);
+      expect(ageOn(Date(2000, 1, 15), Date(2024, 1, 15)), 24);
     });
     test('birthday has not happened yet this year', () {
-      expect(ageOn(Date.fromRaw(2000, 12, 1), Date.fromRaw(2024, 1, 15)), 23);
-      expect(ageOn(Date.fromRaw(2000, 1, 16), Date.fromRaw(2024, 1, 15)), 23);
+      expect(ageOn(Date(2000, 12, 1), Date(2024, 1, 15)), 23);
+      expect(ageOn(Date(2000, 1, 16), Date(2024, 1, 15)), 23);
     });
     test('born on February 29', () {
-      final birthday = Date.fromRaw(2000, 2, 29);
-      expect(ageOn(birthday, Date.fromRaw(2023, 2, 28)), 22);
-      expect(ageOn(birthday, Date.fromRaw(2023, 3, 1)), 23);
-      expect(ageOn(birthday, Date.fromRaw(2024, 2, 29)), 24);
+      final birthday = Date(2000, 2, 29);
+      expect(ageOn(birthday, Date(2023, 2, 28)), 22);
+      expect(ageOn(birthday, Date(2023, 3, 1)), 23);
+      expect(ageOn(birthday, Date(2024, 2, 29)), 24);
     });
     test('age is never negative for a past birthday', () {
-      expect(ageOn(Date.fromRaw(2024, 1, 15), Date.fromRaw(2024, 1, 15)), 0);
+      expect(ageOn(Date(2024, 1, 15), Date(2024, 1, 15)), 0);
     });
   });
 
   test('toString()', () {
     expect(Date.unixEpoch.toString(), '1970-01-01');
-    expect(Date.fromRaw(2026, 05, 12).toString(), '2026-05-12');
+    expect(Date(2026, 05, 12).toString(), '2026-05-12');
   });
   test('toOrdinalString()', () {
     expect(Date.unixEpoch.toString(Date.isoOrdinalFormat), '1970-001');
-    expect(
-      Date.fromRaw(2026, 05, 12).toString(Date.isoOrdinalFormat),
-      '2026-132',
-    );
+    expect(Date(2026, 05, 12).toString(Date.isoOrdinalFormat), '2026-132');
   });
 }

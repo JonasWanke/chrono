@@ -156,10 +156,7 @@ void main() {
       final latest = Tz.europe_london
           .with_ymd_and_hms(2024, 10, 27, 1, 30, 0)
           .latest!;
-      expect(
-        (latest + Days.week).localDateTime.date,
-        Date.fromRaw(2024, 11, 3),
-      );
+      expect((latest + Days.week).localDateTime.date, Date(2024, 11, 3));
       expect(
         (latest - Days.week).offset.fix(),
         FixedOffset.east(TimeDelta(hours: 1)),

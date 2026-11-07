@@ -96,7 +96,7 @@ final class Parser._(final String _source) {
     final year = _parseYear();
     _requireSeparator({'-'}, 'year', 'month');
     final month = _parseMonth();
-    return YearMonth(year, month);
+    return YearMonth.from(year, month);
   }
 
   YearWeek _parseIsoYearWeek() {

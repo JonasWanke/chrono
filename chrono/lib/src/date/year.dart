@@ -74,8 +74,10 @@ final class const Year(final int number)
   Days get length => isLeapYear ? Days.leapYear : Days.normalYear;
 
   /// The [YearMonth]s of this year.
-  RangeInclusive<YearMonth> get months =>
-      YearMonth(this, Month.january).rangeTo(YearMonth(this, Month.december));
+  RangeInclusive<YearMonth> get months => YearMonth.from(
+    this,
+    Month.january,
+  ).rangeTo(YearMonth.from(this, Month.december));
 
   int numberOfWeeks(WeekConfig config) {
     return 1 +

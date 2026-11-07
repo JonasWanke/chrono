@@ -33,7 +33,7 @@ final class const CDateTime(final Date date, final Time time)
     int second = 0,
     int nanoseconds = 0,
   ]) : this(
-         Date.fromRaw(year, month, day),
+         Date(year, month, day),
          Time.from(hour, minute, second, nanoseconds),
        );
 

@@ -69268,7 +69268,7 @@ enum Tz(final String tzId, final FixedTimespanSet timespans)
     int second,
   ) {
     return fromLocalDateTime(
-      Date.fromRaw(year, month, day).at(Time.from(hour, minute, second)),
+      Date(year, month, day).at(Time.from(hour, minute, second)),
     );
   }
 

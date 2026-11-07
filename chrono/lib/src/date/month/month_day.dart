@@ -33,7 +33,7 @@ final class const MonthDay._unchecked(
           'Invalid day for $month.',
         ),
       );
-  new fromRaw(int month, int day) : this.from(Month.fromNumber(month), day);
+  new(int month, int day) : this.from(Month.fromNumber(month), day);
 
   factory todayInLocalZone({Clock? clock}) =>
       Date.todayInLocalZone(clock: clock).monthDay;

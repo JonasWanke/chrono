@@ -596,14 +596,19 @@ sealed class const ChangeTime() {
         timeToTimestamp(year.dates.start, 0, 0, 0) -
             (utcOffsetSeconds + dstOffsetSeconds),
       ChangeTime_UntilMonth(year: YearSpec_Number(:final year), :final month) =>
-        timeToTimestamp(YearMonth(year, month).dates.start, 0, 0, 0) -
+        timeToTimestamp(YearMonth.from(year, month).dates.start, 0, 0, 0) -
             (utcOffsetSeconds + dstOffsetSeconds),
       ChangeTime_UntilDay(
         year: YearSpec_Number(:final year),
         :final month,
         :final day,
       ) =>
-        timeToTimestamp(day.toConcreteDay(YearMonth(year, month)), 0, 0, 0) -
+        timeToTimestamp(
+              day.toConcreteDay(YearMonth.from(year, month)),
+              0,
+              0,
+              0,
+            ) -
             (utcOffsetSeconds + dstOffsetSeconds),
       ChangeTime_UntilTime(
         year: YearSpec_Number(:final year),
@@ -628,7 +633,7 @@ sealed class const ChangeTime() {
               (hours, minutes, seconds),
           };
           return timeToTimestamp(
-                day.toConcreteDay(YearMonth(year, month)),
+                day.toConcreteDay(YearMonth.from(year, month)),
                 hours,
                 minutes,
                 seconds,

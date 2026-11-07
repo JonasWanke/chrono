@@ -96,7 +96,7 @@ extension ChronoAny on Any {
   }
 
   Generator<Year> get year => this.int.map(Year.new);
-  Generator<YearMonth> get yearMonth => combine2(year, month, YearMonth.new);
+  Generator<YearMonth> get yearMonth => combine2(year, month, YearMonth.from);
 
   /// Generates ISO [YearWeek]s.
   Generator<YearWeek> get isoYearWeek {

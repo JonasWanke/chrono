@@ -20,7 +20,7 @@ void main() {
 
     for (final (index, name) in names.indexed) {
       test(name, () {
-        final date = Date.fromRaw(2024, index + 1, 1);
+        final date = Date(2024, index + 1, 1);
         expect(date.toString(const [.monthName(.full)]), name);
         expect(date.toString(const [.monthName(.short)]), name.substring(0, 3));
       });
@@ -41,7 +41,7 @@ void main() {
     for (final (index, name) in names.indexed) {
       test(name, () {
         // 2024-01-01 is a Monday.
-        final date = Date.fromRaw(2024, 1, index + 1);
+        final date = Date(2024, 1, index + 1);
         expect(date.toString(const [.weekdayName(.full)]), name);
         expect(
           date.toString(const [.weekdayName(.short)]),
@@ -57,17 +57,17 @@ void main() {
 
     test('known dates', () {
       // 2023-01-01 is a Sunday.
-      expect(format(Date.fromRaw(2023, 1, 1)), '01 00');
-      expect(format(Date.fromRaw(2023, 1, 2)), '01 01');
-      expect(format(Date.fromRaw(2023, 1, 7)), '01 01');
-      expect(format(Date.fromRaw(2023, 1, 8)), '02 01');
+      expect(format(Date(2023, 1, 1)), '01 00');
+      expect(format(Date(2023, 1, 2)), '01 01');
+      expect(format(Date(2023, 1, 7)), '01 01');
+      expect(format(Date(2023, 1, 8)), '02 01');
       // 2022-01-01 is a Saturday.
-      expect(format(Date.fromRaw(2022, 1, 1)), '00 00');
-      expect(format(Date.fromRaw(2022, 1, 2)), '01 00');
-      expect(format(Date.fromRaw(2022, 1, 3)), '01 01');
-      expect(format(Date.fromRaw(2022, 12, 31)), '52 52');
-      expect(Date.fromRaw(2023, 1, 1).weekNumberStartingOn(.sunday), 1);
-      expect(Date.fromRaw(2023, 1, 1).weekNumberStartingOn(.monday), 0);
+      expect(format(Date(2022, 1, 1)), '00 00');
+      expect(format(Date(2022, 1, 2)), '01 00');
+      expect(format(Date(2022, 1, 3)), '01 01');
+      expect(format(Date(2022, 12, 31)), '52 52');
+      expect(Date(2023, 1, 1).weekNumberStartingOn(.sunday), 1);
+      expect(Date(2023, 1, 1).weekNumberStartingOn(.monday), 0);
     });
 
     test('round trip through parsing', () {
@@ -84,7 +84,7 @@ void main() {
         .weekday(),
       ];
 
-      var date = Date.fromRaw(2020, 1, 1);
+      var date = Date(2020, 1, 1);
       for (var i = 0; i < 3 * 366; i++, date = date.next) {
         expect(Date.parse(date.toString(fromSun), fromSun), date);
         expect(Date.parse(date.toString(fromMon), fromMon), date);

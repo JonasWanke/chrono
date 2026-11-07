@@ -43,7 +43,7 @@ final class const YearWeek._unchecked(
         ),
         config,
       );
-  new fromRaw(int weekBasedYear, int week, WeekConfig config)
+  new(int weekBasedYear, int week, WeekConfig config)
     : this.from(Year(weekBasedYear), week, config);
   factory currentInLocalZone(WeekConfig config, {Clock? clock}) =>
       Date.todayInLocalZone(clock: clock).yearWeek(config);

@@ -15,14 +15,14 @@ void main() {
         expect(codec.decode(codec.encode(value)), value);
       });
   test('ISO codec rejects other configs', () {
-    final week = YearWeek.fromRaw(2023, 10, WeekConfig.usSunday);
+    final week = YearWeek(2023, 10, WeekConfig.usSunday);
     expect(
       () => const YearWeekAsIsoStringCodec().encode(week),
       throwsArgumentError,
     );
   });
   test('ISO toString', () {
-    expect(YearWeek.fromRaw(2023, 6, .iso).toString(), '2023-W06');
+    expect(YearWeek(2023, 6, .iso).toString(), '2023-W06');
   });
 
   Glados2<YearWeek, int>().test('+ and -', (yearWeek, duration) {
@@ -72,8 +72,8 @@ void main() {
   });
 
   test('comparing different configs throws', () {
-    final a = YearWeek.fromRaw(2023, 10, WeekConfig.iso);
-    final b = YearWeek.fromRaw(
+    final a = YearWeek(2023, 10, WeekConfig.iso);
+    final b = YearWeek(
       2023,
       10,
       WeekConfig.from(firstDay: Weekday.sunday, minDaysInFirstWeek: 1),
@@ -84,7 +84,7 @@ void main() {
 
   test('invalid week reports the argument name', () {
     expect(
-      () => YearWeek.fromRaw(2023, 0, WeekConfig.iso),
+      () => YearWeek(2023, 0, WeekConfig.iso),
       throwsA(isA<RangeError>().having((e) => e.name, 'name', 'week')),
     );
   });

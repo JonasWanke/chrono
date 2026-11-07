@@ -9,10 +9,10 @@ import '../../utils.dart';
 
 /// The combination of a [Year] and a [Month], e.g., April 2023.
 @immutable
-final class const YearMonth(final Year year, final Month month)
+final class const YearMonth.from(final Year year, final Month month)
     with ComparisonOperatorsFromComparable<YearMonth>, StepUnlimited<YearMonth>
     implements Comparable<YearMonth> {
-  new fromRaw(int year, int month) : this(Year(year), Month.fromNumber(month));
+  new(int year, int month) : this.from(Year(year), Month.fromNumber(month));
 
   factory currentInLocalZone({Clock? clock}) =>
       Date.todayInLocalZone(clock: clock).yearMonth;
@@ -60,7 +60,7 @@ final class const YearMonth(final Year year, final Month month)
       _ => (0, rawNewMonth),
     };
 
-    return YearMonth(
+    return YearMonth.from(
       year + parts.years + yearAdjustment,
       Month.fromNumber(month),
     );
@@ -76,7 +76,7 @@ final class const YearMonth(final Year year, final Month month)
   }
 
   YearMonth copyWith({Year? year, Month? month}) =>
-      YearMonth(year ?? this.year, month ?? this.month);
+      YearMonth.from(year ?? this.year, month ?? this.month);
 
   @override
   int compareTo(YearMonth other) {

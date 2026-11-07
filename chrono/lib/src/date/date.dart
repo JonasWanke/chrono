@@ -23,8 +23,8 @@ final class const Date._unchecked(
 ) with ComparisonOperatorsFromComparable<Date>, StepUnlimited<Date>
     implements Comparable<Date>, ChronoFormattable<DateFormatItem> {
   new from(Year year, Month month, int day)
-    : this.fromYearMonthAndDay(YearMonth(year, month), day);
-  new fromRaw(int year, int month, int day)
+    : this.fromYearMonthAndDay(YearMonth.from(year, month), day);
+  new(int year, int month, int day)
     : this.from(Year(year), Month.fromNumber(month), day);
   new fromYearMonthAndDay(YearMonth yearMonth, int day)
     : this._unchecked(
@@ -58,7 +58,10 @@ final class const Date._unchecked(
       return firstDayOfYearList[month.index];
     }
 
-    final rawMonth = YearMonth(year, Month.fromIndex((dayOfYear - 1) ~/ 31));
+    final rawMonth = YearMonth.from(
+      year,
+      Month.fromIndex((dayOfYear - 1) ~/ 31),
+    );
     final monthEnd =
         firstDayOfYear(rawMonth.month) + rawMonth.length.inDays - 1;
     final month = dayOfYear > monthEnd ? rawMonth.next : rawMonth;
@@ -99,7 +102,7 @@ final class const Date._unchecked(
   ///
   /// https://en.wikipedia.org/wiki/Unix_time
   static const unixEpoch = Date._unchecked(
-    YearMonth(Year.unixEpoch, Month.january),
+    YearMonth.from(Year.unixEpoch, Month.january),
     1,
   );
 
@@ -143,7 +146,10 @@ final class const Date._unchecked(
         : (shiftedYear + 1, shiftedMonth - 9);
     assert(1 <= month && month <= 12);
 
-    return Date._unchecked(YearMonth(Year(year), Month.fromNumber(month)), day);
+    return Date._unchecked(
+      YearMonth.from(Year(year), Month.fromNumber(month)),
+      day,
+    );
   }
 
   /// Creates a Chrono [Date] from a Dart Core [DateTime].
@@ -153,7 +159,7 @@ final class const Date._unchecked(
   /// timezone.
   new fromCore(DateTime dateTime)
     : this._unchecked(
-        YearMonth(Year(dateTime.year), Month.fromNumber(dateTime.month)),
+        YearMonth.from(Year(dateTime.year), Month.fromNumber(dateTime.month)),
         dateTime.day,
       );
   factory todayInLocalZone({Clock? clock}) =>
@@ -393,7 +399,7 @@ final class const Date._unchecked(
     assert(yearMonth == null || (year == null && month == null));
 
     return Date.fromYearMonthAndDay(
-      yearMonth ?? YearMonth(year ?? this.year, month ?? this.month),
+      yearMonth ?? YearMonth.from(year ?? this.year, month ?? this.month),
       day ?? this.day,
     );
   }

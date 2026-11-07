@@ -17,7 +17,8 @@ extension DateTimeChronoExtension on DateTime {
   Date get asChronoDate => Date.fromCore(this);
   Year get asChronoYear => Year(year);
   Month get asChronoMonth => Month.fromNumber(month);
-  YearMonth get asChronoYearMonth => YearMonth(asChronoYear, asChronoMonth);
+  YearMonth get asChronoYearMonth =>
+      YearMonth.from(asChronoYear, asChronoMonth);
   MonthDay get asChronoMonthDay => MonthDay.from(asChronoMonth, day);
   YearWeek asChronoYearWeek(WeekConfig config) => asChronoDate.yearWeek(config);
   Weekday get asChronoWeekday => Weekday.fromNumber(weekday);
