@@ -760,21 +760,11 @@ void main() {
       ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
       _checkError('12:34', [item], .invalid);
       _checkError('12:34:56', [item], .invalid);
-      _check('+12::34', [
-        item,
-      ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-      _check('+12: :34', [
-        item,
-      ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-      _check('+12:::34', [
-        item,
-      ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-      _check('+12::::34', [
-        item,
-      ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-      _check('+12::34', [
-        item,
-      ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
+      _checkError('+12::34', [item], .invalid);
+      _checkError('+12: :34', [item], .invalid);
+      _checkError('+12:::34', [item], .invalid);
+      _checkError('+12::::34', [item], .invalid);
+      _checkError('+12::34', [item], .invalid);
       _checkError('+12:34:56', [item], .tooLong);
       _checkError('+12:3456', [item], .tooLong);
       _checkError('+1234:56', [item], .tooLong);
@@ -1033,21 +1023,11 @@ void main() {
         _check('+12  :  34', [
           item,
         ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-        _check('+12::34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-        _check('+12: :34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-        _check('+12:::34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-        _check('+12::::34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
-        _check('+12::34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
+        _checkError('+12::34', [item], .invalid);
+        _checkError('+12: :34', [item], .invalid);
+        _checkError('+12:::34', [item], .invalid);
+        _checkError('+12::::34', [item], .invalid);
+        _checkError('+12::34', [item], .invalid);
         _checkError('#1234', [item], .invalid);
         _checkError('#12:34', [item], .invalid);
         _checkError('+12:34 ', [item], .tooLong);
@@ -1161,9 +1141,7 @@ void main() {
         _checkError('+12:34:56:', [item], .tooLong);
         _checkError('+12:34:56:7', [item], .tooLong);
         _checkError('+12:34:56:78', [item], .tooLong);
-        _check('+12::34', [
-          item,
-        ], ChronoParsed()..offset = TimeDelta(seconds: 45_240));
+        _checkError('+12::34', [item], .invalid);
         _checkError('+12:3456', [item], .tooLong);
         _checkError('+1234:56', [item], .tooLong);
         _check('+12 34', [
@@ -1528,6 +1506,93 @@ void main() {
   //     let parsed = result.map(|_| parsed);
   //     assert_eq!(parsed, expected);
   // }
+
+  group('timezone offset precision', () {
+    ChronoParsed offset({int h = 0, int m = 0, int s = 0}) =>
+        ChronoParsed()..offset = TimeDelta(hours: h, minutes: m, seconds: s);
+    List<ChronoFormatItem> items(TimezoneOffsetPrecision precision) => [
+      ChronoFormatItem.timezoneOffset(precision: precision),
+    ];
+
+    test('hours', () {
+      _check('+09', items(.hours), offset(h: 9));
+      _checkError('+09:30', items(.hours), .tooLong);
+      _checkError('+9', items(.hours), .tooShort);
+    });
+    test('optionalMinutes', () {
+      _check('+09', items(.optionalMinutes), offset(h: 9));
+      _check('+09:30', items(.optionalMinutes), offset(h: 9, m: 30));
+      _check('+0930', items(.optionalMinutes), offset(h: 9, m: 30));
+      _checkError('+09:30:15', items(.optionalMinutes), .tooLong);
+      _checkError('+09:60', items(.optionalMinutes), .outOfRange);
+    });
+    test('minutes', () {
+      _check('+09:30', items(.minutes), offset(h: 9, m: 30));
+      _checkError('+09', items(.minutes), .tooShort);
+      _checkError('+09:30:15', items(.minutes), .tooLong);
+    });
+    test('optionalMinutesAndSeconds', () {
+      final it = items(.optionalMinutesAndSeconds);
+      _check('+09', it, offset(h: 9));
+      _check('+09:30', it, offset(h: 9, m: 30));
+      _check('+09:30:15', it, offset(h: 9, m: 30, s: 15));
+      _check('-093015', it, offset(h: -9, m: -30, s: -15));
+      _checkError('+09:30:60', it, .outOfRange);
+    });
+    test('optionalSeconds', () {
+      final it = items(.optionalSeconds);
+      _check('+09:30', it, offset(h: 9, m: 30));
+      _check('+09:30:15', it, offset(h: 9, m: 30, s: 15));
+      _checkError('+09', it, .tooShort);
+    });
+    test('seconds', () {
+      final it = items(.seconds);
+      _check('+09:30:15', it, offset(h: 9, m: 30, s: 15));
+      _checkError('+09:30', it, .tooShort);
+    });
+    test('an absent optional part keeps following items intact', () {
+      _check('+09 x', [
+        ...items(.optionalMinutes),
+        const .literal(' x'),
+      ], offset(h: 9));
+    });
+    test('separators are at most one colon with optional whitespace', () {
+      _check('+09 : 30', items(.minutes), offset(h: 9, m: 30));
+      _checkError('+09::30', items(.minutes), .invalid);
+    });
+    test('formatted offsets can be parsed again', () {
+      // Lower precisions truncate, so we compare the formatted strings.
+      String format(ChronoFormatItem item, TimeDelta delta) =>
+          ChronoFormatter.format(
+            [item],
+            offset: (name: '', offset: FixedOffset.east(delta)),
+          );
+
+      for (final precision in TimezoneOffsetPrecision.values) {
+        for (final printColon in [true, false]) {
+          for (final delta in [
+            TimeDelta(hours: 9),
+            TimeDelta(hours: -9, minutes: -30),
+            TimeDelta(hours: 9, minutes: 30, seconds: 15),
+            TimeDelta(hours: -9, seconds: -15),
+          ]) {
+            final item = ChronoFormatItem.timezoneOffset(
+              precision: precision,
+              printColon: printColon,
+              allowZulu: false,
+            );
+            final formatted = format(item, delta);
+            final parsed = ChronoParser.parse(formatted, [item]);
+            final reformatted = format(
+              item,
+              parsed.toFixedOffset().localMinusUtc,
+            );
+            expect(reformatted, formatted, reason: '$precision $delta');
+          }
+        }
+      }
+    });
+  });
 
   test('numbers without a maximum width cannot overflow', () {
     _check('+${'9' * 18}', [

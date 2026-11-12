@@ -259,12 +259,12 @@ class ChronoParser._(var String _string) {
               // silently skipping them would discard information.
               throw const ChronoParseException(.badFormat);
 
-            case ChronoFormatTimezoneOffset(:final allowZulu):
+            case ChronoFormatTimezoneOffset(:final precision, :final allowZulu):
               _string = _string.trimLeft();
               _parsed.offset = _scanTimezoneOffset(
-                consumeColon: _scanColonOrSpace,
+                precision: precision,
+                separator: r'\s*:?\s*',
                 allowZulu: allowZulu,
-                allowMissingMinutes: false,
                 allowTzMinusSign: true,
               );
           }
@@ -306,9 +306,9 @@ class ChronoParser._(var String _string) {
     }
 
     final offset = _scanTimezoneOffset(
-      consumeColon: () => _scanChar(':'),
+      precision: .minutes,
+      separator: ':',
       allowZulu: true,
-      allowMissingMinutes: false,
       allowTzMinusSign: true,
     );
     if (offset.wholeSeconds.abs() > 86399) {
@@ -402,9 +402,9 @@ class ChronoParser._(var String _string) {
     final name = RegExp('^[A-Za-z]+').stringMatch(_string);
     if (name == null) {
       return _scanTimezoneOffset(
-        consumeColon: () {},
+        precision: .minutes,
+        separator: '',
         allowZulu: false,
-        allowMissingMinutes: false,
         allowTzMinusSign: false,
       );
     }
@@ -456,7 +456,7 @@ class ChronoParser._(var String _string) {
     return false;
   }
 
-  /// The maximum number of digits for numbers without a [maxDigits], so that
+  /// The maximum number of digits for numbers without a `maxDigits`, so that
   /// the result always fits into a 64-bit integer.
   static const _maxUnboundedDigits = 18;
 
@@ -612,22 +612,25 @@ class ChronoParser._(var String _string) {
   int _scanNanosecondFixed(int digits) =>
       _scanNumber(digits, digits) * _nanosecondScale[digits];
 
-  /// Parse a timezone and return the offset in seconds.
+  /// Parses a timezone offset.
   ///
-  /// The [consumeColon] function is used to parse a mandatory or optional `:`
-  /// separator between hours offset and minutes offset.
+  /// The [precision] determines which parts (hours, minutes, and seconds) are
+  /// required, optional, or not allowed, just like when formatting.
   ///
-  /// The [allowMissingMinutes] flag allows the timezone minutes offset to be
-  /// missing.
+  /// The [separator] is a regular expression matching the text between two
+  /// parts. Optional parts are only consumed, including their separator, if
+  /// they are present.
+  ///
+  /// The [allowZulu] flag allows `Z` (or `z`) for a zero offset.
   ///
   /// The [allowTzMinusSign] flag allows the timezone offset negative character
   /// to also be `−` MINUS SIGN (U+2212) in addition to the typical
   /// ASCII-compatible `-` HYPHEN-MINUS (U+2D). This is part of
   /// [RFC 3339 & ISO 8601](https://en.wikipedia.org/w/index.php?title=ISO_8601&oldid=1114309368#Time_offsets_from_UTC)
   TimeDelta _scanTimezoneOffset({
-    required void Function() consumeColon,
+    required TimezoneOffsetPrecision precision,
+    required String separator,
     required bool allowZulu,
-    required bool allowMissingMinutes,
     required bool allowTzMinusSign,
   }) {
     if (allowZulu &&
@@ -637,83 +640,85 @@ class ChronoParser._(var String _string) {
       return TimeDelta();
     }
 
-    (int, int) digits() {
-      if (_string.codeUnits.length < 2) {
-        throw const ChronoParseException(.tooShort);
-      }
-
-      final result = (_string.codeUnits[0] - 0x30, _string.codeUnits[1] - 0x30);
-      _string = _string.substring(2);
-      return result;
-    }
-
-    // const fn digits(s: &str) -> ParseResult<(u8, u8)> {
-    //     let b = s.as_bytes();
-    //     if b.len() < 2 { Err(TOO_SHORT) } else { Ok((b[0], b[1])) }
-    // }
     final isNegative = switch (_string.isNotEmpty ? _string[0] : null) {
-      '+' => () {
-        // PLUS SIGN (U+2B)
-        _string = _string.substring(1);
-        return false;
-      }(),
-      '-' => () {
-        // HYPHEN-MINUS (U+2D)
-        _string = _string.substring(1);
-        return true;
-      }(),
-      '−' => () {
-        // MINUS SIGN (U+2212)
-        if (!allowTzMinusSign) {
-          throw const ChronoParseException(.invalid);
-        }
-        _string = _string.substring(1);
-        return true;
-      }(),
-      final _? => throw const ChronoParseException(.invalid),
+      '+' => false, // PLUS SIGN (U+2B)
+      '-' => true, // HYPHEN-MINUS (U+2D)
+      '−' when allowTzMinusSign => true, // MINUS SIGN (U+2212)
       null => throw const ChronoParseException(.tooShort),
-    };
-
-    // hours (00 – 99)
-    final hours = switch (digits()) {
-      (final h1, final h2) when h1 >= 0 && h1 <= 9 && h2 >= 0 && h2 <= 9 =>
-        h1 * 10 + h2,
       _ => throw const ChronoParseException(.invalid),
     };
+    _string = _string.substring(1);
 
-    // colons (and possibly other separators)
-    consumeColon();
+    final separatorPattern = RegExp(separator);
+    final hours = _scanOffsetPart(99, separatorPattern: RegExp(''));
+    final (
+      _Presence minutesPresence,
+      _Presence secondsPresence,
+    ) = switch (precision) {
+      .hours => (.absent, .absent),
+      .optionalMinutes => (.optional, .absent),
+      .minutes => (.required, .absent),
+      .optionalMinutesAndSeconds => (.optional, .optional),
+      .optionalSeconds => (.required, .optional),
+      .seconds => (.required, .required),
+    };
+    final minutes = _scanOptionalOffsetPart(minutesPresence, separatorPattern);
+    // Seconds can only follow minutes.
+    final seconds = minutes == null
+        ? null
+        : _scanOptionalOffsetPart(secondsPresence, separatorPattern);
 
-    // minutes (00 – 59)
-    // If the next two items are digits, then we have to add minutes.
-    int minutes;
-    try {
-      minutes = switch (digits()) {
-        (final m1, final m2) when m1 >= 0 && m1 <= 5 && m2 >= 0 && m2 <= 9 =>
-          m1 * 10 + m2,
-        (final m1, final m2) when m1 >= 6 && m1 <= 9 && m2 >= 0 && m2 <= 9 =>
-          throw const ChronoParseException(.outOfRange),
-        _ => throw const ChronoParseException(.invalid),
-      };
-    } on ChronoParseException {
-      if (allowMissingMinutes) {
-        minutes = 0;
-      } else {
-        rethrow;
-      }
+    final result = TimeDelta(
+      hours: hours,
+      minutes: minutes ?? 0,
+      seconds: seconds ?? 0,
+    );
+    return isNegative ? -result : result;
+  }
+
+  /// Scans a part of a timezone offset that's [_Presence.required],
+  /// [_Presence.optional], or [_Presence.absent].
+  ///
+  /// Returns `null` if the part is absent.
+  int? _scanOptionalOffsetPart(_Presence presence, RegExp separatorPattern) {
+    switch (presence) {
+      case .absent:
+        return null;
+      case .optional:
+        final match = RegExp('${separatorPattern.pattern}\\d\\d')
+            .matchAsPrefix(_string);
+        if (match == null) return null;
+        return _scanOffsetPart(59, separatorPattern: separatorPattern);
+      case .required:
+        return _scanOffsetPart(59, separatorPattern: separatorPattern);
+    }
+  }
+
+  /// Consumes [separatorPattern] and two digits, which must be at most
+  /// [maxValue].
+  int _scanOffsetPart(int maxValue, {required RegExp separatorPattern}) {
+    final separator = separatorPattern.matchAsPrefix(_string);
+    if (separator == null) {
+      throw ChronoParseException(_string.isEmpty ? .tooShort : .invalid);
+    }
+    _string = _string.substring(separator.end);
+
+    if (_string.length < 2) throw const ChronoParseException(.tooShort);
+    final tens = _string.codeUnitAt(0) - 0x30;
+    final ones = _string.codeUnitAt(1) - 0x30;
+    if (tens < 0 || tens > 9 || ones < 0 || ones > 9) {
+      throw const ChronoParseException(.invalid);
     }
 
-    var result = TimeDelta(hours: hours, minutes: minutes);
-    if (isNegative) result = -result;
-    return result;
-  }
+    final value = tens * 10 + ones;
+    if (value > maxValue) throw const ChronoParseException(.outOfRange);
 
-  /// Consumes any number (including zero) of colon or spaces.
-  void _scanColonOrSpace() {
-    final match = RegExp(r'[:\s]+').matchAsPrefix(_string);
-    if (match != null) _string = _string.substring(match.end);
+    _string = _string.substring(2);
+    return value;
   }
 }
+
+enum _Presence { required, optional, absent }
 
 class const ChronoParseException(final ChronoParseExceptionKind kind)
     implements Exception {

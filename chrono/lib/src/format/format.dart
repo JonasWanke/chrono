@@ -389,15 +389,17 @@ class const ChronoFormatTimezoneName()
 
 /// Offset from the local time to UTC (`+09:00` or `-04` or `+00:00:00`).
 ///
-/// In the parser, the colon can be omitted and/or surrounded with any amount of
-/// whitespace.
+/// The parser accepts the parts given by [precision] and, between two parts, at
+/// most one colon, which may be omitted and/or surrounded by whitespace.
+/// Optional parts are only consumed if they're present.
 ///
 /// The offset is limited from `-24:00:00` to `+24:00:00` (exclusive), which is
 /// the same as [FixedOffset]'s range.
 class const ChronoFormatTimezoneOffset({
   final TimezoneOffsetPrecision precision = .minutes,
 
-  /// Whether to allow `Z` (or `z`) for the zero offset in parsing.
+  /// Whether to print `Z` for the zero offset, and to also accept `Z` (or
+  /// `z`) when parsing.
   final bool allowZulu = true,
 
   /// Whether to print the colon in the offset.
@@ -406,12 +408,27 @@ class const ChronoFormatTimezoneOffset({
   final bool printColon = true,
 }) extends ChronoFormatItemFixed implements ZonedDateTimeFormatItem;
 
+/// Which parts of a [ChronoFormatTimezoneOffset] are printed and parsed.
+///
+/// Optional parts are printed only if non-zero, and are parsed only if present.
+/// Lower precisions truncate when printing.
 enum TimezoneOffsetPrecision {
+  /// `±hh`
   hours,
+
+  /// `±hh[:mm]`
   optionalMinutes,
+
+  /// `±hh:mm`
   minutes,
+
+  /// `±hh[:mm[:ss]]`
   optionalMinutesAndSeconds,
+
+  /// `±hh:mm[:ss]`
   optionalSeconds,
+
+  /// `±hh:mm:ss`
   seconds,
 }
 
