@@ -193,12 +193,12 @@ class const ZonedDateTime<Tz extends TimeZone<Tz>>.fromUtcDateTimeAndOffset(
   static ZonedDateTime<FixedOffset> parseRfc2822(String string) =>
       ChronoParser.parseRfc2822(string).toZonedDateTime();
 
-  /// Represents a [ZonedDateTime] as an ISO 8601 date and time, followed by a
-  /// space and the name of the [offset], e.g., “2023-04-23T18:24:20 EDT”.
+  /// Represents a [ZonedDateTime] as an ISO 8601 date and time with a numeric
+  /// offset (`±hh:mm`, plus `:ss` if non-zero), e.g.,
+  /// “2023-04-23T18:24:20-04:00”.
   static const defaultFormat = <ZonedDateTimeFormatItem>[
     ...CDateTime.isoFormat,
-    .literal(' '),
-    .timezoneName(),
+    .timezoneOffset(precision: .optionalSeconds, allowZulu: false),
   ];
 
   /// Returns the items to format a [ZonedDateTime] as RFC 3339 and ISO 8601,

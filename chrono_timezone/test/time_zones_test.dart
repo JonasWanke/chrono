@@ -32,8 +32,8 @@ void main() {
     final edt = Tz.us_eastern.with_ymd_and_hms(2019, 11, 3, 0, 0, 0).unwrap();
     final est = edt + twoHours;
 
-    expect(edt.toString(), '2019-11-03T00:00:00 EDT');
-    expect(est.toString(), '2019-11-03T01:00:00 EST');
+    expect(edt.toString(), '2019-11-03T00:00:00-04:00');
+    expect(est.toString(), '2019-11-03T01:00:00-05:00');
     expect(est.durationSinceUnixEpoch, edt.durationSinceUnixEpoch + twoHours);
   });
 
@@ -238,7 +238,15 @@ void main() {
         .with_ymd_and_hms(2000, 9, 1, 12, 30, 15)
         .unwrap()
         .withTimezone(Tz.australia_adelaide);
-    expect(dt.toString(), '2000-09-01T22:00:15 ACST');
+    expect(dt.toString(), '2000-09-01T22:00:15+09:30');
+    expect(
+      dt.toString(const [
+        ...CDateTime.isoFormat,
+        .literal(' '),
+        .timezoneName(),
+      ]),
+      '2000-09-01T22:00:15 ACST',
+    );
     expect(
       dt.toString(ZonedDateTime.rfc3339Format()),
       '2000-09-01T22:00:15+09:30',

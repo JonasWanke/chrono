@@ -261,8 +261,8 @@ class ChronoFormatter {
         final parts = offset.split({.hours, .minutes}, rounding: .down);
         hours = parts.hours;
         minutes = parts.minutes;
-        if (precision == .optionalMinutes && minutes == 0) {
-          precision = .hours;
+        if (precision == .optionalMinutes) {
+          precision = minutes == 0 ? .hours : .minutes;
         }
       case .seconds || .optionalSeconds || .optionalMinutesAndSeconds:
         final parts = offset.split({
@@ -273,8 +273,10 @@ class ChronoFormatter {
         hours = parts.hours;
         minutes = parts.minutes;
         seconds = parts.seconds;
-        if (precision != .seconds && seconds == 0) {
-          precision = precision == .optionalMinutesAndSeconds && minutes == 0
+        if (precision != .seconds) {
+          precision = seconds != 0
+              ? .seconds
+              : precision == .optionalMinutesAndSeconds && minutes == 0
               ? .hours
               : .minutes;
         }

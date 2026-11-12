@@ -80,7 +80,14 @@ void main() {
         .fromUtcDateTime(CDateTime(2000, 9, 1, 13, 0, 15));
 
     test('default', () {
-      expect(dateTime.toString(), '2000-09-01T22:30:15 +09:30');
+      expect(dateTime.toString(), '2000-09-01T22:30:15+09:30');
+      expect(
+        dateTime.withTimezone(FixedOffset.zero).toString(),
+        '2000-09-01T13:00:15+00:00',
+      );
+      final withSeconds = FixedOffset.east(TimeDelta(hours: 1, seconds: 5))
+          .fromUtcDateTime(CDateTime(2000, 9, 1, 13, 0, 15));
+      expect(withSeconds.toString(), '2000-09-01T14:00:20+01:00:05');
     });
     test('offset items', () {
       expect(
@@ -95,6 +102,24 @@ void main() {
         dateTime.toString(const [.timezoneOffset(precision: .hours)]),
         '+09',
       );
+    });
+    test('optional offset parts', () {
+      String format(TimezoneOffsetPrecision precision, TimeDelta offset) =>
+          FixedOffset.east(offset)
+              .fromUtcDateTime(CDateTime(2000, 9, 1))
+              .toString([.timezoneOffset(precision: precision)]);
+
+      final hms = TimeDelta(hours: 1, seconds: 5);
+      final hm = TimeDelta(hours: 1, minutes: 2);
+      final h = TimeDelta(hours: 1);
+      expect(format(.optionalSeconds, hms), '+01:00:05');
+      expect(format(.optionalSeconds, hm), '+01:02');
+      expect(format(.optionalSeconds, h), '+01:00');
+      expect(format(.optionalMinutesAndSeconds, hms), '+01:00:05');
+      expect(format(.optionalMinutesAndSeconds, hm), '+01:02');
+      expect(format(.optionalMinutesAndSeconds, h), '+01');
+      expect(format(.optionalMinutes, hm), '+01:02');
+      expect(format(.optionalMinutes, h), '+01');
     });
     test('zulu', () {
       final utc = dateTime.withTimezone(FixedOffset.zero);
