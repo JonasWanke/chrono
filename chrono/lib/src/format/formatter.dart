@@ -102,14 +102,14 @@ class ChronoFormatter {
       case (ChronoFormatYear(format: .full), final date?, _):
         _writeYear(date.year, item.padding);
       case (ChronoFormatYear(format: .div100), final date?, _):
-        _writeTwo(date.year.number ~/ 100, item.padding);
+        _writeTwo(_div100(date.year.number), item.padding);
       case (ChronoFormatYear(format: .mod100), final date?, _):
         _writeTwo(date.year.number % 100, item.padding);
       case (ChronoFormatIsoYear(format: .full), final date?, _):
         _writeYear(date.yearWeek(.iso).weekBasedYear, item.padding);
       case (ChronoFormatIsoYear(format: .div100), final date?, _):
         _writeTwo(
-          date.yearWeek(.iso).weekBasedYear.number ~/ 100,
+          _div100(date.yearWeek(.iso).weekBasedYear.number),
           item.padding,
         );
       case (ChronoFormatIsoYear(format: .mod100), final date?, _):
@@ -152,7 +152,7 @@ class ChronoFormatter {
       case (ChronoFormatTimestamp(), final date?, final time?):
         final offset = _offset?.offset.localMinusUtc ?? TimeDelta();
         final timestamp = date.at(time).inUtc.durationSinceUnixEpoch - offset;
-        _writeN(9, timestamp.roundTo(.seconds), item.padding);
+        _writeN(1, timestamp.roundTo(.seconds, rounding: .down), item.padding);
       default:
         throw FormatException('Insufficient arguments for given format $item');
     }
@@ -343,41 +343,34 @@ class ChronoFormatter {
   }
 
   void _writeOne(int value) => _buffer.writeCharCode(0x30 + value);
-  void _writeTwo(int value, ChronoPadding padding) {
-    switch ((value ~/ 10, padding)) {
-      case (0, .none):
-        break;
-      case (0, .space):
-        _buffer.write(' ');
-      case (final tens, _):
-        _writeOne(tens);
-    }
-    _writeOne(value % 10);
-  }
+  void _writeTwo(int value, ChronoPadding padding) =>
+      _writeN(2, value, padding);
 
+  /// Writes [value] with at least [width] characters, including the sign.
+  ///
+  /// Values that don't fit (too long or negative) are written in full.
   void _writeN(
     int width,
     int value,
     ChronoPadding padding, {
     bool alwaysSign = false,
   }) {
-    if (value < 0) {
-      _buffer.write('-');
-      width -= 1;
-      value = -value;
-    } else if (alwaysSign) {
-      _buffer.write('+');
-      width -= 1;
-    }
-    switch (padding) {
-      case .none:
-        _buffer.write(value);
-      case .zero:
-        _buffer.write(value.toString().padLeft(width, '0'));
-      case .space:
-        _buffer.write(value.toString().padLeft(width));
-    }
+    final sign = value < 0
+        ? '-'
+        : alwaysSign
+        ? '+'
+        : '';
+    final digits = value.abs().toString();
+    _buffer.write(switch (padding) {
+      .none => '$sign$digits',
+      .zero => '$sign${digits.padLeft(width - sign.length, '0')}',
+      .space => '$sign$digits'.padLeft(width),
+    });
   }
+
+  /// Floor division, so that `_div100(n) * 100 + n % 100 == n` for negative
+  /// [n] as well.
+  int _div100(int n) => (n - n % 100) ~/ 100;
 
   void _writeYear(Year year, ChronoPadding padding) {
     final number = year.number;

@@ -110,4 +110,42 @@ void main() {
       expect(format(23, .lower), '11 pm');
     });
   });
+
+  group('numbers outside the formatting width', () {
+    Date date(int year) => Date.parse(
+      '${year.isNegative ? '-' : '+'}'
+      '${year.abs().toString().padLeft(4, '0')}-01-01',
+    );
+
+    test('are printed in full', () {
+      expect(date(10000).toString(const [.year(format: .div100)]), '100');
+      expect(date(10000).toString(const [.year(format: .mod100)]), '00');
+    });
+    test('negative years use floor division', () {
+      expect(date(-5).toString(const [.year(format: .div100)]), '-1');
+      expect(date(-5).toString(const [.year(format: .mod100)]), '95');
+    });
+    test('space padding keeps the sign next to the digits', () {
+      expect(date(-5).toString(const [.year(padding: .space)]), '  -5');
+    });
+  });
+
+  group('timestamp', () {
+    String format(String dateTime) {
+      final parsed = CDateTime.parse(dateTime);
+      return ChronoFormatter.format(
+        const [ChronoFormatItem.timestamp()],
+        date: parsed.date,
+        time: parsed.time,
+      );
+    }
+
+    test('is not padded', () {
+      expect(format('1970-01-01T00:00:00'), '0');
+      expect(format('1970-01-01T00:01:05'), '65');
+    });
+    test('is truncated, not rounded', () {
+      expect(format('1970-01-01T00:00:00.900'), '0');
+    });
+  });
 }
