@@ -1371,23 +1371,10 @@ void main() {
     // checkError("+:Z", [internal_fixed(TimezoneOffsetPermissive)], .invalid);
     // checkError("Y", [internal_fixed(TimezoneOffsetPermissive)], .invalid);
 
-    test('.timezoneName()', () {
-      _check('CEST', [const .timezoneName()], ChronoParsed());
-      _check('cest', [const .timezoneName()], ChronoParsed()); // lowercase
-      _check('XXXXXXXX', [
-        const .timezoneName(),
-      ], ChronoParsed()); // not a real timezone name
-      _check('!!!!', [
-        const .timezoneName(),
-      ], ChronoParsed()); // not a real timezone name!
-      _check('CEST 5', [
-        const .timezoneName(),
-        const .literal(' '),
-        const .day(),
-      ], ChronoParsed()..day = 5);
-      _checkError('CEST ', [const .timezoneName()], .tooLong);
-      _checkError(' CEST', [const .timezoneName()], .tooLong);
-      _checkError('CE ST', [const .timezoneName()], .tooLong);
+    test('.timezoneName() is not supported', () {
+      for (final input in ['CEST', 'cest', '!!!!', '', ' CEST']) {
+        _checkError(input, [const .timezoneName()], .badFormat);
+      }
     });
   });
 
@@ -1541,6 +1528,16 @@ void main() {
   //     let parsed = result.map(|_| parsed);
   //     assert_eq!(parsed, expected);
   // }
+
+  test('numbers without a maximum width cannot overflow', () {
+    _check('+${'9' * 18}', [
+      const .year(),
+    ], ChronoParsed()..year = Year(999999999999999999));
+    _checkError('+${'1' * 19}', [const .year()], .outOfRange);
+    _checkError('+18446744073709551616', [const .year()], .outOfRange);
+    _checkError('-${'1' * 19}', [const .year()], .outOfRange);
+    _checkError('${'1' * 19}', [const .timestamp()], .outOfRange);
+  });
 
   test('parseRfc2822', () {
     // Test data: input and either the expected result or the expected error.

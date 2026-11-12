@@ -255,8 +255,9 @@ class ChronoParser._(var String _string) {
               };
 
             case ChronoFormatTimezoneName():
-              final match = RegExp(r'\S+').matchAsPrefix(_string);
-              if (match != null) _string = _string.substring(match.end);
+              // Names are ambiguous and can't be mapped to an offset, so
+              // silently skipping them would discard information.
+              throw const ChronoParseException(.badFormat);
 
             case ChronoFormatTimezoneOffset(:final allowZulu):
               _string = _string.trimLeft();
@@ -455,9 +456,15 @@ class ChronoParser._(var String _string) {
     return false;
   }
 
+  /// The maximum number of digits for numbers without a [maxDigits], so that
+  /// the result always fits into a 64-bit integer.
+  static const _maxUnboundedDigits = 18;
+
   /// Tries to parse the non-negative number from [minDigits] to [maxDigits].
   ///
-  /// The absence of digits at all is an unconditional error.
+  /// The absence of digits at all is an unconditional error. More than
+  /// [_maxUnboundedDigits] digits are an [ChronoParseExceptionKind.outOfRange]
+  /// error if [maxDigits] is `null`.
   int _scanNumber(int minDigits, int? maxDigits) {
     if (_string.length < minDigits) throw const ChronoParseException(.tooShort);
 
@@ -472,6 +479,9 @@ class ChronoParser._(var String _string) {
         break;
       }
 
+      if (digits == _maxUnboundedDigits) {
+        throw const ChronoParseException(.outOfRange);
+      }
       result = result * 10 + (codeUnit - 0x30);
       digits++;
     }
