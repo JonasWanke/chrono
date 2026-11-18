@@ -1552,6 +1552,15 @@ void main() {
         'in “2024-1-05” at offset 5',
       );
     });
+    test('RFC tryParse variants return null on errors', () {
+      expect(ZonedDateTime.tryParseRfc3339('2015-01-20T17:35:20Z'), isNotNull);
+      expect(ZonedDateTime.tryParseRfc3339('2015-01-20'), isNull);
+      expect(
+        ZonedDateTime.tryParseRfc2822('Tue, 20 Jan 2015 17:35:20 -0800'),
+        isNotNull,
+      );
+      expect(ZonedDateTime.tryParseRfc2822('nope'), isNull);
+    });
     test('tryParse returns null on errors', () {
       expect(Date.tryParse('2024-01-05'), Date(2024, 1, 5));
       expect(Date.tryParse('2024-1-5'), isNull);

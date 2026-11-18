@@ -181,6 +181,16 @@ class const ZonedDateTime<Tz extends TimeZone<Tz>>.fromUtcDateTimeAndOffset(
   static ZonedDateTime<FixedOffset> parseRfc3339(String string) =>
       ChronoParser.parseRfc3339(string).toZonedDateTime();
 
+  /// Like [parseRfc3339], but returns `null` instead of throwing a
+  /// [ChronoParseException].
+  static ZonedDateTime<FixedOffset>? tryParseRfc3339(String string) {
+    try {
+      return parseRfc3339(string);
+    } on ChronoParseException {
+      return null;
+    }
+  }
+
   /// Parses [string] as an RFC 2822 date and time, e.g.,
   /// “Tue, 20 Jan 2015 17:35:20 -0800”.
   ///
@@ -192,6 +202,16 @@ class const ZonedDateTime<Tz extends TimeZone<Tz>>.fromUtcDateTimeAndOffset(
   /// Throws a [ChronoParseException] if [string] is not valid.
   static ZonedDateTime<FixedOffset> parseRfc2822(String string) =>
       ChronoParser.parseRfc2822(string).toZonedDateTime();
+
+  /// Like [parseRfc2822], but returns `null` instead of throwing a
+  /// [ChronoParseException].
+  static ZonedDateTime<FixedOffset>? tryParseRfc2822(String string) {
+    try {
+      return parseRfc2822(string);
+    } on ChronoParseException {
+      return null;
+    }
+  }
 
   /// Represents a [ZonedDateTime] as an ISO 8601 date and time with a numeric
   /// offset (`±hh:mm`, plus `:ss` if non-zero), e.g.,
