@@ -376,11 +376,6 @@ class ChronoFormatter {
 
   void _writeYear(Year year, ChronoPadding padding) {
     final number = year.number;
-    if (1000 <= number && number <= 9999) {
-      _writeTwo(number ~/ 100, padding);
-      _writeTwo(number % 100, padding);
-    } else {
-      _writeN(4, number, padding, alwaysSign: number < 0 || number >= 10_000);
-    }
+    _writeN(4, number, padding, alwaysSign: number < 0 || number >= 10_000);
   }
 }

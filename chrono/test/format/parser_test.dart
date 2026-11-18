@@ -1507,6 +1507,92 @@ void main() {
   //     assert_eq!(parsed, expected);
   // }
 
+  group('strict numbers', () {
+    ChronoParsed day(int value) => ChronoParsed()..day = value;
+    ChronoParsed year(int value) => ChronoParsed()..year = Year(value);
+    void check(String input, List<ChronoFormatItem> items, ChronoParsed it) =>
+        expect(ChronoParser.parse(input, items), it);
+    void checkInvalid(String input, List<ChronoFormatItem> items) => expect(
+      () => ChronoParser.parse(input, items),
+      throwsA(isA<ChronoParseException>()),
+      reason: input,
+    );
+
+    test('zero padding requires the full width', () {
+      const items = [ChronoFormatItem.day()];
+      check('05', items, day(5));
+      check('12', items, day(12));
+      checkInvalid('5', items);
+      checkInvalid(' 5', items);
+      checkInvalid(' 05', items);
+    });
+    test('space padding requires spaces up to the width', () {
+      const items = [ChronoFormatItem.day(padding: .space)];
+      check(' 5', items, day(5));
+      check('12', items, day(12));
+      checkInvalid('5', items);
+      checkInvalid('05', items);
+      checkInvalid('  5', items);
+    });
+    test('no padding accepts no padding', () {
+      const items = [ChronoFormatItem.day(padding: .none)];
+      check('5', items, day(5));
+      check('12', items, day(12));
+      checkInvalid('05', items);
+      checkInvalid(' 5', items);
+    });
+    test('years', () {
+      const items = [ChronoFormatItem.year()];
+      check('2024', items, year(2024));
+      check('0005', items, year(5));
+      check('-005', items, year(-5));
+      check('+10000', items, year(10000));
+      checkInvalid('-0005', items);
+      checkInvalid('+2024', items);
+      checkInvalid('-000', items);
+      checkInvalid('24', items);
+    });
+    test('the default ISO formats reject lenient input', () {
+      expect(Date.parse('2024-01-05'), Date(2024, 1, 5));
+      for (final input in [
+        '2024-1-5',
+        ' 2024-01-05',
+        '+2024-01-05',
+        '5-1-5',
+        '2024- 1-05',
+      ]) {
+        expect(() => Date.parse(input), throwsA(isA<ChronoParseException>()));
+      }
+    });
+    test('lenient mode accepts them', () {
+      for (final input in ['2024-1-5', ' 2024-01-05', '+2024-01-05']) {
+        expect(
+          ChronoParser.parse(input, Date.isoFormat, isLenient: true).toDate(),
+          Date(2024, 1, 5),
+        );
+      }
+    });
+    test('formatted numbers can be parsed again', () {
+      for (final padding in ChronoPadding.values) {
+        for (final value in [-12345, -5, 0, 5, 999, 1000, 2024, 9999, 10000]) {
+          final items = [ChronoFormatItem.year(padding: padding)];
+          final formatted = Date(value, 1, 1).toString(items.cast());
+          check(formatted, items, year(value));
+        }
+        for (var value = 1; value <= 28; value++) {
+          final items = [ChronoFormatItem.day(padding: padding)];
+          final formatted = Date(2024, 1, value).toString(items.cast());
+          check(formatted, items, day(value));
+        }
+        for (var value = 0; value < 60; value++) {
+          final items = [ChronoFormatItem.minute(padding: padding)];
+          final formatted = Time(0, value).toString(items.cast());
+          check(formatted, items, ChronoParsed()..minute = value);
+        }
+      }
+    });
+  });
+
   group('timezone offset precision', () {
     ChronoParsed offset({int h = 0, int m = 0, int s = 0}) =>
         ChronoParsed()..offset = TimeDelta(hours: h, minutes: m, seconds: s);
@@ -1597,11 +1683,11 @@ void main() {
   test('numbers without a maximum width cannot overflow', () {
     _check('+${'9' * 18}', [
       const .year(),
-    ], ChronoParsed()..year = Year(999999999999999999));
+    ], ChronoParsed()..year = const Year(999999999999999999));
     _checkError('+${'1' * 19}', [const .year()], .outOfRange);
     _checkError('+18446744073709551616', [const .year()], .outOfRange);
     _checkError('-${'1' * 19}', [const .year()], .outOfRange);
-    _checkError('${'1' * 19}', [const .timestamp()], .outOfRange);
+    _checkError('1' * 19, [const .timestamp()], .outOfRange);
   });
 
   test('parseRfc2822', () {
@@ -1943,7 +2029,7 @@ void _check(
   List<ChronoFormatItem> items,
   ChronoParsed expected,
 ) {
-  final actual = ChronoParser.parse(string, items);
+  final actual = ChronoParser.parse(string, items, isLenient: true);
   expect(actual, equals(expected));
 }
 
@@ -1953,7 +2039,7 @@ void _checkError(
   ChronoParseExceptionKind kind,
 ) {
   try {
-    ChronoParser.parse(string, items);
+    ChronoParser.parse(string, items, isLenient: true);
     fail('Expected ChronoParseException');
   } on ChronoParseException catch (e) {
     expect(e.kind, equals(kind));

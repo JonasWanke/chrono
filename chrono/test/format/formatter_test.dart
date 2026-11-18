@@ -112,10 +112,7 @@ void main() {
   });
 
   group('numbers outside the formatting width', () {
-    Date date(int year) => Date.parse(
-      '${year.isNegative ? '-' : '+'}'
-      '${year.abs().toString().padLeft(4, '0')}-01-01',
-    );
+    Date date(int year) => Date(year, 1, 1);
 
     test('are printed in full', () {
       expect(date(10000).toString(const [.year(format: .div100)]), '100');
@@ -124,6 +121,11 @@ void main() {
     test('negative years use floor division', () {
       expect(date(-5).toString(const [.year(format: .div100)]), '-1');
       expect(date(-5).toString(const [.year(format: .mod100)]), '95');
+    });
+    test('years from 1000 to 9999 are padded as a whole', () {
+      expect(date(1000).toString(const [.year(padding: .none)]), '1000');
+      expect(date(1000).toString(const [.year(padding: .space)]), '1000');
+      expect(date(5).toString(const [.year(padding: .none)]), '5');
     });
     test('space padding keeps the sign next to the digits', () {
       expect(date(-5).toString(const [.year(padding: .space)]), '  -5');

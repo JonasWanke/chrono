@@ -1,7 +1,7 @@
 import '../../chrono.dart';
 
 // Based on Rust Chrono's parser: https://github.com/chronotope/chrono/blob/3ffcd1b107fd3085bc184a1f5f7445b97a0d655f/src/format/parse.rs
-class ChronoParser._(var String _string) {
+class ChronoParser._(var String _string, {final bool _isLenient = false}) {
   final _parsed = ChronoParsed();
 
   /// Tries to parse given [string] with given formatting [items].
@@ -16,13 +16,21 @@ class ChronoParser._(var String _string) {
   ///   For example, `April` is always consumed entirely when the long month
   ///   name is requested; it equally accepts `Apr`, but prefers the longer
   ///   prefix in this case.
-  /// - Padding-agnostic (for numeric items).
-  ///   The [ChronoPadding] field is completely ignored, so one can prepend any
-  ///   number of whitespace then any number of zeroes before numbers.
+  /// - Strict by default: numeric items only accept what the formatter prints
+  ///   for their [ChronoPadding]. For example, [ChronoPadding.zero] requires
+  ///   exactly the formatting width in digits, and no whitespace is accepted
+  ///   before numbers unless the padding is [ChronoPadding.space].
+  /// - Padding-agnostic if [isLenient] is `true`: the [ChronoPadding] field is
+  ///   completely ignored, so one can prepend any number of whitespace then any
+  ///   number of zeroes before numbers.
   /// - (Still) obeying the intrinsic parsing width. This allows, for example,
   ///   parsing `HHMMSS`.
-  static ChronoParsed parse(String string, List<ChronoFormatItem> items) {
-    final (:parsed, :rest) = parseAndRest(string, items);
+  static ChronoParsed parse(
+    String string,
+    List<ChronoFormatItem> items, {
+    bool isLenient = false,
+  }) {
+    final (:parsed, :rest) = parseAndRest(string, items, isLenient: isLenient);
     if (rest.isNotEmpty) throw const ChronoParseException(.tooLong);
     return parsed;
   }
@@ -36,16 +44,17 @@ class ChronoParser._(var String _string) {
   ///   `April` is always consumed entirely when the long month name is
   ///   requested; it equally accepts `Apr`, but prefers the longer prefix in
   ///   this case.
-  /// - Padding-agnostic (for numeric items). The [ChronoPadding] field is
-  ///   completely ignored, so one can prepend any number of zeroes before
-  ///   numbers.
+  /// - Strict by default: numeric items only accept what the formatter prints
+  ///   for their [ChronoPadding]. See [parse].
+  /// - Padding-agnostic if [isLenient] is `true`.
   /// - (Still) obeying the intrinsic parsing width. This allows, for example,
   ///   parsing `HHMMSS`.
   static ({ChronoParsed parsed, String rest}) parseAndRest(
     String string,
-    List<ChronoFormatItem> items,
-  ) {
-    final parser = ChronoParser._(string);
+    List<ChronoFormatItem> items, {
+    bool isLenient = false,
+  }) {
+    final parser = ChronoParser._(string, isLenient: isLenient);
     parser._parseAndRemainder(items);
     return (parsed: parser._parsed, rest: parser._string);
   }
@@ -198,23 +207,11 @@ class ChronoParser._(var String _string) {
               (it) => _parsed.timestamp = TimeDelta(seconds: it),
             ),
           };
-          _string = _string.trimLeft();
-          final int value;
-          if (signed) {
-            if (_string.startsWith('-')) {
-              _string = _string.substring(1);
-              value = -_scanNumber(1, null);
-            } else if (_string.startsWith('+')) {
-              _string = _string.substring(1);
-              value = _scanNumber(1, null);
-            } else {
-              // If there is no explicit sign, we respect the original [width].
-              value = _scanNumber(1, width);
-            }
-          } else {
-            value = _scanNumber(1, width);
-          }
-          set(value);
+          set(
+            _isLenient
+                ? _scanLenientNumeric(width, signed: signed)
+                : _scanStrictNumeric(width, signed: signed, item.padding),
+          );
 
         case ChronoFormatItemFixed():
           switch (item) {
@@ -454,6 +451,83 @@ class ChronoParser._(var String _string) {
     }
     // The comment isn't closed.
     return false;
+  }
+
+  /// Scans a number, ignoring the padding and trimming whitespace before it.
+  int _scanLenientNumeric(int? width, {required bool signed}) {
+    _string = _string.trimLeft();
+    if (!signed) return _scanNumber(1, width);
+
+    if (_string.startsWith('-')) {
+      _string = _string.substring(1);
+      return -_scanNumber(1, null);
+    } else if (_string.startsWith('+')) {
+      _string = _string.substring(1);
+      return _scanNumber(1, null);
+    } else {
+      // If there is no explicit sign, we respect the original [width].
+      return _scanNumber(1, width);
+    }
+  }
+
+  /// Scans a number exactly as the formatter prints it for [padding], with
+  /// [width] as both the formatting and the (maximum) parsing width.
+  ///
+  /// - [ChronoPadding.zero]: padded with zeros to the formatting width.
+  /// - [ChronoPadding.space]: padded with spaces to the formatting width.
+  /// - [ChronoPadding.none]: no padding.
+  ///
+  /// In all cases, a number is only padded to the formatting width and has no
+  /// leading zeros beyond that. The sign counts towards the formatting width.
+  /// A `+` is only accepted for numbers that are wider than the formatting
+  /// width, and `-` only for non-zero numbers.
+  int _scanStrictNumeric(
+    int? width,
+    ChronoPadding padding, {
+    required bool signed,
+  }) {
+    final formatWidth = width ?? 1;
+
+    var spaces = 0;
+    if (padding == .space) {
+      while (spaces < _string.length && _string[spaces] == ' ') {
+        spaces++;
+      }
+    }
+    final signStart = spaces;
+    final sign = signed && signStart < _string.length
+        ? switch (_string[signStart]) {
+            '-' || '+' => _string[signStart],
+            _ => null,
+          }
+        : null;
+    final signLength = sign == null ? 0 : 1;
+    _string = _string.substring(signStart + signLength);
+
+    final firstDigit = _string.isEmpty ? null : _string[0];
+    final lengthBefore = _string.length;
+    // Without a sign, we respect the original [width].
+    final value = _scanNumber(1, sign == null ? width : null);
+    final digits = lengthBefore - _string.length;
+
+    final paddedDigits = formatWidth - signLength;
+    final hasLeadingZeros = digits > 1 && firstDigit == '0';
+    final isValid = switch (padding) {
+      .zero =>
+        digits >= paddedDigits && (digits == paddedDigits || firstDigit != '0'),
+      .space =>
+        !hasLeadingZeros &&
+            spaces == (paddedDigits - digits).clamp(0, paddedDigits),
+      .none => !hasLeadingZeros,
+    };
+    final isSignValid = switch (sign) {
+      '+' => digits > formatWidth,
+      '-' => value != 0,
+      _ => true,
+    };
+    if (!isValid || !isSignValid) throw const ChronoParseException(.invalid);
+
+    return sign == '-' ? -value : value;
   }
 
   /// The maximum number of digits for numbers without a `maxDigits`, so that
