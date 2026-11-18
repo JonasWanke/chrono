@@ -140,6 +140,7 @@ sealed class ZonedDateTimeFormatItem extends ChronoFormatItem {
   const factory amPm(ChronoCasing casing) = ChronoFormatAmPm;
   const factory subsecond(ChronoSubsecondAccuracy accuracy) =
       ChronoFormatSubsecond;
+  const factory timestamp({ChronoPadding padding}) = ChronoFormatTimestamp;
   const factory timezoneName() = ChronoFormatTimezoneName;
   const factory timezoneOffset({
     TimezoneOffsetPrecision precision,
@@ -369,7 +370,8 @@ enum ChronoSubsecondAccuracy {
 ///
 /// For formatting, it assumes UTC upon the absence of time zone offset.
 class const ChronoFormatTimestamp({super.padding})
-    extends ChronoFormatItemNumeric;
+    extends ChronoFormatItemNumeric
+    implements ZonedDateTimeFormatItem;
 
 // ZonedDateTime
 

@@ -103,6 +103,9 @@ void main() {
         '+09',
       );
     });
+    test('timestamp', () {
+      expect(dateTime.toString(const [.timestamp()]), '967813215');
+    });
     test('optional offset parts', () {
       String format(TimezoneOffsetPrecision precision, TimeDelta offset) =>
           FixedOffset.east(offset)
