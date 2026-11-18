@@ -4,7 +4,7 @@ import 'package:meta/meta.dart';
 
 import 'codec.dart';
 import 'date_time/date_time.dart';
-import 'parser.dart';
+import 'format/parser.dart';
 import 'rounding.dart';
 import 'time/duration.dart';
 import 'utils.dart';
@@ -68,6 +68,29 @@ final class Instant.fromDurationSinceUnixEpoch(
   @override
   int get hashCode => durationSinceUnixEpoch.hashCode;
 
+  /// Parses an [Instant] as an ISO 8601 string in UTC, e.g., “2023-04-23T18:24:20.123456789Z”.
+  ///
+  /// Parsing is strict: [string] must be exactly what [toString] prints.
+  ///
+  /// Throws a [ChronoParseException] if [string] is invalid.
+  factory parse(String string) {
+    final parsed = ChronoParser.parse(string, const [
+      ...CDateTime.isoFormat,
+      .literal('Z'),
+    ]);
+    return parsed.toDate().at(parsed.toTime()).inUtc;
+  }
+
+  /// Like [parse], but returns `null` instead of throwing a
+  /// [ChronoParseException].
+  static Instant? tryParse(String string) {
+    try {
+      return Instant.parse(string);
+    } on ChronoParseException {
+      return null;
+    }
+  }
+
   @override
   String toString() => '${dateTimeInUtc}Z';
 }
@@ -90,7 +113,7 @@ class const InstantAsIsoStringCodec()
   @override
   String encode(Instant input) => input.toString();
   @override
-  Instant decode(String encoded) => Parser.parseInstant(encoded);
+  Instant decode(String encoded) => Instant.parse(encoded);
 }
 
 /// Encodes [Instant] as an integer number of nanoseconds that passed since the

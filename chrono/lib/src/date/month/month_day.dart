@@ -2,7 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:meta/meta.dart';
 
 import '../../codec.dart';
-import '../../parser.dart';
+import '../../format/parser.dart';
 import '../../utils.dart';
 import '../date.dart';
 import '../year.dart';
@@ -82,6 +82,28 @@ final class const MonthDay._unchecked(
   @override
   int get hashCode => Object.hash(month, day);
 
+  /// Parses a [MonthDay] as an ISO 8601 string, e.g., “--04-23”.
+  ///
+  /// Parsing is strict: [string] must be exactly what [toString] prints.
+  ///
+  /// Throws a [ChronoParseException] if [string] is invalid.
+  factory parse(String string) => ChronoParser.parse(string, const [
+    .literal('--'),
+    .month(),
+    .literal('-'),
+    .day(),
+  ]).toMonthDay();
+
+  /// Like [parse], but returns `null` instead of throwing a
+  /// [ChronoParseException].
+  static MonthDay? tryParse(String string) {
+    try {
+      return MonthDay.parse(string);
+    } on ChronoParseException {
+      return null;
+    }
+  }
+
   @override
   String toString() {
     final month = this.month.number.toString().padLeft(2, '0');
@@ -96,5 +118,5 @@ class const MonthDayAsIsoStringCodec()
   @override
   String encode(MonthDay input) => input.toString();
   @override
-  MonthDay decode(String encoded) => Parser.parseMonthDay(encoded);
+  MonthDay decode(String encoded) => MonthDay.parse(encoded);
 }

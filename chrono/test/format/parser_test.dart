@@ -1,5 +1,7 @@
 // ignore_for_file: lines_longer_than_80_chars, missing-test-assertion
 
+import 'dart:convert';
+
 import 'package:chrono/chrono.dart';
 import 'package:test/test.dart';
 
@@ -1507,6 +1509,82 @@ void main() {
   //     assert_eq!(parsed, expected);
   // }
 
+  group('ISO string codecs', () {
+    void checkInvalid(Codec<Object, String> codec, String it) => expect(
+      () => codec.decode(it),
+      throwsA(isA<ChronoParseException>()),
+      reason: it,
+    );
+
+    test('Year', () {
+      const codec = YearAsIsoStringCodec();
+      expect(codec.decode('2024'), Year(2024));
+      expect(codec.decode('-0005'), Year(-5));
+      expect(codec.decode('+12345'), Year(12345));
+      checkInvalid(codec, '12345');
+      checkInvalid(codec, '24');
+    });
+    test('YearMonth', () {
+      const codec = YearMonthAsIsoStringCodec();
+      expect(codec.decode('2024-04'), YearMonth(2024, 4));
+      checkInvalid(codec, '2024-13');
+      checkInvalid(codec, '2024-4');
+    });
+    test('YearWeek', () {
+      const codec = YearWeekAsIsoStringCodec();
+      expect(codec.decode('2023-W16'), YearWeek(2023, 16, .iso));
+      checkInvalid(codec, '2023-W53');
+      checkInvalid(codec, '2023-W00');
+      checkInvalid(codec, '2023-16');
+    });
+    test('MonthDay', () {
+      const codec = MonthDayAsIsoStringCodec();
+      expect(codec.decode('--04-23'), MonthDay(4, 23));
+      expect(codec.decode('--02-29'), MonthDay(2, 29));
+      checkInvalid(codec, '--02-30');
+      checkInvalid(codec, '--04-31');
+      checkInvalid(codec, '04-23');
+    });
+    test('Instant', () {
+      const codec = InstantAsIsoStringCodec();
+      expect(
+        codec.decode('2024-04-23T12:30:15.5Z'),
+        CDateTime(2024, 4, 23, 12, 30, 15, 500).inUtc,
+      );
+      checkInvalid(codec, '2024-04-23T12:30:15');
+      checkInvalid(codec, '2024-04-23T12:30:15+00:00');
+    });
+  });
+
+  group('parse and tryParse of ISO strings', () {
+    test('Year', () {
+      expect(Year.parse('-0005'), Year(-5));
+      expect(Year.tryParse('+12345'), Year(12345));
+      expect(Year.tryParse('12345'), isNull);
+    });
+    test('YearMonth', () {
+      expect(YearMonth.parse('2024-04'), YearMonth(2024, 4));
+      expect(YearMonth.tryParse('2024-13'), isNull);
+    });
+    test('YearWeek', () {
+      expect(YearWeek.parseIso('2023-W16'), YearWeek(2023, 16, .iso));
+      expect(YearWeek.tryParseIso('2023-W53'), isNull);
+    });
+    test('MonthDay', () {
+      expect(MonthDay.parse('--02-29'), MonthDay(2, 29));
+      expect(MonthDay.tryParse('--02-30'), isNull);
+    });
+    test('Instant', () {
+      final instant = CDateTime(2024, 4, 23, 12, 30, 15, 500).inUtc;
+      expect(Instant.parse(instant.toString()), instant);
+      expect(Instant.tryParse('2024-04-23T12:30:15'), isNull);
+    });
+    test('failures throw ChronoParseException', () {
+      expect(() => Year.parse('x'), throwsA(isA<ChronoParseException>()));
+      expect(() => Instant.parse('x'), throwsA(isA<ChronoParseException>()));
+    });
+  });
+
   group('ChronoParseException', () {
     ChronoParseException error(
       String input,
@@ -1610,11 +1688,14 @@ void main() {
       const items = [ChronoFormatItem.year()];
       check('2024', items, year(2024));
       check('0005', items, year(5));
-      check('-005', items, year(-5));
+      check('-0005', items, year(-5));
       check('+10000', items, year(10000));
-      checkInvalid('-0005', items);
+      check('-12345', items, year(-12345));
+      checkInvalid('-005', items);
+      checkInvalid('-00005', items);
       checkInvalid('+2024', items);
-      checkInvalid('-000', items);
+      checkInvalid('-0000', items);
+      checkInvalid('12345', items);
       checkInvalid('24', items);
     });
     test('the default ISO formats reject lenient input', () {

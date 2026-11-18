@@ -522,7 +522,8 @@ class ChronoParser._(var String _string, {final bool _isLenient = false}) {
   /// - [ChronoPadding.none]: no padding.
   ///
   /// In all cases, a number is only padded to the formatting width and has no
-  /// leading zeros beyond that. The sign counts towards the formatting width.
+  /// leading zeros beyond that. The sign counts towards the formatting width,
+  /// except for zero-padded signed items (years).
   /// A `+` is only accepted for numbers that are wider than the formatting
   /// width, and `-` only for non-zero numbers.
   int _scanStrictNumeric(
@@ -554,7 +555,11 @@ class ChronoParser._(var String _string, {final bool _isLenient = false}) {
     final value = _scanNumber(1, sign == null ? width : null);
     final digits = lengthBefore - _string.length;
 
-    final paddedDigits = formatWidth - signLength;
+    // Signed items (years) don't count the sign towards the width of zero
+    // padding, like in ISO 8601's expanded representation (`-0005`).
+    final paddedDigits = padding == .zero && signed
+        ? formatWidth
+        : formatWidth - signLength;
     final hasLeadingZeros = digits > 1 && firstDigit == '0';
     final isValid = switch (padding) {
       .zero =>

@@ -354,6 +354,7 @@ class ChronoFormatter {
     int value,
     ChronoPadding padding, {
     bool alwaysSign = false,
+    bool signCountsTowardsWidth = true,
   }) {
     final sign = value < 0
         ? '-'
@@ -363,7 +364,8 @@ class ChronoFormatter {
     final digits = value.abs().toString();
     _buffer.write(switch (padding) {
       .none => '$sign$digits',
-      .zero => '$sign${digits.padLeft(width - sign.length, '0')}',
+      .zero =>
+        '$sign${digits.padLeft(signCountsTowardsWidth ? width - sign.length : width, '0')}',
       .space => '$sign$digits'.padLeft(width),
     });
   }
@@ -374,6 +376,14 @@ class ChronoFormatter {
 
   void _writeYear(Year year, ChronoPadding padding) {
     final number = year.number;
-    _writeN(4, number, padding, alwaysSign: number < 0 || number >= 10_000);
+    // ISO 8601's expanded representation: at least four digits, plus a sign for
+    // years before 0000 or after 9999.
+    _writeN(
+      4,
+      number,
+      padding,
+      alwaysSign: number < 0 || number >= 10_000,
+      signCountsTowardsWidth: false,
+    );
   }
 }

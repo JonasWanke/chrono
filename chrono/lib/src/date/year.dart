@@ -4,7 +4,7 @@ import 'package:meta/meta.dart';
 
 import '../codec.dart';
 import '../date_time/date_time.dart';
-import '../parser.dart';
+import '../format/parser.dart';
 import '../utils.dart';
 import 'date.dart';
 import 'duration.dart';
@@ -196,6 +196,24 @@ final class const Year(final int number)
   @override
   int get hashCode => number.hashCode;
 
+  /// Parses a [Year] as an ISO 8601 string, e.g., “2023”, “-0005”, or “+12345”.
+  ///
+  /// Parsing is strict: [string] must be exactly what [toString] prints.
+  ///
+  /// Throws a [ChronoParseException] if [string] is invalid.
+  factory parse(String string) =>
+      ChronoParser.parse(string, const [.year()]).toYear();
+
+  /// Like [parse], but returns `null` instead of throwing a
+  /// [ChronoParseException].
+  static Year? tryParse(String string) {
+    try {
+      return Year.parse(string);
+    } on ChronoParseException {
+      return null;
+    }
+  }
+
   @override
   String toString() {
     return switch (number) {
@@ -263,7 +281,7 @@ class const YearAsIsoStringCodec() extends CodecAndJsonConverter<Year, String> {
   @override
   String encode(Year input) => input.toString();
   @override
-  Year decode(String encoded) => Parser.parseYear(encoded);
+  Year decode(String encoded) => Year.parse(encoded);
 }
 
 /// Encodes a [Year] as an integer.

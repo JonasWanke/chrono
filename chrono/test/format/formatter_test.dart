@@ -127,6 +127,12 @@ void main() {
       expect(date(1000).toString(const [.year(padding: .space)]), '1000');
       expect(date(5).toString(const [.year(padding: .none)]), '5');
     });
+    test('years use the ISO 8601 expanded representation', () {
+      expect(date(-5).toString(const [.year()]), '-0005');
+      expect(date(10000).toString(const [.year()]), '+10000');
+      expect(date(-12345).toString(const [.year()]), '-12345');
+      expect(date(5).toString(const [.year()]), '0005');
+    });
     test('space padding keeps the sign next to the digits', () {
       expect(date(-5).toString(const [.year(padding: .space)]), '  -5');
     });

@@ -918,6 +918,51 @@ class ChronoParsed {
     }
   }
 
+  /// Returns the parsed [year].
+  ///
+  /// Throws a [ChronoParseException] with [ChronoParseExceptionKind.notEnough]
+  /// if the year field is not set.
+  Year toYear() => year ?? (throw const ChronoParseException(.notEnough));
+
+  /// Returns the parsed [year] and [month].
+  ///
+  /// Throws a [ChronoParseException] with [ChronoParseExceptionKind.notEnough]
+  /// if one of the fields is not set.
+  YearMonth toYearMonth() => YearMonth.from(
+    toYear(),
+    month ?? (throw const ChronoParseException(.notEnough)),
+  );
+
+  /// Returns the parsed [month] and [day].
+  ///
+  /// Throws a [ChronoParseException] with
+  /// - [ChronoParseExceptionKind.notEnough] if one of the fields is not set.
+  /// - [ChronoParseExceptionKind.outOfRange] if the day is invalid for the
+  ///   month. February 29 is valid.
+  MonthDay toMonthDay() {
+    final month = this.month ?? (throw const ChronoParseException(.notEnough));
+    final day = this.day ?? (throw const ChronoParseException(.notEnough));
+    if (day < 1 || day > month.maxLength.inDays) {
+      throw const ChronoParseException(.outOfRange);
+    }
+    return MonthDay.from(month, day);
+  }
+
+  /// Returns the parsed [isoYear] and [isoWeek] as an ISO [YearWeek].
+  ///
+  /// Throws a [ChronoParseException] with
+  /// - [ChronoParseExceptionKind.notEnough] if one of the fields is not set.
+  /// - [ChronoParseExceptionKind.outOfRange] if the week doesn't exist in the
+  ///   year.
+  YearWeek toIsoYearWeek() {
+    final year = isoYear ?? (throw const ChronoParseException(.notEnough));
+    final week = isoWeek ?? (throw const ChronoParseException(.notEnough));
+    if (week < 1 || week > year.numberOfWeeks(.iso)) {
+      throw const ChronoParseException(.outOfRange);
+    }
+    return YearWeek.from(year, week, .iso);
+  }
+
   /// Returns a parsed fixed time zone offset out of given fields.
   ///
   /// # Exceptions

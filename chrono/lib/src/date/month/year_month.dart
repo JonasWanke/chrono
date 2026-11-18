@@ -4,7 +4,7 @@ import 'package:meta/meta.dart';
 
 import '../../../chrono.dart';
 import '../../codec.dart';
-import '../../parser.dart';
+import '../../format/parser.dart';
 import '../../utils.dart';
 
 /// The combination of a [Year] and a [Month], e.g., April 2023.
@@ -109,6 +109,27 @@ final class const YearMonth.from(final Year year, final Month month)
   @override
   int get hashCode => Object.hash(year, month);
 
+  /// Parses a [YearMonth] as an ISO 8601 string, e.g., “2023-04”.
+  ///
+  /// Parsing is strict: [string] must be exactly what [toString] prints.
+  ///
+  /// Throws a [ChronoParseException] if [string] is invalid.
+  factory parse(String string) => ChronoParser.parse(string, const [
+    .year(),
+    .literal('-'),
+    .month(),
+  ]).toYearMonth();
+
+  /// Like [parse], but returns `null` instead of throwing a
+  /// [ChronoParseException].
+  static YearMonth? tryParse(String string) {
+    try {
+      return YearMonth.parse(string);
+    } on ChronoParseException {
+      return null;
+    }
+  }
+
   @override
   String toString() {
     final month = this.month.number.toString().padLeft(2, '0');
@@ -138,5 +159,5 @@ class const YearMonthAsIsoStringCodec()
   @override
   String encode(YearMonth input) => input.toString();
   @override
-  YearMonth decode(String encoded) => Parser.parseYearMonth(encoded);
+  YearMonth decode(String encoded) => YearMonth.parse(encoded);
 }

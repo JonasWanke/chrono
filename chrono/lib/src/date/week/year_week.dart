@@ -4,7 +4,7 @@ import 'package:meta/meta.dart';
 
 import '../../codec.dart';
 import '../../date_time/date_time.dart';
-import '../../parser.dart';
+import '../../format/parser.dart';
 import '../../utils.dart';
 import '../date.dart';
 import '../duration.dart';
@@ -150,6 +150,27 @@ final class const YearWeek._unchecked(
 
   /// ISO weeks are formatted as “2023-W16”, others as, e.g.,
   /// “Week 16 of 2023 with WeekConfig(…)”.
+  /// Parses an ISO [YearWeek] as an ISO 8601 string, e.g., “2023-W16”.
+  ///
+  /// Parsing is strict: [string] must be exactly what [toString] prints.
+  ///
+  /// Throws a [ChronoParseException] if [string] is invalid.
+  factory parseIso(String string) => ChronoParser.parse(string, const [
+    .isoYear(),
+    .literal('-W'),
+    .isoWeek(),
+  ]).toIsoYearWeek();
+
+  /// Like [parseIso], but returns `null` instead of throwing a
+  /// [ChronoParseException].
+  static YearWeek? tryParseIso(String string) {
+    try {
+      return YearWeek.parseIso(string);
+    } on ChronoParseException {
+      return null;
+    }
+  }
+
   @override
   String toString() {
     if (config == WeekConfig.iso) {
@@ -200,5 +221,5 @@ class const YearWeekAsIsoStringCodec()
   }
 
   @override
-  YearWeek decode(String encoded) => Parser.parseIsoYearWeek(encoded);
+  YearWeek decode(String encoded) => YearWeek.parseIso(encoded);
 }
