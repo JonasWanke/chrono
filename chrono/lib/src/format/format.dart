@@ -40,6 +40,78 @@ sealed class const ChronoFormatItem() {
     bool allowZulu,
     bool printColon,
   }) = ChronoFormatTimezoneOffset;
+
+  @override
+  String toString() {
+    final (name, arguments) = switch (this) {
+      ChronoFormatItemLiteral(:final text) => ('literal', [_quote(text)]),
+      ChronoFormatItemSpace(:final text) => ('space', [_quote(text)]),
+      ChronoFormatYear(:final format, :final padding) => (
+        'year',
+        ['format: ${format.name}', 'padding: ${padding.name}'],
+      ),
+      ChronoFormatIsoYear(:final format, :final padding) => (
+        'isoYear',
+        ['format: ${format.name}', 'padding: ${padding.name}'],
+      ),
+      ChronoFormatQuarter(:final padding) => ('quarter', [_padding(padding)]),
+      ChronoFormatMonth(:final padding) => ('month', [_padding(padding)]),
+      ChronoFormatDay(:final padding) => ('day', [_padding(padding)]),
+      ChronoFormatWeekFromSun(:final padding) => (
+        'weekFromSun',
+        [_padding(padding)],
+      ),
+      ChronoFormatWeekFromMon(:final padding) => (
+        'weekFromMon',
+        [_padding(padding)],
+      ),
+      ChronoFormatIsoWeek(:final padding) => ('isoWeek', [_padding(padding)]),
+      ChronoFormatNumDaysFromSun(:final padding) => (
+        'numDaysFromSun',
+        [_padding(padding)],
+      ),
+      ChronoFormatWeekday(:final padding) => ('weekday', [_padding(padding)]),
+      ChronoFormatOrdinal(:final padding) => ('ordinal', [_padding(padding)]),
+      ChronoFormatHour(:final padding) => ('hour', [_padding(padding)]),
+      ChronoFormatHour12(:final padding) => ('hour12', [_padding(padding)]),
+      ChronoFormatMinute(:final padding) => ('minute', [_padding(padding)]),
+      ChronoFormatSecond(:final padding) => ('second', [_padding(padding)]),
+      ChronoFormatNanosecond(:final padding) => (
+        'nanosecond',
+        [_padding(padding)],
+      ),
+      ChronoFormatTimestamp(:final padding) => (
+        'timestamp',
+        [_padding(padding)],
+      ),
+      ChronoFormatMonthName(:final length) => ('monthName', [length.name]),
+      ChronoFormatWeekdayName(:final length) => ('weekdayName', [length.name]),
+      ChronoFormatAmPm(:final casing) => ('amPm', [casing.name]),
+      ChronoFormatSubsecond(:final accuracy) => ('subsecond', [accuracy.name]),
+      ChronoFormatTimezoneName() => ('timezoneName', <String>[]),
+      ChronoFormatTimezoneOffset(
+        :final precision,
+        :final allowZulu,
+        :final printColon,
+      ) =>
+        (
+          'timezoneOffset',
+          [
+            'precision: ${precision.name}',
+            'allowZulu: $allowZulu',
+            'printColon: $printColon',
+          ],
+        ),
+    };
+    return '$name(${arguments.join(', ')})';
+  }
+
+  static String _padding(ChronoPadding padding) => 'padding: ${padding.name}';
+
+  static String _quote(String text) {
+    final escaped = text.replaceAll(r'\', r'\\').replaceAll("'", r"\'");
+    return "'$escaped'";
+  }
 }
 
 /// A literally printed and parsed text.

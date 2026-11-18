@@ -1626,8 +1626,7 @@ void main() {
       expect(
         error('2024-1-05', Date.isoFormat).toString(),
         'ChronoParseException: input contains invalid characters '
-        '(parsing ${error('2024-1-05', Date.isoFormat).item}) '
-        'in “2024-1-05” at offset 5',
+        '(parsing month(padding: zero)) in “2024-1-05” at offset 5',
       );
     });
     test('RFC tryParse variants return null on errors', () {

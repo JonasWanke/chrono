@@ -156,4 +156,56 @@ void main() {
       expect(format('1970-01-01T00:00:00.900'), '0');
     });
   });
+
+  group('format items toString()', () {
+    test('literals and spaces are quoted', () {
+      expect(const ChronoFormatItem.literal('-').toString(), "literal('-')");
+      expect(
+        const ChronoFormatItem.literal("it's").toString(),
+        r"literal('it\'s')",
+      );
+      expect(const ChronoFormatItem.literal(r'\').toString(), r"literal('\\')");
+      expect(const ChronoFormatItem.space(' ').toString(), "space(' ')");
+    });
+    test('numeric items show their padding', () {
+      expect(
+        const ChronoFormatItem.year().toString(),
+        'year(format: full, padding: zero)',
+      );
+      expect(
+        const ChronoFormatItem.isoYear(
+          format: .mod100,
+          padding: .none,
+        ).toString(),
+        'isoYear(format: mod100, padding: none)',
+      );
+      expect(
+        const ChronoFormatItem.day(padding: .space).toString(),
+        'day(padding: space)',
+      );
+      expect(
+        const ChronoFormatItem.timestamp().toString(),
+        'timestamp(padding: zero)',
+      );
+    });
+    test('fixed items show their options', () {
+      expect(
+        const ChronoFormatItem.monthName(.short).toString(),
+        'monthName(short)',
+      );
+      expect(const ChronoFormatItem.amPm(.upper).toString(), 'amPm(upper)');
+      expect(
+        const ChronoFormatItem.subsecond(.variable).toString(),
+        'subsecond(variable)',
+      );
+      expect(
+        const ChronoFormatItem.timezoneName().toString(),
+        'timezoneName()',
+      );
+      expect(
+        const ChronoFormatItem.timezoneOffset().toString(),
+        'timezoneOffset(precision: minutes, allowZulu: true, printColon: true)',
+      );
+    });
+  });
 }
