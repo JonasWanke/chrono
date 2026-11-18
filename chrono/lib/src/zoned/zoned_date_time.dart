@@ -170,6 +170,52 @@ class const ZonedDateTime<Tz extends TimeZone<Tz>>.fromUtcDateTimeAndOffset(
   @override
   int get hashCode => Object.hash(utcDateTime, offset);
 
+  /// Parses [string] with the given [items], by default [defaultFormat].
+  ///
+  /// [items] must contain an offset ([ChronoFormatTimezoneOffset]) or a
+  /// timestamp ([ChronoFormatTimestamp]); otherwise, a [ChronoParseException]
+  /// with [ChronoParseExceptionKind.notEnough] is thrown. Timezone names can't
+  /// be parsed.
+  ///
+  /// {@macro chrono.parse.typed}
+  static ZonedDateTime<FixedOffset> parse(
+    String string, {
+    List<ZonedDateTimeFormatItem> items = defaultFormat,
+    bool isLenient = false,
+  }) =>
+      ChronoParser.parse(string, items, isLenient: isLenient).toZonedDateTime();
+
+  /// Like [parse], but returns `null` instead of throwing a
+  /// [ChronoParseException].
+  static ZonedDateTime<FixedOffset>? tryParse(
+    String string, {
+    List<ZonedDateTimeFormatItem> items = defaultFormat,
+    bool isLenient = false,
+  }) {
+    try {
+      return parse(string, items: items, isLenient: isLenient);
+    } on ChronoParseException {
+      return null;
+    }
+  }
+
+  /// Parses [string] with the given [items] and also returns the remaining
+  /// string.
+  ///
+  /// {@macro chrono.parse.typed}
+  static ({ZonedDateTime<FixedOffset> zonedDateTime, String rest}) parseAndRest(
+    String string, {
+    List<ZonedDateTimeFormatItem> items = defaultFormat,
+    bool isLenient = false,
+  }) {
+    final result = ChronoParser.parseAndRest(
+      string,
+      items,
+      isLenient: isLenient,
+    );
+    return (zonedDateTime: result.parsed.toZonedDateTime(), rest: result.rest);
+  }
+
   /// Parses [string] as a strict RFC 3339 date and time, e.g.,
   /// “2015-01-20T17:35:20.001-08:00”.
   ///
@@ -261,6 +307,4 @@ class const ZonedDateTime<Tz extends TimeZone<Tz>>.fromUtcDateTimeAndOffset(
         time: localDateTime.time,
         offset: (name: offset.toString(), offset: offset.fix()),
       );
-
-  // TODO(JonasWanke): use new [ChronoParser]
 }

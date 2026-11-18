@@ -75,6 +75,49 @@ void main() {
     });
   });
 
+  group('parse(…)', () {
+    final dateTime = FixedOffset.east(TimeDelta(hours: 9, minutes: 30))
+        .fromUtcDateTime(CDateTime(2000, 9, 1, 13, 0, 15));
+
+    test('default format round-trips', () {
+      expect(ZonedDateTime.parse(dateTime.toString()), dateTime);
+      final utc = dateTime.withTimezone(FixedOffset.zero);
+      expect(ZonedDateTime.parse(utc.toString()), utc);
+      final withSeconds = FixedOffset.east(TimeDelta(hours: 1, seconds: 5))
+          .fromUtcDateTime(CDateTime(2000, 9, 1, 13, 0, 15));
+      expect(ZonedDateTime.parse(withSeconds.toString()), withSeconds);
+    });
+    test('timestamps', () {
+      const items = [ZonedDateTimeFormatItem.timestamp()];
+      expect(
+        ZonedDateTime.parse('967813215', items: items).utcDateTime,
+        CDateTime(2000, 9, 1, 13, 0, 15),
+      );
+    });
+    test('requires an offset', () {
+      expect(ZonedDateTime.tryParse('2000-09-01T22:30:15'), isNull);
+      expect(
+        () => ZonedDateTime.parse(
+          '2000-09-01T22:30:15 EST',
+          items: const [...CDateTime.isoFormat, .literal(' '), .timezoneName()],
+        ),
+        throwsA(isA<ChronoParseException>()),
+      );
+    });
+    test('parseAndRest', () {
+      final result = ZonedDateTime.parseAndRest('2000-09-01T22:30:15+09:30!');
+      expect(result.zonedDateTime, dateTime);
+      expect(result.rest, '!');
+    });
+    test('strict by default', () {
+      expect(ZonedDateTime.tryParse('2000-09-01T22:30:15+0930'), isNull);
+      expect(
+        ZonedDateTime.tryParse('2000-09-01T22:30:15+0930', isLenient: true),
+        dateTime,
+      );
+    });
+  });
+
   group('toString(…)', () {
     final dateTime = FixedOffset.east(TimeDelta(hours: 9, minutes: 30))
         .fromUtcDateTime(CDateTime(2000, 9, 1, 13, 0, 15));
