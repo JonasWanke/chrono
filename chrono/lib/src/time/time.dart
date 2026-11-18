@@ -281,13 +281,29 @@ final class const Time._unchecked(
     .subsecond(.variable),
   ];
 
-  factory parse(String string, [List<TimeFormatItem> items = isoFormat]) =>
-      ChronoParser.parse(string, items).toTime();
-  static ({Time time, String rest}) parseAndRest(
-    String string, [
+  /// Parses [string] with the given [items].
+  ///
+  /// {@macro chrono.parse.typed}
+  factory parse(
+    String string, {
     List<TimeFormatItem> items = isoFormat,
-  ]) {
-    final result = ChronoParser.parseAndRest(string, items);
+    bool isLenient = false,
+  }) => ChronoParser.parse(string, items, isLenient: isLenient).toTime();
+
+  /// Parses [string] with the given [items] and also returns the remaining
+  /// string.
+  ///
+  /// {@macro chrono.parse.typed}
+  static ({Time time, String rest}) parseAndRest(
+    String string, {
+    List<TimeFormatItem> items = isoFormat,
+    bool isLenient = false,
+  }) {
+    final result = ChronoParser.parseAndRest(
+      string,
+      items,
+      isLenient: isLenient,
+    );
     return (time: result.parsed.toTime(), rest: result.rest);
   }
 
@@ -305,7 +321,7 @@ class const TimeAsStringCodec([
   @override
   String encode(Time input) => input.toString(formatItems);
   @override
-  Time decode(String encoded) => Time.parse(encoded, formatItems);
+  Time decode(String encoded) => Time.parse(encoded, items: formatItems);
 }
 
 // Deranged
@@ -327,7 +343,7 @@ class const RangeOfTimeAsStringCodec({
       '${input.end.toString(formatItems)}';
   @override
   Range<Time> decode(String encoded) {
-    final (time: start, :rest) = Time.parseAndRest(encoded, formatItems);
+    final (time: start, :rest) = Time.parseAndRest(encoded, items: formatItems);
 
     if (rest.length < intervalDesignator.length) {
       throw const ChronoParseException(.tooShort);
@@ -337,7 +353,7 @@ class const RangeOfTimeAsStringCodec({
 
     final end = Time.parse(
       rest.substring(intervalDesignator.length),
-      formatItems,
+      items: formatItems,
     );
     return Range(start, end);
   }

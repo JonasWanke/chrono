@@ -86,8 +86,8 @@ void main() {
 
       var date = Date(2020, 1, 1);
       for (var i = 0; i < 3 * 366; i++, date = date.next) {
-        expect(Date.parse(date.toString(fromSun), fromSun), date);
-        expect(Date.parse(date.toString(fromMon), fromMon), date);
+        expect(Date.parse(date.toString(fromSun), items: fromSun), date);
+        expect(Date.parse(date.toString(fromMon), items: fromMon), date);
       }
     });
   });

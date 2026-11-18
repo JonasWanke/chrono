@@ -1593,6 +1593,69 @@ void main() {
     });
   });
 
+  group('strict offsets and subseconds', () {
+    ChronoParsed offset(int hours, [int minutes = 0]) =>
+        ChronoParsed()..offset = TimeDelta(hours: hours, minutes: minutes);
+    void checkInvalid(
+      String input,
+      List<ChronoFormatItem> items, {
+      bool isLenient = false,
+    }) => expect(
+      () => ChronoParser.parse(input, items, isLenient: isLenient),
+      throwsA(isA<ChronoParseException>()),
+      reason: input,
+    );
+
+    test('a colon is required exactly if printColon is true', () {
+      const withColon = [ChronoFormatItem.timezoneOffset()];
+      const withoutColon = [ChronoFormatItem.timezoneOffset(printColon: false)];
+      expect(ChronoParser.parse('+09:30', withColon), offset(9, 30));
+      checkInvalid('+0930', withColon);
+      expect(ChronoParser.parse('+0930', withoutColon), offset(9, 30));
+      checkInvalid('+09:30', withoutColon);
+    });
+    test('whitespace is rejected', () {
+      const items = [ChronoFormatItem.timezoneOffset()];
+      checkInvalid(' +09:30', items);
+      checkInvalid('+09 : 30', items);
+      checkInvalid('+09: 30', items);
+    });
+    test('lenient mode accepts them', () {
+      const items = [ChronoFormatItem.timezoneOffset()];
+      for (final input in [' +09:30', '+0930', '+09 : 30']) {
+        expect(
+          ChronoParser.parse(input, items, isLenient: true),
+          offset(9, 30),
+        );
+      }
+    });
+    test('fixed subseconds require the dot', () {
+      for (final (accuracy, digits) in [
+        (ChronoSubsecondAccuracy.millis, 3),
+        (ChronoSubsecondAccuracy.micros, 6),
+        (ChronoSubsecondAccuracy.nanos, 9),
+      ]) {
+        final items = [ChronoFormatItem.subsecond(accuracy)];
+        checkInvalid('', items);
+        checkInvalid('1' * digits, items);
+        expect(ChronoParser.parse('.${'0' * digits}', items).nanosecond, 0);
+        expect(
+          ChronoParser.parse('', items, isLenient: true).nanosecond,
+          isNull,
+        );
+      }
+    });
+    test('variable subseconds are optional', () {
+      const items = [ChronoFormatItem.subsecond(.variable)];
+      expect(ChronoParser.parse('', items).nanosecond, isNull);
+      expect(ChronoParser.parse('.5', items).nanosecond, 500_000_000);
+    });
+    test('the default ISO time formats reject missing fractions', () {
+      expect(Time.parse('12:30:15'), Time(12, 30, 15));
+      expect(Time.parse('12:30:15.5'), Time(12, 30, 15, 500));
+    });
+  });
+
   group('timezone offset precision', () {
     ChronoParsed offset({int h = 0, int m = 0, int s = 0}) =>
         ChronoParsed()..offset = TimeDelta(hours: h, minutes: m, seconds: s);
@@ -1863,7 +1926,10 @@ void main() {
     expect(dt.toString(format), 'Sunday, 06-Nov-94 08:49:37 GMT');
 
     // Check that it parses correctly.
-    expect(CDateTime.parse('Sunday, 06-Nov-94 08:49:37 GMT', format), dt);
+    expect(
+      CDateTime.parse('Sunday, 06-Nov-94 08:49:37 GMT', items: format),
+      dt,
+    );
 
     // Check that the rest of the weekdays parse correctly (this test
     // originally failed in Rust because Sunday parsed incorrectly).
@@ -1876,7 +1942,7 @@ void main() {
       (CDateTime(1994, 11, 12, 8, 49, 37), 'Saturday, 12-Nov-94 08:49:37 GMT'),
     ];
     for (final (expected, string) in testDates) {
-      expect(CDateTime.parse(string, format), expected, reason: string);
+      expect(CDateTime.parse(string, items: format), expected, reason: string);
     }
 
     const testDatesFail = [
@@ -1895,7 +1961,7 @@ void main() {
     ];
     for (final string in testDatesFail) {
       expect(
-        () => CDateTime.parse(string, format),
+        () => CDateTime.parse(string, items: format),
         throwsA(isA<ChronoParseException>()),
         reason: string,
       );

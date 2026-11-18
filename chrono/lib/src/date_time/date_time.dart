@@ -226,15 +226,32 @@ final class const CDateTime.from(final Date date, final Time time)
     ...Time.isoFormat,
   ];
 
-  factory parse(String string, [List<CDateTimeFormatItem> items = isoFormat]) {
-    final parsed = ChronoParser.parse(string, items);
+  /// Parses [string] with the given [items].
+  ///
+  /// {@macro chrono.parse.typed}
+  factory parse(
+    String string, {
+    List<CDateTimeFormatItem> items = isoFormat,
+    bool isLenient = false,
+  }) {
+    final parsed = ChronoParser.parse(string, items, isLenient: isLenient);
     return parsed.toDate().at(parsed.toTime());
   }
+
+  /// Parses [string] with the given [items] and also returns the remaining
+  /// string.
+  ///
+  /// {@macro chrono.parse.typed}
   static ({CDateTime dateTime, String rest}) parseAndRest(
-    String string, [
+    String string, {
     List<CDateTimeFormatItem> items = isoFormat,
-  ]) {
-    final result = ChronoParser.parseAndRest(string, items);
+    bool isLenient = false,
+  }) {
+    final result = ChronoParser.parseAndRest(
+      string,
+      items,
+      isLenient: isLenient,
+    );
     return (
       dateTime: result.parsed.toDate().at(result.parsed.toTime()),
       rest: result.rest,
@@ -272,7 +289,8 @@ class const CDateTimeAsStringCodec([
   @override
   String encode(CDateTime input) => input.toString(formatItems);
   @override
-  CDateTime decode(String encoded) => CDateTime.parse(encoded, formatItems);
+  CDateTime decode(String encoded) =>
+      CDateTime.parse(encoded, items: formatItems);
 }
 
 // Deranged
@@ -303,7 +321,7 @@ class const RangeOfCDateTimeAsStringCodec({
   Range<CDateTime> decode(String encoded) {
     final (dateTime: start, :rest) = CDateTime.parseAndRest(
       encoded,
-      formatItems,
+      items: formatItems,
     );
 
     if (rest.length < intervalDesignator.length) {
@@ -314,7 +332,7 @@ class const RangeOfCDateTimeAsStringCodec({
 
     final end = CDateTime.parse(
       rest.substring(intervalDesignator.length),
-      formatItems,
+      items: formatItems,
     );
     return Range(start, end);
   }

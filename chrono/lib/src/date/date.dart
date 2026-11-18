@@ -395,13 +395,37 @@ final class const Date._unchecked(
     .weekday(),
   ];
 
-  factory parse(String string, [List<DateFormatItem> items = isoFormat]) =>
-      ChronoParser.parse(string, items).toDate();
-  static ({Date date, String rest}) parseAndRest(
-    String string, [
+  /// Parses [string] with the given [items].
+  ///
+  /// {@template chrono.parse.typed}
+  /// Parsing is strict by default, i.e., `string` must be exactly what
+  /// formatting with `items` would print. If `isLenient` is `true`, padding,
+  /// whitespace, and separators are handled more flexibly. See
+  /// [ChronoParser.parse] for details.
+  ///
+  /// Throws a [ChronoParseException] if `string` doesn't match, or doesn't
+  /// contain enough fields.
+  /// {@endtemplate}
+  factory parse(
+    String string, {
     List<DateFormatItem> items = isoFormat,
-  ]) {
-    final result = ChronoParser.parseAndRest(string, items);
+    bool isLenient = false,
+  }) => ChronoParser.parse(string, items, isLenient: isLenient).toDate();
+
+  /// Parses [string] with the given [items] and also returns the remaining
+  /// string.
+  ///
+  /// {@macro chrono.parse.typed}
+  static ({Date date, String rest}) parseAndRest(
+    String string, {
+    List<DateFormatItem> items = isoFormat,
+    bool isLenient = false,
+  }) {
+    final result = ChronoParser.parseAndRest(
+      string,
+      items,
+      isLenient: isLenient,
+    );
     return (date: result.parsed.toDate(), rest: result.rest);
   }
 
@@ -417,7 +441,7 @@ class const DateAsStringCodec([
   @override
   String encode(Date input) => input.toString(formatItems);
   @override
-  Date decode(String encoded) => Date.parse(encoded, formatItems);
+  Date decode(String encoded) => Date.parse(encoded, items: formatItems);
 }
 
 // Deranged
@@ -447,7 +471,7 @@ class const RangeInclusiveOfDateAsStringCodec({
       '${input.end.toString(formatItems)}';
   @override
   RangeInclusive<Date> decode(String encoded) {
-    final (date: start, :rest) = Date.parseAndRest(encoded, formatItems);
+    final (date: start, :rest) = Date.parseAndRest(encoded, items: formatItems);
 
     if (rest.length < intervalDesignator.length) {
       throw const ChronoParseException(.tooShort);
@@ -457,7 +481,7 @@ class const RangeInclusiveOfDateAsStringCodec({
 
     final end = Date.parse(
       rest.substring(intervalDesignator.length),
-      formatItems,
+      items: formatItems,
     );
     return RangeInclusive(start, end);
   }

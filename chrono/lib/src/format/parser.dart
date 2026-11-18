@@ -1,5 +1,25 @@
 import '../../chrono.dart';
 
+/// This date and time parser is:
+///
+/// - Greedy. It will consume the longest possible prefix. For example, `April`
+///   is always consumed entirely when the long month name is requested; it
+///   equally accepts `Apr`, but prefers the longer prefix in this case.
+/// - Strict by default: it only accepts what the formatter prints for the same
+///   items.
+///   - Numbers must match their `ChronoPadding`. For example,
+///     `ChronoPadding.zero` requires exactly the formatting width in digits,
+///     and no whitespace is accepted before numbers unless the padding is
+///     `ChronoPadding.space`.
+///   - Timezone offsets contain a colon exactly if `printColon` is `true`, and
+///     no whitespace.
+///   - Fixed-accuracy subseconds require the dot and all digits.
+/// - Lenient if `isLenient` is `true`: padding is completely ignored, so one
+///   can prepend any number of whitespace then any number of zeroes before
+///   numbers. Offsets accept an optional colon surrounded by whitespace, and
+///   subseconds can be omitted.
+/// - (Still) obeying the intrinsic parsing width. This allows, for example,
+///   parsing `HHMMSS`.
 // Based on Rust Chrono's parser: https://github.com/chronotope/chrono/blob/3ffcd1b107fd3085bc184a1f5f7445b97a0d655f/src/format/parse.rs
 class ChronoParser._(var String _string, {final bool _isLenient = false}) {
   final _parsed = ChronoParsed();
@@ -9,22 +29,6 @@ class ChronoParser._(var String _string, {final bool _isLenient = false}) {
   /// Returns [ChronoParsed] when the entire string has been parsed. There
   /// should be no trailing string after parsing; use a stray
   /// [ChronoFormatItemSpace] to trim whitespaces.
-  ///
-  /// This particular date and time parser is:
-  ///
-  /// - Greedy. It will consume the longest possible prefix.
-  ///   For example, `April` is always consumed entirely when the long month
-  ///   name is requested; it equally accepts `Apr`, but prefers the longer
-  ///   prefix in this case.
-  /// - Strict by default: numeric items only accept what the formatter prints
-  ///   for their [ChronoPadding]. For example, [ChronoPadding.zero] requires
-  ///   exactly the formatting width in digits, and no whitespace is accepted
-  ///   before numbers unless the padding is [ChronoPadding.space].
-  /// - Padding-agnostic if [isLenient] is `true`: the [ChronoPadding] field is
-  ///   completely ignored, so one can prepend any number of whitespace then any
-  ///   number of zeroes before numbers.
-  /// - (Still) obeying the intrinsic parsing width. This allows, for example,
-  ///   parsing `HHMMSS`.
   static ChronoParsed parse(
     String string,
     List<ChronoFormatItem> items, {
@@ -37,18 +41,6 @@ class ChronoParser._(var String _string, {final bool _isLenient = false}) {
 
   /// Tries to parse given string into `parsed` with the given formatting items
   /// and also returns the remaining String.
-  ///
-  /// This particular date and time parser is:
-  ///
-  /// - Greedy. It will consume the longest possible prefix. For example,
-  ///   `April` is always consumed entirely when the long month name is
-  ///   requested; it equally accepts `Apr`, but prefers the longer prefix in
-  ///   this case.
-  /// - Strict by default: numeric items only accept what the formatter prints
-  ///   for their [ChronoPadding]. See [parse].
-  /// - Padding-agnostic if [isLenient] is `true`.
-  /// - (Still) obeying the intrinsic parsing width. This allows, for example,
-  ///   parsing `HHMMSS`.
   static ({ChronoParsed parsed, String rest}) parseAndRest(
     String string,
     List<ChronoFormatItem> items, {
@@ -241,7 +233,15 @@ class ChronoParser._(var String _string, {final bool _isLenient = false}) {
               _string = _string.substring(2);
 
             case ChronoFormatSubsecond(:final accuracy):
-              if (!_string.startsWith('.')) break;
+              if (!_string.startsWith('.')) {
+                // Only a variable number of digits can be omitted entirely.
+                if (!_isLenient && accuracy != .variable) {
+                  throw ChronoParseException(
+                    _string.isEmpty ? .tooShort : .invalid,
+                  );
+                }
+                break;
+              }
               _string = _string.substring(1);
 
               _parsed.nanosecond = switch (accuracy) {
@@ -256,11 +256,19 @@ class ChronoParser._(var String _string, {final bool _isLenient = false}) {
               // silently skipping them would discard information.
               throw const ChronoParseException(.badFormat);
 
-            case ChronoFormatTimezoneOffset(:final precision, :final allowZulu):
-              _string = _string.trimLeft();
+            case ChronoFormatTimezoneOffset(
+              :final precision,
+              :final allowZulu,
+              :final printColon,
+            ):
+              if (_isLenient) _string = _string.trimLeft();
               _parsed.offset = _scanTimezoneOffset(
                 precision: precision,
-                separator: r'\s*:?\s*',
+                separator: _isLenient
+                    ? r'\s*:?\s*'
+                    : printColon
+                    ? ':'
+                    : '',
                 allowZulu: allowZulu,
                 allowTzMinusSign: true,
               );
