@@ -312,9 +312,6 @@ class ChronoParser._(var String _string, {final bool _isLenient = false}) {
                 allowTzMinusSign: true,
               );
           }
-
-        case ChronoFormatItemError():
-          throw const ChronoParseException(.badFormat);
       }
     }
   }

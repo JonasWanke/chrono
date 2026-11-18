@@ -101,10 +101,6 @@ enum ChronoFormatLength {
 /// case-insensitively.
 sealed class const ChronoFormatItemFixed() extends ChronoFormatItem;
 
-/// Issues a formatting error. Used to signal an invalid format string.
-// TODO(JonasWanke): Is this necessary?
-class ChronoFormatItemError extends ChronoFormatItem;
-
 abstract interface class ChronoFormattable<I extends ChronoFormatItem> {
   @override
   String toString([List<I> items]);

@@ -88,8 +88,6 @@ class ChronoFormatter {
             _writeNumeric(item);
           case final ChronoFormatItemFixed item:
             _writeFixed(item);
-          case ChronoFormatItemError():
-            throw const FormatException('Error formatting date/time');
         }
       }
       _isFormatted = true;
