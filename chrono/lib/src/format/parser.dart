@@ -22,7 +22,13 @@ import '../../chrono.dart';
 ///   parsing `HHMMSS`.
 // Based on Rust Chrono's parser: https://github.com/chronotope/chrono/blob/3ffcd1b107fd3085bc184a1f5f7445b97a0d655f/src/format/parse.rs
 class ChronoParser._(var String _string, {final bool _isLenient = false}) {
+  final _initialLength = _string.length;
   final _parsed = ChronoParsed();
+
+  /// The item that's currently being parsed and where it started, for error
+  /// reporting.
+  ChronoFormatItem? _currentItem;
+  int? _currentItemStart;
 
   /// Tries to parse given [string] with given formatting [items].
   ///
@@ -35,7 +41,13 @@ class ChronoParser._(var String _string, {final bool _isLenient = false}) {
     bool isLenient = false,
   }) {
     final (:parsed, :rest) = parseAndRest(string, items, isLenient: isLenient);
-    if (rest.isNotEmpty) throw const ChronoParseException(.tooLong);
+    if (rest.isNotEmpty) {
+      throw ChronoParseException(
+        .tooLong,
+        source: string,
+        offset: string.length - rest.length,
+      );
+    }
     return parsed;
   }
 
@@ -47,7 +59,7 @@ class ChronoParser._(var String _string, {final bool _isLenient = false}) {
     bool isLenient = false,
   }) {
     final parser = ChronoParser._(string, isLenient: isLenient);
-    parser._parseAndRemainder(items);
+    parser._withContext(string, () => parser._parseAndRemainder(items));
     return (parsed: parser._parsed, rest: parser._string);
   }
 
@@ -66,8 +78,12 @@ class ChronoParser._(var String _string, {final bool _isLenient = false}) {
   /// Throws a [ChronoParseException] if [string] doesn't match.
   static ChronoParsed parseRfc3339(String string) {
     final parser = ChronoParser._(string);
-    parser._parseRfc3339();
-    if (parser._string.isNotEmpty) throw const ChronoParseException(.tooLong);
+    parser._withContext(string, () {
+      parser._parseRfc3339();
+      if (parser._string.isNotEmpty) {
+        throw const ChronoParseException(.tooLong);
+      }
+    });
     return parser._parsed;
   }
 
@@ -92,13 +108,36 @@ class ChronoParser._(var String _string, {final bool _isLenient = false}) {
   /// Throws a [ChronoParseException] if [string] doesn't match.
   static ChronoParsed parseRfc2822(String string) {
     final parser = ChronoParser._(string);
-    parser._parseRfc2822();
-    if (parser._string.isNotEmpty) throw const ChronoParseException(.tooLong);
+    parser._withContext(string, () {
+      parser._parseRfc2822();
+      if (parser._string.isNotEmpty) {
+        throw const ChronoParseException(.tooLong);
+      }
+    });
     return parser._parsed;
+  }
+
+  /// Runs [body] and adds the [source], the offset, and the current item to any
+  /// [ChronoParseException] thrown without them.
+  void _withContext(String source, void Function() body) {
+    try {
+      body();
+    } on ChronoParseException catch (e) {
+      if (e.source != null) rethrow;
+
+      throw ChronoParseException(
+        e.kind,
+        source: source,
+        offset: _currentItemStart ?? _initialLength - _string.length,
+        item: _currentItem,
+      );
+    }
   }
 
   void _parseAndRemainder(List<ChronoFormatItem> items) {
     for (final item in items) {
+      _currentItem = item;
+      _currentItemStart = _initialLength - _string.length;
       switch (item) {
         case ChronoFormatItemLiteral(:final text):
           if (_string.length < text.length) {
@@ -802,10 +841,34 @@ class ChronoParser._(var String _string, {final bool _isLenient = false}) {
 
 enum _Presence { required, optional, absent }
 
-class const ChronoParseException(final ChronoParseExceptionKind kind)
-    implements Exception {
+/// Thrown when a string can't be parsed.
+class const ChronoParseException(
+  final ChronoParseExceptionKind kind, {
+
+  /// The string that was parsed, if known.
+  @override final String? source,
+
+  /// The offset in [source] where the failing [item] (or, when parsing RFC 3339
+  /// and RFC 2822, the failing token) started, if known.
+  @override final int? offset,
+
+  /// The format item that couldn't be parsed, if any.
+  final ChronoFormatItem? item,
+}) implements FormatException {
   @override
-  String toString() => 'ChronoParseException: $kind';
+  String get message => kind.toString();
+
+  @override
+  String toString() {
+    final buffer = StringBuffer('ChronoParseException: $message');
+    if (item != null) buffer.write(' (parsing $item)');
+    final source = this.source;
+    if (source != null) {
+      buffer.write(' in “$source”');
+      if (offset != null) buffer.write(' at offset $offset');
+    }
+    return buffer.toString();
+  }
 }
 
 /// The category of parse error.

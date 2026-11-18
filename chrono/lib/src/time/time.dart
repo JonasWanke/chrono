@@ -290,6 +290,20 @@ final class const Time._unchecked(
     bool isLenient = false,
   }) => ChronoParser.parse(string, items, isLenient: isLenient).toTime();
 
+  /// Like [Time.parse], but returns `null` instead of throwing a
+  /// [ChronoParseException].
+  static Time? tryParse(
+    String string, {
+    List<TimeFormatItem> items = isoFormat,
+    bool isLenient = false,
+  }) {
+    try {
+      return .parse(string, items: items, isLenient: isLenient);
+    } on ChronoParseException {
+      return null;
+    }
+  }
+
   /// Parses [string] with the given [items] and also returns the remaining
   /// string.
   ///

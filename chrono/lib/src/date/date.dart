@@ -412,6 +412,20 @@ final class const Date._unchecked(
     bool isLenient = false,
   }) => ChronoParser.parse(string, items, isLenient: isLenient).toDate();
 
+  /// Like [Date.parse], but returns `null` instead of throwing a
+  /// [ChronoParseException].
+  static Date? tryParse(
+    String string, {
+    List<DateFormatItem> items = isoFormat,
+    bool isLenient = false,
+  }) {
+    try {
+      return .parse(string, items: items, isLenient: isLenient);
+    } on ChronoParseException {
+      return null;
+    }
+  }
+
   /// Parses [string] with the given [items] and also returns the remaining
   /// string.
   ///

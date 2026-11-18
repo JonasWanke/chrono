@@ -1507,6 +1507,62 @@ void main() {
   //     assert_eq!(parsed, expected);
   // }
 
+  group('ChronoParseException', () {
+    ChronoParseException error(
+      String input,
+      List<ChronoFormatItem> items, {
+      bool isLenient = false,
+    }) {
+      try {
+        ChronoParser.parse(input, items, isLenient: isLenient);
+      } on ChronoParseException catch (e) {
+        return e;
+      }
+      throw StateError('Expected a ChronoParseException for “$input”.');
+    }
+
+    test('contains the source, offset, and item', () {
+      final e = error('2024-1-05', Date.isoFormat);
+      expect(e.kind, ChronoParseExceptionKind.invalid);
+      expect(e.source, '2024-1-05');
+      expect(e.offset, 5);
+      expect(e.item, isA<ChronoFormatMonth>());
+    });
+    test('trailing input is reported at its start', () {
+      final e = error('2024-01-05x', Date.isoFormat);
+      expect(e.kind, ChronoParseExceptionKind.tooLong);
+      expect(e.source, '2024-01-05x');
+      expect(e.offset, 10);
+      expect(e.item, isNull);
+    });
+    test('RFC parsers add the source', () {
+      final e = expectThrows(() => ChronoParser.parseRfc3339('2015-01-20'));
+      expect(e.source, '2015-01-20');
+      expect(e.offset, isNotNull);
+    });
+    test('is a FormatException', () {
+      expect(error('x', Date.isoFormat), isA<FormatException>());
+      expect(error('x', Date.isoFormat).message, isNotEmpty);
+    });
+    test('toString() describes the location', () {
+      expect(
+        error('2024-1-05', Date.isoFormat).toString(),
+        'ChronoParseException: input contains invalid characters '
+        '(parsing ${error('2024-1-05', Date.isoFormat).item}) '
+        'in “2024-1-05” at offset 5',
+      );
+    });
+    test('tryParse returns null on errors', () {
+      expect(Date.tryParse('2024-01-05'), Date(2024, 1, 5));
+      expect(Date.tryParse('2024-1-5'), isNull);
+      expect(Date.tryParse('2024-1-5', isLenient: true), Date(2024, 1, 5));
+      expect(Time.tryParse('12:30'), isNull);
+      expect(Time.tryParse('12:30:15'), Time(12, 30, 15));
+      expect(CDateTime.tryParse('nope'), isNull);
+      expect(CDateTime.tryParse('2024-01-05T12:30:15'), isNotNull);
+    });
+  });
+
   group('strict numbers', () {
     ChronoParsed day(int value) => ChronoParsed()..day = value;
     ChronoParsed year(int value) => ChronoParsed()..year = Year(value);
@@ -2110,4 +2166,13 @@ void _checkError(
   } on ChronoParseException catch (e) {
     expect(e.kind, equals(kind));
   }
+}
+
+ChronoParseException expectThrows(void Function() body) {
+  try {
+    body();
+  } on ChronoParseException catch (e) {
+    return e;
+  }
+  throw StateError('Expected a ChronoParseException.');
 }

@@ -238,6 +238,20 @@ final class const CDateTime.from(final Date date, final Time time)
     return parsed.toDate().at(parsed.toTime());
   }
 
+  /// Like [CDateTime.parse], but returns `null` instead of throwing a
+  /// [ChronoParseException].
+  static CDateTime? tryParse(
+    String string, {
+    List<CDateTimeFormatItem> items = isoFormat,
+    bool isLenient = false,
+  }) {
+    try {
+      return .parse(string, items: items, isLenient: isLenient);
+    } on ChronoParseException {
+      return null;
+    }
+  }
+
   /// Parses [string] with the given [items] and also returns the remaining
   /// string.
   ///
