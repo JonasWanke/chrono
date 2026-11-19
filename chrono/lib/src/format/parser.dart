@@ -283,11 +283,9 @@ class ChronoParser._(var String _string, {final bool _isLenient = false}) {
               }
               _string = _string.substring(1);
 
-              _parsed.nanosecond = switch (accuracy) {
-                .variable => _scanNanosecond(),
-                .millis => _scanNanosecondFixed(3),
-                .micros => _scanNanosecondFixed(6),
-                .nanos => _scanNanosecondFixed(9),
+              _parsed.nanosecond = switch (accuracy.digits) {
+                null => _scanNanosecond(),
+                final digits => _scanNanosecondFixed(digits),
               };
 
             case ChronoFormatTimezoneName():

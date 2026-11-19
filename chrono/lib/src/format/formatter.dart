@@ -292,54 +292,34 @@ class ChronoFormatter {
   }
 
   void _writeSubsecond(ChronoFormatSubsecond item, Time time) {
-    switch (item.accuracy) {
-      case .variable:
-        final nanos = time.subSecondNanos % TimeDelta.nanosPerSecond;
-        if (nanos == 0) break;
+    final nanos = time.subSecondNanos % TimeDelta.nanosPerSecond;
+    final digits = item.accuracy.digits ?? _variableDigits(nanos);
+    if (digits == null) return;
 
-        // TODO(JonasWanke): localization
-        _buffer.write('.');
-        if (nanos % TimeUnit.millis.nanosPer == 0) {
-          _buffer.write(
-            (nanos ~/ TimeUnit.millis.nanosPer).toString().padLeft(3, '0'),
-          );
-        } else if (nanos % TimeDelta.nanosPerMicro == 0) {
-          _buffer.write(
-            (nanos ~/ TimeDelta.nanosPerMicro).toString().padLeft(6, '0'),
-          );
-        } else {
-          _buffer.write(nanos.toString().padLeft(9, '0'));
-        }
-      case .millis:
-        // TODO(JonasWanke): localization
-        _buffer.write('.');
-        _buffer.write(
-          (time.subSecondNanos ~/
-                  TimeUnit.millis.nanosPer %
-                  TimeDelta.millisPerSecond)
-              .toString()
-              .padLeft(3, '0'),
-        );
-      case .micros:
-        // TODO(JonasWanke): localization
-        _buffer.write('.');
-        _buffer.write(
-          (time.subSecondNanos ~/
-                  TimeDelta.nanosPerMicro %
-                  TimeUnit.micros.per(.seconds))
-              .toString()
-              .padLeft(6, '0'),
-        );
-      case .nanos:
-        // TODO(JonasWanke): localization
-        _buffer.write('.');
-        _buffer.write(
-          (time.subSecondNanos % TimeDelta.nanosPerSecond).toString().padLeft(
-            9,
-            '0',
-          ),
-        );
+    // TODO(JonasWanke): localization
+    _buffer.write('.');
+    _buffer.write(
+      (nanos ~/ _nanosPerDigitUnit(digits)).toString().padLeft(digits, '0'),
+    );
+  }
+
+  /// The shortest of 3, 6, or 9 digits that represents [nanos] exactly, or
+  /// `null` if [nanos] is zero.
+  int? _variableDigits(int nanos) {
+    if (nanos == 0) return null;
+    if (nanos % TimeUnit.millis.nanosPer == 0) return 3;
+    if (nanos % TimeDelta.nanosPerMicro == 0) return 6;
+    return 9;
+  }
+
+  /// The number of nanoseconds represented by the last of [digits] fractional
+  /// digits.
+  int _nanosPerDigitUnit(int digits) {
+    var result = 1;
+    for (var i = digits; i < 9; i++) {
+      result *= 10;
     }
+    return result;
   }
 
   void _writeOne(int value) => _buffer.writeCharCode(0x30 + value);

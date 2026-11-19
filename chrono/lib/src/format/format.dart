@@ -422,17 +422,30 @@ class const ChronoFormatNanosecond({super.padding})
     extends ChronoFormatItemNumeric
     implements TimeFormatItem;
 
-/// An optional dot plus one or more digits for millis/micros/nanos.
+/// A dot plus the fractional digits of the second, see
+/// [ChronoSubsecondAccuracy] for how many and whether the item is optional.
 class const ChronoFormatSubsecond(final ChronoSubsecondAccuracy accuracy)
     extends ChronoFormatItemFixed
     implements TimeFormatItem;
 
-enum ChronoSubsecondAccuracy {
-  /// May print nothing, 3, 6, or 9 digits according to the available accuracy.
-  variable,
-  millis,
-  micros,
-  nanos,
+enum ChronoSubsecondAccuracy(
+  /// The fixed number of digits, or `null` for [variable].
+  final int? digits,
+) {
+  /// Prints nothing if there are no subseconds, otherwise the shortest of 3, 6,
+  /// or 9 digits that represents them exactly.
+  ///
+  /// When parsing, accepts 1 to 9 digits (or nothing).
+  variable(null),
+
+  /// Always 3 digits.
+  millis(3),
+
+  /// Always 6 digits.
+  micros(6),
+
+  /// Always 9 digits.
+  nanos(9)
 }
 
 // Instant
