@@ -199,6 +199,10 @@ void main() {
         'subsecond(variable)',
       );
       expect(
+        const ChronoFormatItem.subsecond(.millis, dot: false).toString(),
+        'subsecond(millis, dot: false)',
+      );
+      expect(
         const ChronoFormatItem.timezoneName().toString(),
         'timezoneName()',
       );

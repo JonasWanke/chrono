@@ -26,13 +26,12 @@ sealed class const ChronoFormatItem() {
   const factory hour12({ChronoPadding padding}) = ChronoFormatHour12;
   const factory minute({ChronoPadding padding}) = ChronoFormatMinute;
   const factory second({ChronoPadding padding}) = ChronoFormatSecond;
-  const factory nanosecond({ChronoPadding padding}) = ChronoFormatNanosecond;
   const factory timestamp({ChronoPadding padding}) = ChronoFormatTimestamp;
   const factory monthName(ChronoFormatLength length) = ChronoFormatMonthName;
   const factory weekdayName(ChronoFormatLength length) =
       ChronoFormatWeekdayName;
   const factory amPm(ChronoCasing casing) = ChronoFormatAmPm;
-  const factory subsecond(ChronoSubsecondAccuracy accuracy) =
+  const factory subsecond(ChronoSubsecondAccuracy accuracy, {bool dot}) =
       ChronoFormatSubsecond;
   const factory timezoneName() = ChronoFormatTimezoneName;
   const factory timezoneOffset({
@@ -76,10 +75,6 @@ sealed class const ChronoFormatItem() {
       ChronoFormatHour12(:final padding) => ('hour12', [_padding(padding)]),
       ChronoFormatMinute(:final padding) => ('minute', [_padding(padding)]),
       ChronoFormatSecond(:final padding) => ('second', [_padding(padding)]),
-      ChronoFormatNanosecond(:final padding) => (
-        'nanosecond',
-        [_padding(padding)],
-      ),
       ChronoFormatTimestamp(:final padding) => (
         'timestamp',
         [_padding(padding)],
@@ -87,7 +82,10 @@ sealed class const ChronoFormatItem() {
       ChronoFormatMonthName(:final length) => ('monthName', [length.name]),
       ChronoFormatWeekdayName(:final length) => ('weekdayName', [length.name]),
       ChronoFormatAmPm(:final casing) => ('amPm', [casing.name]),
-      ChronoFormatSubsecond(:final accuracy) => ('subsecond', [accuracy.name]),
+      ChronoFormatSubsecond(:final accuracy, :final dot) => (
+        'subsecond',
+        [accuracy.name, if (!dot) 'dot: false'],
+      ),
       ChronoFormatTimezoneName() => ('timezoneName', <String>[]),
       ChronoFormatTimezoneOffset(
         :final precision,
@@ -205,12 +203,11 @@ sealed class ZonedDateTimeFormatItem extends ChronoFormatItem {
   const factory hour12({ChronoPadding padding}) = ChronoFormatHour12;
   const factory minute({ChronoPadding padding}) = ChronoFormatMinute;
   const factory second({ChronoPadding padding}) = ChronoFormatSecond;
-  const factory nanosecond({ChronoPadding padding}) = ChronoFormatNanosecond;
   const factory monthName(ChronoFormatLength length) = ChronoFormatMonthName;
   const factory weekdayName(ChronoFormatLength length) =
       ChronoFormatWeekdayName;
   const factory amPm(ChronoCasing casing) = ChronoFormatAmPm;
-  const factory subsecond(ChronoSubsecondAccuracy accuracy) =
+  const factory subsecond(ChronoSubsecondAccuracy accuracy, {bool dot}) =
       ChronoFormatSubsecond;
   const factory timestamp({ChronoPadding padding}) = ChronoFormatTimestamp;
   const factory timezoneName() = ChronoFormatTimezoneName;
@@ -246,12 +243,11 @@ sealed class CDateTimeFormatItem extends ChronoFormatItem
   const factory hour12({ChronoPadding padding}) = ChronoFormatHour12;
   const factory minute({ChronoPadding padding}) = ChronoFormatMinute;
   const factory second({ChronoPadding padding}) = ChronoFormatSecond;
-  const factory nanosecond({ChronoPadding padding}) = ChronoFormatNanosecond;
   const factory monthName(ChronoFormatLength length) = ChronoFormatMonthName;
   const factory weekdayName(ChronoFormatLength length) =
       ChronoFormatWeekdayName;
   const factory amPm(ChronoCasing casing) = ChronoFormatAmPm;
-  const factory subsecond(ChronoSubsecondAccuracy accuracy) =
+  const factory subsecond(ChronoSubsecondAccuracy accuracy, {bool dot}) =
       ChronoFormatSubsecond;
 }
 
@@ -287,9 +283,8 @@ sealed class TimeFormatItem extends CDateTimeFormatItem {
   const factory hour12({ChronoPadding padding}) = ChronoFormatHour12;
   const factory minute({ChronoPadding padding}) = ChronoFormatMinute;
   const factory second({ChronoPadding padding}) = ChronoFormatSecond;
-  const factory nanosecond({ChronoPadding padding}) = ChronoFormatNanosecond;
   const factory amPm(ChronoCasing casing) = ChronoFormatAmPm;
-  const factory subsecond(ChronoSubsecondAccuracy accuracy) =
+  const factory subsecond(ChronoSubsecondAccuracy accuracy, {bool dot}) =
       ChronoFormatSubsecond;
 }
 
@@ -415,18 +410,23 @@ class const ChronoFormatSecond({super.padding})
     extends ChronoFormatItemNumeric
     implements TimeFormatItem;
 
-/// The number of nanoseconds since the last whole second (FW=PW=9).
+/// The fractional digits of the second, optionally preceded by a dot.
 ///
-/// Note that this is *not* left-aligned, see also [ChronoFormatSubsecond].
-class const ChronoFormatNanosecond({super.padding})
-    extends ChronoFormatItemNumeric
-    implements TimeFormatItem;
-
-/// A dot plus the fractional digits of the second, see
-/// [ChronoSubsecondAccuracy] for how many and whether the item is optional.
-class const ChronoFormatSubsecond(final ChronoSubsecondAccuracy accuracy)
-    extends ChronoFormatItemFixed
-    implements TimeFormatItem;
+/// See [ChronoSubsecondAccuracy] for how many digits are used and whether the
+/// item is optional.
+///
+/// With `dot: false`, only the digits are printed and parsed . Without a dot,
+/// the number of digits can't be delimited, so this requires a fixed accuracy.
+class const ChronoFormatSubsecond(
+  final ChronoSubsecondAccuracy accuracy, {
+  final bool dot = true,
+}) extends ChronoFormatItemFixed implements TimeFormatItem {
+  this
+    : assert(
+        dot || accuracy != .variable,
+        'A `variable` accuracy requires a dot.',
+      );
+}
 
 enum ChronoSubsecondAccuracy(
   /// The fixed number of digits, or `null` for [variable].

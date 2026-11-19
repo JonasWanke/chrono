@@ -141,12 +141,6 @@ class ChronoFormatter {
           time.second + time.subSecondNanos ~/ TimeDelta.nanosPerSecond,
           item.padding,
         );
-      case (ChronoFormatNanosecond(), _, final time?):
-        _writeN(
-          9,
-          time.subSecondNanos % TimeDelta.nanosPerSecond,
-          item.padding,
-        );
       case (ChronoFormatTimestamp(), final date?, final time?):
         final offset = _offset?.offset.localMinusUtc ?? TimeDelta();
         final timestamp = date.at(time).inUtc.durationSinceUnixEpoch - offset;
@@ -196,15 +190,6 @@ class ChronoFormatter {
     //         ),
     //         (LongWeekdayName, Some(d), _, _) => {
     //             w.write_str(long_weekdays(self.locale)[d.weekday().num_days_from_sunday() as usize])
-    //         }
-    //         (Internal(InternalFixed { val: Nanosecond3NoDot }), _, Some(t), _) => {
-    //             write!(w, "{:03}", t.nanosecond() / 1_000_000 % 1_000)
-    //         }
-    //         (Internal(InternalFixed { val: Nanosecond6NoDot }), _, Some(t), _) => {
-    //             write!(w, "{:06}", t.nanosecond() / 1_000 % 1_000_000)
-    //         }
-    //         (Internal(InternalFixed { val: Nanosecond9NoDot }), _, Some(t), _) => {
-    //             write!(w, "{:09}", t.nanosecond() % 1_000_000_000)
     //         }
     //         (RFC2822, Some(d), Some(t), Some((_, off))) => {
     //             write_rfc2822(w, crate::NaiveDateTime::new(d, t), *off)
@@ -296,8 +281,10 @@ class ChronoFormatter {
     final digits = item.accuracy.digits ?? _variableDigits(nanos);
     if (digits == null) return;
 
-    // TODO(JonasWanke): localization
-    _buffer.write('.');
+    if (item.dot) {
+      // TODO(JonasWanke): localization
+      _buffer.write('.');
+    }
     _buffer.write(
       (nanos ~/ _nanosPerDigitUnit(digits)).toString().padLeft(digits, '0'),
     );

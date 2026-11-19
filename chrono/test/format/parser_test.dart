@@ -399,20 +399,13 @@ void main() {
         ..hourMod12 = 1,
     );
     _check(
-      '23 45 6 78901234 567890123',
-      [
-        const .hour(),
-        const .minute(),
-        const .second(),
-        const .nanosecond(),
-        const .timestamp(),
-      ],
+      '23 45 6 567890123',
+      [const .hour(), const .minute(), const .second(), const .timestamp()],
       ChronoParsed()
         ..hourDiv12 = .pm
         ..hourMod12 = 11
         ..minute = 45
         ..second = 6
-        ..nanosecond = 78_901_234
         ..timestamp = TimeDelta(seconds: 567_890_123),
     );
   });
@@ -652,66 +645,81 @@ void main() {
       const .literal('0'),
     ], ChronoParsed()..nanosecond = 123_456_789);
 
-    // fixed: nanoseconds without the dot
-    // TODO(JonasWanke): port these test cases
-    // checkError("", [internal_fixed(Nanosecond3NoDot)], .tooShort);
-    // checkError(".", [internal_fixed(Nanosecond3NoDot)], .tooShort);
-    // checkError("0", [internal_fixed(Nanosecond3NoDot)], .tooShort);
-    // checkError("4", [internal_fixed(Nanosecond3NoDot)], .tooShort);
-    // checkError("42", [internal_fixed(Nanosecond3NoDot)], .tooShort);
-    // check("421", [internal_fixed(Nanosecond3NoDot)], parsed!(nanosecond: 421_000_000));
-    // checkError("4210", [internal_fixed(Nanosecond3NoDot)], .tooLong);
-    // check(
-    //     "42143",
-    //     [internal_fixed(Nanosecond3NoDot), num(Second)],
-    //     parsed!(nanosecond: 421_000_000, second: 43),
-    // );
-    // check(
-    //     "421🤠",
-    //     [internal_fixed(Nanosecond3NoDot), .literal("🤠")],
-    //     parsed!(nanosecond: 421_000_000),
-    // );
-    // check(
-    //     "🤠421",
-    //     [.literal("🤠"), internal_fixed(Nanosecond3NoDot)],
-    //     parsed!(nanosecond: 421_000_000),
-    // );
-    // checkError("42195", [internal_fixed(Nanosecond3NoDot)], .tooLong);
-    // checkError("123456789", [internal_fixed(Nanosecond3NoDot)], .tooLong);
-    // checkError("4x", [internal_fixed(Nanosecond3NoDot)], .tooShort);
-    // checkError("  4", [internal_fixed(Nanosecond3NoDot)], .invalid);
-    // checkError(".421", [internal_fixed(Nanosecond3NoDot)], .invalid);
+    // fixed: subseconds without the dot
+    _checkError('', [const .subsecond(.millis, dot: false)], .tooShort);
+    _checkError('.', [const .subsecond(.millis, dot: false)], .tooShort);
+    _checkError('0', [const .subsecond(.millis, dot: false)], .tooShort);
+    _checkError('4', [const .subsecond(.millis, dot: false)], .tooShort);
+    _checkError('42', [const .subsecond(.millis, dot: false)], .tooShort);
+    _checkError('4x', [const .subsecond(.millis, dot: false)], .tooShort);
+    _check('421', [
+      const .subsecond(.millis, dot: false),
+    ], ChronoParsed()..nanosecond = 421_000_000);
+    _checkError('4210', [const .subsecond(.millis, dot: false)], .tooLong);
+    _checkError('42195', [const .subsecond(.millis, dot: false)], .tooLong);
+    _checkError('123456789', [const .subsecond(.millis, dot: false)], .tooLong);
+    _checkError('  4', [const .subsecond(.millis, dot: false)], .invalid);
+    _checkError('.421', [const .subsecond(.millis, dot: false)], .invalid);
+    _check(
+      '42143',
+      [const .subsecond(.millis, dot: false), const .second()],
+      ChronoParsed()
+        ..nanosecond = 421_000_000
+        ..second = 43,
+    );
+    _check('421🤠', [
+      const .subsecond(.millis, dot: false),
+      const .literal('🤠'),
+    ], ChronoParsed()..nanosecond = 421_000_000);
+    _check('🤠421', [
+      const .literal('🤠'),
+      const .subsecond(.millis, dot: false),
+    ], ChronoParsed()..nanosecond = 421_000_000);
 
-    // checkError("", [internal_fixed(Nanosecond6NoDot)], .tooShort);
-    // checkError(".", [internal_fixed(Nanosecond6NoDot)], .tooShort);
-    // checkError("0", [internal_fixed(Nanosecond6NoDot)], .tooShort);
-    // checkError("1234", [internal_fixed(Nanosecond6NoDot)], .tooShort);
-    // checkError("12345", [internal_fixed(Nanosecond6NoDot)], .tooShort);
-    // check("421950", [internal_fixed(Nanosecond6NoDot)], parsed!(nanosecond: 421_950_000));
-    // check("000003", [internal_fixed(Nanosecond6NoDot)], parsed!(nanosecond: 3000));
-    // check("000000", [internal_fixed(Nanosecond6NoDot)], parsed!(nanosecond: 0));
-    // checkError("1234567", [internal_fixed(Nanosecond6NoDot)], .tooLong);
-    // checkError("123456789", [internal_fixed(Nanosecond6NoDot)], .tooLong);
-    // checkError("4x", [internal_fixed(Nanosecond6NoDot)], .tooShort);
-    // checkError("     4", [internal_fixed(Nanosecond6NoDot)], .invalid);
-    // checkError(".42100", [internal_fixed(Nanosecond6NoDot)], .invalid);
+    _checkError('', [const .subsecond(.micros, dot: false)], .tooShort);
+    _checkError('.', [const .subsecond(.micros, dot: false)], .tooShort);
+    _checkError('0', [const .subsecond(.micros, dot: false)], .tooShort);
+    _checkError('1234', [const .subsecond(.micros, dot: false)], .tooShort);
+    _checkError('12345', [const .subsecond(.micros, dot: false)], .tooShort);
+    _checkError('4x', [const .subsecond(.micros, dot: false)], .tooShort);
+    _check('421950', [
+      const .subsecond(.micros, dot: false),
+    ], ChronoParsed()..nanosecond = 421_950_000);
+    _check('000003', [
+      const .subsecond(.micros, dot: false),
+    ], ChronoParsed()..nanosecond = 3000);
+    _check('000000', [
+      const .subsecond(.micros, dot: false),
+    ], ChronoParsed()..nanosecond = 0);
+    _checkError('1234567', [const .subsecond(.micros, dot: false)], .tooLong);
+    _checkError('123456789', [const .subsecond(.micros, dot: false)], .tooLong);
+    _checkError('     4', [const .subsecond(.micros, dot: false)], .invalid);
+    _checkError('.42100', [const .subsecond(.micros, dot: false)], .invalid);
 
-    // checkError("", [internal_fixed(Nanosecond9NoDot)], .tooShort);
-    // checkError(".", [internal_fixed(Nanosecond9NoDot)], .tooShort);
-    // checkError("42195", [internal_fixed(Nanosecond9NoDot)], .tooShort);
-    // checkError("12345678", [internal_fixed(Nanosecond9NoDot)], .tooShort);
-    // check("421950803", [internal_fixed(Nanosecond9NoDot)], parsed!(nanosecond: 421_950_803));
-    // check("000000003", [internal_fixed(Nanosecond9NoDot)], parsed!(nanosecond: 3));
-    // check(
-    //     "42195080354",
-    //     [internal_fixed(Nanosecond9NoDot), num(Second)],
-    //     parsed!(nanosecond: 421_950_803, second: 54),
-    // ); // don't skip digits that come after the 9
-    // checkError("1234567890", [internal_fixed(Nanosecond9NoDot)], .tooLong);
-    // check("000000000", [internal_fixed(Nanosecond9NoDot)], parsed!(nanosecond: 0));
-    // checkError("00000000x", [internal_fixed(Nanosecond9NoDot)], .invalid);
-    // checkError("        4", [internal_fixed(Nanosecond9NoDot)], .invalid);
-    // checkError(".42100000", [internal_fixed(Nanosecond9NoDot)], .invalid);
+    _checkError('', [const .subsecond(.nanos, dot: false)], .tooShort);
+    _checkError('.', [const .subsecond(.nanos, dot: false)], .tooShort);
+    _checkError('42195', [const .subsecond(.nanos, dot: false)], .tooShort);
+    _checkError('12345678', [const .subsecond(.nanos, dot: false)], .tooShort);
+    _check('421950803', [
+      const .subsecond(.nanos, dot: false),
+    ], ChronoParsed()..nanosecond = 421_950_803);
+    _check('000000003', [
+      const .subsecond(.nanos, dot: false),
+    ], ChronoParsed()..nanosecond = 3);
+    _check('000000000', [
+      const .subsecond(.nanos, dot: false),
+    ], ChronoParsed()..nanosecond = 0);
+    _checkError('1234567890', [const .subsecond(.nanos, dot: false)], .tooLong);
+    _checkError('00000000x', [const .subsecond(.nanos, dot: false)], .invalid);
+    _checkError('        4', [const .subsecond(.nanos, dot: false)], .invalid);
+    _checkError('.42100000', [const .subsecond(.nanos, dot: false)], .invalid);
+    _check(
+      '42195080354',
+      [const .subsecond(.nanos, dot: false), const .second()],
+      ChronoParsed()
+        ..nanosecond = 421_950_803
+        ..second = 54,
+    ); // don't skip digits that come after the 9
   });
 
   group('Timezones', () {

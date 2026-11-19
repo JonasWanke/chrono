@@ -227,11 +227,6 @@ class ChronoParser._(var String _string, {final bool _isLenient = false}) {
             ChronoFormatHour12() => (2, false, (it) => _parsed.hourMod12 = it),
             ChronoFormatMinute() => (2, false, (it) => _parsed.minute = it),
             ChronoFormatSecond() => (2, false, (it) => _parsed.second = it),
-            ChronoFormatNanosecond() => (
-              9,
-              false,
-              (it) => _parsed.nanosecond = it,
-            ),
             ChronoFormatTimestamp() => (
               null,
               true,
@@ -271,17 +266,19 @@ class ChronoParser._(var String _string, {final bool _isLenient = false}) {
               };
               _string = _string.substring(2);
 
-            case ChronoFormatSubsecond(:final accuracy):
-              if (!_string.startsWith('.')) {
-                // Only a variable number of digits can be omitted entirely.
-                if (!_isLenient && accuracy != .variable) {
-                  throw ChronoParseException(
-                    _string.isEmpty ? .tooShort : .invalid,
-                  );
+            case ChronoFormatSubsecond(:final accuracy, :final dot):
+              if (dot) {
+                if (!_string.startsWith('.')) {
+                  // Only a variable number of digits can be omitted entirely.
+                  if (!_isLenient && accuracy != .variable) {
+                    throw ChronoParseException(
+                      _string.isEmpty ? .tooShort : .invalid,
+                    );
+                  }
+                  break;
                 }
-                break;
+                _string = _string.substring(1);
               }
-              _string = _string.substring(1);
 
               _parsed.nanosecond = switch (accuracy.digits) {
                 null => _scanNanosecond(),
