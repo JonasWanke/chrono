@@ -270,22 +270,16 @@ class const ZonedDateTime<Tz extends TimeZone<Tz>>.fromUtcDateTimeAndOffset(
   /// Returns the items to format a [ZonedDateTime] as RFC 3339 and ISO 8601,
   /// e.g., “2023-04-23T18:24:20.123+09:30”.
   ///
-  /// [secondsFormat] controls the number of subsecond digits, and [useZ]
-  /// whether a zero offset is written as `Z` instead of `+00:00`.
+  /// [subsecondAccuracy] controls the number of subsecond digits (`null` writes
+  /// whole seconds only), and [useZ] whether a zero offset is written as `Z`
+  /// instead of `+00:00`.
   ///
   /// With the default options, this is Rust's `to_rfc3339()`.
   @useResult
   static List<ZonedDateTimeFormatItem> rfc3339Format({
-    ChronoSecondsFormat secondsFormat = .variable,
+    ChronoSubsecondAccuracy? subsecondAccuracy = .variable,
     bool useZ = false,
   }) {
-    final subsecondAccuracy = switch (secondsFormat) {
-      .seconds => null,
-      .millis => ChronoSubsecondAccuracy.millis,
-      .micros => ChronoSubsecondAccuracy.micros,
-      .nanos => ChronoSubsecondAccuracy.nanos,
-      .variable => ChronoSubsecondAccuracy.variable,
-    };
     return [
       ...Date.isoFormat,
       const .literal('T'),

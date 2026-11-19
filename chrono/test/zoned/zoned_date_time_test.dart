@@ -195,17 +195,18 @@ void main() {
         '2000-09-01T22:30:15.123456789+09:30',
       );
     });
-    test('secondsFormat', () {
-      String format(ChronoSecondsFormat secondsFormat) => fractional.toString(
-        ZonedDateTime.rfc3339Format(secondsFormat: secondsFormat),
-      );
-      expect(format(.seconds), '2000-09-01T22:30:15+09:30');
+    test('subsecondAccuracy', () {
+      String format(ChronoSubsecondAccuracy? subsecondAccuracy) =>
+          fractional.toString(
+            ZonedDateTime.rfc3339Format(subsecondAccuracy: subsecondAccuracy),
+          );
+      expect(format(null), '2000-09-01T22:30:15+09:30');
       expect(format(.millis), '2000-09-01T22:30:15.123+09:30');
       expect(format(.micros), '2000-09-01T22:30:15.123456+09:30');
       expect(format(.nanos), '2000-09-01T22:30:15.123456789+09:30');
       expect(format(.variable), '2000-09-01T22:30:15.123456789+09:30');
       expect(
-        whole.toString(ZonedDateTime.rfc3339Format(secondsFormat: .millis)),
+        whole.toString(ZonedDateTime.rfc3339Format(subsecondAccuracy: .millis)),
         '2000-09-01T22:30:15.000+09:30',
       );
     });

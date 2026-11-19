@@ -514,32 +514,3 @@ enum TimezoneOffsetPrecision {
   /// `±hh:mm:ss`
   seconds,
 }
-
-/// Specific formatting options for seconds.
-///
-/// See [ZonedDateTime.rfc3339Format] for usage.
-enum ChronoSecondsFormat {
-  /// Format whole seconds only, with no decimal point or subseconds.
-  seconds,
-
-  /// Use fixed 3 subsecond digits.
-  ///
-  /// This corresponds to [ChronoSubsecondAccuracy.millis].
-  millis,
-
-  /// Use fixed 6 subsecond digits.
-  ///
-  /// This corresponds to [ChronoSubsecondAccuracy.micros].
-  micros,
-
-  /// Use fixed 9 subsecond digits.
-  ///
-  /// This corresponds to [ChronoSubsecondAccuracy.nanos].
-  nanos,
-
-  /// Automatically select one of [seconds], [millis], [micros], and [nanos] to
-  /// display all available non-zero sub-second digits.
-  ///
-  /// This corresponds to [ChronoSubsecondAccuracy.variable].
-  variable,
-}
