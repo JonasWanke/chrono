@@ -267,6 +267,30 @@ class const ZonedDateTime<Tz extends TimeZone<Tz>>.fromUtcDateTimeAndOffset(
     .timezoneOffset(precision: .optionalSeconds, allowZulu: false),
   ];
 
+  /// Returns the items to format a [ZonedDateTime] as RFC 2822, e.g.,
+  /// “Tue, 1 Jul 2003 10:52:37 +0200”.
+  ///
+  /// This is the same as the format string `%a, %-d %b %Y %H:%M:%S %z`. Names
+  /// are always English. RFC 2822 only defines years 0 through 9999; other
+  /// years are written in ISO 8601's expanded representation (with a sign).
+  static const rfc2822Format = <ZonedDateTimeFormatItem>[
+    .weekdayName(.short),
+    .literal(', '),
+    .day(padding: .none),
+    .literal(' '),
+    .monthName(.short),
+    .literal(' '),
+    .year(),
+    .literal(' '),
+    .hour(),
+    .literal(':'),
+    .minute(),
+    .literal(':'),
+    .second(),
+    .literal(' '),
+    .timezoneOffset(precision: .minutes, allowZulu: false, printColon: false),
+  ];
+
   /// Returns the items to format a [ZonedDateTime] as RFC 3339 and ISO 8601,
   /// e.g., “2023-04-23T18:24:20.123+09:30”.
   ///

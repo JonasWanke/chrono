@@ -222,4 +222,38 @@ void main() {
       );
     });
   });
+
+  group('rfc2822Format(…)', () {
+    test('formats weekday, unpadded day, and offset without colon', () {
+      final offset = FixedOffset.east(TimeDelta(hours: 2));
+      final dateTime = offset.fromUtcDateTime(CDateTime(2003, 7, 1, 8, 52, 37));
+      expect(
+        dateTime.toString(ZonedDateTime.rfc2822Format()),
+        'Tue, 1 Jul 2003 10:52:37 +0200',
+      );
+    });
+    test('negative and zero offset', () {
+      final dateTime = FixedOffset.west(TimeDelta(hours: 5, minutes: 30))
+          .fromUtcDateTime(CDateTime(2003, 12, 25, 1, 2, 3));
+      expect(
+        dateTime.toString(ZonedDateTime.rfc2822Format()),
+        'Wed, 24 Dec 2003 19:32:03 -0530',
+      );
+      expect(
+        dateTime
+            .withTimezone(FixedOffset.zero)
+            .toString(ZonedDateTime.rfc2822Format()),
+        'Thu, 25 Dec 2003 01:02:03 +0000',
+      );
+    });
+    test('round-trips through parseRfc2822', () {
+      final dateTime = ZonedDateTime.parseRfc2822(
+        'Tue, 1 Jul 2003 10:52:37 +0200',
+      );
+      expect(
+        dateTime.toString(ZonedDateTime.rfc2822Format()),
+        'Tue, 1 Jul 2003 10:52:37 +0200',
+      );
+    });
+  });
 }
