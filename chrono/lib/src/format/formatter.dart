@@ -8,10 +8,8 @@ class ChronoFormatter {
   final Date? _date;
   final Time? _time;
   final ({String name, FixedOffset offset})? _offset;
-  // TODO(JonasWanke):
-  //     /// Locale used for text.
-  //     /// ZST if the `unstable-locales` feature is not enabled.
-  //     locale: Locale,
+  // TODO(JonasWanke): localization: add a locale used for all text output (see
+  // the other localization TODOs in this file).
 
   static String format(
     List<ChronoFormatItem> items, {
@@ -178,31 +176,6 @@ class ChronoFormatter {
       default:
         throw FormatException('Insufficient arguments for given format $item');
     }
-    //     match (spec, self.date, self.time, self.off.as_ref()) {
-    //         (ShortMonthName, Some(d), _, _) => {
-    //             w.write_str(short_months(self.locale)[d.month0() as usize])
-    //         }
-    //         (LongMonthName, Some(d), _, _) => {
-    //             w.write_str(long_months(self.locale)[d.month0() as usize])
-    //         }
-    //         (ShortWeekdayName, Some(d), _, _) => w.write_str(
-    //             short_weekdays(self.locale)[d.weekday().num_days_from_sunday() as usize],
-    //         ),
-    //         (LongWeekdayName, Some(d), _, _) => {
-    //             w.write_str(long_weekdays(self.locale)[d.weekday().num_days_from_sunday() as usize])
-    //         }
-    //         (RFC2822, Some(d), Some(t), Some((_, off))) => {
-    //             write_rfc2822(w, crate::NaiveDateTime::new(d, t), *off)
-    //         }
-    //         (RFC3339, Some(d), Some(t), Some((_, off))) => write_rfc3339(
-    //             w,
-    //             crate::NaiveDateTime::new(d, t),
-    //             *off,
-    //             SecondsFormat::AutoSi,
-    //             false,
-    //         ),
-    //     }
-    // }
   }
 
   /// Writes the English [name] (the lowercase name of a [Month] or [Weekday])
