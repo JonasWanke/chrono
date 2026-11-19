@@ -234,7 +234,7 @@ class ChronoParser._(var String _string, {final bool _isLenient = false}) {
             ),
             ChronoFormatTimestamp() => (
               null,
-              false,
+              true,
               (it) => _parsed.timestamp = TimeDelta(seconds: it),
             ),
           };
@@ -570,7 +570,8 @@ class ChronoParser._(var String _string, {final bool _isLenient = false}) {
       .none => !hasLeadingZeros,
     };
     final isSignValid = switch (sign) {
-      '+' => digits > formatWidth,
+      // Items without a width (timestamps) never print a `+`.
+      '+' => width != null && digits > formatWidth,
       '-' => value != 0,
       _ => true,
     };

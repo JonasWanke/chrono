@@ -1697,6 +1697,19 @@ void main() {
       checkInvalid('12345', items);
       checkInvalid('24', items);
     });
+    test('timestamps can be negative', () {
+      const items = [ChronoFormatItem.timestamp()];
+      ChronoParsed timestamp(int seconds) =>
+          ChronoParsed()..timestamp = TimeDelta(seconds: seconds);
+      check('0', items, timestamp(0));
+      check('1700000000', items, timestamp(1700000000));
+      check('-5', items, timestamp(-5));
+      check('-1700000000', items, timestamp(-1700000000));
+      checkInvalid('+5', items);
+      checkInvalid('-0', items);
+      checkInvalid('05', items);
+      expect(ChronoParser.parse('+5', items, isLenient: true), timestamp(5));
+    });
     test('the default ISO formats reject lenient input', () {
       expect(Date.parse('2024-01-05'), Date(2024, 1, 5));
       for (final input in [

@@ -135,9 +135,9 @@ class const ChronoFormatItemSpace(final String text)
 ///
 /// The **parsing width** is the maximal width to be scanned. The parser only
 /// tries to consume from one to given number of digits (greedily). It also
-/// trims the preceding whitespace if any. It cannot parse the negative number,
-/// so some date and time cannot be formatted then parsed with the same
-/// formatting items.
+/// trims the preceding whitespace if any. Only years and timestamps can be
+/// negative when parsing, so a date and time before 1 BCE can't be formatted
+/// then parsed with `YearFormat.div100` or `YearFormat.mod100` items.
 sealed class const ChronoFormatItemNumeric({
   final ChronoPadding padding = .zero,
 }) extends ChronoFormatItem;

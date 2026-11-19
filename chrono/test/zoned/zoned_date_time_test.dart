@@ -94,6 +94,12 @@ void main() {
         CDateTime(2000, 9, 1, 13, 0, 15),
       );
     });
+    test('negative timestamps round-trip', () {
+      const items = [ZonedDateTimeFormatItem.timestamp()];
+      final before = ZonedDateTime.parse('1969-12-31T23:59:55+00:00');
+      expect(before.toString(items), '-5');
+      expect(ZonedDateTime.parse('-5', items: items), before);
+    });
     test('requires an offset', () {
       expect(ZonedDateTime.tryParse('2000-09-01T22:30:15'), isNull);
       expect(
